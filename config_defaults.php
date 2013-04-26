@@ -117,6 +117,19 @@ $config_defaults = array(
 		'actions' => array( ),
     ),
 
+	'amazon' => array(
+		'actions' => array(
+			'SmashPig\PaymentProviders\Amazon\Actions\IncomingMessage',
+		),
+
+		'endpoints' => array(
+			'listener' => array(
+				'class' => 'SmashPig\PaymentProviders\Amazon\AmazonListener',
+				'inst-args' => array(),
+			)
+		),
+	),
+
 	'paypal' => array(
 		'listener' => array(
 			// For testing purposes override this config.php to
