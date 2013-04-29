@@ -15,6 +15,7 @@ class AutoLoader {
      * Installs the SmashPig AutoLoader into the class loader chain.
      *
      * @param $defaultPath The path to the SmashPig library.
+     * FIXME: this is sensitive to the final "/", requiring it.
      *
      * @return bool True if install was successful. False if the AutoLoader was already installed.
      */

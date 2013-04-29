@@ -8,8 +8,9 @@ $file = __FILE__;
 if ( !defined( "SMASHPIG_ENTRY_POINT" ) ) {
 	define( "SMASHPIG_ENTRY_POINT", $file );
 
-	require_once( './Core/AutoLoader.php' );
-	AutoLoader::installSmashPigAutoLoader( './' );
+	$smashPigBaseDir = __DIR__ . '/../';
+	require_once( $smashPigBaseDir . "Core/AutoLoader.php" );
+	AutoLoader::installSmashPigAutoLoader( $smashPigBaseDir );
 
 	RequestHandler::process();
 } else {
