@@ -28,10 +28,10 @@ class Authorisation extends AdyenMessage {
 
 		$this->paymentMethod = $msgObj->paymentMethod;
 
-		if ( is_array( $msgObj->operations->string ) ) {
-			$this->operations = $msgObj->operations->string;
+		if ( $msgObj->operations ) {
+			$this->operations = (array)$msgObj->operations->string;
 		} else {
-			$this->operations = array( $msgObj->operations->string );
+			$this->operations = array();
 		}
 
 		$this->reason = $msgObj->reason;
