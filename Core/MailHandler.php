@@ -6,6 +6,7 @@ use SmashPig\Core\Logging\Logger;
  * Abstraction on top of whatever email client we're actually using. For the moment that's
  * PHPMailer on top of sendmail. The PHPMailer library must be in the include path. Use the
  * configuration node 'include-paths' to do this.
+ * FIXME: should be more explicit, phpmailer-include-path or something
  */
 class MailHandler {
 
@@ -67,11 +68,16 @@ class MailHandler {
 		$mailer = static::mailbaseFactory();
 
 		try {
-			array_walk( (array)$to, function ( $value, $key ) use ( $mailer ) { $mailer->AddAddress( $value ); } );
-			array_walk( (array)$cc, function ( $value, $key ) use ( $mailer ) { $mailer->AddCC( $value ); } );
-			array_walk( (array)$bcc, function ( $value, $key ) use ( $mailer ) { $mailer->AddBCC( $value ); } );
+			$to = (array)$to;
+			$cc = (array)$cc;
+			$bcc = (array)$bcc;
+			$archives = (array)$config->val( 'email/archive-addresses' );
+
+			array_walk( $to, function ( $value, $key ) use ( $mailer ) { $mailer->AddAddress( $value ); } );
+			array_walk( $cc, function ( $value, $key ) use ( $mailer ) { $mailer->AddCC( $value ); } );
+			array_walk( $bcc, function ( $value, $key ) use ( $mailer ) { $mailer->AddBCC( $value ); } );
 			array_walk(
-				(array)$config->val( 'email/archive-addresses' ),
+				$archives,
 				function ( $value, $key ) use ( $mailer ) { $mailer->AddBCC( $value ); }
 			);
 
@@ -118,7 +124,8 @@ class MailHandler {
 			$mailer->Send();
 
 		} catch (\phpmailerException $ex) {
-			Logger::warning( "Could not send email to {$to}. PHP Mailer had exception.", null, $ex );
+			$toStr = implode( ", ", $to );
+			Logger::warning( "Could not send email to {$toStr}. PHP Mailer had exception.", null, $ex );
 			return false;
 		}
 
