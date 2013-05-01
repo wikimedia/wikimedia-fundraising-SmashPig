@@ -16,9 +16,12 @@ abstract class RestListener extends ListenerBase {
 
             if ( is_array( $msgs ) ) {
                 foreach ( $msgs as $msg ) {
-                    $this->pendingStore->add_message( $msg );
+                    //FIXME: this looks like an elaborate try-catch.  If there's
+                    //a fatal exception, the remaining messages are toast anyway,
+                    //so we should... do something different here.
+                    $this->pendingStore->addObject( $msg );
                     if ( $this->processMessage( $msg ) ) {
-                        $this->pendingStore->remove_message( $msg );
+                        $this->pendingStore->removeObjects( $msg );
                     }
                 }
             }
@@ -44,17 +47,17 @@ abstract class RestListener extends ListenerBase {
     }
 
     /**
-     * Parse the raw data from the web request and turn it into an array of message objects. This
-     * function should not return an exception unless the configuration data is malformed. If an
-     * individual message element in the envelope is malformed this function should log it and
-     * continue as normal.
+     * Parse the web request and turn it into an array of message objects.
      *
-     * @param string $data Raw web-request data
+     * This function should not throw an exception strictly caused by message
+     * contents. If an individual message in the envelope is malformed, this
+     * function should log it and continue as normal.
+     *
+     * @param Request $request Raw web-request
      *
      * @throws ListenerConfigException
-     * @throws ListenerDataException
      *
-     * @return mixed Array of @see Message
+     * @return array of @see Message
      */
     abstract protected function parseEnvelope( Request $request );
 

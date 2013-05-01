@@ -133,7 +133,7 @@ abstract class ListenerBase implements IHttpActionHandler {
 				return false;
 			}
         } catch ( \Exception $ex ) {
-
+		Logger::error( 'Failed message security check: ' . $ex->getMessage() );
         }
 
         // We caught exceptions: therefore the message was not correctly processed.

@@ -1,5 +1,6 @@
 <?php namespace SmashPig\Core\Messages;
 
+use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\Core\Logging\Logger;
@@ -34,7 +35,7 @@ abstract class ListenerMessage extends KeyedOpaqueStorableObject {
 
 		foreach( $actions as $actionClassName ) {
 			$action = new $actionClassName;
-			if ( $action instanceof \SmashPig\Core\Actions\IListenerMessageAction ) {
+			if ( $action instanceof IListenerMessageAction ) {
 				Logger::debug( "Running action {$actionClassName}." );
 				if ( !$action->execute( $this ) ) {
 					Logger::info( "Action {$actionClassName} did not execute properly, will re-queue." );
