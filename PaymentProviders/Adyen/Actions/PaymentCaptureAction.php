@@ -61,5 +61,4 @@ class PaymentCaptureAction implements IListenerMessageAction {
 
 		return true;
 	}
-
 }

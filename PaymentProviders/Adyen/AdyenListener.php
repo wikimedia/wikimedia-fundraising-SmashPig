@@ -8,65 +8,65 @@ use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\AdyenMessage;
 
 class AdyenListener extends SoapListener {
 
-    protected $wsdlpath = "https://ca-live.adyen.com/ca/services/Notification?wsdl";
+	protected $wsdlpath = "https://ca-live.adyen.com/ca/services/Notification?wsdl";
 
-    protected $classmap = array(
-        'NotificationRequest'      => 'SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequest',
-        'NotificationRequestItem'  => 'SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem',
-        'anyType2anyTypeMap'       => 'SmashPig\PaymentProviders\Adyen\WSDL\anyType2anyTypeMap',
-        'entry'                    => 'SmashPig\PaymentProviders\Adyen\WSDL\entry',
-        'sendNotification'         => 'SmashPig\PaymentProviders\Adyen\WSDL\sendNotification',
-        'sendNotificationResponse' => 'SmashPig\PaymentProviders\Adyen\WSDL\sendNotificationResponse',
-        'Amount'                   => 'SmashPig\PaymentProviders\Adyen\WSDL\Amount',
-        'ServiceException'         => 'SmashPig\PaymentProviders\Adyen\WSDL\ServiceException',
-        'Error'                    => 'SmashPig\PaymentProviders\Adyen\WSDL\Error',
-        'Type'                     => 'SmashPig\PaymentProviders\Adyen\WSDL\Type',
-    );
+	protected $classmap = array(
+		'NotificationRequest'      => 'SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequest',
+		'NotificationRequestItem'  => 'SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem',
+		'anyType2anyTypeMap'       => 'SmashPig\PaymentProviders\Adyen\WSDL\anyType2anyTypeMap',
+		'entry'                    => 'SmashPig\PaymentProviders\Adyen\WSDL\entry',
+		'sendNotification'         => 'SmashPig\PaymentProviders\Adyen\WSDL\sendNotification',
+		'sendNotificationResponse' => 'SmashPig\PaymentProviders\Adyen\WSDL\sendNotificationResponse',
+		'Amount'                   => 'SmashPig\PaymentProviders\Adyen\WSDL\Amount',
+		'ServiceException'         => 'SmashPig\PaymentProviders\Adyen\WSDL\ServiceException',
+		'Error'                    => 'SmashPig\PaymentProviders\Adyen\WSDL\Error',
+		'Type'                     => 'SmashPig\PaymentProviders\Adyen\WSDL\Type',
+	);
 
-    public function __construct() {
-        require_once( 'WSDL/Notification.php' );
-        parent::__construct();
-    }
+	public function __construct() {
+		require_once( 'WSDL/Notification.php' );
+		parent::__construct();
+	}
 
-    /**
-     * Run any gateway/Message specific security.
-     *
-     * @param ListenerMessage $msg Message object to operate on
-     *
-     * @throws ListenerSecurityException on security violation
-     */
-    protected function doMessageSecurity( ListenerMessage $msg ) {
-        // I have no specific message security at this time
+	/**
+	 * Run any gateway/Message specific security.
+	 *
+	 * @param ListenerMessage $msg Message object to operate on
+	 *
+	 * @throws ListenerSecurityException on security violation
+	 */
+	protected function doMessageSecurity( ListenerMessage $msg ) {
+		// I have no specific message security at this time
 		return true;
-    }
+	}
 
-    /**
-     * Positive acknowledgement of successful Message processing all the way through the chain.
+	/**
+	 * Positive acknowledgement of successful Message processing all the way through the chain.
 	 *
 	 * In the case of Adyen -- error handling happened far up the stack so if we've made it
 	 * here we're golden and we should just let the message pass through unhindered.
-     *
-     * @param ListenerMessage $msg that was processed.
-     */
-    protected function ackMessage( ListenerMessage $msg ) {
-        return true;
-    }
+	 *
+	 * @param ListenerMessage $msg that was processed.
+	 */
+	protected function ackMessage( ListenerMessage $msg ) {
+		return true;
+	}
 
-    /** === WSDL Handling Methods === **/
+	/** === WSDL Handling Methods === **/
 
-    /**
-     * @param WSDL\sendNotification $var
-     *
-     * @return WSDL\sendNotificationResponse
-     */
-    public function sendNotification( WSDL\sendNotification $var) {
+	/**
+	 * @param WSDL\sendNotification $var
+	 *
+	 * @return WSDL\sendNotificationResponse
+	 */
+	public function sendNotification( WSDL\sendNotification $var ) {
 		$messages = array();
 
-        $respstring = "[failed]";
+		$respstring = "[failed]";
 
-        if ( $var->notification instanceof WSDL\NotificationRequest ) {
+		if ( $var->notification instanceof WSDL\NotificationRequest ) {
 			if ( $var->notification->live ) {
-            	Logger::info( "Notification received from live server." );
+				Logger::info( "Notification received from live server." );
 			} else {
 				Logger::info( "Notification received from test server." );
 			}
@@ -76,38 +76,40 @@ class AdyenListener extends SoapListener {
 				foreach ( $var->notification->notificationItems->NotificationRequestItem as $item ) {
 					$obj = $this->createAdyenMsgObjFromItem( $item );
 					if ( $obj !== false ) {
-						$messages[] = $obj;
+						$messages[ ] = $obj;
 					}
 				}
 			} else {
-				$obj = $this->createAdyenMsgObjFromItem( $var->notification->notificationItems->NotificationRequestItem );
+				$obj = $this->createAdyenMsgObjFromItem(
+					$var->notification->notificationItems->NotificationRequestItem
+				);
 				if ( $obj !== false ) {
-					$messages[] = $obj;
+					$messages[ ] = $obj;
 				}
 			}
 
 			// Now process each message to the best of our ability
 			foreach ( $messages as $msg ) {
-				if ( $this->processMessage( $msg) ) {
-					Logger::debug( "Message successfully processed, removing from pending store." )
-;					$this->pendingStore->removeObjects( $msg );
+				if ( $this->processMessage( $msg ) ) {
+					Logger::debug( "Message successfully processed, removing from pending store." );
+					$this->pendingStore->removeObjects( $msg );
 				} else {
 					Logger::info( "Message was not successfully processed. Leaving in pending stored.", $msg );
 				}
 			}
 
-            $respstring = '[accepted]';
+			$respstring = '[accepted]';
 
-        } else {
-            Logger::warning( "Received notification is not instance of NotificationRequest!", $var );
-            $this->server->fault( 500, 'Received notification is not instance of NotificationRequest!' );
-        }
+		} else {
+			Logger::warning( "Received notification is not instance of NotificationRequest!", $var );
+			$this->server->fault( 500, 'Received notification is not instance of NotificationRequest!' );
+		}
 
-        $response = new WSDL\sendNotificationResponse();
-        $response->notificationResponse = $respstring;
+		$response = new WSDL\sendNotificationResponse();
+		$response->notificationResponse = $respstring;
 
-        return $response;
-    }
+		return $response;
+	}
 
 	protected function createAdyenMsgObjFromItem( WSDL\NotificationRequestItem $item ) {
 		Logger::info( 'Creating message object from data.' );
