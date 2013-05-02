@@ -1,3 +1,4 @@
 <?php namespace SmashPig\Core\DataStores;
 
-class DataStoreException extends \SmashPig\Core\SmashPigException {}
+class DataStoreException extends \SmashPig\Core\SmashPigException {
+}

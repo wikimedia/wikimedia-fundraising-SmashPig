@@ -75,7 +75,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 * @throws DataStoreException if the message could not be stored.
 	 * @return null
 	 */
-    public function addObject( KeyedOpaqueStorableObject $obj ) {
+	public function addObject( KeyedOpaqueStorableObject $obj ) {
 		$objClass = get_class( $obj );
 
 		$objKeys = $obj->getObjectKeys();
@@ -87,16 +87,16 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		}
 
 		$headers = array(
-			'persistent' => 'true',	// So the message doesn't disappear when the server restarts
-		   	'php-message-class' => $objClass,	// Sneakyness! No parameter can have '-' in it's name so this is safe!
+			'persistent'        => 'true', // So the message doesn't disappear when the server restarts
+			'php-message-class' => $objClass, // Sneakyness! No parameter can have '-' in it's name so this is safe!
 		);
 
 		// Populate with custom keys
 		foreach ( $objKeys as $keyName => $keyValue ) {
-			if ( $keyName == 'correlationId') {
-				$headers['JMSCorrelationID'] = $keyValue;
+			if ( $keyName == 'correlationId' ) {
+				$headers[ 'JMSCorrelationID' ] = $keyValue;
 			} else {
-				$headers[$keyName] = $keyValue;
+				$headers[ $keyName ] = $keyValue;
 			}
 		}
 
@@ -104,12 +104,12 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		$sent = $this->stompObj->send( $this->queue_id, $obj->toJson(), $headers );
 		if ( !$sent ) {
 			Logger::error(
-				"Could not queue message ({$objClass}) with id '{$objKeys['correlationId']}' to '{$this->queue_id}' on '{$this->uri}'",
+				"Could not queue message ({$objClass}) with id '{$objKeys[ 'correlationId' ]}' to '{$this->queue_id}' on '{$this->uri}'",
 				$obj->toJson()
 			);
 			throw new DataStoreException( "Could not queue message to '{$this->queue_id}' on '{$this->uri}'" );
 		}
-    }
+	}
 
 	/**
 	 * Remove messages with the same type and correlation ID from the
@@ -119,7 +119,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 *
 	 * @return int Count of messages removed.
 	 */
-    public function removeObjects( KeyedOpaqueStorableObject $protoObj ) {
+	public function removeObjects( KeyedOpaqueStorableObject $protoObj ) {
 		$phpType = get_class( $protoObj );
 
 		$objKeys = $protoObj->getObjectKeys();
@@ -129,7 +129,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 				"Required property correlationId was not exposed when adding removing objects of type $objClass."
 			);
 		}
-		$objCorrelationId = $objKeys['correlationId'];
+		$objCorrelationId = $objKeys[ 'correlationId' ];
 
 		Logger::info(
 			"Removing objects of type '$phpType' with correlation id '$objCorrelationId' from STOMP queue id {$this->queue_id}"
@@ -147,7 +147,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 
 		Logger::info( "Removed $count objects from STOMP queue '{$this->queue_id}' on '{$this->uri}'" );
 		return $count;
-    }
+	}
 
 	/**
 	 * Remove messages with a given correlation ID from the store.
@@ -156,7 +156,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 *
 	 * @return int Count of messages removed.
 	 */
-    public function removeObjectsById( $id ) {
+	public function removeObjectsById( $id ) {
 		$count = 0;
 
 		Logger::info(
@@ -173,7 +173,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 
 		Logger::info( "Removed $count objects from STOMP queue '{$this->queue_id}' on '{$this->uri}'" );
 		return $count;
-    }
+	}
 
 	/**
 	 * Operate the datastore as a queue. Will retrieve messages, one at a time,
@@ -209,15 +209,18 @@ class StompDataStore extends KeyedOpaqueDataStore {
 				return $this->queueGetObject( $type, $id );
 			}
 
-			$className = $msgObj->headers['php-message-class'];
+			$className = $msgObj->headers[ 'php-message-class' ];
 			if ( !class_exists( $className ) ) {
-				Logger::warning( "DataStore cannot instantiate object from message. No such class '{$className}'.", $msg );
+				Logger::warning(
+					"DataStore cannot instantiate object from message. No such class '{$className}'.",
+					$msg
+				);
 				throw new DataStoreException( "Cannot instantiate class '{$className}'; no such class exists." );
 			}
 
 			try {
 				$classObj = KeyedOpaqueStorableObject::fromJsonProxy( $className, $msgObj->body );
-				$classObj->correlationId = $msgObj->headers['correlation-id'];
+				$classObj->correlationId = $msgObj->headers[ 'correlation-id' ];
 			} catch ( DataSerializationException $ex ) {
 				Logger::warning(
 					"DataStore cannot instantiate object from STOMP message.",
@@ -237,11 +240,11 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 * Backing function for queueGetObject; retrieves, using STOMP selectors,
 	 * a requested message from the queue and starts a transaction for it.
 	 *
-	 * @param null $type Object type to select on
-	 * @param null $id	 Correlation ID to select on
+	 * @param null $type      Object type to select on
+	 * @param null $id        Correlation ID to select on
 	 * @param bool $checkTail If true (default) will stop getting new objects when
-	 * 					 new objects are being returned with the current STOMP
-	 *                   transaction ID in them.
+	 *                        new objects are being returned with the current STOMP
+	 *                        transaction ID in them.
 	 *
 	 * @returns object STOMP message object
 	 */
@@ -257,7 +260,11 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		Logger::debug( "Pulling new object from queue" );
 		$this->queueMsg = $this->stompObj->readFrame();
 		if ( $this->queueMsg ) {
-			if ( $checkTail && strpos( $this->queueMsg->headers['message-id'], $this->stompObj->getSessionId() ) === 0 ) {
+			if ( $checkTail && strpos(
+					$this->queueMsg->headers[ 'message-id' ],
+					$this->stompObj->getSessionId()
+				) === 0
+			) {
 				// We've started to see things from our own session. This means we've started to eat our
 				// own tail and it's time to exit.
 				Logger::debug( "Detected tail eating! Stopping queue consumption." );
@@ -277,8 +284,8 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 * subscription at a time so if the requested subscription does not match the previous one,
 	 * the old one is unsubscribed and a new one is started.
 	 *
-	 * @param null $type Object type to select on
-	 * @param null $id	 Correlation ID to select on
+	 * @param null $type   Object type to select on
+	 * @param null $id     Correlation ID to select on
 	 */
 	protected function createSubscription( $type, $id ) {
 		static $sType, $sId;
@@ -288,8 +295,12 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			$this->deleteSubscription();
 		}
 
-		if ( $type ) { $properties['php-message-class'] = $type; }
-		if ( $id ) { $properties['JMSCorrelationID'] = $id; }
+		if ( $type ) {
+			$properties[ 'php-message-class' ] = $type;
+		}
+		if ( $id ) {
+			$properties[ 'JMSCorrelationID' ] = $id;
+		}
 
 		Logger::debug( "Attempting to STOMP subscribe to '{$this->queue_id}' on '{$this->uri}'", $properties );
 		$this->stompObj->subscribe( $this->queue_id, $properties );

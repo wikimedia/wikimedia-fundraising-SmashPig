@@ -15,12 +15,12 @@ class FailmailLogStream implements ILogStream {
 	protected $from;
 
 	protected $levels = array(
-		LOG_ALERT => '[ALERT]',
-		LOG_ERR => '[ERROR]',
+		LOG_ALERT   => '[ALERT]',
+		LOG_ERR     => '[ERROR]',
 		LOG_WARNING => '[WARNING]',
-		LOG_INFO => '[INFO]',
-		LOG_NOTICE => '[NOTICE]',
-		LOG_DEBUG => '[DEBUG]',
+		LOG_INFO    => '[INFO]',
+		LOG_NOTICE  => '[NOTICE]',
+		LOG_DEBUG   => '[DEBUG]',
 	);
 
 	public function __construct( $toAddr, $fromAddr = null ) {
@@ -59,7 +59,7 @@ class FailmailLogStream implements ILogStream {
 	 */
 	public function enterContext( $contextName, &$contextData ) {
 		$this->context = $contextName;
-		$this->contextData = &$contextData;
+		$this->contextData = & $contextData;
 	}
 
 	/**
@@ -111,9 +111,9 @@ class FailmailLogStream implements ILogStream {
 			. "once. Check log streams for additional errors in this session.\n";
 
 		foreach ( $msgs as $msg ) {
-			$body .= "\n" . $msg[2] . " " . $this->levels[$msg[1]] . " " . $msg[0]['message'];
-			if ( strlen( $msg[0]['exception'] ) ) {
-				$body .= "\n--" . $msg[0]['exception'] . "\n--\n";
+			$body .= "\n" . $msg[ 2 ] . " " . $this->levels[ $msg[ 1 ] ] . " " . $msg[ 0 ][ 'message' ];
+			if ( strlen( $msg[ 0 ][ 'exception' ] ) ) {
+				$body .= "\n--" . $msg[ 0 ][ 'exception' ] . "\n--\n";
 			}
 		}
 

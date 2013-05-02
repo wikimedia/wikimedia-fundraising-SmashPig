@@ -2,4 +2,5 @@
 
 use SmashPig\Core\SmashPigException;
 
-class ListenerException extends SmashPigException {}
+class ListenerException extends SmashPigException {
+}

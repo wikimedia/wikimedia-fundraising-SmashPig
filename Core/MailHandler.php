@@ -36,7 +36,8 @@ class MailHandler {
 	 *
 	 * Several configuration nodes are required for this function:
 	 * email/from-address      Default address for the From header
-	 * email/bounce-address    Default address to use when VERPing the email. IE: bounce+$1@contoso.com
+	 * email/bounce-address    Default address to use when VERPing the email.
+	 *     IE: bounce+$1@contoso.com
 	 * email/archive-addresses A list of addresses to always BCC when this function is used
 	 *
 	 * @param string            $to        Email address of recipient
@@ -73,25 +74,47 @@ class MailHandler {
 			$bcc = (array)$bcc;
 			$archives = (array)$config->val( 'email/archive-addresses' );
 
-			array_walk( $to, function ( $value, $key ) use ( $mailer ) { $mailer->AddAddress( $value ); } );
-			array_walk( $cc, function ( $value, $key ) use ( $mailer ) { $mailer->AddCC( $value ); } );
-			array_walk( $bcc, function ( $value, $key ) use ( $mailer ) { $mailer->AddBCC( $value ); } );
+			array_walk(
+				$to,
+				function ( $value, $key ) use ( $mailer ) {
+					$mailer->AddAddress( $value );
+				}
+			);
+			array_walk(
+				$cc,
+				function ( $value, $key ) use ( $mailer ) {
+					$mailer->AddCC( $value );
+				}
+			);
+			array_walk(
+				$bcc,
+				function ( $value, $key ) use ( $mailer ) {
+					$mailer->AddBCC( $value );
+				}
+			);
 			array_walk(
 				$archives,
-				function ( $value, $key ) use ( $mailer ) { $mailer->AddBCC( $value ); }
+				function ( $value, $key ) use ( $mailer ) {
+					$mailer->AddBCC( $value );
+				}
 			);
 
 			$mailer->Subject = $subject;
 			$mailer->AltBody = $textBody;
 
-			array_walk( $attach, function( $value, $key ) use ( $mailer ) { $mailer->AddAttachment( $value ); } );
+			array_walk(
+				$attach,
+				function ( $value, $key ) use ( $mailer ) {
+					$mailer->AddAttachment( $value );
+				}
+			);
 
 			// Set the from address
 			if ( !$from ) {
 				$from = $config->val( 'email/from-address' );
 			}
 			if ( is_array( $from ) ) {
-				$mailer->SetFrom( $from[0], $from[1] );
+				$mailer->SetFrom( $from[ 0 ], $from[ 1 ] );
 			} else {
 				$mailer->SetFrom( (string)$from );
 			}
@@ -108,7 +131,7 @@ class MailHandler {
 			// We replace $1 in email/bounce-address or useVerp if string to create the bounce addr
 			if ( $useVerp ) {
 				$sourceAddr = (array)$to;
-				$sourceAddr = rawurlencode( $sourceAddr[0] );
+				$sourceAddr = rawurlencode( $sourceAddr[ 0 ] );
 
 				if ( is_string( $useVerp ) ) {
 					$bounceAddr = $useVerp;
@@ -123,7 +146,7 @@ class MailHandler {
 
 			$mailer->Send();
 
-		} catch (\phpmailerException $ex) {
+		} catch ( \phpmailerException $ex ) {
 			$toStr = implode( ", ", $to );
 			Logger::warning( "Could not send email to {$toStr}. PHP Mailer had exception.", null, $ex );
 			return false;

@@ -33,7 +33,7 @@ abstract class ListenerMessage extends KeyedOpaqueStorableObject {
 		// TODO: Cache this?
 		$actions = Configuration::getDefaultConfig()->val( 'actions' );
 
-		foreach( $actions as $actionClassName ) {
+		foreach ( $actions as $actionClassName ) {
 			$action = new $actionClassName;
 			if ( $action instanceof IListenerMessageAction ) {
 				Logger::debug( "Running action {$actionClassName}." );

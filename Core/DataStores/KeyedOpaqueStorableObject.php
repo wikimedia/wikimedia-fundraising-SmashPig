@@ -31,8 +31,8 @@ abstract class KeyedOpaqueStorableObject extends JsonSerializableObject {
 	public function getObjectKeys() {
 		$properties = array();
 
-		foreach( $this->propertiesExportedAsKeys as $propName ) {
-			$properties[$propName] = (string)$this->$propName;
+		foreach ( $this->propertiesExportedAsKeys as $propName ) {
+			$properties[ $propName ] = (string)$this->$propName;
 		}
 
 		return $properties;

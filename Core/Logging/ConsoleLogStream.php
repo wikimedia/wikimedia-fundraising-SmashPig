@@ -5,12 +5,12 @@ class ConsoleLogStream implements ILogStream {
 	protected $context;
 
 	protected $levelNames = array(
-		LOG_ALERT => 'ALERT',
-		LOG_ERR => 'ERROR',
+		LOG_ALERT   => 'ALERT',
+		LOG_ERR     => 'ERROR',
 		LOG_WARNING => 'WARNING',
-		LOG_INFO => 'INFO',
-		LOG_NOTICE => 'NOTICE',
-		LOG_DEBUG => 'DEBUG',
+		LOG_INFO    => 'INFO',
+		LOG_NOTICE  => 'NOTICE',
+		LOG_DEBUG   => 'DEBUG',
 	);
 
 	/**
@@ -21,12 +21,12 @@ class ConsoleLogStream implements ILogStream {
 	 * @param string    $date  The ISO 8601 date string
 	 */
 	public function processEvent( $msg, $level, $date ) {
-		$name = $this->levelNames[$level];
+		$name = $this->levelNames[ $level ];
 
-		if ( strlen( $msg['exception'] ) ) {
-			$msgstr = $msg['message'] . "\n" . $msg['exception'];
+		if ( strlen( $msg[ 'exception' ] ) ) {
+			$msgstr = $msg[ 'message' ] . "\n" . $msg[ 'exception' ];
 		} else {
-			$msgstr = $msg['message'];
+			$msgstr = $msg[ 'message' ];
 		}
 
 		print( "[{$name}] ({$this->context}) $msgstr\n" );
@@ -38,7 +38,7 @@ class ConsoleLogStream implements ILogStream {
 	 * @param string $contextName Child fully qualified context name
 	 * @param string $contextData Current (child) context log lines -- (msg, level, date) tuple
 	 */
-    public function enterContext( $contextName, &$contextData ) {
+	public function enterContext( $contextName, &$contextData ) {
 		$this->context = $contextName;
 	}
 
@@ -58,10 +58,12 @@ class ConsoleLogStream implements ILogStream {
 	 * @param string $contextName Current (child) fully qualified context name
 	 * @param string $contextData Current (child) context log lines -- (msg, level, date) tuple
 	 */
-	public function leaveContext( $contextName, &$contextData ) {}
+	public function leaveContext( $contextName, &$contextData ) {
+	}
 
 	/**
 	 * Notification callback that the logging infrastructure is shutting down
 	 */
-	public function shutdown() {}
+	public function shutdown() {
+	}
 }

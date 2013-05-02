@@ -10,7 +10,8 @@ abstract class JsonSerializableObject {
 	/**
 	 * Default constructor.
 	 */
-	public function __construct() {}
+	public function __construct() {
+	}
 
 	/**
 	 * Backend factory function called from fromJson(). Should be customized if
@@ -18,15 +19,15 @@ abstract class JsonSerializableObject {
 	 * reserializing the object. Should also be customized if the default constructor
 	 * has required arguments.
 	 *
-	 * @param string $className Name of the class to instantiate
-	 * @param array $properties Stored properties from the serialized object
+	 * @param string $className  Name of the class to instantiate
+	 * @param array  $properties Stored properties from the serialized object
 	 * (Keys = property names, Values = property values)
 	 *
 	 * @return KeyedOpaqueStorableObject Object ready for __wakeup().
 	 */
 	protected static function serializedConstructor( $className, $properties = array() ) {
 		$obj = new $className();
-		foreach( $properties as $propName => $propValue ) {
+		foreach ( $properties as $propName => $propValue ) {
 			$obj->$propName = $propValue;
 		}
 
@@ -47,7 +48,7 @@ abstract class JsonSerializableObject {
 	 * serialization if $resumeUse = false.
 	 *
 	 * @param bool $resumeUse Set to false if this object reference will not be further used this
-	 * session post serialization.
+	 *                        session post serialization.
 	 *
 	 * @return string JSON string representing the object.
 	 */
@@ -57,11 +58,11 @@ abstract class JsonSerializableObject {
 		$ignore = array_flip( $this->propertiesExcludedFromExport );
 		$properties = array();
 
-		foreach( get_object_vars( $this ) as $propName => $propValue ) {
+		foreach ( get_object_vars( $this ) as $propName => $propValue ) {
 			if ( !array_key_exists( $propName, $ignore ) ) {
 				if ( is_object( $propValue ) ) {
 					if ( $propValue instanceof JsonSerializableObject ) {
-						$properties[$propName] = $propValue->toJson( $resumeUse );
+						$properties[ $propName ] = $propValue->toJson( $resumeUse );
 					} else {
 						$className = get_class();
 						throw new DataSerializationException(
@@ -69,7 +70,7 @@ abstract class JsonSerializableObject {
 						);
 					}
 				} else {
-					$properties[$propName] = $propValue;
+					$properties[ $propName ] = $propValue;
 				}
 			}
 		}
@@ -89,7 +90,7 @@ abstract class JsonSerializableObject {
 	 * behaviour. This is REQUIRED when __construct() is overriden with required parameters.
 	 *
 	 * @param string $className The name of the class to construct
-	 * @param string $jsonStr JSON string to recompose the object from.
+	 * @param string $jsonStr   JSON string to recompose the object from.
 	 *
 	 * @return JsonSerializableObject
 	 */
@@ -134,11 +135,13 @@ abstract class JsonSerializableObject {
 	 * Function run before any serialization routine is run on the object. This includes
 	 * the toJson() function.
 	 */
-	public function __sleep() {}
+	public function __sleep() {
+	}
 
 	/**
 	 * Function run after any serialization routine is run on the object. This includes
 	 * the fromJson() function.
 	 */
-	public function __wakeup() {}
+	public function __wakeup() {
+	}
 }

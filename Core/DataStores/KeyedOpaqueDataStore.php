@@ -50,8 +50,8 @@ abstract class KeyedOpaqueDataStore {
 	 *
 	 * If there were no object fitting the filter, null will be returned.
 	 *
-	 * @param string|null	$type 	The class of object to retrieve (if null retrieves all)
-	 * @param null|string	$id		The correlation ID of the message (if null retrieves all)
+	 * @param string|null    $type      The class of object to retrieve (if null retrieves all)
+	 * @param null|string    $id        The correlation ID of the message (if null retrieves all)
 	 *
 	 * @throws DataStoreTransactionException
 	 * @return KeyedOpaqueStorableObject|null

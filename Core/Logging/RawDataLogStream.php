@@ -65,10 +65,12 @@ class RawDataLogStream implements ILogStream {
 	 * @param string $contextName Current (child) fully qualified context name
 	 * @param string $contextData Current (child) context log lines -- (msg, level, date) tuple
 	 */
-	public function leaveContext( $contextName, &$contextData ) {}
+	public function leaveContext( $contextName, &$contextData ) {
+	}
 
 	/**
 	 * Notification callback that the logging infrastructure is shutting down
 	 */
-	public function shutdown() {}
+	public function shutdown() {
+	}
 }
