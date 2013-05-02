@@ -125,7 +125,7 @@ abstract class MaintenanceBase {
 		$configFile = $this->getOption( 'config-file' );
 		$configNode = $this->getOption( 'config-node' );
 		$config = new Configuration(
-			static::getMaintenanceDir() . '/../config_defaults.php',
+			AutoLoader::makePath( static::getMaintenanceDir(), '..', 'config_defaults.php' ),
 			$configFile,
 			$configNode,
 			true

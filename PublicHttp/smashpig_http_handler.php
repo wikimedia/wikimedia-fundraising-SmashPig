@@ -10,7 +10,7 @@ if ( !defined( "SMASHPIG_ENTRY_POINT" ) ) {
 
 	$smashPigBaseDir = __DIR__ . '/../';
 	require_once( $smashPigBaseDir . "Core/AutoLoader.php" );
-	AutoLoader::installSmashPigAutoLoader( $smashPigBaseDir );
+	AutoLoader::installSmashPigAutoLoader();
 
 	RequestHandler::process();
 } else {
