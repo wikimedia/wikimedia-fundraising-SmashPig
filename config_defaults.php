@@ -5,8 +5,8 @@ $config_defaults = array(
 		'data-store' => array(
 			// Store definitions
 			'pending' => array(
-				'class' => 'SmashPig\Core\DataStores\StompDataStore',
-				'inst-args' => array( 'pending' ),
+				'class' => 'SmashPig\Core\DataStores\DiskFileDataStore',
+				'inst-args' => array( '/tmp/' ),
 			),
 
 			'limbo' => array(

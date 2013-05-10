@@ -314,7 +314,13 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	protected function deleteSubscription() {
 		if ( $this->subscribed ) {
 			Logger::debug( "Unsubscribing from STOMP queue '{$this->queue_id}'" );
-			$this->stompObj->unsubscribe( $this->queue_id );
+			try {
+				// Sometimes the resource has already been destroyed by some other
+				// means and STOMP throws an exception.
+				$this->stompObj->unsubscribe( $this->queue_id );
+			} catch ( \Stomp_Exception $ex ) {
+				// Yay for generic errors! We never do that... no... >.>
+			}
 			$this->subscribed = false;
 		}
 	}

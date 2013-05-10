@@ -17,7 +17,7 @@ abstract class KeyedOpaqueDataStore {
 	abstract public function addObject( KeyedOpaqueStorableObject $obj );
 
 	/**
-	 * Remove object with the same serialization type and correlation ID from the
+	 * Remove objects with the same serialization type and correlation ID from the
 	 * persistent store.
 	 *
 	 * @param KeyedOpaqueStorableObject $protoObj Prototype to remove.
