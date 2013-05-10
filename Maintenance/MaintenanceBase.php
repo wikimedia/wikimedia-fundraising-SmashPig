@@ -9,6 +9,7 @@
 
 use SmashPig\Core\AutoLoader;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\ConsoleLogStream;
 use SmashPig\Core\SmashPigException;
@@ -137,7 +138,7 @@ abstract class MaintenanceBase {
 		);
 		Logger::addLogStream( new ConsoleLogStream() );
 
-		Logger::enterContext( "run" . mt_rand( 100000000, 999999999 ) );
+		Logger::enterContext( Context::get()->getContextId() );
 
 		set_error_handler( '\SmashPig\Maintenance\MaintenanceBase::lastChanceErrorHandler' );
 		set_exception_handler( '\SmashPig\Maintenance\MaintenanceBase::lastChanceExceptionHandler' );

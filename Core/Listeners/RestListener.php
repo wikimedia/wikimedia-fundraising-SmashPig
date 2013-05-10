@@ -7,7 +7,6 @@ use SmashPig\Core\Http\Response;
 
 abstract class RestListener extends ListenerBase {
 	public function execute( Request $request, Response $response, $pathParts ) {
-		Logger::enterContext( 'sess' . mt_rand( 100000000, 999999999 ) );
 		Logger::info( "Starting processing of listener request from {$_SERVER[ 'REMOTE_ADDR' ]}" );
 
 		try {

@@ -1,6 +1,7 @@
 <?php namespace SmashPig\Core\Http;
 
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\AutoLoader;
 
@@ -53,6 +54,8 @@ class RequestHandler {
 			true
 		);
 		Logger::init( $config->val( 'logging/root-context' ), $config->val( 'logging/log-level' ), $config );
+		Context::init();
+		Logger::enterContext( Context::get()->getContextId() );
 
 		set_error_handler( '\SmashPig\Core\Http\RequestHandler::lastChanceErrorHandler' );
 		set_exception_handler( '\SmashPig\Core\Http\RequestHandler::lastChanceExceptionHandler' );

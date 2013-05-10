@@ -26,7 +26,7 @@ $config_defaults = array(
 
 			// Library definitions
 			'stomp' => array(
-				'lib-path' => '/var/www/fr-payments/extensions/DonationInterface/activemq_stomp/Stomp.php',
+				'lib-path' => '',
 
 				'uri' => 'tcp://localhost:61613',
 				'timeout' => 1,
