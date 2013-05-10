@@ -7,6 +7,16 @@ use SmashPig\Core\Configuration;
 use SmashPig\CrmLink\Messages\LimboMessage;
 use SmashPig\CrmLink\Messages\PaymentSuccess;
 
+/**
+ * Job that merges inbound IPN calls from Adyen with a limbo message in the queue
+ * and then places that into the verified queue. Is idempotent with respect to the
+ * limbo queue state -- e.g. if no limbo message is found it assumes that the message
+ * was already processed.
+ *
+ * Class ProcessCaptureRequestJob
+ *
+ * @package SmashPig\PaymentProviders\Adyen\Jobs
+ */
 class ProcessCaptureRequestJob extends RunnableJob {
 
 	protected $account;
@@ -27,6 +37,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	public function execute() {
+		Logger::enterContext( "corr_id-$this->correlationId" );
 		Logger::info(
 			"Attempting to capture payment on account '{$this->account}' with reference '{$this->pspReference}' and correlation id '{$this->correlationId}'."
 		);
@@ -73,6 +84,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			);
 		}
 
+		Logger::leaveContext();
 		return true;
 	}
 }

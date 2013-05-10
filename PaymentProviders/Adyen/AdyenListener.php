@@ -88,6 +88,9 @@ class AdyenListener extends SoapListener {
 				}
 			}
 
+			$numItems = count( $messages );
+			Logger::info( "Extracted $numItems from received message. Beginning processing loop." );
+
 			// Now process each message to the best of our ability
 			foreach ( $messages as $msg ) {
 				if ( $this->processMessage( $msg ) ) {
@@ -98,6 +101,7 @@ class AdyenListener extends SoapListener {
 				}
 			}
 
+			Logger::info( 'Finished processing of IPN message, retuning accepted.');
 			$respstring = '[accepted]';
 
 		} else {
@@ -119,7 +123,8 @@ class AdyenListener extends SoapListener {
 			Logger::error( 'Listener message object could not be created. Unknown type!', $item );
 			return false;
 		} else {
-			Logger::info( 'Listener message created - adding to pending store.' );
+			$className = get_class( $msg );
+			Logger::info( "Listener message of type $className created - adding to pending store." );
 			$this->pendingStore->addObject( $msg );
 		}
 		return $msg;

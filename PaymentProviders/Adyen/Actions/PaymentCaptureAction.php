@@ -27,6 +27,8 @@ class PaymentCaptureAction implements IListenerMessageAction {
 	}
 
 	public function execute( ListenerMessage $msg ) {
+		Logger::enterContext( 'PaymentCaptureAction' );
+
 		if ( $msg instanceof Authorisation ) {
 			if ( $msg->success ) {
 				// Here we need to capture the payment, the job runner will collect the
@@ -59,6 +61,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 			}
 		}
 
+		Logger::leaveContext();
 		return true;
 	}
 }
