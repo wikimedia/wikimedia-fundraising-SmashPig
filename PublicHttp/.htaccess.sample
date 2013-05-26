@@ -1,5 +1,7 @@
 #
-# Apache/PHP/SmashPig settings:
+# Sample Apache/PHP/SmashPig settings
+#   Customize this file as appropriate for your install enviornment
+#   and place in the primary apache config or rename to .htaccess
 #
 
 # Make sure Apache cannot serve things we don't want it to
