@@ -11,7 +11,7 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 	protected $objectsPath = '';
 	protected $keysPath = '';
 
-	protected $count = 0;
+	protected $insertCount = 0;
 
 	public function __construct( $path ) {
 		$this->basePath = AutoLoader::makePath( $path );
@@ -50,7 +50,7 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 		$objFileName = $this->constructFileName(
 			Context::get()->getContextId(),
 			$keys,
-			$this->count++
+			$this->insertCount++
 		);
 		$objFsPath = AutoLoader::makePath(
 			$this->basePath,
@@ -59,7 +59,7 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 		);
 
 		/* --- Create the root object file --- */
-		if ( ( !file_exists( $objFsPath ) ) || ( ( $fptr = fopen( $objFsPath, 'xb' ) ) === false ) ) {
+		if ( ( file_exists( $objFsPath ) ) || ( ( $fptr = fopen( $objFsPath, 'xb' ) ) === false ) ) {
 			throw new DataStoreException(
 				"Could not add object to store! Fully qualified key '$objFileName' already exists!"
 			);
@@ -115,9 +115,11 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 					$parts = explode( '=', $key );
 					if ( count( $parts ) === 2 ) {
 						$this->removeKeyedLinkingFile( $parts[0], $parts[1], $filename );
+					} elseif ( count( $parts ) === 1 ) {
+						// Do nothing here; it's a non keyable value (or the cid, but that's handled elsewhere)
 					} else {
 						Logger::error(
-							"Whilst removing a disk linked file '$filename', I encountered a strange key and might have missed a file."
+							"Whilst removing a disk linked file '$filename', I encountered a strange key '$key' and might have missed a file."
 						);
 					}
 				}

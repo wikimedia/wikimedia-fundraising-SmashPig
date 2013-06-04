@@ -22,8 +22,9 @@ if ( !defined( "SMASHPIG_ENTRY_POINT" ) ) {
 	define( "SMASHPIG_ENTRY_POINT", $argv[0] );
 
 	// Start the Autoloader
-	require_once( '../Core/AutoLoader.php' );
-	AutoLoader::installSmashPigAutoLoader( '../' );
+	$root = __DIR__ . '/../';
+	require_once( $root . 'Core/AutoLoader.php' );
+	AutoLoader::installSmashPigAutoLoader( $root );
 
 	/** @var MaintenanceBase $maintClass Set this to the name of the class to execute */
 	$maintClass = false;
