@@ -258,7 +258,13 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		$this->createSubscription( $type, $id );
 
 		Logger::debug( "Pulling new object from queue" );
-		$this->queueMsg = $this->stompObj->readFrame();
+		try {
+			$this->queueMsg = $this->stompObj->readFrame();
+		} catch ( \Exception $ex ) {
+			Logger::error( "STOMP threw an unexpected exception on readFrame()", null, $ex );
+			$this->queueMsg = null;
+		}
+
 		if ( $this->queueMsg ) {
 			if ( $checkTail && strpos(
 					$this->queueMsg->headers[ 'message-id' ],
@@ -289,11 +295,16 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 */
 	protected function createSubscription( $type, $id ) {
 		static $sType, $sId;
-		$properties = array();
+		$properties = array(
+			'ack' => 'client-individual',
+		);
 
 		if ( $this->subscribed && ( ( $sType !== $type ) || ( $sId !== $id ) ) ) {
 			$this->deleteSubscription();
 		}
+
+		$sType = $type;
+		$sId = $id;
 
 		if ( $type ) {
 			$properties[ 'php-message-class' ] = $type;
