@@ -74,7 +74,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			Logger::debug( "Removing all references to donation in pending and limbo queues" );
 			$pendingQueue->queueAckObject();
 			$pendingQueue->removeObjectsById( $this->correlationId );
-			Configuration::getDefaultConfig()->obj( 'data-stores/limbo' )->removeObjectsById( $this->correlationId );
+			Configuration::getDefaultConfig()->obj( 'data-store/limbo' )->removeObjectsById( $this->correlationId );
 
 		} else {
 			Logger::warning(
