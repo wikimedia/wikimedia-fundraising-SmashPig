@@ -94,10 +94,10 @@ class AdyenListener extends SoapListener {
 			// Now process each message to the best of our ability
 			foreach ( $messages as $msg ) {
 				if ( $this->processMessage( $msg ) ) {
-					Logger::debug( "Message successfully processed, removing from pending store." );
-					$this->pendingStore->removeObjects( $msg );
+					Logger::debug( "Message successfully processed, removing from inflight store." );
+					$this->inflightStore->removeObjects( $msg );
 				} else {
-					Logger::info( "Message was not successfully processed. Leaving in pending stored.", $msg );
+					Logger::error( "Message was not successfully processed. Leaving in inflight store!", $msg );
 				}
 			}
 
@@ -116,7 +116,7 @@ class AdyenListener extends SoapListener {
 	}
 
 	protected function createAdyenMsgObjFromItem( WSDL\NotificationRequestItem $item ) {
-		Logger::info( 'Creating message object from data.' );
+		Logger::info( 'Creating Adyen message object from data.' );
 		$msg = AdyenMessage::getInstanceFromWSDL( $item );
 
 		if ( $msg === false ) {
@@ -124,8 +124,8 @@ class AdyenListener extends SoapListener {
 			return false;
 		} else {
 			$className = get_class( $msg );
-			Logger::info( "Listener message of type $className created - adding to pending store." );
-			$this->pendingStore->addObject( $msg );
+			Logger::info( "Listener message of type $className created - adding to inflight store." );
+			$this->inflightStore->addObject( $msg );
 		}
 		return $msg;
 	}

@@ -42,8 +42,8 @@ abstract class SoapListener extends ListenerBase {
 
 			/* --- Unfortunately because of how PHP handles SOAP requests we cannot do the fully wrapped
 					loop like we could in the REST listener. Instead it is up to the listener itself to
-					do the required calls to $this->pendingStore->addObject( $msg ), $this->processMessage( $msg ),
-					and $this->pendingStore->removeObject( $msg ).
+					do the required calls to $this->inflightStore->addObject( $msg ), $this->processMessage( $msg ),
+					and $this->inflightStore->removeObject( $msg ).
 
 					It is also expected that inside the handle() context that an exception will throw a SOAP
 					fault through $this->server->fault() instead of doing a $response->kill_response() call.

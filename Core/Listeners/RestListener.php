@@ -18,9 +18,9 @@ abstract class RestListener extends ListenerBase {
 					//FIXME: this looks like an elaborate try-catch.  If there's
 					//a fatal exception, the remaining messages are toast anyway,
 					//so we should... do something different here.
-					$this->pendingStore->addObject( $msg );
+					$this->inflightStore->addObject( $msg );
 					if ( $this->processMessage( $msg ) ) {
-						$this->pendingStore->removeObjects( $msg );
+						$this->inflightStore->removeObjects( $msg );
 					}
 				}
 			}

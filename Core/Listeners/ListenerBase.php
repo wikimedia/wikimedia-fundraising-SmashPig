@@ -14,11 +14,11 @@ abstract class ListenerBase implements IHttpActionHandler {
 	protected $c;
 
 	/** @var KeyedOpaqueDataStore for placing messages that are in flight */
-	protected $pendingStore;
+	protected $inflightStore;
 
 	public function __construct() {
 		$this->c = Configuration::getDefaultConfig();
-		$this->pendingStore = $this->c->obj( 'data-store/pending' );
+		$this->inflightStore = $this->c->obj( 'data-store/inflight' );
 	}
 
 	public abstract function execute( Request $request, Response $response, $pathParts );

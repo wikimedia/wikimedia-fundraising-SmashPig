@@ -4,8 +4,7 @@ use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Configuration;
-use SmashPig\CrmLink\Messages\LimboMessage;
-use SmashPig\CrmLink\Messages\PaymentSuccess;
+use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 
 /**
  * Job that merges inbound IPN calls from Adyen with a limbo message in the queue
@@ -39,48 +38,49 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	public function execute() {
 		Logger::enterContext( "corr_id-$this->correlationId" );
 		Logger::info(
-			"Attempting to capture payment on account '{$this->account}' with reference '{$this->pspReference}' and correlation id '{$this->correlationId}'."
+			"Attempting to capture payment on account '{$this->account}' with reference '{$this->pspReference}' " .
+			"and correlation id '{$this->correlationId}'."
 		);
 
-		// Let's do some initial preparation and determine if this is a duplicate or not (ie: does a message exist
-		// in the queue for it)
-		Logger::debug( "Getting associated message from limbo queue" );
-		$limboQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/limbo' );
-		$limboMsg = $limboQueueObj->queueGetObject( $this->correlationId );
+		// Determine if a message exists in the pending queue; if it does then we haven't
+		// processed this particular transaction before
+		Logger::debug( 'Attempting to locate associated message in pending queue' );
+		$pendingQueue = Configuration::getDefaultConfig()->obj( 'data-store/pending' );
+		$queueMessage = $pendingQueue->queueGetObject( $this->correlationId );
 
-		if ( $limboMsg && ( $limboMsg instanceof LimboMessage ) ) {
-			Logger::debug( "Message obtained from limbo queue" );
+		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
+			Logger::debug( 'A valid message was obtained from the pending queue' );
 
-			// Capture the payment!
+			// Attempt to capture the payment
 			$api = new AdyenPaymentsAPI( $this->account );
-			$result = $api->capture( $this->currency, $this->amount, $this->pspReference );
+			$captureResult = $api->capture( $this->currency, $this->amount, $this->pspReference );
 
-			if ( $result ) {
-				Logger::info( "Successfully captured payment! Returned reference: '{$result}'" );
+			if ( $captureResult ) {
+				// Success! Queue it as completed
+				Logger::info( "Successfully captured payment! Returned reference: '{$captureResult}'" );
+				Configuration::getDefaultConfig()->obj( 'data-store/verified' )->addObject( $queueMessage );
+
 			} else {
-				Logger::error( "Failed to capture payment. Error return was: '{$result}'" );
-				return false;
+				// Crap; couldn't capture it. Log it!
+				Logger::error(
+					"Failed to capture payment on account '{$this->account}' with reference " .
+						"'{$this->pspReference}' and correlation id '{$this->correlationId}'. This " .
+						"message will be removed from the queues. Error return was: '{$captureResult}'",
+					$queueMessage
+				);
 			}
 
-			// Create the payment successful object
-			$successMsg = new PaymentSuccess();
-			// TODO: Fix this ugly hack
-			foreach( get_class_vars( '\SmashPig\CrmLink\Messages\LimboMessage' ) as $key => $value ) {
-				$successMsg->$key = $limboMsg->$key;
-			}
+			// Remove it from all the queues
+			Logger::debug( "Removing all references to donation in pending and limbo queues" );
+			$pendingQueue->queueAckObject();
+			$pendingQueue->removeObjectsById( $this->correlationId );
+			Configuration::getDefaultConfig()->obj( 'data-stores/limbo' )->removeObjectsById( $this->correlationId );
 
-			// Queue it
-			Configuration::getDefaultConfig()->obj( 'data-store/verified' )->addObject( $successMsg );
-
-			// Remove the message and all others
-			Logger::info( "Successfully created and queued the success message. Removing all redundant entries." );
-
-			$limboQueueObj->queueAckObject();
-			$limboQueueObj->removeObjectsById( $this->correlationId );
 		} else {
 			Logger::warning(
-				"Object in the limbo queue that's not a limbo object? or could not find object with correlation id! Assuming duplicate.",
-				$limboMsg
+				"Could not find a processable message for PSP Reference '{$this->pspReference}' and correlation ".
+					"ID '{$this->correlationId}'.",
+				$queueMessage
 			);
 		}
 

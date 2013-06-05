@@ -14,18 +14,6 @@ use SmashPig\Core\Logging\Logger;
  * the transaction failed.
  */
 class PaymentCaptureAction implements IListenerMessageAction {
-
-	/** @var KeyedOpaqueDataStore Queue for job objects */
-	protected $jobQueueObj;
-
-	/** @var KeyedOpaqueDataStore Queue where limbo transactions went */
-	protected $limboQueueObj;
-
-	public function __construct() {
-		$this->jobQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/jobs' );
-		$this->limboQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/limbo' );
-	}
-
 	public function execute( ListenerMessage $msg ) {
 		Logger::enterContext( 'PaymentCaptureAction' );
 
@@ -36,7 +24,8 @@ class PaymentCaptureAction implements IListenerMessageAction {
 				Logger::info(
 					"Adding Adyen capture job for {$msg->currency} {$msg->amount} with id {$msg->correlationId} and psp reference {$msg->pspReference}."
 				);
-				$this->jobQueueObj->addObject(
+				$jobQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/jobs' );
+				$jobQueueObj->addObject(
 					ProcessCaptureRequestJob::factory(
 						$msg->correlationId,
 						$msg->merchantAccountCode,
@@ -51,13 +40,11 @@ class PaymentCaptureAction implements IListenerMessageAction {
 				Logger::info(
 					"Adyen payment with correlation id {$msg->correlationId} reported status failed: '{$msg->reason}'. Deleting orphans."
 				);
-				do {
-					$limboMsg = $this->limboQueueObj->queueGetObject( null, $msg->correlationId );
-					if ( $limboMsg ) {
-						Logger::info( "Deleting orphan.", $limboMsg );
-						$this->limboQueueObj->queueAckObject();
-					}
-				} while( $limboMsg != null );
+				Logger::debug( "Deleting all queue objects with correlation ID '{$msg->correlationId}'" );
+				$limboQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/limbo' );
+				$limboQueueObj->removeObjectsById( $msg->correlationId );
+				$pendingQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/pending' );
+				$pendingQueueObj->removeObjectsById( $msg->correlationId );
 			}
 		}
 

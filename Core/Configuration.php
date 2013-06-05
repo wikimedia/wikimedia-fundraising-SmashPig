@@ -52,15 +52,18 @@ class Configuration {
 			$useApc = true;
 		}
 
+		if ( !file_exists( $defaultFile ) ) {
+			throw new ConfigurationException( "Default configuration file not found at {$defaultFile}" );
+		}
+		if ( $overrideFile && !file_exists( $overrideFile ) ) {
+			throw new ConfigurationException( "Site configuration file given but not found at {$overrideFile}" );
+		}
+
 		if ( $useApc && $this->loadConfigFromCache( $defaultFile, $overrideFile, $view ) ) {
 			// Config file loaded, nothing else to do
 		} else {
 			// Attempt to load the configuration files from disk
 			global $config_defaults, $config;
-
-			if ( !file_exists( $defaultFile ) ) {
-				throw new ConfigurationException( "Default configuration file not found at {$defaultFile}" );
-			}
 
 			require_once( $defaultFile );
 			if ( $overrideFile && file_exists( $overrideFile ) ) {
@@ -103,7 +106,12 @@ class Configuration {
 	 */
 	protected function loadConfigFromCache( $defaultFile, $overrideFile, $view ) {
 		$defaultFileTime = filemtime( $defaultFile );
-		$overrideFileTime = filemtime( $overrideFile );
+
+		if ( $overrideFile ) {
+			$overrideFileTime = filemtime( $overrideFile );
+		} else {
+			$overrideFileTime = 0;
+		}
 
 		$cacheObj = apc_fetch( "smashpig-settings-{$view}-time", $success );
 
