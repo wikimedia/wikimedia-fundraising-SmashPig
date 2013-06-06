@@ -299,18 +299,26 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			'ack' => 'client-individual',
 		);
 
-		if ( $this->subscribed && ( ( $sType !== $type ) || ( $sId !== $id ) ) ) {
+		if ( $this->subscribed && ( ( $sType === $type ) || ( $sId === $id ) ) ) {
+			// Same subscription; just return
+			return;
+		} elseif ( $this->subscribed ) {
+			// We need to create a new subscription; but we also have to delete the old one
 			$this->deleteSubscription();
 		}
 
 		$sType = $type;
 		$sId = $id;
 
+		$selector = array();
 		if ( $type ) {
-			$properties[ 'php-message-class' ] = $type;
+			$selector[] = "php-message-class='$type'";
 		}
 		if ( $id ) {
-			$properties[ 'JMSCorrelationID' ] = $id;
+			$selector[] = "JMSCorrelationID='$id'";
+		}
+		if ( $selector ) {
+			$properties[ 'selector' ] = implode( ' AND ', $selector );
 		}
 
 		Logger::debug( "Attempting to STOMP subscribe to '{$this->queue_id}' on '{$this->uri}'", $properties );
