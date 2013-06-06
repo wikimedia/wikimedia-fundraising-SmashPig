@@ -99,9 +99,6 @@ class MailHandler {
 				}
 			);
 
-			$mailer->Subject = $subject;
-			$mailer->AltBody = $textBody;
-
 			array_walk(
 				$attach,
 				function ( $value, $key ) use ( $mailer ) {
@@ -124,8 +121,13 @@ class MailHandler {
 				$mailer->AddReplyTo( $replyTo );
 			}
 
+			// Set subject and body
+			$mailer->Subject = $subject;
 			if ( $htmlBody ) {
 				$mailer->MsgHTML( $htmlBody );
+				$mailer->AltBody = $textBody;
+			} else {
+				$mailer->Body = $textBody;
 			}
 
 			// We replace $1 in email/bounce-address or useVerp if string to create the bounce addr
