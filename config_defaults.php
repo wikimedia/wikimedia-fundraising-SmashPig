@@ -108,9 +108,7 @@ $config_defaults = array(
             ),
         ),
 
-		'actions' => array(
-			'SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction',
-		)
+		'actions' => array( ),
     ),
 
 	'paypal' => array(

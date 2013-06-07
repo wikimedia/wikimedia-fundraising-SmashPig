@@ -4,7 +4,6 @@ use SmashPig\Core\Configuration;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
-use SmashPig\Core\DataStores\KeyedOpaqueDataStore;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
 use SmashPig\Core\Logging\Logger;
 

@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\ExpatriatedMessages;
 
 use SmashPig\Core\Logging\Logger;
+use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
 use SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem;
 
 class Authorisation extends AdyenMessage {
@@ -38,5 +39,25 @@ class Authorisation extends AdyenMessage {
 
 		// Recreate the correlation ID because we have more information about things
 		$this->correlationId = static::createCorrelationId( $this->merchantReference );
+	}
+
+	/**
+	 * Will run all the actions that are loaded (from the 'actions' configuration
+	 * node) and that are applicable to this message type. Will return true
+	 * if all actions returned true. Otherwise will return false. This implicitly
+	 * means that the message will be re-queued if any action fails. Therefore
+	 * all actions need to be idempotent.
+	 *
+	 * @returns bool True if all actions were successful. False otherwise.
+	 */
+	public function runActionChain() {
+		$action = new PaymentCaptureAction();
+		$result = $action->execute( $this );
+
+		if ( $result === true ) {
+			return parent::runActionChain();
+		} else {
+			return false;
+		}
 	}
 }
