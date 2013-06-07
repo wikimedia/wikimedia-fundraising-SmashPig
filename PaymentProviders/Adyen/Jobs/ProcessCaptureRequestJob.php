@@ -46,7 +46,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		// processed this particular transaction before
 		Logger::debug( 'Attempting to locate associated message in pending queue' );
 		$pendingQueue = Configuration::getDefaultConfig()->obj( 'data-store/pending' );
-		$queueMessage = $pendingQueue->queueGetObject( $this->correlationId );
+		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
 
 		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
 			Logger::debug( 'A valid message was obtained from the pending queue' );
