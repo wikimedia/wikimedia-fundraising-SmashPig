@@ -5,6 +5,11 @@ use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
 use SmashPig\Core\Logging\Logger;
 
+/**
+ * Action that takes place after a Capture modification request has completed.
+ *
+ * @package SmashPig\PaymentProviders\Adyen\Actions
+ */
 class CaptureResponseAction implements IListenerMessageAction {
 	public function execute( ListenerMessage $msg ) {
 		Logger::enterContext( 'CaptureResponseAction' );

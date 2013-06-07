@@ -1,14 +1,15 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\ExpatriatedMessages;
 
-use SmashPig\PaymentProviders\Adyen\Actions\ChargebackReversedAction;
+use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
 
 /**
- * A CHARGEBACK_REVERSED message is sent when the chargeback has been
- * canceled somehow.
+ * A NOTIFICATION_OF_CHARGEBACK message is sent as a preliminary stage
+ * for a chargeback process. The chargeback is pending, but may still
+ * be defended if needed.
  *
  * @package SmashPig\PaymentProviders\Adyen\ExpatriatedMessages
  */
-class ChargebackReversed extends AdyenMessage {
+class NotificationOfChargeback extends AdyenMessage {
 
 	/**
 	 * Will run all the actions that are loaded (from the 'actions' configuration
@@ -20,7 +21,7 @@ class ChargebackReversed extends AdyenMessage {
 	 * @returns bool True if all actions were successful. False otherwise.
 	 */
 	public function runActionChain() {
-		$action = new ChargebackReversedAction();
+		$action = new PaymentCaptureAction();
 		$result = $action->execute( $this );
 
 		if ( $result === true ) {
