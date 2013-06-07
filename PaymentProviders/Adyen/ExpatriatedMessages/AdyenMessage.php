@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\ExpatriatedMessages;
 
 use SmashPig\Core\Listeners\ListenerDataException;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem;
 
@@ -48,8 +49,10 @@ abstract class AdyenMessage extends ListenerMessage {
 		$className = 'SmashPig\\PaymentProviders\\Adyen\\ExpatriatedMessages\\' . $className;
 
 		if ( class_exists( $className ) ) {
+			Logger::debug( "Attempting construction of '$className'" );
 			$obj =  new $className();
 		} else {
+			Logger::debug( "Class not found '$className'" );
 			return false;
 		}
 
