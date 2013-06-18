@@ -44,7 +44,7 @@ class AdyenPaymentsAPI {
 
 		$data->modificationRequest->merchantAccount = $this->account;
 		$data->modificationRequest->modificationAmount->currency = $currency;
-		$data->modificationRequest->modificationAmount->value = $amount;
+		$data->modificationRequest->modificationAmount->value = floor( $amount * 100 ); // Todo: Make this CLDR aware
 		$data->modificationRequest->originalReference = $pspReference;
 
 		Logger::enterContext( 'RawData' );
