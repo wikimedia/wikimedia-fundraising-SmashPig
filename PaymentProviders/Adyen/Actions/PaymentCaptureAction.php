@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
@@ -14,13 +15,13 @@ use SmashPig\Core\Logging\Logger;
  */
 class PaymentCaptureAction implements IListenerMessageAction {
 	public function execute( ListenerMessage $msg ) {
-		Logger::enterContext( 'PaymentCaptureAction' );
+		$tl = new TaggedLogger( 'PaymentCaptureAction' );
 
 		if ( $msg instanceof Authorisation ) {
 			if ( $msg->success ) {
 				// Here we need to capture the payment, the job runner will collect the
 				// orphan message
-				Logger::info(
+				$tl->info(
 					"Adding Adyen capture job for {$msg->currency} {$msg->amount} with id {$msg->correlationId} and psp reference {$msg->pspReference}."
 				);
 				$jobQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/jobs' );
@@ -36,10 +37,10 @@ class PaymentCaptureAction implements IListenerMessageAction {
 
 			} else {
 				// And here we just need to destroy the orphan
-				Logger::info(
+				$tl->info(
 					"Adyen payment with correlation id {$msg->correlationId} reported status failed: '{$msg->reason}'. Deleting orphans."
 				);
-				Logger::debug( "Deleting all queue objects with correlation ID '{$msg->correlationId}'" );
+				$tl->debug( "Deleting all queue objects with correlation ID '{$msg->correlationId}'" );
 				$limboQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/limbo' );
 				$limboQueueObj->removeObjectsById( $msg->correlationId );
 				$pendingQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/pending' );
@@ -47,7 +48,6 @@ class PaymentCaptureAction implements IListenerMessageAction {
 			}
 		}
 
-		Logger::leaveContext();
 		return true;
 	}
 }

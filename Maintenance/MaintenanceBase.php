@@ -11,7 +11,7 @@ use SmashPig\Core\AutoLoader;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\Logging\ConsoleLogStream;
+use SmashPig\Core\Logging\LogStreams\ConsoleLogStream;
 use SmashPig\Core\SmashPigException;
 
 /** Help scripts find the postscript required for maintenance scripts */
@@ -137,7 +137,7 @@ abstract class MaintenanceBase {
 			$config->val( 'logging/log-level' ),
 			$config
 		);
-		Logger::addLogStream( new ConsoleLogStream() );
+		Logger::$context->addLogStream( new ConsoleLogStream() );
 
 		Logger::enterContext( Context::get()->getContextId() );
 

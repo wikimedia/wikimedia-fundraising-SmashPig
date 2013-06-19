@@ -34,9 +34,8 @@ abstract class SoapListener extends ListenerBase {
 			$this->doIngressSecurity();
 
 			$soapData = $request->getRawPostData();
-			Logger::enterContext( 'RawData' );
-			Logger::info( 'Received SOAP data', $soapData );
-			Logger::leaveContext();
+			$tl = Logger::getTaggedLogger( 'RawData' );
+			$tl->info( $soapData );
 
 			$response->sendHeaders();
 

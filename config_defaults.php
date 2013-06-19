@@ -54,7 +54,7 @@ $config_defaults = array(
 			),
 			'log-streams' => array(
 				'syslog' => array(
-					'class' => 'SmashPig\Core\Logging\SyslogLogStream',
+					'class' => 'SmashPig\Core\Logging\LogStreams\SyslogLogStream',
 					'inst-args' => array( LOG_LOCAL0, LOG_NDELAY ),
 				)
 			),

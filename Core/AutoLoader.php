@@ -1,4 +1,5 @@
 <?php namespace SmashPig\Core;
+use SmashPig\Core\Logging\Logger;
 
 /**
  * PSR-0 compliant autoloader
@@ -78,7 +79,7 @@ class AutoLoader {
 			$path .= PATH_SEPARATOR . $path;
 		}
 
-		\SmashPig\Core\Logging\Logger::debug( 'Setting include path to: ', $path );
+		Logger::debug( 'Setting include path to: ' . $path );
 		set_include_path( $path );
 	}
 

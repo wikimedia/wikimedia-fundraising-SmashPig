@@ -2,6 +2,7 @@
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Logging\TaggedLogger;
 
 class AdyenPaymentsAPI {
 
@@ -47,9 +48,8 @@ class AdyenPaymentsAPI {
 		$data->modificationRequest->modificationAmount->value = $amount * 100; // Todo: Make this CLDR aware
 		$data->modificationRequest->originalReference = $pspReference;
 
-		Logger::enterContext( 'RawData' );
-		Logger::info( 'Launching SOAP capture request', $data );
-		Logger::leaveContext();
+		$tl = new TaggedLogger( 'RawData' );
+		$tl->info( 'Launching SOAP capture request', $data );
 
 		try {
 			$resp = $this->soapClient->capture( $data );
