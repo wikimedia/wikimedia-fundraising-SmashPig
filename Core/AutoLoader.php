@@ -14,6 +14,7 @@ class AutoLoader {
 
 	/**
 	 * Installs the SmashPig AutoLoader into the class loader chain.
+	 * Will also load the composer autoloader.
 	 *
 	 * @param string $defaultPath The path to the SmashPig library.
 	 *
@@ -27,6 +28,7 @@ class AutoLoader {
 				$defaultPath = AutoLoader::getInstallPath();
 			}
 			static::$instance = new AutoLoader( $defaultPath );
+
 			return true;
 		}
 	}
@@ -84,11 +86,30 @@ class AutoLoader {
 	}
 
 	/**
+	 * Include
+	 */
+	public function addConfiguredIncludes() {
+		$defaultPath = AutoLoader::getInstallPath();
+		$config = Configuration::getDefaultConfig();
+
+		foreach ( $config->val( 'include-files' ) as $file ) {
+			if ( substr( $file, 0, 1 ) !== DIRECTORY_SEPARATOR ) {
+				// Path relative so modify it
+				$file = AutoLoader::makePath( $defaultPath, $file );
+			}
+			Logger::debug( "AutoLoader including file '$file'" );
+			require_once( $file );
+		}
+	}
+
+	/**
 	 * Add a new location path for a namespace. Will throw an error if the namespace
 	 * already has a location.
 	 *
 	 * @param string    $namespace  Fully qualified namespace name
 	 * @param string    $path       Location on disk
+	 *
+	 * @throws SmashPigException if the namespace already exists
 	 */
 	public function addNamespacePath( $namespace, $path ) {
 		$namespace = trim( $namespace, '\\' );

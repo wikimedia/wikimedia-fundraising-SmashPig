@@ -2,8 +2,8 @@
 
 use SmashPig\Core;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\Http\Request;
 use SmashPig\Core\Http\Response;
+use SmashPig\Core\Http\Request;
 
 abstract class SoapListener extends ListenerBase {
 
@@ -28,12 +28,14 @@ abstract class SoapListener extends ListenerBase {
 	}
 
 	public function execute( Request $request, Response $response, $pathParts ) {
+		parent::execute( $request, $response, $pathParts );
+
 		Logger::info( "Starting processing of listener request from {$_SERVER[ 'REMOTE_ADDR' ]}" );
 
 		try {
 			$this->doIngressSecurity();
 
-			$soapData = $request->getRawPostData();
+			$soapData = $request->getRawRequest();
 			$tl = Logger::getTaggedLogger( 'RawData' );
 			$tl->info( $soapData );
 
@@ -52,14 +54,14 @@ abstract class SoapListener extends ListenerBase {
 
 			/* We disable output late in the game in case there was a last minute exception that could
 				be handled by the SOAP listener object inside the handle() context. */
-			$response->disableOutput();
+			$response->setOutputDisabled();
 		} catch ( ListenerSecurityException $ex ) {
 			Logger::notice( 'Message denied by security policy, death is me.', null, $ex );
-			$response->killResponse( 403 );
+			$response->setStatusCode( 403, "Not authorized." );
 		}
 		catch ( \Exception $ex ) {
 			Logger::error( 'Listener threw an unknown exception, death is me.', null, $ex );
-			$response->killResponse( 500 );
+			$response->setStatusCode( 500, "Unknown listener exception." );
 		}
 
 		Logger::info( 'Finished processing listener request' );

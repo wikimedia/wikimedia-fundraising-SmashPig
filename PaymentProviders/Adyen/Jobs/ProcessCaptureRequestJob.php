@@ -36,7 +36,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	public function execute() {
-		Logger::enterContext( "corr_id-$this->correlationId" );
+		Logger::enterContext( "corr_id-{$this->correlationId}" );
 		Logger::info(
 			"Attempting to capture payment on account '{$this->account}' with reference '{$this->pspReference}' " .
 			"and correlation id '{$this->correlationId}'."

@@ -5,6 +5,8 @@ use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\AutoLoader;
 
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+
 /**
  * Entry point for the base initialized SmashPig application. Expects the requested
  * URL in the format p=<original path>&<original parameters>. The path is required to
@@ -20,24 +22,27 @@ use SmashPig\Core\AutoLoader;
  * Each subarray is required to have a 'namespace' key and a 'disk-path' key.
  */
 class RequestHandler {
-	/** @var Request Wrapper for the current HTTP request */
-	protected static $request;
-
-	/** @var Response Wrapper for the current HTTP response */
-	protected static $response;
-
+	/**
+	 * @param null $configPath
+	 *
+	 * @return Response
+	 */
 	public static function process( $configPath = null ) {
 		// --- Get the request and response objects
-		RequestHandler::$request = new Request();
-		RequestHandler::$response = new Response();
+		$symfonyRequest = SymfonyRequest::createFromGlobals();
+		$symfonyResponse = new Response();
+		$symfonyResponse->setPrivate();
 
 		// --- Break the request into parts ---
-		$uri = ( array_key_exists( 'p', $_GET ) ) ? $_GET[ 'p' ] : '';
+		$uri = $symfonyRequest->query->get( 'p', '' );
 		$parts = explode( '/', $uri );
 
 		if ( count( $parts ) < 2 ) {
-			static::$response->killResponse( 403, 'Bad URI format.' );
-			return;
+			$symfonyResponse->setStatusCode(
+				403,
+				'Cannot process this request: bad URI format. A configuration node and an action is required'
+			);
+			return $symfonyResponse;
 		}
 
 		$view = array_shift( $parts );
@@ -63,40 +68,41 @@ class RequestHandler {
 		// Check to make sure there's even a point to continuing
 		if ( !$config->nodeExists( "endpoints/$action" ) ) {
 			Logger::debug( '403 will be given for unknown action on inbound URL.', $uri );
-			static::$response->killResponse( 403, "Action '$action' not configured. Cannot continue." );
-			return;
+			$symfonyResponse->setStatusCode( 403, "Action '$action' not configured. Cannot continue." );
+			return $symfonyResponse;
 		}
 
 		// Register fun additional things
 		AutoLoader::getInstance()->addConfiguredIncludePaths();
 		AutoLoader::getInstance()->addConfiguredNamespaces();
+		AutoLoader::getInstance()->addConfiguredIncludes();
 
 		// --- Actually get the endpoint object and start the request ---
 		$endpointObj = $config->obj( "endpoints/$action" );
 		if ( $endpointObj instanceof IHttpActionHandler ) {
-			$endpointObj->execute( RequestHandler::$request, RequestHandler::$response, $parts );
+			$endpointObj->execute( $symfonyRequest, $symfonyResponse, $parts );
 		} else {
-			Logger::debug( "Requested action '$action' does not implement a known handler. Cannot continue." );
-			static::$response->killResponse( 500 );
-			return;
+			$str = "Requested action '$action' does not implement a known handler. Cannot continue.";
+			Logger::debug( $str );
+			$symfonyResponse->setStatusCode( 500, $str );
 		}
 
-		static::$response->writeResponse();
-	}
-
-	public static function startRequest() {
-		\HttpResponse::capture();
-	}
-
-	public static function end() {
-		\HttpResponse::send();
+		$code = $symfonyResponse->getStatusCode();
+		if ( ( $code !== 200 ) && ( $code !== 302 ) ) {
+			$symfonyResponse->setContent( '' );
+		}
+		return $symfonyResponse;
 	}
 
 	public static function lastChanceErrorHandler( $errno, $errstr, $errfile = 'Unknown File',
 		$errline = 'Unknown Line', $errcontext = null
 	) {
-		static::$response->killResponse( 500 );
 		Logger::alert( "Last chance error handler fired. ($errno) $errstr @ $errfile:$errline", $errcontext );
+
+		$response = new Response();
+		$response->setPrivate();
+		$response->setStatusCode( 500, "Unhandled internal server error." );
+		$response->send();
 
 		return false;
 	}
@@ -108,7 +114,11 @@ class RequestHandler {
 	 * @param \Exception $ex The uncaught exception
 	 */
 	public static function lastChanceExceptionHandler( $ex ) {
-		static::$response->killResponse( 500 );
 		Logger::alert( "Last chance exception handler fired.", null, $ex );
+
+		$response = new Response();
+		$response->setPrivate();
+		$response->setStatusCode( 500, "Unhandled internal server exception." );
+		$response->send();
 	}
 }

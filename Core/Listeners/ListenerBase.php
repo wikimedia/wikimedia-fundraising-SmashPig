@@ -2,14 +2,21 @@
 
 use SmashPig\Core;
 use SmashPig\Core\Http\IHttpActionHandler;
-use SmashPig\Core\Http\Request;
 use SmashPig\Core\Http\Response;
+use SmashPig\Core\Http\Request;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\DataStores\KeyedOpaqueDataStore;
 use SmashPig\Core\Messages\ListenerMessage;
 
 abstract class ListenerBase implements IHttpActionHandler {
+
+	/** @var Request */
+	protected $request;
+
+	/** @var Response */
+	protected $response;
+
 	/** @var Configuration object - stores all listener configuration */
 	protected $c;
 
@@ -21,7 +28,10 @@ abstract class ListenerBase implements IHttpActionHandler {
 		$this->inflightStore = $this->c->obj( 'data-store/inflight' );
 	}
 
-	public abstract function execute( Request $request, Response $response, $pathParts );
+	public function execute( Request $request, Response $response, $pathParts ) {
+		$this->request = $request;
+		$this->response = $response;
+	}
 
 	/**
 	 * Perform security checks that do not rely on the contents of the envelope or the message.
@@ -46,23 +56,22 @@ abstract class ListenerBase implements IHttpActionHandler {
 		// Obtain whitelist
 		$whitelist = $this->c->val( 'security/ip-whitelist', true );
 
-		if ( empty( $whitelist ) ) {
-			Logger::info( 'No IP whitelist specified. Continuing and not validating remote IP.' );
-			return;
+		// Obtain remote party IP
+		$trustedHeader = $this->c->val( 'security/ip-header-name' );
+		if ( $trustedHeader ) {
+			$this->request->setTrustedHeaderName( Request::HEADER_CLIENT_IP, $trustedHeader );
+		}
+		$trustedProxies = $this->c->val( 'security/ip-trusted-proxies' );
+		if ( $trustedProxies ) {
+			$this->request->setTrustedProxies( $trustedProxies );
 		}
 
-		// Obtain remote party IP
-		$ipHeaderName = $this->c->val( 'security/ip-header-name' );
-		if ( $ipHeaderName !== '' ) {
-			$headers = getallheaders();
-			if ( !$headers || !array_key_exists( $ipHeaderName, $headers ) ) {
-				throw new ListenerConfigException(
-					"Unexpected platform issue when trying to get remote box's IP from '{$ipHeaderName}'"
-				);
-			}
-			$remote_ip = $headers[ $ipHeaderName ];
-		} else {
-			$remote_ip = $_SERVER[ 'REMOTE_ADDR' ];
+		$remote_ip = $this->request->getClientIp();
+
+		// Do we continue?
+		if ( empty( $whitelist ) ) {
+			Logger::info( "No IP whitelist specified. Continuing and not validating remote IP '{$remote_ip}'." );
+			return;
 		}
 
 		// Validate remote party IP (right now we can only handle IPv4)
@@ -99,8 +108,9 @@ abstract class ListenerBase implements IHttpActionHandler {
 		}
 
 		// we have fallen through everything in the whitelist, throw
+		$agent = $this->request->server->get( 'User-Agent', '' );
 		throw new ListenerSecurityException(
-			"Received a connection from a bogus IP: {$remote_ip}, agent: {$_SERVER[ 'HTTP_USER_AGENT' ]}"
+			"Received a connection from a bogus IP: {$remote_ip}, agent: {$agent}"
 		);
 	}
 

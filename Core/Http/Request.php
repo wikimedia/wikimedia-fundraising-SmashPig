@@ -1,25 +1,9 @@
 <?php namespace SmashPig\Core\Http;
 
-class Request {
-	public function __construct() {
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
-	}
-
-	/**
-	 * Get post data without interpretation
-	 *
-	 * @return string
-	 */
-	public function getRawPostData() {
+class Request extends SymfonyRequest {
+	public function getRawRequest() {
 		return file_get_contents( 'php://input' );
-	}
-
-	/**
-	 * Return all GET/POST/COOKIE data as an associative array
-	 *
-	 * @return array
-	 */
-	public function getValues() {
-		return $_REQUEST;
 	}
 }

@@ -1,2 +1,8 @@
+# Composer
+vendor
+
+# Configuration
 config.php
+
+# IDE Tools
 .idea

@@ -12,7 +12,7 @@ if ( !defined( "SMASHPIG_ENTRY_POINT" ) ) {
 	require_once( $smashPigBaseDir . "Core/AutoLoader.php" );
 	AutoLoader::installSmashPigAutoLoader();
 
-	RequestHandler::process();
+	RequestHandler::process()->send();
 } else {
 	$str = <<<EOT
 SmashPig has detected that multiple execution entry points have been used in a

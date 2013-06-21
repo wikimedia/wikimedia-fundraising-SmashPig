@@ -63,12 +63,17 @@ $config_defaults = array(
 
 		'security' => array(
             'ip-header-name' => '',
+			'ip-trusted-proxies' => array(),
 			'ip-whitelist' => array(),
 		),
 
         'endpoints' => array(),
 
         'namespaces' => array(),
+
+		'include-files' => array(
+			'vendor/autoload.php',
+		),
 
 		'include-paths' => array(),
 

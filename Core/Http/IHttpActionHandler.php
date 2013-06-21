@@ -1,5 +1,7 @@
 <?php namespace SmashPig\Core\Http;
 
+use Symfony\Component\HttpFoundation\Request;
+
 /**
  * Declaration that a class is able to process an HTTP request.
  */
@@ -9,9 +11,9 @@ interface IHttpActionHandler {
 	 * specification of what the user requested action is may be found in the $pathParts
 	 * parameter.
 	 *
-	 * @param Request  $request     HTTP request context object
+	 * @param Request    $request     HTTP request context object
 	 * @param Response $response    HTTP response data object
-	 * @param array    $pathParts   Any additional action parameters that were part of the URI
+	 * @param array      $pathParts   Any additional action parameters that were part of the URI
 	 *
 	 * @return Null
 	 */

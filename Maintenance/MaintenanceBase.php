@@ -147,6 +147,7 @@ abstract class MaintenanceBase {
 		// --- Load additional namespaces into the autoloader ---
 		AutoLoader::getInstance()->addConfiguredIncludePaths();
 		AutoLoader::getInstance()->addConfiguredNamespaces();
+		AutoLoader::getInstance()->addConfiguredIncludes();
 	}
 
 	/**
