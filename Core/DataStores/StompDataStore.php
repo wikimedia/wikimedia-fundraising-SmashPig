@@ -17,6 +17,15 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	/** @var string Object on STOMP server we're subscribing and pushing to */
 	protected $queue_id = null;
 
+	/** @var int Timeout to apply to the STOMP connection */
+	protected $timeout = 0;
+
+	/**
+	 * @var bool If true will force a reconnection everytime the selectors change. (Solves a bug
+	 * where things in the STOMP RX buffer are old but not detected as old.)
+	 */
+	protected $refreshConnection = false;
+
 	/** @var bool If true, we have successfully subscribed to @see $queue_id on @see $stompObj */
 	protected $subscribed = false;
 
@@ -28,6 +37,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 *
 	 * Will connection to the server at data-store/stomp/uri
 	 *
+	 * @throws DataStoreException
 	 * @param string $queueName The data-store/stomp/queue/* object to connect to.
 	 */
 	public function __construct( $queueName ) {
@@ -46,8 +56,26 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		}
 		$this->queue_id = $c->val( "data-store/stomp/queues/{$queueName}" );
 
-		// Start the connection
+		// Get some more configuration variables
 		$this->uri = $c->val( 'data-store/stomp/uri' );
+		$this->timeout = $c->val( 'data-store/stomp/timeout' );
+		$this->refreshConnection = $c->val( 'data-store/stomp/refresh-connection' );
+
+		// Start the connection
+		$this->createBackingObject();
+	}
+
+	/**
+	 * Destroy the STOMP data store connection.
+	 */
+	public function __destruct() {
+		$this->deleteSubscription();
+	}
+
+	/**
+	 * Creates the STOMP store backing object.
+	 */
+	protected function createBackingObject() {
 		Logger::debug( "Attempting connection to STOMP server '{$this->uri}'" );
 		$this->stompObj = new \Stomp( $this->uri );
 		if ( method_exists( $this->stompObj, 'connect' ) ) {
@@ -56,15 +84,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		Logger::debug( "STOMP server connection success." );
 
 		// Post connection configuration
-		$timeout = $c->val( 'data-store/stomp/timeout' );
-		$this->stompObj->setReadTimeout( $timeout );
-	}
-
-	/**
-	 * Destroy the STOMP data store connection.
-	 */
-	public function __destruct() {
-		$this->deleteSubscription();
+		$this->stompObj->setReadTimeout( $this->timeout );
 	}
 
 	/**
@@ -117,6 +137,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 *
 	 * @param KeyedOpaqueStorableObject $protoObj Prototype to remove.
 	 *
+	 * @throws DataStoreException
 	 * @return int Count of messages removed.
 	 */
 	public function removeObjects( KeyedOpaqueStorableObject $protoObj ) {
@@ -190,10 +211,12 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 *
 	 * If there were no messages fitting the filter, null will be returned.
 	 *
-	 * @param string|null    $type      The class of message to retrieve (if null retrieves all)
+	 * @param null|string    $type      The class of message to retrieve (if null retrieves all)
 	 * @param null|string    $id        The correlation ID of the message (if null retrieves all)
 	 *
 	 * @throws DataStoreTransactionException
+	 * @throws DataSerializationException
+	 * @throws DataStoreException
 	 * @return KeyedOpaqueStorableObject|null
 	 */
 	public function queueGetObject( $type = null, $id = null ) {
@@ -246,7 +269,8 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 *                        new objects are being returned with the current STOMP
 	 *                        transaction ID in them.
 	 *
-	 * @returns object STOMP message object
+	 * @throws DataStoreTransactionException
+	 * @return object STOMP message object
 	 */
 	protected function queueGetObjectRaw( $type = null, $id = null, $checkTail = true ) {
 		if ( $this->queueMsg ) {
@@ -305,6 +329,12 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		} elseif ( $this->subscribed ) {
 			// We need to create a new subscription; but we also have to delete the old one
 			$this->deleteSubscription();
+
+			if ( $this->refreshConnection ) {
+				// Apparently the backend STOMP library has some issues clearing
+				// out its buffer so we get old stuff :(
+				$this->createBackingObject();
+			}
 		}
 
 		$sType = $type;
