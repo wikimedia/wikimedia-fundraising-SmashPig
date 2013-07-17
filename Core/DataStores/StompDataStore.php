@@ -300,7 +300,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 				Logger::debug( "Detected tail eating! Stopping queue consumption." );
 				return null;
 			} else {
-				Logger::info( "Pulled new object from STOMP queue" );
+				Logger::debug( "Pulled new object from STOMP queue {$this->queue_id}" );
 				return $this->queueMsg;
 			}
 		} else {
@@ -323,7 +323,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			'ack' => 'client-individual',
 		);
 
-		if ( $this->subscribed && ( ( $sType === $type ) || ( $sId === $id ) ) ) {
+		if ( $this->subscribed && ( $sType === $type ) && ( $sId === $id ) ) {
 			// Same subscription; just return
 			return;
 		} elseif ( $this->subscribed ) {
@@ -333,6 +333,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			if ( $this->refreshConnection ) {
 				// Apparently the backend STOMP library has some issues clearing
 				// out its buffer so we get old stuff :(
+				Logger::debug( "Refreshing STOMP connection object on selector change. refresh-connection = true" );
 				$this->createBackingObject();
 			}
 		}
