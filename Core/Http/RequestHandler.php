@@ -29,20 +29,20 @@ class RequestHandler {
 	 */
 	public static function process( $configPath = null ) {
 		// --- Get the request and response objects
-		$symfonyRequest = SymfonyRequest::createFromGlobals();
-		$symfonyResponse = new Response();
-		$symfonyResponse->setPrivate();
+		$request = Request::createFromGlobals();
+		$response = new Response();
+		$response->setPrivate();
 
 		// --- Break the request into parts ---
-		$uri = $symfonyRequest->query->get( 'p', '' );
+		$uri = $request->query->get( 'p', '' );
 		$parts = explode( '/', $uri );
 
 		if ( count( $parts ) < 2 ) {
-			$symfonyResponse->setStatusCode(
+			$response->setStatusCode(
 				403,
 				'Cannot process this request: bad URI format. A configuration node and an action is required'
 			);
-			return $symfonyResponse;
+			return $response;
 		}
 
 		$view = array_shift( $parts );
@@ -68,8 +68,8 @@ class RequestHandler {
 		// Check to make sure there's even a point to continuing
 		if ( !$config->nodeExists( "endpoints/$action" ) ) {
 			Logger::debug( '403 will be given for unknown action on inbound URL.', $uri );
-			$symfonyResponse->setStatusCode( 403, "Action '$action' not configured. Cannot continue." );
-			return $symfonyResponse;
+			$response->setStatusCode( 403, "Action '$action' not configured. Cannot continue." );
+			return $response;
 		}
 
 		// Register fun additional things
@@ -80,18 +80,18 @@ class RequestHandler {
 		// --- Actually get the endpoint object and start the request ---
 		$endpointObj = $config->obj( "endpoints/$action" );
 		if ( $endpointObj instanceof IHttpActionHandler ) {
-			$endpointObj->execute( $symfonyRequest, $symfonyResponse, $parts );
+			$endpointObj->execute( $request, $response, $parts );
 		} else {
 			$str = "Requested action '$action' does not implement a known handler. Cannot continue.";
 			Logger::debug( $str );
-			$symfonyResponse->setStatusCode( 500, $str );
+			$response->setStatusCode( 500, $str );
 		}
 
-		$code = $symfonyResponse->getStatusCode();
+		$code = $response->getStatusCode();
 		if ( ( $code !== 200 ) && ( $code !== 302 ) ) {
-			$symfonyResponse->setContent( '' );
+			$response->setContent( '' );
 		}
-		return $symfonyResponse;
+		return $response;
 	}
 
 	public static function lastChanceErrorHandler( $errno, $errstr, $errfile = 'Unknown File',

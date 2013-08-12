@@ -56,6 +56,13 @@ class AutoLoader {
 		$this->addNamespacePath( 'SmashPig', $defaultPath );
 
 		spl_autoload_register( array( $this, 'autoload' ) );
+
+		// For the moment this is here because we require Composer supplied libraries
+		// before we're fully initialized
+		/* TODO: Remove this and place back in addConfiguredIncludePaths() once we have
+		         something like configuration views that could partially load the
+		         configuration and thus allow multiple calls of includes */
+		require_once( __DIR__ . '/../vendor/autoload.php' );
 	}
 
 	public function addConfiguredNamespaces() {

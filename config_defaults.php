@@ -71,9 +71,7 @@ $config_defaults = array(
 
         'namespaces' => array(),
 
-		'include-files' => array(
-			'vendor/autoload.php',
-		),
+		'include-files' => array(),
 
 		'include-paths' => array(),
 

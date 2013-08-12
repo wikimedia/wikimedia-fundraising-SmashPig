@@ -1,7 +1,5 @@
 <?php namespace SmashPig\Core\Http;
 
-use Symfony\Component\HttpFoundation\Request;
-
 /**
  * Declaration that a class is able to process an HTTP request.
  */
