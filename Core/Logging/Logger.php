@@ -6,7 +6,7 @@ use SmashPig\Core\SmashPigException;
 class Logger {
 
 	/** @var LogContextHandler */
-	public static $context = null;
+	protected static $context = null;
 
 	/** @var int The log level must be greater than this to be processed. */
 	protected static $threshold = LOG_DEBUG;
@@ -65,6 +65,20 @@ class Logger {
 	}
 
 	/* --- CONTEXT HELPER METHODS --- */
+	/**
+	 * Obtain the logging context. Only one context will be present in an
+	 * instantiation of Logger (which implies only one per process.)
+	 *
+	 * @throws SmashPigException if logger has not been initialized
+	 * @return LogContextHandler
+	 */
+	public static function getContext() {
+		if ( Logger::$context === null ) {
+			throw new SmashPigException( "No context available. Logger not initialized?" );
+		}
+		return Logger::$context;
+	}
+
 	/**
 	 * Enters a new context with the current context as its parent.
 	 * Shadows @ref LogContextHandler->enterContext()

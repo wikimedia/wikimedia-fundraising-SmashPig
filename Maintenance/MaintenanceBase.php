@@ -137,7 +137,7 @@ abstract class MaintenanceBase {
 			$config->val( 'logging/log-level' ),
 			$config
 		);
-		Logger::$context->addLogStream( new ConsoleLogStream() );
+		Logger::getContext()->addLogStream( new ConsoleLogStream() );
 
 		Logger::enterContext( Context::get()->getContextId() );
 

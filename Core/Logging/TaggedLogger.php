@@ -14,10 +14,58 @@ class TaggedLogger {
 
 	protected $tag = null;
 
+	/** @var LogContextHandler */
+	protected $context = null;
+
 	public function __construct( $tag = null ) {
 		$this->tag = $tag;
+		$this->context = Logger::getContext();
 	}
 
+	/* === CONTEXT HELPER METHODS === */
+	/**
+	 * Enters a new context with the current context as its parent.
+	 * Shadows @ref LogContextHandler->enterContext()
+	 *
+	 * @param string $name Child context name
+	 */
+	public static function enterContext( $name ) {
+		Logger::enterContext( $name );
+	}
+
+	/**
+	 * Renames the current logging context. Effects the log prefix used for all
+	 * events under this context. May have adverse effects on logstreams that log
+	 * in real time (IE: Syslog) because they will have logged items under the old
+	 * context name.
+	 *
+	 * Shadows @ref LogContextHandler->renameContext()
+	 *
+	 * @param string   $newName     New name for the current context
+	 * @param bool     $addLogEntry If false will not create a log line stating the name change
+	 *
+	 * @return string The old name of this context
+	 */
+	public static function renameContext( $newName, $addLogEntry = true ) {
+		return Logger::renameContext( $newName, $addLogEntry );
+	}
+
+	/**
+	 * Leaves the current context for the parent context. You may not leave the root
+	 * context.
+	 *
+	 * Side effects include removing all stored log lines for this context. Before this
+	 * happens all LogStreams have the opportunity to do last chance processing.
+	 *
+	 * Shadows @ref LogContextHandler->leaveContext()
+	 *
+	 * @return string|bool The current context name, or false if this is the root context
+	 */
+	public static function leaveContext() {
+		return Logger::leaveContext();
+	}
+
+	/* === EVENT HANDLING === */
 	/**
 	 * Log an immediate/critical failure. Will be immediately forwarded to the designated
 	 * error contact. Use this for things like database failures, top of PHP error stack
@@ -28,7 +76,7 @@ class TaggedLogger {
 	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
 	 */
 	public function alert( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_ALERT, $msg, $this->tag, $data, $ex ) );
+		$this->context->addEventToContext( new LogEvent( LOG_ALERT, $msg, $this->tag, $data, $ex ) );
 	}
 
 	/**
@@ -41,7 +89,7 @@ class TaggedLogger {
 	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
 	 */
 	public function error( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_ERR, $msg, $this->tag, $data, $ex ) );
+		$this->context->addEventToContext( new LogEvent( LOG_ERR, $msg, $this->tag, $data, $ex ) );
 	}
 
 	/**
@@ -53,7 +101,7 @@ class TaggedLogger {
 	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
 	 */
 	public function warning( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_WARNING, $msg, $this->tag, $data, $ex ) );
+		$this->context->addEventToContext( new LogEvent( LOG_WARNING, $msg, $this->tag, $data, $ex ) );
 	}
 
 	/**
@@ -65,7 +113,7 @@ class TaggedLogger {
 	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
 	 */
 	public function notice( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_NOTICE, $msg, $this->tag, $data, $ex ) );
+		$this->context->addEventToContext( new LogEvent( LOG_NOTICE, $msg, $this->tag, $data, $ex ) );
 	}
 
 	/**
@@ -77,7 +125,7 @@ class TaggedLogger {
 	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
 	 */
 	public function info( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_INFO, $msg, $this->tag, $data, $ex ) );
+		$this->context->addEventToContext( new LogEvent( LOG_INFO, $msg, $this->tag, $data, $ex ) );
 	}
 
 	/**
@@ -89,6 +137,6 @@ class TaggedLogger {
 	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
 	 */
 	public function debug( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_DEBUG, $msg, $this->tag, $data, $ex ) );
+		$this->context->addEventToContext( new LogEvent( LOG_DEBUG, $msg, $this->tag, $data, $ex ) );
 	}
 }
