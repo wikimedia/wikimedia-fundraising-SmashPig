@@ -33,6 +33,9 @@ abstract class AdyenMessage extends ListenerMessage {
 	 * necessarily mean that the request itself was successful. IE: refund request received but not yet accepted. */
 	public $success;
 
+	/** @var string|null Reason for event */
+	public $reason;
+
 	/**
 	 * Creates an appropriate derived AdyenMessage instance from the object received
 	 * during the SOAP transaction.
@@ -78,14 +81,17 @@ abstract class AdyenMessage extends ListenerMessage {
 	 * @param NotificationRequestItem $msgObj Received and processed object
 	 */
 	protected function constructFromWSDL( NotificationRequestItem $msgObj ) {
-		$this->currency = $msgObj->amount->currency;
-		$this->amount = $msgObj->amount->value / 100;	// TODO: Make this CLDR aware
+		if ( $msgObj->amount ) {
+			$this->currency = $msgObj->amount->currency;
+			$this->amount = $msgObj->amount->value / 100;	// TODO: Make this CLDR aware
+		}
 		$this->eventDate = $msgObj->eventDate;
 		$this->merchantAccountCode = $msgObj->merchantAccountCode;
 		$this->merchantReference = $msgObj->merchantReference;
 		$this->parentPspReference = $msgObj->originalReference;
 		$this->pspReference = $msgObj->pspReference;
 		$this->success = (bool)$msgObj->success;
+		$this->reason = $msgObj->reason;
 
 		$this->correlationId = static::createCorrelationId( $this->pspReference );
 	}
