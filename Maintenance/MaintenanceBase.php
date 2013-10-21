@@ -233,10 +233,12 @@ abstract class MaintenanceBase {
 	/**
 	 * Adds a numbered argument that can be parsed out of the command line string.
 	 *
-	 * @param string $arg 			Name of the argument, like 'start'
-	 * @param string $description 	Description of the argument
-	 * @param string $required		If true and the argument is not provided, will not execute the script. Instead
-	 * 								will display the help message.
+	 * @param string $arg           Name of the argument, like 'start'
+	 * @param string $description   Description of the argument
+	 * @param bool   $required      If true and the argument is not provided, will not execute the script. Instead
+	 *                              will display the help message.
+	 *
+	 * @throws SmashPigException if an argument is required after an optional argument
 	 */
 	protected function addArgument( $arg, $description, $required = true ) {
 
