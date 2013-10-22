@@ -40,7 +40,7 @@ class ProcessAccountingReportJob extends RunnableJob {
 		$fileName = basename( $this->reportUrl );
 		$this->downloadLoc = AutoLoader::makePath(
 			$c->val( "payment-provider/adyen/accounts/{$this->account}/report-location" ),
-			end( $fileName )
+			$fileName
 		);
 
 		// Actually get the file
