@@ -159,7 +159,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		$count = 0;
 
 		do {
-			$msg = $this->queueGetObjectRaw( $phpType, $objCorrelationId, false );
+			$msg = $this->queueGetObjectRaw( $phpType, $objCorrelationId, array(), false );
 			if ( $msg ) {
 				$this->queueAckObject();
 				$count += 1;
@@ -185,7 +185,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		);
 
 		do {
-			$msg = $this->queueGetObjectRaw( null, $id, false );
+			$msg = $this->queueGetObjectRaw( null, $id, array(), false );
 			if ( $msg ) {
 				$this->queueAckObject();
 				$count += 1;
@@ -213,14 +213,15 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 *
 	 * @param null|string    $type      The class of message to retrieve (if null retrieves all)
 	 * @param null|string    $id        The correlation ID of the message (if null retrieves all)
+	 * @param string[]       $customSelectors Array of custom STOMP selectors (e.g 'gateway=adyen')
 	 *
 	 * @throws DataStoreTransactionException
 	 * @throws DataSerializationException
 	 * @throws DataStoreException
 	 * @return KeyedOpaqueStorableObject|null
 	 */
-	public function queueGetObject( $type = null, $id = null ) {
-		$msgObj = $this->queueGetObjectRaw( $type, $id );
+	public function queueGetObject( $type = null, $id = null, $customSelectors = array() ) {
+		$msgObj = $this->queueGetObjectRaw( $type, $id, $customSelectors );
 
 		if ( $msgObj ) {
 			if ( !array_key_exists( 'php-message-class', $msgObj->headers ) ) {
@@ -229,14 +230,16 @@ class StompDataStore extends KeyedOpaqueDataStore {
 					$msgObj
 				);
 				$this->queueIgnoreObject();
-				return $this->queueGetObject( $type, $id );
+
+				// I'm not a huge fan of this recursion; but I don't know what else to do
+				return $this->queueGetObject( $type, $id, $customSelectors );
 			}
 
 			$className = $msgObj->headers[ 'php-message-class' ];
 			if ( !class_exists( $className ) ) {
 				Logger::warning(
 					"DataStore cannot instantiate object from message. No such class '{$className}'.",
-					$msg
+					$msgObj
 				);
 				throw new DataStoreException( "Cannot instantiate class '{$className}'; no such class exists." );
 			}
@@ -263,23 +266,24 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 * Backing function for queueGetObject; retrieves, using STOMP selectors,
 	 * a requested message from the queue and starts a transaction for it.
 	 *
-	 * @param null $type      Object type to select on
-	 * @param null $id        Correlation ID to select on
-	 * @param bool $checkTail If true (default) will stop getting new objects when
-	 *                        new objects are being returned with the current STOMP
-	 *                        transaction ID in them.
+	 * @param null     $type            Object type to select on
+	 * @param null     $id              Correlation ID to select on
+	 * @param string[] $customSelectors Array of custom STOMP selectors (e.g 'gateway=adyen')
+	 * @param bool     $checkTail       If true (default) will stop getting new objects when
+	 *                                  new objects are being returned with the current STOMP
+	 *                                  transaction ID in them.
 	 *
 	 * @throws DataStoreTransactionException
 	 * @return object STOMP message object
 	 */
-	protected function queueGetObjectRaw( $type = null, $id = null, $checkTail = true ) {
+	protected function queueGetObjectRaw( $type = null, $id = null, $customSelectors = array(), $checkTail = true ) {
 		if ( $this->queueMsg ) {
 			throw new DataStoreTransactionException(
 				"STOMP transaction already in progress. Cannot request new object at this time."
 			);
 		}
 
-		$this->createSubscription( $type, $id );
+		$this->createSubscription( $type, $id, $customSelectors );
 
 		Logger::debug( "Pulling new object from queue" );
 		try {
@@ -314,16 +318,19 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 * subscription at a time so if the requested subscription does not match the previous one,
 	 * the old one is unsubscribed and a new one is started.
 	 *
-	 * @param null $type   Object type to select on
-	 * @param null $id     Correlation ID to select on
+	 * @param null|string $type   Object type to select on
+	 * @param null|string $id     Correlation ID to select on
+	 * @param string[]    $custom Array of STOMP selector strings, like "gateway=adyen"
 	 */
-	protected function createSubscription( $type, $id ) {
-		static $sType, $sId;
+	protected function createSubscription( $type, $id, $custom = array() ) {
+		static $sType, $sId, $sCustom;
 		$properties = array(
 			'ack' => 'client-individual',
 		);
 
-		if ( $this->subscribed && ( $sType === $type ) && ( $sId === $id ) ) {
+		sort( $custom );
+
+		if ( $this->subscribed && ( $sType === $type ) && ( $sId === $id ) && !array_diff( $sCustom, $custom ) ) {
 			// Same subscription; just return
 			return;
 		} elseif ( $this->subscribed ) {
@@ -340,6 +347,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 
 		$sType = $type;
 		$sId = $id;
+		$sCustom = $custom;
 
 		$selector = array();
 		if ( $type ) {
@@ -348,6 +356,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		if ( $id ) {
 			$selector[] = "JMSCorrelationID='$id'";
 		}
+		$selector += $custom;
 		if ( $selector ) {
 			$properties[ 'selector' ] = implode( ' AND ', $selector );
 		}
