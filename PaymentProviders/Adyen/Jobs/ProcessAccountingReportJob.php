@@ -102,6 +102,9 @@ class ProcessAccountingReportJob extends RunnableJob {
 			$this->logger->leaveContext(); // Must be the last line in this loop
 		}
 
+		// OK; we're done here, delete the file
+		unlink( $this->downloadLoc );
+
 		return true;
 	}
 
