@@ -349,16 +349,40 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		$sId = $id;
 		$sCustom = $custom;
 
-		$selector = array();
+		// Sanitize the custom selectors
+		foreach ( $custom as &$selector ) {
+			$groups = array();
+			$result = preg_match( '/([^\\=]+)([<>]\\=?|!?\\=)([^\\=]+)/', $selector, $groups );
+			if ( $result != 1 ) {
+				Logger::warning( "Custom STOMP selector doesn't make sense: $selector" );
+				continue;
+			}
+
+			$key = $groups[1];
+			$operator = $groups[2];
+			$value = $groups[3];
+
+			if ( is_numeric( $value ) === true ) {
+				// See http://activemq.apache.org/selectors.html
+				$key = "convert_string_expressions:{$key}";
+			} else {
+				$value = trim( $value, " '\"" );
+				$value = "'{$value}'";
+			}
+			$selector = "{$key}{$operator}{$value}";
+		}
+
+		// And build the selection header array
+		$selectorQuery = array();
 		if ( $type ) {
-			$selector[] = "php-message-class='$type'";
+			$selectorQuery[] = "php-message-class='$type'";
 		}
 		if ( $id ) {
-			$selector[] = "JMSCorrelationID='$id'";
+			$selectorQuery[] = "JMSCorrelationID='$id'";
 		}
-		$selector += $custom;
-		if ( $selector ) {
-			$properties[ 'selector' ] = implode( ' AND ', $selector );
+		$selectorQuery += $custom;
+		if ( $selectorQuery ) {
+			$properties[ 'selector' ] = implode( ' AND ', $selectorQuery );
 		}
 
 		Logger::debug( "Attempting to STOMP subscribe to '{$this->queue_id}' on '{$this->uri}'", $properties );

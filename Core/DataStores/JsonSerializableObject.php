@@ -1,5 +1,7 @@
 <?php namespace SmashPig\Core\DataStores;
 
+use SmashPig\Core\Logging\Logger;
+
 /**
  * Base class providing generic serialization/deserialization capabilities.
  */
@@ -92,15 +94,21 @@ abstract class JsonSerializableObject {
 	 * @param string $className The name of the class to construct
 	 * @param string $jsonStr   JSON string to recompose the object from.
 	 *
+	 * @throws DataSerializationException
 	 * @return JsonSerializableObject
 	 */
 	public static function fromJson( $className, $jsonStr ) {
 		$properties = json_decode( $jsonStr );
 
-		$obj = static::serializedConstructor( $className, $properties );
-
-		$obj->__wakeup();
-		return $obj;
+		if ( is_a( $properties, 'stdClass' ) ) {
+			$obj = static::serializedConstructor( $className, $properties );
+			$obj->__wakeup();
+			return $obj;
+		} elseif ( $properties === null ) {
+			throw new DataSerializationException( "Object had null body. Can not deserialize." );
+		} elseif ( $properties === false ) {
+			throw new DataSerializationException( "Object has malformed JSON. Can not deserialize." );
+		}
 	}
 
 	/**

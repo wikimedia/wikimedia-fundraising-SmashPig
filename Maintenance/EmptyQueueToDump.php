@@ -2,6 +2,7 @@
 
 require( 'MaintenanceBase.php' );
 
+use SmashPig\Core\DataStores\DataSerializationException;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\StompDataStore;
 
@@ -61,13 +62,19 @@ class EmptyQueueToDump extends MaintenanceBase {
 			// This is actually quite inefficient; but this whole thing is a hack so meh!
 			// ...Ideally we would take the JSON from the store directly instead of walking
 			// it through an object
-			$queueObj = $this->datastore->queueGetObject( null, null, $selectors );
+			try {
+				$queueObj = $this->datastore->queueGetObject( null, null, $selectors );
 
-			if ( !$queueObj ) {
-				break;
+				if ( !$queueObj ) {
+					break;
+				}
+
+				fwrite( $f, get_class( $queueObj ) . "=" . $queueObj->toJson( false ) . "\n" );
+			} catch( DataSerializationException $ex ) {
+				// We probably caught an anti-message here; log the exception and continue on
+				Logger::warning( "Possibly caught an antimessage. Not adding to file.", null, $ex );
 			}
 
-			fwrite( $f, get_class( $queueObj ) . "=" . $queueObj->toJson( false ) . "\n" );
 			$this->datastore->queueAckObject();
 
 			$messageCount += 1;
