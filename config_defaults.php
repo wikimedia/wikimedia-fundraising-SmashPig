@@ -36,6 +36,7 @@ $config_defaults = array(
 				'uri' => 'tcp://localhost:61613',
 				'timeout' => 1,
 				'refresh-connection' => false,
+				'convert-string-expressions' => false,
 
 				'queues' => array(
 					'limbo' => '/queue/limbo',

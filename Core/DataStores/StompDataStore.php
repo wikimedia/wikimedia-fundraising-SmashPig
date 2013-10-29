@@ -8,6 +8,9 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	/** @var bool If true, this class is using a PHP STOMP library, if false it is using the PEAR one */
 	protected $usingPhpStomp = false;
 
+	/** @var bool If true will use the convert_string_expressions: selector term (For ActiveMQ < 5.6 */
+	protected $convertStringExpressions = false;
+
 	/** @var \Stomp Connection object to STOMP server */
 	protected $stompObj = null;
 
@@ -60,6 +63,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		$this->uri = $c->val( 'data-store/stomp/uri' );
 		$this->timeout = $c->val( 'data-store/stomp/timeout' );
 		$this->refreshConnection = $c->val( 'data-store/stomp/refresh-connection' );
+		$this->convertStringExpressions = $c->val( 'data-store/stomp/convert-string-expressions' );
 
 		// Start the connection
 		$this->createBackingObject();
@@ -363,8 +367,12 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			$value = $groups[3];
 
 			if ( is_numeric( $value ) === true ) {
-				// See http://activemq.apache.org/selectors.html
-				$key = "convert_string_expressions:{$key}";
+				if ( $this->convertStringExpressions ) {
+					// See http://activemq.apache.org/selectors.html
+					$key = "convert_string_expressions:{$key}";
+				} else {
+					// Nothing, the key is already in canonical form
+				}
 			} else {
 				$value = trim( $value, " '\"" );
 				$value = "'{$value}'";
