@@ -218,16 +218,18 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 * @param null|string    $type      The class of message to retrieve (if null retrieves all)
 	 * @param null|string    $id        The correlation ID of the message (if null retrieves all)
 	 * @param string[]       $customSelectors Array of custom STOMP selectors (e.g 'gateway=adyen')
+	 * @param bool           $deserialize If true will return an object. Otherwise will return an array
+	 *                                    with keys 'headers' and 'body'.
 	 *
 	 * @throws DataStoreTransactionException
 	 * @throws DataSerializationException
 	 * @throws DataStoreException
-	 * @return KeyedOpaqueStorableObject|null
+	 * @return KeyedOpaqueStorableObject|array|null
 	 */
-	public function queueGetObject( $type = null, $id = null, $customSelectors = array() ) {
+	public function queueGetObject( $type = null, $id = null, $customSelectors = array(), $deserialize = true ) {
 		$msgObj = $this->queueGetObjectRaw( $type, $id, $customSelectors );
 
-		if ( $msgObj ) {
+		if ( $msgObj && $deserialize ) {
 			if ( !array_key_exists( 'php-message-class', $msgObj->headers ) ) {
 				Logger::warning(
 					"Message was serialized without key php-message-class. Cannot re-instantiate.",
@@ -261,6 +263,11 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			}
 
 			return $classObj;
+		} else if ( $msgObj && !$deserialize ) {
+			return array(
+				'headers' => $msgObj->headers,
+				'body' => $msgObj->body,
+			);
 		} else {
 			return null;
 		}

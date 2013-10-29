@@ -28,6 +28,7 @@ class EmptyQueueToDump extends MaintenanceBase {
 		$this->addOption( 'queue', 'queue name to consume from', 'test' );
 		$this->addOption( 'max-messages', 'At most consume <n> messages, 0 is infinite', 10, 'm' );
 		$this->addOption( 'outfile', 'File to place JSON encoded messages into', 'messages.json', 'f' );
+		$this->addOption( 'raw', 'Do not ensure that extracted messages are SmashPig objects' );
 		$this->addArgument( 'selector', 'STOMP selector to use', 'true' );
 		$this->addArgument( 'selector2', 'Additional STOMP selectors...', false );
 	}
@@ -41,6 +42,8 @@ class EmptyQueueToDump extends MaintenanceBase {
 		$maxMessages = $this->getOption( 'max-messages' );
 		$startTime = time();
 		$messageCount = 0;
+
+		$raw = $this->getOption( 'raw' );
 
 		// Construct the selectors
 		$argId = 0;
@@ -63,13 +66,17 @@ class EmptyQueueToDump extends MaintenanceBase {
 			// ...Ideally we would take the JSON from the store directly instead of walking
 			// it through an object
 			try {
-				$queueObj = $this->datastore->queueGetObject( null, null, $selectors );
+				$queueObj = $this->datastore->queueGetObject( null, null, $selectors, !$raw );
 
 				if ( !$queueObj ) {
 					break;
 				}
 
-				fwrite( $f, get_class( $queueObj ) . "=" . $queueObj->toJson( false ) . "\n" );
+				if ( $raw ) {
+					fwrite( $f, 'raw' . "=" . json_encode( $queueObj ) . "\n" );
+				} else {
+					fwrite( $f, get_class( $queueObj ) . "=" . $queueObj->toJson( false ) . "\n" );
+				}
 			} catch( DataSerializationException $ex ) {
 				// We probably caught an anti-message here; log the exception and continue on
 				Logger::warning( "Possibly caught an antimessage. Not adding to file.", null, $ex );
