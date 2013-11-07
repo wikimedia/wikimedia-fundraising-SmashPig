@@ -64,6 +64,7 @@ class RequestHandler {
 
 		set_error_handler( '\SmashPig\Core\Http\RequestHandler::lastChanceErrorHandler' );
 		set_exception_handler( '\SmashPig\Core\Http\RequestHandler::lastChanceExceptionHandler' );
+		register_shutdown_function('\SmashPig\Core\Http\RequestHandler::shutdownHandler');
 
 		// Check to make sure there's even a point to continuing
 		Logger::info( "Starting processing for request, configuration view: '$view', action: '$action'" );
@@ -103,6 +104,13 @@ class RequestHandler {
 			$response->setContent( '' );
 		}
 		return $response;
+	}
+
+	public static function shutdownHandler() {
+		$lastError = error_get_last();
+		if ( $lastError and $lastError['type'] === E_ERROR ) {
+			Logger::alert("Fatal error caught by shutdown handler. ({$lastError['type']}) {$lastError['message']} @ {$lastError['file']}:{$lastError['line']}");
+		}
 	}
 
 	public static function lastChanceErrorHandler( $errno, $errstr, $errfile = 'Unknown File',
