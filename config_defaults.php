@@ -146,6 +146,17 @@ $config_defaults = array(
 	),
 
 	'globalcollect' => array(
+		'actions' => array(
+			'SmashPig\PaymentProviders\GlobalCollect\Actions\IncomingMessage',
+		),
+
+		'endpoints' => array(
+			'listener' => array(
+				'class' => 'SmashPig\PaymentProviders\GlobalCollect\GlobalCollectListener',
+				'inst-args' => array(),
+			)
+		),
+
 		'data-store' => array(
 			'stomp' => array(
 				'queues' => array(
