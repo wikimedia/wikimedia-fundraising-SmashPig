@@ -3,7 +3,7 @@
 use SmashPig\Core;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Http\Response;
-use Symfony\Component\HttpFoundation\Request;
+use SmashPig\Core\Http\Request;
 
 abstract class RestListener extends ListenerBase {
 	public function execute( Request $request, Response $response, $pathParts ) {
