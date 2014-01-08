@@ -110,9 +110,23 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			);
 		}
 
+		global $smashpig_version;
+		if (isset($smashpig_version)) {
+			$version = $smashpig_version;
+		} else {
+			$version = "unknown";
+		}
+
 		$headers = array(
 			'persistent'        => 'true', // So the message doesn't disappear when the server restarts
 			'php-message-class' => $objClass, // Sneakyness! No parameter can have '-' in it's name so this is safe!
+
+			'source_name' => "SmashPig",
+			'source_type' => "listener",
+			'source_host' => gethostname(),
+			'source_run_id' => getmypid(),
+			'source_version' => $version,
+			'source_enqueued_time' => time(),
 		);
 
 		// Populate with custom keys
