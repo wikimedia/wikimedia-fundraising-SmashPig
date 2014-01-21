@@ -2,6 +2,7 @@
 
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
 
 class IncomingMessage implements IListenerMessageAction {
