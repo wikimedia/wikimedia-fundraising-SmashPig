@@ -161,7 +161,6 @@ $config_defaults = array(
 			'stomp' => array(
 				'queues' => array(
 					'pending' => '/queue/pending_globalcollect',
-					'verified' => '/queue/donations-gcgarbage',
 				),
 			),
 		),
