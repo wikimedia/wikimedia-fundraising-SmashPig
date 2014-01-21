@@ -42,6 +42,9 @@ abstract class GlobalCollectMessage extends ListenerMessage {
 		if ( !property_exists( $queueMsg, 'email' ) ) {
 			$queueMsg->email = 'nobody@wikimedia.org';
 		}
+		if ( property_exists( $queueMsg, 'gross' ) ) {
+			$queueMsg->gross = round( $queueMsg->gross / 100.0, 2 );
+		}
 
 		$queueMsg->gateway = 'globalcollect';
 		$queueMsg->correlationId = "{$queueMsg->gateway}-{$queueMsg->gateway_txn_id}";
