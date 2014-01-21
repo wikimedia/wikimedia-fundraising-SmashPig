@@ -44,7 +44,7 @@ abstract class GlobalCollectMessage extends ListenerMessage {
 		}
 
 		$queueMsg->gateway = 'globalcollect';
-		$queueMsg->correlationId = "{$queueMsg->gateway}-{$queueMsg->order_id}";
+		$queueMsg->correlationId = "{$queueMsg->gateway}-{$queueMsg->gateway_txn_id}";
 
 		return $queueMsg;
 	}
