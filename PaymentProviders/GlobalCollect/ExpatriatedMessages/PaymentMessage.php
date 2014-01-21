@@ -22,7 +22,7 @@ class PaymentMessage extends GlobalCollectMessage {
 		'currency_code' => array('map' => 'currency'),
 		'effort_id',
 		'merchant_id',
-		'order_id',
+		'order_id' => array('map' => 'gateway_txn_id'),
 		'payment_method_id',
 		'payment_product_id' => array('map' => 'payment_product'),
 		'payment_reference',
