@@ -1,3 +1,5 @@
+.version-stamp
+
 # Configuration
 composer.phar
 config.php

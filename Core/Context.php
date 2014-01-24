@@ -10,6 +10,9 @@ namespace SmashPig\Core;
 class Context {
 	protected static $instance;
 
+	protected $contextId;
+	protected $sourceRevision = 'unknown';
+
 	public static function init() {
 		if ( !Context::$instance ) {
 			Context::$instance = new Context();
@@ -39,13 +42,17 @@ class Context {
 		return $old;
 	}
 
-	protected $contextId;
-
 	public function __construct( $cid = null ) {
 		if ( !$cid ) {
 			$this->contextId = sprintf( 'SPCID-%010d', mt_rand( 10000, pow( 2, 31 ) - 1 ) );
 		} else {
 			$this->contextId = $cid;
+		}
+
+		$versionStampPath = __DIR__ . "/../.version-stamp";
+		$versionId = file_get_contents( $versionStampPath );
+		if ( $versionId !== false ) {
+			$this->sourceRevision = trim( $versionId );
 		}
 	}
 
@@ -57,5 +64,9 @@ class Context {
 	 */
 	public function getContextId() {
 		return $this->contextId;
+	}
+
+	public function getSourceRevision() {
+		return $this->sourceRevision;
 	}
 }
