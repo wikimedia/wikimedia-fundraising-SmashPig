@@ -1,6 +1,7 @@
 <?php namespace SmashPig\Core\DataStores;
 
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 
 class StompDataStore extends KeyedOpaqueDataStore {
