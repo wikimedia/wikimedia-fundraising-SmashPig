@@ -331,6 +331,9 @@ abstract class MaintenanceBase {
 							print( "\nERROR: $option parameter requires a value\n" );
 							$this->helpIfRequested( true );
 						}
+
+						// Remove quotes around the argument if they were added for shell escaping
+						$param = preg_replace( '/^([\'"])(.*)\\1$/', "\\2", $param );
 					} else {
 						// No parameter expected, so we mark this option as present
 						$param = true;
@@ -345,7 +348,7 @@ abstract class MaintenanceBase {
 			} else {
 				// Argument!
 				$startedArgs = true;
-				$this->args[] = $arg;
+				$this->args[] = preg_replace( "/^[\"'](.*)[\"']$/", "$1", $arg );
 			}
 		}
 
