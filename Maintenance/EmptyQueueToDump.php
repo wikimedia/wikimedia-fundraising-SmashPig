@@ -29,7 +29,7 @@ class EmptyQueueToDump extends MaintenanceBase {
 		$this->addOption( 'max-messages', 'At most consume <n> messages, 0 is infinite', 10, 'm' );
 		$this->addOption( 'outfile', 'File to place JSON encoded messages into', 'messages.json', 'f' );
 		$this->addOption( 'raw', 'Do not ensure that extracted messages are SmashPig objects' );
-		$this->addArgument( 'selector', 'STOMP selector to use', 'true' );
+		$this->addArgument( 'selector', 'STOMP selector to use', false );
 		$this->addArgument( 'selector2', 'Additional STOMP selectors...', false );
 	}
 
@@ -48,10 +48,10 @@ class EmptyQueueToDump extends MaintenanceBase {
 		// Construct the selectors
 		$argId = 0;
 		$selectors = array();
-		do {
+		while ( $this->hasArgument( $argId ) ) {
 			$selectors[] = $this->getArgument( $argId );
 			$argId += 1;
-		} while ( $this->hasArgument( $argId ) );
+		}
 
 		// Open the file for write-append
 		$outfile = $this->getOption( 'outfile' );
