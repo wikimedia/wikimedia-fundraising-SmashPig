@@ -32,7 +32,7 @@ class PopulateQueueFromDump extends MaintenanceBase {
 		$messageCount = 0;
 
 		// Open the file for read
-		$infile = $this->getOption( 'file' );
+		$infile = $this->getArgument( 'file' );
 		$f = fopen( $infile, 'r' );
 		if ( !$f ) {
 			$this->error( "Could not open $infile for read", true );
