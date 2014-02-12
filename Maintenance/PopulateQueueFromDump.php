@@ -31,8 +31,6 @@ class PopulateQueueFromDump extends MaintenanceBase {
 		$startTime = time();
 		$messageCount = 0;
 
-		$raw = $this->getOption( 'raw' );
-
 		// Open the file for read
 		$infile = $this->getOption( 'file' );
 		$f = fopen( $infile, 'r' );
