@@ -133,12 +133,31 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		}
 
 		// Push the object to the queue!
-		$sent = $this->stompObj->send( $this->queue_id, $obj->toJson(), $headers );
-		if ( !$sent ) {
+		$bodyJson = $obj->toJson();
+		try {
+			$this->addObjectRaw( $bodyJson, $headers );
+        } catch ( DataStoreException $ex ) {
 			Logger::error(
 				"Could not queue message ({$objClass}) with id '{$objKeys[ 'correlationId' ]}' to '{$this->queue_id}' on '{$this->uri}'",
-				$obj->toJson()
+				$bodyJson
 			);
+			throw $ex;
+		}
+	}
+
+	/**
+	 * Function to inject a raw message to the queue server. This is provided as a
+	 * public API only for maintenance scripts that need to interact directly with
+	 * the backend queue. In general, use addObject().
+	 *
+	 * @param string $body JSON encoded message body (or any string)
+	 * @param string[] $headers Any STOMP headers required for submission (none will be added)
+	 *
+	 * @throws DataStoreException if the message could not be stored
+	 */
+	public function addObjectRaw( $body, $headers ) {
+		$sent = $this->stompObj->send( $this->queue_id, $body, $headers );
+		if ( !$sent ) {
 			throw new DataStoreException( "Could not queue message to '{$this->queue_id}' on '{$this->uri}'" );
 		}
 	}
