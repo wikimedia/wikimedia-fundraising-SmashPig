@@ -52,7 +52,7 @@ class PopulateQueueFromDump extends MaintenanceBase {
 				continue;
 			}
 
-			$this->datastore->addObjectRaw( json_encode( $obj[ 'body' ] ), $obj[ 'headers' ] );
+			$this->datastore->addObjectRaw( $obj[ 'body' ], $obj[ 'headers' ] );
 
 			$messageCount++;
 			if ( $messageCount % 1000 == 0 ) {
