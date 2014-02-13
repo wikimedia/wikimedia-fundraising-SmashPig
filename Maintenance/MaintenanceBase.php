@@ -44,8 +44,14 @@ abstract class MaintenanceBase {
 	/** @var array Map aliased parameter names to long ones, e.g. -h -> --help */
 	protected $aliasParamsMap = array();
 
-	/** @var array Arguments expected on the command line */
+	/**
+	 * @var array[] Arguments expected on the command line
+	 *              Each element has keys 'name', 'desc', 'required'
+	 */
 	protected $expectedArguments = array();
+
+	/** @var string[] Lookup table for argument name to index in the $args array */
+	protected $expectedArgumentIdMap = array();
 
 	/** @var array List of options that were actually passed */
 	protected $options = array();
@@ -254,6 +260,7 @@ abstract class MaintenanceBase {
 			'desc' => $description,
 			'required' => $required
 		);
+		$this->expectedArgumentIdMap[$arg] = count( $this->expectedArguments ) - 1;
 	}
 
 	/**
@@ -278,6 +285,13 @@ abstract class MaintenanceBase {
 	 * @return mixed
 	 */
 	protected function getArgument( $id, $default = null ) {
+		if ( is_string( $id ) ) {
+			if ( array_key_exists( $id, $this->expectedArgumentIdMap ) ) {
+				$id = $this->expectedArgumentIdMap[$id];
+			} else {
+				throw new SmashPigException( "Requested named argument '{$id}' was not registered with addArgument()" );
+			}
+		}
 		return $this->hasArgument( $id ) ? $this->args[$id] : $default;
 	}
 
