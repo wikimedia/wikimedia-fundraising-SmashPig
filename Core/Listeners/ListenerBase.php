@@ -57,15 +57,6 @@ abstract class ListenerBase implements IHttpActionHandler {
 		$whitelist = $this->c->val( 'security/ip-whitelist', true );
 
 		// Obtain remote party IP
-		$trustedHeader = $this->c->val( 'security/ip-header-name' );
-		if ( $trustedHeader ) {
-			$this->request->setTrustedHeaderName( Request::HEADER_CLIENT_IP, $trustedHeader );
-		}
-		$trustedProxies = $this->c->val( 'security/ip-trusted-proxies' );
-		if ( $trustedProxies ) {
-			$this->request->setTrustedProxies( $trustedProxies );
-		}
-
 		$remote_ip = $this->request->getClientIp();
 
 		// Do we continue?

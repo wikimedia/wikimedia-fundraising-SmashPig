@@ -77,6 +77,16 @@ class RequestHandler {
 		AutoLoader::getInstance()->addConfiguredNamespaces();
 		AutoLoader::getInstance()->addConfiguredIncludes();
 
+		// Inform the request object of our security environment
+		$trustedHeader = $config->val( 'security/ip-header-name' );
+		if ( $trustedHeader ) {
+			$request->setTrustedHeaderName( Request::HEADER_CLIENT_IP, $trustedHeader );
+		}
+		$trustedProxies = $config->val( 'security/ip-trusted-proxies' );
+		if ( $trustedProxies ) {
+			$request->setTrustedProxies( $trustedProxies );
+		}
+
 		// --- Actually get the endpoint object and start the request ---
 		$endpointObj = $config->obj( "endpoints/$action" );
 		if ( $endpointObj instanceof IHttpActionHandler ) {
