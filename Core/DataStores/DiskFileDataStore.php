@@ -6,6 +6,17 @@ use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
 
+/**
+ * Class DiskFileDataStore
+ *
+ * Use the local file system as a backup high availability datastore.
+ *
+ * TODO: Fix time of check to time of use errors in the cleanup functions
+ * Under high load php cannot check and then do file system operations on
+ * the key directories fast enough. You will get rmdir and mkdir errors.
+ *
+ * @package SmashPig\Core\DataStores
+ */
 class DiskFileDataStore extends KeyedOpaqueDataStore {
 	protected $basePath = '';
 	protected $objectsPath = '';
