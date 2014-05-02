@@ -1,12 +1,12 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
 use SmashPig\Core\Configuration;
+Use SmashPig\Core\Context;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
-use SmashPig\Core\Logging\Logger;
 
 /**
  * When an authorization message from Adyen comes in, we need to either place
@@ -24,7 +24,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 				$tl->info(
 					"Adding Adyen capture job for {$msg->currency} {$msg->amount} with id {$msg->correlationId} and psp reference {$msg->pspReference}."
 				);
-				$jobQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/jobs' );
+				$jobQueueObj = Context::get()->getConfiguration()->obj( 'data-store/jobs' );
 				$jobQueueObj->addObject(
 					ProcessCaptureRequestJob::factory(
 						$msg->correlationId,
@@ -41,9 +41,9 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					"Adyen payment with correlation id {$msg->correlationId} reported status failed: '{$msg->reason}'. Deleting orphans."
 				);
 				$tl->debug( "Deleting all queue objects with correlation ID '{$msg->correlationId}'" );
-				$limboQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/limbo' );
+				$limboQueueObj = Context::get()->getConfiguration()->obj( 'data-store/limbo' );
 				$limboQueueObj->removeObjectsById( $msg->correlationId );
-				$pendingQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/pending' );
+				$pendingQueueObj = Context::get()->getConfiguration()->obj( 'data-store/pending' );
 				$pendingQueueObj->removeObjectsById( $msg->correlationId );
 			}
 		}

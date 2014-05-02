@@ -1,5 +1,6 @@
 <?php namespace SmashPig\Core\Logging\LogStreams;
 
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\LogContextHandler;
 use SmashPig\Core\Logging\LogEvent;
 use SmashPig\Core\MailHandler;

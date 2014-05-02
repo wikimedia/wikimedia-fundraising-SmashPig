@@ -138,6 +138,7 @@ abstract class MaintenanceBase {
 			$configNode,
 			true
 		);
+		Context::init( $config );
 		Logger::init(
 			$config->val( 'logging/root-context' ) . '-' . end( explode( "\\", $maintClass ) ),
 			$config->val( 'logging/log-level' ),

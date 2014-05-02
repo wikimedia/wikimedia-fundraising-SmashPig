@@ -1,7 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
 use SmashPig\Core\AutoLoader;
-use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataFiles\HeadedCsvReader;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\SmashPigException;
@@ -34,7 +34,7 @@ class ProcessAccountingReportJob extends RunnableJob {
 
 	public function execute() {
 		$this->logger = new TaggedLogger( __CLASS__ );
-		$c = Configuration::getDefaultConfig();
+		$c = Context::get()->getConfiguration();
 
 		// Construct the temporary file path
 		$fileName = basename( $this->reportUrl );
@@ -88,7 +88,7 @@ class ProcessAccountingReportJob extends RunnableJob {
 				"Recreating Adyen capture job for {$currency} {$amount} with id {$correlationId} and " .
 				"psp reference {$pspRef}."
 			);
-			$jobQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/jobs' );
+			$jobQueueObj = $c->obj( 'data-store/jobs' );
 			$jobQueueObj->addObject(
 				ProcessCaptureRequestJob::factory(
 					$correlationId,
@@ -109,7 +109,7 @@ class ProcessAccountingReportJob extends RunnableJob {
 	}
 
 	protected function downloadLog() {
-		$c = Configuration::getDefaultConfig();
+		$c = Context::get()->getConfiguration();
 
 		$user = $c->val( "payment-provider/adyen/accounts/{$this->account}/report-username" );
 		$pass = $c->val( "payment-provider/adyen/accounts/{$this->account}/report-password" );

@@ -8,14 +8,19 @@ namespace SmashPig\Core;
  * @package SmashPig\Core
  */
 class Context {
+	/** @var Context Reference to the current global context */
 	protected static $instance;
 
 	protected $contextId;
 	protected $sourceRevision = 'unknown';
 
-	public static function init() {
+	/** @var Configuration|null Reference to the context configuration object */
+	protected $config = null;
+
+	public static function init( Configuration $config ) {
 		if ( !Context::$instance ) {
 			Context::$instance = new Context();
+			Context::$instance->setConfiguration( $config );
 		}
 	}
 
@@ -25,7 +30,11 @@ class Context {
 	 */
 	public static function get() {
 		if ( Context::$instance === null ) {
-			Context::init();
+			Logger::notice(
+				'Context being initialized as part of get() request. Normally should use init() first.',
+				debug_backtrace( null )
+			);
+			Context::init( Configuration::getDefaultConfig() );
 		}
 		return Context::$instance;
 	}
@@ -68,5 +77,21 @@ class Context {
 
 	public function getSourceRevision() {
 		return $this->sourceRevision;
+	}
+
+	public function setConfiguration( Configuration $config ) {
+		$this->config = $config;
+	}
+
+	public function getConfiguration() {
+		if ( $this->config ) {
+			return $this->config;
+		} else {
+			Logger::notice(
+				'Context returning default configuration. Probably missing a setConfiguration().',
+				debug_backtrace( null )
+			);
+			return Configuration::getDefaultConfig();
+		}
 	}
 }

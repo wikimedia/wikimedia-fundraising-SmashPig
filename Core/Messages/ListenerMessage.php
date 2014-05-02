@@ -2,6 +2,7 @@
 
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\Core\Logging\Logger;
 
@@ -31,7 +32,7 @@ abstract class ListenerMessage extends KeyedOpaqueStorableObject {
 		$retval = true;
 
 		// TODO: Cache this?
-		$actions = Configuration::getDefaultConfig()->val( 'actions' );
+		$actions = Context::get()->getConfiguration()->val( 'actions' );
 
 		foreach ( $actions as $actionClassName ) {
 			$action = new $actionClassName;

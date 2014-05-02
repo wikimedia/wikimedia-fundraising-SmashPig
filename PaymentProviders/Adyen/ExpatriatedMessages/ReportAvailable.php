@@ -1,6 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\ExpatriatedMessages;
 
-use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessAccountingReportJob;
 
@@ -20,7 +20,7 @@ class ReportAvailable extends AdyenMessage {
 			$this->reason
 		);
 
-		$jobQueueObj = Configuration::getDefaultConfig()->obj( 'data-store/jobs' );
+		$jobQueueObj = Context::get()->getConfiguration()->obj( 'data-store/jobs' );
 		if ( strpos( $this->pspReference, 'payments_accounting_report' ) === 0 ) {
 			$jobQueueObj->addObject(
 				ProcessAccountingReportJob::factory(

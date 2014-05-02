@@ -1,7 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\Actions;
 
 use SmashPig\Core\Actions\IListenerMessageAction;
-use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
 
@@ -11,7 +11,7 @@ class IncomingMessage implements IListenerMessageAction {
 		$destinationQueue = $msg->getDestinationQueue();
 
 		if ( $destinationQueue ) {
-			$queue = Configuration::getDefaultConfig()->obj( "data-store/{$destinationQueue}" );
+			$queue = Context::get()->getConfiguration()->obj( "data-store/{$destinationQueue}" );
 			$queueMsg = $msg->normalizeForQueue();
 
 			$queue->addObject( $queueMsg );

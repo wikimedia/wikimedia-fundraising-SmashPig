@@ -3,6 +3,7 @@
 require( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
@@ -31,7 +32,7 @@ class TestDatastore extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 */
 	public function execute() {
-		$this->datastore = Configuration::getDefaultConfig()->obj(
+		$this->datastore = Context::get()->getConfiguration()->obj(
 			'data-store/' . $this->getArgument( 0, 'test' ),
 			false
 		);
@@ -50,7 +51,7 @@ class TestDatastore extends MaintenanceBase {
 		shuffle( $this->testObjects );
 
 		// Now attempt to find them and their pairs!
-		$this->datastore = Configuration::getDefaultConfig()->obj(
+		$this->datastore = Context::get()->getConfiguration()->obj(
 			'data-store/' . $this->getArgument( 0, 'test' ),
 			false
 		);

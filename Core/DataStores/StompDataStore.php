@@ -45,7 +45,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 * @param string $queueName The data-store/stomp/queue/* object to connect to.
 	 */
 	public function __construct( $queueName ) {
-		$c = Configuration::getDefaultConfig();
+		$c = Context::get()->getConfiguration();
 
 		// Load PHP stomp if needed
 		$libPath = $c->val( 'data-store/stomp/lib-path' );

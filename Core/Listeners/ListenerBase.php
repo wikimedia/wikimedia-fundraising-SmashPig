@@ -24,7 +24,7 @@ abstract class ListenerBase implements IHttpActionHandler {
 	protected $inflightStore;
 
 	public function __construct() {
-		$this->c = Configuration::getDefaultConfig();
+		$this->c = Core\Context::get()->getConfiguration();
 		$this->inflightStore = $this->c->obj( 'data-store/inflight' );
 	}
 

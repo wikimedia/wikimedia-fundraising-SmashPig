@@ -1,7 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\Adyen;
 
-use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\Context;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 
 class AdyenPaymentsAPI {
@@ -14,16 +15,13 @@ class AdyenPaymentsAPI {
 
 		$this->account = $account;
 
+		$c = Context::get()->getConfiguration();
 		$this->soapClient = new WSDL\Payment(
-			Configuration::getDefaultConfig()->val( 'payment-provider/adyen/payments-wsdl' ),
+			$c->val( 'payment-provider/adyen/payments-wsdl' ),
 			array(
 				 'cache_wsdl' => WSDL_CACHE_BOTH,
-				 'login'      => Configuration::getDefaultConfig()->val(
-					 "payment-provider/adyen/accounts/{$this->account}/ws-username"
-				 ),
-				 'password'   => Configuration::getDefaultConfig()->val(
-					 "payment-provider/adyen/accounts/{$this->account}/ws-password"
-				 ),
+				 'login'      => $c->val( "payment-provider/adyen/accounts/{$this->account}/ws-username" ),
+				 'password'   => $c->val( "payment-provider/adyen/accounts/{$this->account}/ws-password" ),
 			)
 		);
 	}

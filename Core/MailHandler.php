@@ -65,7 +65,7 @@ class MailHandler {
 	public static function sendEmail( $to, $subject, $textBody, $from = null, $replyTo = null, $htmlBody = null,
 		$attach = array(), $cc = null, $bcc = null, $useVerp = true
 	) {
-		$config = Configuration::getDefaultConfig();
+		$config = Context::get()->getConfiguration();
 		$mailer = static::mailbaseFactory();
 
 		try {
