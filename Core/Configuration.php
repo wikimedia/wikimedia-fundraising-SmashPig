@@ -19,6 +19,9 @@ class Configuration {
 	/** @var array keyed on class name that stores persistent objects */
 	protected $objects = array();
 
+	/** @var string Name of the view that generated this configuration object */
+	protected $viewName = 'default';
+
 	/**
 	 * Obtains the current default configuration object. Typically the object created by index.php
 	 *
@@ -89,6 +92,7 @@ class Configuration {
 			}
 		}
 
+		$this->viewName = $view;
 		if ( $setDefault ) {
 			Configuration::setDefaultConfig( $this );
 		}
@@ -257,6 +261,13 @@ class Configuration {
 		} catch ( ConfigurationKeyException $ex ) {
 			return false;
 		}
+	}
+
+	/**
+	 * @return string The name of the view used to generate this configuration object
+	 */
+	public function getViewName() {
+		return $this->viewName;
 	}
 
 	/**

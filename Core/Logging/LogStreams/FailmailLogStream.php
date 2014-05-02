@@ -153,9 +153,11 @@ class FailmailLogStream implements ILogStream {
 			$level = 'ERROR';
 		}
 
+		$currentView = Context::get()->getConfiguration()->getViewName();
+
 		MailHandler::sendEmail(
 			$this->to,
-			"FAILMAIL -- {$level} -- {$this->contextName}",
+			"FAILMAIL -- {$level} -- ({$currentView}) {$this->contextName}",
 			implode( "\n", $body ),
 			$this->from
 		);

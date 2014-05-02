@@ -59,13 +59,14 @@ class RequestHandler {
 			true
 		);
 		Logger::init( $config->val( 'logging/root-context' ), $config->val( 'logging/log-level' ), $config );
-		Context::init();
+		Context::init( $config );
 		Logger::enterContext( Context::get()->getContextId() );
 
 		set_error_handler( '\SmashPig\Core\Http\RequestHandler::lastChanceErrorHandler' );
 		set_exception_handler( '\SmashPig\Core\Http\RequestHandler::lastChanceExceptionHandler' );
 
 		// Check to make sure there's even a point to continuing
+		Logger::info( "Starting processing for request, configuration view: '$view', action: '$action'" );
 		if ( !$config->nodeExists( "endpoints/$action" ) ) {
 			Logger::debug( '403 will be given for unknown action on inbound URL.', $uri );
 			$response->setStatusCode( 403, "Action '$action' not configured. Cannot continue." );
