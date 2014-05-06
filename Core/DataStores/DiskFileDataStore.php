@@ -11,10 +11,6 @@ use SmashPig\Core\SmashPigException;
  *
  * Use the local file system as a backup high availability datastore.
  *
- * TODO: Fix time of check to time of use errors in the cleanup functions
- * Under high load php cannot check and then do file system operations on
- * the key directories fast enough. You will get rmdir and mkdir errors.
- *
  * @package SmashPig\Core\DataStores
  */
 class DiskFileDataStore extends KeyedOpaqueDataStore {
@@ -287,7 +283,14 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 	}
 
 	/**
-	 * Removes an file system entry created by addKeyedLinkingFile. Will remove empty directories
+	 * Removes an file system entry created by addKeyedLinkingFile.
+	 *
+	 * Will not attempt to remove empty directories because of time
+	 * of use problems (could potentially delete after something checks
+	 * for the folders existence but before it writes.) This will leave
+	 * a number of generic keys folders around the file system.
+	 *
+	 * TODO: Write a cleanup maintenance script for ^.
 	 *
 	 * @param string $key       Name of key, e.g. 'correlationId'.
 	 * @param string $value     Value of the key.
@@ -301,31 +304,5 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 			DiskFileDataStore::escapeName( $value )
 		);
 		unlink( AutoLoader::makePath( $path, $linkName ) );
-
-		// Do some cleanup if possible
-		if ( $this->isDirEmpty( $path ) ) {
-			rmdir( $path );
-		}
-	}
-
-	/**
-	 * Determine if a file system directory is empty.
-	 *
-	 * @param string $dir Directory path
-	 *
-	 * @return bool True if empty
-	 */
-	protected function isDirEmpty( $dir ) {
-		$retval = true;
-
-		$handle = opendir( $dir );
-		while ( ( $entry = readdir( $handle ) ) !== false ) {
-			if ( $entry !== '.' && $entry !== '..' ) {
-				$retval = false;
-				break;
-			}
-		}
-		closedir( $handle );
-		return $retval;
 	}
 }
