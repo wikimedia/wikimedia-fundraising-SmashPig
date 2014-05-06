@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Core\Listeners;
 
-use SmashPig\Core;
+use SmashPig\Core\Context;
 use SmashPig\Core\Http\IHttpActionHandler;
 use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
@@ -24,7 +24,7 @@ abstract class ListenerBase implements IHttpActionHandler {
 	protected $inflightStore;
 
 	public function __construct() {
-		$this->c = Core\Context::get()->getConfiguration();
+		$this->c = Context::get()->getConfiguration();
 		$this->inflightStore = $this->c->obj( 'data-store/inflight' );
 	}
 

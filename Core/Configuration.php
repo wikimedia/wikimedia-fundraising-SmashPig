@@ -23,7 +23,10 @@ class Configuration {
 	protected $viewName = 'default';
 
 	/**
-	 * Obtains the current default configuration object. Typically the object created by index.php
+	 * Obtains the current default configuration object. You should probably be
+	 * using a context call instead of this. See Context->getConfiguration()
+	 *
+	 * Typically the object created by index.php
 	 *
 	 * @return Configuration
 	 */

@@ -31,6 +31,7 @@ class Context {
 	 */
 	public static function get() {
 		if ( Context::$instance === null ) {
+			// Remove this once we know we aren't going to blow up
 			Logger::notice(
 				'Context being initialized as part of get() request. Normally should use init() first.',
 				debug_backtrace( null )
@@ -80,10 +81,29 @@ class Context {
 		return $this->sourceRevision;
 	}
 
-	public function setConfiguration( Configuration $config ) {
+	/**
+	 * Sets a configuration object associated with this context.
+	 *
+	 * All calls to get configuration options need to happen through the
+	 * context object; which means that if we ever support changing configurations
+	 * based on account; this will somehow require us to support either
+	 * stacked configurations or stacked contexts...
+	 *
+	 * @param Configuration $config
+	 */
+	protected function setConfiguration( Configuration $config ) {
 		$this->config = $config;
 	}
 
+	/**
+	 * Gets the configuration object associated with the current context.
+	 *
+	 * Set the configuration using init()
+	 *
+	 * Use this instead of Configuration::getDefaultConfig();
+	 *
+	 * @return null|Configuration
+	 */
 	public function getConfiguration() {
 		if ( $this->config ) {
 			return $this->config;
