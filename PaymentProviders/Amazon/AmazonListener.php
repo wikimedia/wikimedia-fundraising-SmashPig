@@ -10,6 +10,8 @@ use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages as MsgDefs;
 
 /**
  * Dispatches incoming messages accoring to type
+ *
+ * @see https://amazonpayments.s3.amazonaws.com/FPS_ASP_Guides/ASP_Advanced_Users_Guide.pdf
  */
 class AmazonListener extends RestListener {
 	protected $byTypes = array(
@@ -35,6 +37,10 @@ class AmazonListener extends RestListener {
 
 	protected function parseEnvelope( Request $request ) {
 		$requestValues = $request->getValues();
+
+		$secureLog = Logger::getTaggedLogger( 'RawData' );
+		$secureLog->info( "Incoming message (raw)", $requestValues );
+
 		$messages = array();
 		if ( array_key_exists( 'notificationType', $requestValues ) ) {
 			$type = $requestValues['notificationType'];
@@ -42,6 +48,8 @@ class AmazonListener extends RestListener {
 				$klass = $this->byType[$type];
 				$message = new $klass();
 				$message->constructFromValues($requestValues);
+
+				$secureLog->debug( "Processed message (normalized)", $message );
 
 				$messages[] = $message;
 			} else {
@@ -53,6 +61,9 @@ class AmazonListener extends RestListener {
 				$klass = $this->byStatus[$status];
 				$message = new $klass();
 				$message->constructFromValues($requestValues);
+
+				$secureLog->debug( "Processed message (normalized)", $message );
+
 				$messages[] = $message;
 			} else {
 				Logger::info( "Message ignored: status = {$status}" );
