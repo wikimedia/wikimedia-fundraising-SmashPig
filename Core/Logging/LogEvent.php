@@ -51,7 +51,7 @@ class LogEvent {
 			if ( $data instanceof JsonSerializableObject ) {
 				$jdata = $data->toJson();
 			} else {
-				$jdata = json_encode( $data, JSON_PRETTY_PRINT );
+				$jdata = json_encode( $data );
 			}
 
 			if ( $jdata ) {
