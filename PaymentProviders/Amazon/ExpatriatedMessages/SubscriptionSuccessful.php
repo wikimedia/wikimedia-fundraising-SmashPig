@@ -86,7 +86,6 @@ class SubscriptionSuccessful extends AmazonMessage {
 			throw new SmashPigException( "Unhandled transaction amount , {$this->transactionAmount}" );
 		}
 
-		$queueMsg->gateway_txn_id = $this->subscriptionId;
 		$queueMsg->txn_type = 'subscr_signup';
 		$queueMsg->last_name = $this->buyerName;
 		$queueMsg->email = $this->buyerEmail;
@@ -97,15 +96,17 @@ class SubscriptionSuccessful extends AmazonMessage {
 		$queueMsg->country = $this->country;
 		$queueMsg->postal_code = $this->zip;
 		$queueMsg->currency = $currency;
-		$queueMsg->amount = $amount;
+		$queueMsg->gross = $amount;
 		$queueMsg->frequency_unit = $frequency_unit;
 		$queueMsg->frequency_interval = $frequency_interval;
 		$queueMsg->installments = $installments;
 		$queueMsg->date = $this->startValidityDate;
 		$queueMsg->subscr_id = $this->subscriptionId;
 		$queueMsg->recurring = 1;
+		$queueMsg->gateway_status = $this->status;
+		$queueMsg->contribution_tracking_id = $this->referenceId;
 
-		$queueMsg->correlationId = "{$queueMsg->gateway}-{$queueMsg->gateway_txn_id}";
+		$queueMsg->correlationId = "{$queueMsg->gateway}-{$queueMsg->subscr_id}";
 
 		return $queueMsg;
 	}

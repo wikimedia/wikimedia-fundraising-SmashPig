@@ -31,12 +31,12 @@ abstract class TransactionCommon extends AmazonMessage {
 		'signatureVersion',
 		'signatureMethod',
 		'subscriptionId',
+		'status',
 		'tokenId',
 		'tokenType',
 		'transactionAmount',
 		'transactionDate',
 		'transactionId',
-		'transactionStatus',
 	);
 	protected $addressFullName;
 	protected $addressLine1;
@@ -62,13 +62,13 @@ abstract class TransactionCommon extends AmazonMessage {
 	protected $signature;
 	protected $signatureVersion;
 	protected $signatureMethod;
+	protected $status;
 	protected $subscriptionId;
 	protected $tokenId;
 	protected $tokenType;
 	protected $transactionAmount;
 	protected $transactionDate;
 	protected $transactionId;
-	protected $transactionStatus;
 
 	public function normalizeForQueue() {
 		$queueMsg = parent::normalizeForQueue();
@@ -80,17 +80,20 @@ abstract class TransactionCommon extends AmazonMessage {
 			throw new SmashPigException( "Unhandled transaction amount , {$this->transactionAmount}" );
 		}
 
+		$queueMsg->contribution_tracking_id = $this->referenceId;
 		$queueMsg->gateway_txn_id = $this->transactionId;
 		$queueMsg->last_name = $this->buyerName;
 		$queueMsg->email = $this->buyerEmail;
 		$queueMsg->street_address = $this->addressLine1;
 		$queueMsg->supplemental_address_1 = $this->addressLine2;
 		$queueMsg->state_province = $this->addressState;
+		$queueMsg->city = ''; //FIXME
 		$queueMsg->country = $this->addressCountry;
 		$queueMsg->postal_code = $this->addressZip;
 		$queueMsg->currency = $currency;
 		$queueMsg->gross = $amount;
 		$queueMsg->date = $this->transactionDate;
+		$queueMsg->gateway_status = $this->status;
 
 		if ( $this->subscriptionId ) {
 			$queueMsg->subscr_id = $this->subscriptionId;
