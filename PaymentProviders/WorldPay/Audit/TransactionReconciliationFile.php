@@ -244,7 +244,7 @@ class TransactionReconciliationFile {
 
 		//ARGH.
 		//transaction_date looks like ddmmyy.
-		//@TODO: Verify that the transaction_time is in fact UTC, and not some other weirdo country time. 
+		//@TODO: Verify that the transaction_time is in fact UTC, and not some other weirdo country time.
 		$datestring = '20' . substr( $record["transaction_date"], 4, 2 ) . substr( $record["transaction_date"], 2, 2 ) . substr( $record["transaction_date"], 0, 2 );
 		$datestring .= ' ' . $record["transaction_time"] . '-0000';
 
@@ -277,7 +277,7 @@ class TransactionReconciliationFile {
 			$msg["type"] = "refund";
 			#log.info("+Sending\t{id}\t{date}\t{type}".format(id=msg["gateway_parent_id"], date=iso_date, type=msg["type"]))
 			#self.send(queue, msg)
-			return;
+			return $msg;
 		}
 
 		/*
