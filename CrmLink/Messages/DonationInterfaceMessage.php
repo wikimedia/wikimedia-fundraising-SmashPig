@@ -40,8 +40,6 @@ class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
 	public $payment_submethod = '';
 	public $response = '';
 	public $currency = '';
-	public $original_currency = '';
-	public $original_gross = '';
 	public $fee = '';
 	public $gross = '';
 	public $net = '';
