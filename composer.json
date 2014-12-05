@@ -22,5 +22,10 @@
         "php": ">=5.3.3",
         "symfony/event-dispatcher": ">=2.1,<2.4-dev",
         "symfony/http-foundation": ">=2.1,<2.4-dev"
-    }
+    },
+	"autoload": {
+		"psr-4": {
+			"SmashPig\\": "./"
+		}
+	}
 }
