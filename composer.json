@@ -1,5 +1,5 @@
 {
-	"name": "wikimedia/SmashPig",
+    "name": "wikimedia/smash-pig",
     "description": "The open source PHP flexible payments library and frontend/backend mediator.",
     "keywords": ["payments", "donations"],
     "homepage": "http://smashpig.org",
@@ -13,19 +13,19 @@
             "name": "Matthew Walker",
             "email": "mwalker@wikimedia.org"
         },
-		{
-			"name": "Adam Roses Wight",
-			"email": "awight@wikimedia.org"
-		}
+        {
+            "name": "Adam Roses Wight",
+            "email": "awight@wikimedia.org"
+        }
     ],
     "require": {
         "php": ">=5.3.3",
         "symfony/event-dispatcher": ">=2.1,<2.4-dev",
         "symfony/http-foundation": ">=2.1,<2.4-dev"
     },
-	"autoload": {
-		"psr-4": {
-			"SmashPig\\": "./"
-		}
-	}
+    "autoload": {
+        "psr-4": {
+            "SmashPig\\": "./"
+        }
+    }
 }
