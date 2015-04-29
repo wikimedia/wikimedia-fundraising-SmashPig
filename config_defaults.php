@@ -129,6 +129,21 @@ $config_defaults = array(
 		),
 	),
 
+	'astropay' => array(
+		'actions' => array(
+			'SmashPig\PaymentProviders\Astropay\Actions\IncomingMessage',
+		),
+
+		'endpoints' => array(
+			'listener' => array(
+				'class' => 'SmashPig\PaymentProviders\Astropay\AstropayListener',
+				'inst-args' => array(),
+			),
+		),
+		'login' => 'createlogin',
+		'secret' => 'secretkey',
+	),
+
 	'paypal' => array(
 		'listener' => array(
 			// For testing purposes override this config.php to
