@@ -3,6 +3,8 @@ namespace SmashPig\PaymentProviders\WorldPay\Audit;
 
 use \Exception;
 
+use SmashPig\Core\Logging\Logger;
+
 /**
  * See Transaction Detail Version 2 US Report.doc
  */
