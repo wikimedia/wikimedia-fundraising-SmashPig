@@ -7,7 +7,6 @@
  * at the bottom of the script, and set $maintClass to the class name of the script.
  */
 
-use SmashPig\Core\AutoLoader;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
@@ -21,10 +20,8 @@ if ( !defined( "SMASHPIG_ENTRY_POINT" ) ) {
 	global $argv;
 	define( "SMASHPIG_ENTRY_POINT", $argv[0] );
 
-	// Start the Autoloader
 	$root = __DIR__ . '/../';
-	require_once( $root . 'Core/AutoLoader.php' );
-	AutoLoader::installSmashPigAutoLoader( $root );
+	require_once( $root . 'vendor/autoload.php' );
 
 	/** @var MaintenanceBase $maintClass Set this to the name of the class to execute */
 	$maintClass = false;
@@ -133,7 +130,7 @@ abstract class MaintenanceBase {
 		$configFile = $this->getOption( 'config-file' );
 		$configNode = $this->getOption( 'config-node' );
 		$config = new Configuration(
-			AutoLoader::makePath( static::getMaintenanceDir(), '..', 'config_defaults.php' ),
+			__DIR__ . '/../config_defaults.php',
 			$configFile,
 			$configNode,
 			true
@@ -150,11 +147,6 @@ abstract class MaintenanceBase {
 
 		set_error_handler( '\SmashPig\Maintenance\MaintenanceBase::lastChanceErrorHandler' );
 		set_exception_handler( '\SmashPig\Maintenance\MaintenanceBase::lastChanceExceptionHandler' );
-
-		// --- Load additional namespaces into the autoloader ---
-		AutoLoader::getInstance()->addConfiguredIncludePaths();
-		AutoLoader::getInstance()->addConfiguredNamespaces();
-		AutoLoader::getInstance()->addConfiguredIncludes();
 	}
 
 	/**
@@ -541,7 +533,7 @@ abstract class MaintenanceBase {
 	 * @return string
 	 */
 	public static function getMaintenanceDir() {
-		return dirname( __FILE__ );
+		return __DIR__;
 	}
 
 	/**

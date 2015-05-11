@@ -1,6 +1,5 @@
 <?php namespace SmashPig\Core\DataStores;
 
-use SmashPig\Core\AutoLoader;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
@@ -21,9 +20,9 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 	protected $insertCount = 0;
 
 	public function __construct( $path ) {
-		$this->basePath = AutoLoader::makePath( $path );
-		$this->objectsPath = AutoLoader::makePath( $this->basePath, 'objects' );
-		$this->keysPath = AutoLoader::makePath( $this->basePath, 'keys' );
+		$this->basePath = $path;
+		$this->objectsPath = $this->basePath . '/objects';
+		$this->keysPath = $this->basePath . '/keys';
 
 		Logger::debug( "Constructing DiskFileStore with path {$this->basePath}" );
 
@@ -59,11 +58,7 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 			$keys,
 			$this->insertCount++
 		);
-		$objFsPath = AutoLoader::makePath(
-			$this->basePath,
-			'objects',
-			$objFileName
-		);
+		$objFsPath = $this->basePath . '/objects/' . $objFileName;
 
 		/* --- Create the root object file --- */
 		if ( ( file_exists( $objFsPath ) ) || ( ( $fptr = fopen( $objFsPath, 'xb' ) ) === false ) ) {
@@ -100,23 +95,20 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 		$count = 0;
 
 		// Look up all by correlation ID and then remove them if they match in keys/classes
-		$idpath = AutoLoader::makePath(
-			$this->keysPath,
-			'correlationId',
-			DiskFileDataStore::escapeName( $protoObj->correlationId ),
-			'*'
-		);
-		$classpath = AutoLoader::makePath(
-			$this->keysPath,
-			'class',
-			$this->escapeName( $className )
-		);
+		$idpath = $this->keysPath .
+			'/correlationId/' .
+			DiskFileDataStore::escapeName( $protoObj->correlationId ) .
+			'/*';
+		$classpath = $this->keysPath .
+			'/class/' .
+			$this->escapeName( $className );
+
 		foreach ( glob( $idpath ) as $filename ) {
 			$filePathParts = explode( DIRECTORY_SEPARATOR, $filename );
 			$filename = end( $filePathParts );
-			if ( file_exists( AutoLoader::makePath( $classpath, $filename ) ) ) {
+			if ( file_exists( $classpath . '/' . $filename ) ) {
 				// It's a match! DELETE IT ALL!
-				unlink( AutoLoader::makePath( $this->objectsPath, $filename ) );
+				unlink( $this->objectsPath . '/' . $filename );
 				$this->removeKeyedLinkingFile( 'class', $className, $filename );
 				foreach( explode( '.', $filename ) as $key ) {
 					$parts = explode( '=', $key );
@@ -148,18 +140,17 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 		$count = 0;
 
 		// Look up all by correlation ID and then remove them if they match in keys/classes
-		$idpath = AutoLoader::makePath(
-			$this->keysPath,
-			'correlationId',
-			DiskFileDataStore::escapeName( $protoObj->correlationId ),
-			'*'
-		);
+		$idpath = $this->keysPath .
+			'/correlationId/' .
+			DiskFileDataStore::escapeName( $protoObj->correlationId ) .
+			'/*';
+
 		foreach ( glob( $idpath ) as $filename ) {
 			$filePathParts = explode( DIRECTORY_SEPARATOR, $filename );
 			$filename = end( $filePathParts );
 
 			// Load the first line of the object to get the classname
-			$objPath = AutoLoader::makePath( $this->objectsPath, $filename );
+			$objPath = $this->objectsPath . '/' . $filename;
 			$fptr = fopen( $objPath, 'rb' );
 			$className = fgets( $fptr );
 			fclose( $fptr );
@@ -268,16 +259,14 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 	 * @throws DataStoreException
 	 */
 	protected function addKeyedLinkingFile( $key, $value, $linkName, $linkPath ) {
-		$path = AutoLoader::makePath(
-			$this->keysPath,
-			DiskFileDataStore::escapeName( $key ),
-			DiskFileDataStore::escapeName( $value )
-		);
+		$path = $this->keysPath . '/' .
+			DiskFileDataStore::escapeName( $key ) . '/' .
+			DiskFileDataStore::escapeName( $value );
 
 		if ( !file_exists( $path ) && !mkdir( $path, 0770, true ) ) {
 			throw new DataStoreException( "Could not create path '$path' for linking store." );
 		}
-		if ( !symlink( $linkPath, AutoLoader::makePath( $path, $linkName ) ) ) {
+		if ( !symlink( $linkPath, $path . '/' . $linkName ) ) {
 			throw new DataStoreException( "Could not create link '$linkName' for linking store." );
 		}
 	}
@@ -297,12 +286,10 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 	 * @param string $linkName  Name of the linking file to remove
 	 */
 	protected function removeKeyedLinkingFile( $key, $value, $linkName ) {
-		$path = AutoLoader::makePath(
-			$this->basePath,
-			'keys',
-			DiskFileDataStore::escapeName( $key ),
-			DiskFileDataStore::escapeName( $value )
-		);
-		unlink( AutoLoader::makePath( $path, $linkName ) );
+		$path = $this->basePath .
+			'/keys/' .
+			DiskFileDataStore::escapeName( $key ) . '/' .
+			DiskFileDataStore::escapeName( $value );
+		unlink( $path . '/' . $linkName );
 	}
 }

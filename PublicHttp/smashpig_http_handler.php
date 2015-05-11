@@ -1,6 +1,5 @@
 <?php namespace SmashPig;
 
-use SmashPig\Core\AutoLoader;
 use SmashPig\Core\Http\RequestHandler;
 
 $file = __FILE__;
@@ -9,8 +8,7 @@ if ( !defined( "SMASHPIG_ENTRY_POINT" ) ) {
 	define( "SMASHPIG_ENTRY_POINT", $file );
 
 	$smashPigBaseDir = __DIR__ . '/../';
-	require_once( $smashPigBaseDir . "Core/AutoLoader.php" );
-	AutoLoader::installSmashPigAutoLoader();
+	require_once( $smashPigBaseDir . '/vendor/autoload.php' );
 
 	RequestHandler::process()->send();
 } else {

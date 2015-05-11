@@ -3,7 +3,6 @@
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\AutoLoader;
 
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
@@ -15,11 +14,6 @@ use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
  *
  * This class will load the requested configuration view; and then look for the action
  * to have been registered under the 'endpoints' node.
- *
- * -- AutoLoader Integration --
- * This class will look under the 'namespaces' node for any new namespaces it needs to
- * tell the autoloader about. It is expected that 'namespaces' is an array of arrays.
- * Each subarray is required to have a 'namespace' key and a 'disk-path' key.
  */
 class RequestHandler {
 	/**
@@ -49,12 +43,10 @@ class RequestHandler {
 		$action = array_shift( $parts );
 
 		// --- Initialize core services ---
-		if ( $configPath === null ) {
-			$configPath = AutoLoader::getInstallPath();
-		}
+		$configPath = __DIR__ . '/../../';
 		$config = new Configuration(
-			AutoLoader::makePath( $configPath, 'config_defaults.php' ),
-			AutoLoader::makePath( $configPath, 'config.php' ),
+			$configPath . 'config_defaults.php',
+			$configPath . 'config.php',
 			$view,
 			true
 		);
@@ -73,11 +65,6 @@ class RequestHandler {
 			$response->setStatusCode( 403, "Action '$action' not configured. Cannot continue." );
 			return $response;
 		}
-
-		// Register fun additional things
-		AutoLoader::getInstance()->addConfiguredIncludePaths();
-		AutoLoader::getInstance()->addConfiguredNamespaces();
-		AutoLoader::getInstance()->addConfiguredIncludes();
 
 		// Inform the request object of our security environment
 		$trustedHeader = $config->val( 'security/ip-header-name' );

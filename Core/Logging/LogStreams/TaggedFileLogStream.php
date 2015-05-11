@@ -1,6 +1,5 @@
 <?php namespace SmashPig\Core\Logging\LogStreams;
 
-use SmashPig\Core\AutoLoader;
 use SmashPig\Core\Logging\LogContextHandler;
 use SmashPig\Core\Logging\LogEvent;
 use SmashPig\Core\SmashPigException;
@@ -43,10 +42,7 @@ class TaggedFileLogStream implements ILogStream {
 	public function processEvent( LogEvent $event ) {
 		if ( in_array( $event->tag, $this->tags ) ) {
 			$date = strftime( '%Y%m%dT%H%M%S', $event->timestamp );
-			$filename = AutoLoader::makePath(
-				$this->directory,
-				$date . '.' . $this->contextName
-			);
+			$filename = $this->directory . '/' . $date . '.' . $this->contextName;
 
 			$expStr = implode( '\n\t', $event->getExceptionBlob() );
 			$str = "{$event->message} | {$event->data} | {$expStr}";

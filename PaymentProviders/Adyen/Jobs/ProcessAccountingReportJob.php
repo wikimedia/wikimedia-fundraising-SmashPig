@@ -1,6 +1,5 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
-use SmashPig\Core\AutoLoader;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataFiles\HeadedCsvReader;
 use SmashPig\Core\Logging\TaggedLogger;
@@ -38,10 +37,9 @@ class ProcessAccountingReportJob extends RunnableJob {
 
 		// Construct the temporary file path
 		$fileName = basename( $this->reportUrl );
-		$this->downloadLoc = AutoLoader::makePath(
-			$c->val( "payment-provider/adyen/accounts/{$this->account}/report-location" ),
-			$fileName
-		);
+		$this->downloadLoc =
+			$c->val( "payment-provider/adyen/accounts/{$this->account}/report-location" ) . '/' .
+			$fileName;
 
 		// Actually get the file
 		$this->downloadLog();
