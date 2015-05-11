@@ -61,9 +61,11 @@ class Context {
 		}
 
 		$versionStampPath = __DIR__ . "/../.version-stamp";
-		$versionId = file_get_contents( $versionStampPath );
-		if ( $versionId !== false ) {
-			$this->sourceRevision = trim( $versionId );
+		if ( file_exists( $versionStampPath ) ) {
+			$versionId = file_get_contents( $versionStampPath );
+			if ( $versionId !== false ) {
+				$this->sourceRevision = trim( $versionId );
+			}
 		}
 	}
 
