@@ -1,4 +1,5 @@
-<? namespace SmashPig\PaymentProviders\Amazon;
+<?php
+namespace SmashPig\PaymentProviders\Amazon;
 
 // TODO we are currently ignoring signatures ;)
 // ... this implementation is very not functional
