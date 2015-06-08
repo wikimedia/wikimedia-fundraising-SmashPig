@@ -12,7 +12,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	/** @var bool If true will use the convert_string_expressions: selector term (For ActiveMQ < 5.6 */
 	protected $convertStringExpressions = false;
 
-	/** @var \Stomp Connection object to STOMP server */
+	/** @var \FuseSource\Stomp\Stomp Connection object to STOMP server */
 	protected $stompObj = null;
 
 	/** @var string URI to current STOMP server */
@@ -82,7 +82,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 */
 	protected function createBackingObject() {
 		Logger::debug( "Attempting connection to STOMP server '{$this->uri}'" );
-		$this->stompObj = new \Stomp( $this->uri );
+		$this->stompObj = new \FuseSource\Stomp\Stomp( $this->uri );
 		if ( method_exists( $this->stompObj, 'connect' ) ) {
 			$this->stompObj->connect();
 		}
@@ -443,7 +443,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 				// Sometimes the resource has already been destroyed by some other
 				// means and STOMP throws an exception.
 				$this->stompObj->unsubscribe( $this->queue_id );
-			} catch ( \Stomp_Exception $ex ) {
+			} catch ( \FuseSource\Stomp\Stomp_Exception $ex ) {
 				// Yay for generic errors! We never do that... no... >.>
 			}
 			$this->subscribed = false;
