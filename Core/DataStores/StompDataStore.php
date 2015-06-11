@@ -3,16 +3,15 @@
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
+use FuseSource\Stomp\Exception\StompException;
+use FuseSource\Stomp\Stomp;
 
 class StompDataStore extends KeyedOpaqueDataStore {
-
-	/** @var bool If true, this class is using a PHP STOMP library, if false it is using the PEAR one */
-	protected $usingPhpStomp = false;
 
 	/** @var bool If true will use the convert_string_expressions: selector term (For ActiveMQ < 5.6 */
 	protected $convertStringExpressions = false;
 
-	/** @var \FuseSource\Stomp\Stomp Connection object to STOMP server */
+	/** @var Stomp Connection object to STOMP server */
 	protected $stompObj = null;
 
 	/** @var string URI to current STOMP server */
@@ -47,13 +46,6 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	public function __construct( $queueName ) {
 		$c = Context::get()->getConfiguration();
 
-		// Load PHP stomp if needed
-		$libPath = $c->val( 'data-store/stomp/lib-path' );
-		if ( !empty( $libPath ) ) {
-			require_once( $libPath );
-			$this->usingPhpStomp = true;
-		}
-
 		// Configuration sanity checks
 		if ( !$c->nodeExists( "data-store/stomp/queues/{$queueName}" ) ) {
 			throw new DataStoreException( "STOMP data store is unaware of a queue named '{$queueName}'" );
@@ -82,7 +74,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 	 */
 	protected function createBackingObject() {
 		Logger::debug( "Attempting connection to STOMP server '{$this->uri}'" );
-		$this->stompObj = new \FuseSource\Stomp\Stomp( $this->uri );
+		$this->stompObj = new Stomp( $this->uri );
 		if ( method_exists( $this->stompObj, 'connect' ) ) {
 			$this->stompObj->connect();
 		}
@@ -443,7 +435,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 				// Sometimes the resource has already been destroyed by some other
 				// means and STOMP throws an exception.
 				$this->stompObj->unsubscribe( $this->queue_id );
-			} catch ( \FuseSource\Stomp\Stomp_Exception $ex ) {
+			} catch ( StompException $ex ) {
 				// Yay for generic errors! We never do that... no... >.>
 			}
 			$this->subscribed = false;

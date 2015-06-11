@@ -31,8 +31,6 @@ $config_defaults = array(
 
 			// Library definitions
 			'stomp' => array(
-				'lib-path' => '',
-
 				'uri' => 'tcp://localhost:61613',
 				'timeout' => 1,
 				'refresh-connection' => false,
