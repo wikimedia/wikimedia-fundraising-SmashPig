@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "401d5f2ca1fb42ad491e9429cd8ceb66",
+    "hash": "efa8acefb508b286300dfe877adfd531",
     "packages": [
         {
             "name": "fusesource/stomp-php",
@@ -54,6 +54,59 @@
                 "stomp"
             ],
             "time": "2013-02-23 17:34:44"
+        },
+        {
+            "name": "phpmailer/phpmailer",
+            "version": "v5.2.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PHPMailer/PHPMailer.git",
+                "reference": "4d9434e394496a5bb7acd9e73046587184b413df"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/4d9434e394496a5bb7acd9e73046587184b413df",
+                "reference": "4d9434e394496a5bb7acd9e73046587184b413df",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.0.0"
+            },
+            "require-dev": {
+                "phpdocumentor/phpdocumentor": "*",
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "class.phpmailer.php",
+                    "class.pop3.php",
+                    "class.smtp.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1"
+            ],
+            "authors": [
+                {
+                    "name": "Jim Jagielski",
+                    "email": "jimjag@gmail.com"
+                },
+                {
+                    "name": "Marcus Bointon",
+                    "email": "phpmailer@synchromedia.co.uk"
+                },
+                {
+                    "name": "Andy Prevost",
+                    "email": "codeworxtech@users.sourceforge.net"
+                },
+                {
+                    "name": "Brent R. Matzelle"
+                }
+            ],
+            "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
+            "time": "2013-04-11 16:45:39"
         },
         {
             "name": "symfony/event-dispatcher",

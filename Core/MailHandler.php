@@ -14,17 +14,8 @@ class MailHandler {
 	 * Load a new instance of PHPMailer
 	 *
 	 * @return \PHPMailer
-	 * @throws SmashPigException If the library did not load correctly.
 	 */
 	protected static function mailbaseFactory() {
-		@include_once( 'class.phpmailer.php' );
-
-		if ( !class_exists( '\PHPMailer' ) ) {
-			throw new SmashPigException(
-				"PHPMailer could not be found. Have you configured the include paths correctly?"
-			);
-		}
-
 		$mailer = new \PHPMailer( true );
 		$mailer->IsSendmail();
 

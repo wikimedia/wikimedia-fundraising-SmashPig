@@ -21,6 +21,7 @@
     "require": {
         "fusesource/stomp-php": "2.*",
         "php": ">=5.3.3",
+        "phpmailer/phpmailer": "5.2.6",
         "symfony/event-dispatcher": ">=2.1,<2.4-dev",
         "symfony/http-foundation": ">=2.1,<2.4-dev"
     },
