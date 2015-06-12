@@ -22,6 +22,9 @@ class RequestHandler {
 	 * @return Response
 	 */
 	public static function process( $configPath = null ) {
+		// Can go away once we require PHP 5.6
+		ini_set( 'default_charset', 'UTF-8' );
+
 		// --- Get the request and response objects
 		$request = Request::createFromGlobals();
 		$response = new Response();
