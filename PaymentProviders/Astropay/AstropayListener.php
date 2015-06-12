@@ -21,6 +21,7 @@ class AstropayListener extends RestListener {
 		$requestValues = $request->getValues();
 
 		$secureLog = Logger::getTaggedLogger( 'RawData' );
+		$secureLog->info( "Incoming message (headers)", $request->headers->all() );
 		$secureLog->info( "Incoming message (raw)", base64_encode( $request->getRawRequest() ) );
 
 		$messages = array();
