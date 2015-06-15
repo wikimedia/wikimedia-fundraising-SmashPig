@@ -4,7 +4,7 @@ use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 
-use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
 /**
  * Entry point for the base initialized SmashPig application. Expects the requested
@@ -56,6 +56,15 @@ class RequestHandler {
 		Logger::init( $config->val( 'logging/root-context' ), $config->val( 'logging/log-level' ), $config );
 		Context::init( $config );
 		Logger::enterContext( Context::get()->getContextId() );
+
+		if ( $config->nodeExists( 'charset' ) ) {
+			// recreate the request with a different input encoding
+			$decoded = rawurldecode( $request->getContent() );
+			$content = mb_convert_encoding( $decoded, 'UTF-8', $config->val( 'charset' ) );
+
+			parse_str( $content, $data );
+			$request->request = new ParameterBag( $data );
+		}
 
 		set_error_handler( '\SmashPig\Core\Http\RequestHandler::lastChanceErrorHandler' );
 		set_exception_handler( '\SmashPig\Core\Http\RequestHandler::lastChanceExceptionHandler' );

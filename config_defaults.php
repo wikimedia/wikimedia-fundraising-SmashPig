@@ -140,6 +140,7 @@ $config_defaults = array(
 		),
 		'login' => 'createlogin',
 		'secret' => 'secretkey',
+		'charset' => 'iso-8859-1',
 	),
 
 	'paypal' => array(
