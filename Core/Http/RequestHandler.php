@@ -59,6 +59,8 @@ class RequestHandler {
 
 		if ( $config->nodeExists( 'charset' ) ) {
 			// recreate the request with a different input encoding
+			// FIXME: This is only converting the POST values.  Also,
+			// is there really no better way to do this?
 			$decoded = rawurldecode( $request->getContent() );
 			$content = mb_convert_encoding( $decoded, 'UTF-8', $config->val( 'charset' ) );
 
