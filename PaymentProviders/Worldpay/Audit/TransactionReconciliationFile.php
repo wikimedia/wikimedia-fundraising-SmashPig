@@ -1,6 +1,6 @@
 <?php
 
-namespace SmashPig\PaymentProviders\WorldPay\Audit;
+namespace SmashPig\PaymentProviders\Worldpay\Audit;
 
 require_once "ReferenceData.php";
 
@@ -323,7 +323,7 @@ class TransactionReconciliationFile {
 	 * The exponent defines how many digits are "minor units" of the currency, so USD
 	 * for example has an exponent of 2.  Our queue consumer assumes that amounts are
 	 * always given in major units, so we produce a multiplier here which will
-	 * convert from the WorldPay amount, formatted in minor units, to the expected amount.
+	 * convert from the Worldpay amount, formatted in minor units, to the expected amount.
 	 *
 	 * For example, a currency with 3 digits of minor units should be multipled by 0.001
 	 * before sending over the queue.

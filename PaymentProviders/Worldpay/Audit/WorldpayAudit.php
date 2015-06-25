@@ -1,8 +1,8 @@
 <?php
 
-namespace SmashPig\PaymentProviders\WorldPay\Audit;
+namespace SmashPig\PaymentProviders\Worldpay\Audit;
 
-class WorldPayAudit {
+class WorldpayAudit {
 
 	function retrieveFiles() {
 		AuditRetriever::retrieveAll( 'worldpay' );
@@ -11,8 +11,8 @@ class WorldPayAudit {
 	function parseFile( $file ) {
 		// FIXME: this should be specified in configuration
 		$fileTypes = array(
-			'SmashPig\PaymentProviders\WorldPay\Audit\TransactionReconciliationFile',
-			'SmashPig\PaymentProviders\WorldPay\Audit\LynkReconciliationFile',
+			'SmashPig\PaymentProviders\Worldpay\Audit\TransactionReconciliationFile',
+			'SmashPig\PaymentProviders\Worldpay\Audit\LynkReconciliationFile',
 		);
 
 		foreach ( $fileTypes as $type ) {

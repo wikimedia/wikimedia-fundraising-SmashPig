@@ -1,5 +1,5 @@
 <?php
-namespace Smashpig\PaymentProviders\WorldPay\Audit;
+namespace Smashpig\PaymentProviders\Worldpay\Audit;
 
 class ReferenceData {
 	static function decode_card_type( $code ) {

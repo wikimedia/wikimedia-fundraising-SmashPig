@@ -1,5 +1,5 @@
 <?php
-namespace SmashPig\PaymentProviders\WorldPay\Audit;
+namespace SmashPig\PaymentProviders\Worldpay\Audit;
 
 use \Exception;
 
