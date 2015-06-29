@@ -1,6 +1,6 @@
-<?php
+<?php namespace SmashPig\PaymentProviders\Astropay;
 
-namespace SmashPig\PaymentProviders\Astropay;
+use OutOfBoundsException;
 
 class ReferenceData {
 	public static function decodePaymentSubmethod( $code ) {
@@ -50,7 +50,7 @@ class ReferenceData {
 			return $submethods[$code];
 		}
 
-		throw new \OutOfBoundsException( "Unknown payment submethod code: {$code}" );
+		throw new OutOfBoundsException( "Unknown payment submethod code: {$code}" );
 	}
 
 	public static function decodePaymentMethod( $name ) {
@@ -65,6 +65,6 @@ class ReferenceData {
 			return $methods[$name];
 		}
 
-		throw new \OutOfBoundsException( "Unknown payment method name: {$name}" );		
+		throw new OutOfBoundsException( "Unknown payment method name: {$name}" );
 	}
 }
