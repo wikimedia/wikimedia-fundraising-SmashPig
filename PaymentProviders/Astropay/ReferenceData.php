@@ -8,7 +8,7 @@ class ReferenceData {
 			'AG' => 'argen',
 			'AE' => 'amex',
 			'B' => 'bradesco',
-			'BB' => 'banco_de_brasil',
+			'BB' => 'banco_do_brasil',
 			'BL' => 'boleto',
 			'BM' => 'banamex',
 			'BP' => 'bbva',
