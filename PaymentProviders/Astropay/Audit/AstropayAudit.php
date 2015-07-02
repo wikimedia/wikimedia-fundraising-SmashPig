@@ -94,7 +94,7 @@ class AstropayAudit {
 
 	protected function parseRefund( array $row, array &$msg ) {
 		$msg['gateway_parent_id'] = $row['Transaction Reference'];
-		$msg['gateway_refund_id'] = "refund:{$row['Reference']}";
+		$msg['gateway_refund_id'] = 'RFD ' . $row['Reference'];
 		$msg['gross_currency'] = 'BRL'; // FIXME when AP adds this column!
 		$msg['type'] = strtolower( $row['Type'] );
 	}
