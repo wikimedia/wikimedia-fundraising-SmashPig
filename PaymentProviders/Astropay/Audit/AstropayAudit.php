@@ -93,6 +93,7 @@ class AstropayAudit {
 	}
 
 	protected function parseRefund( array $row, array &$msg ) {
+		$msg['contribution_tracking_id'] = $this->getContributionTrackingId( $row['Transaction Invoice'] );
 		$msg['gateway_parent_id'] = $row['Transaction Reference'];
 		$msg['gateway_refund_id'] = 'RFD ' . $row['Reference'];
 		$msg['gross_currency'] = 'BRL'; // FIXME when AP adds this column!
@@ -100,8 +101,7 @@ class AstropayAudit {
 	}
 
 	protected function parseDonation( array $row, array &$msg ) {
-		$parts = explode( '.', $row['Invoice'] );
-		$msg['contribution_tracking_id'] = $parts[0];
+		$msg['contribution_tracking_id'] = $this->getContributionTrackingId( $row['Invoice'] );
 		$msg['country'] = $row['Country'];
 		$msg['currency'] = 'BRL'; // FIXME when AP adds this column!
 		$msg['email'] = $row['User Mail'];
@@ -116,5 +116,10 @@ class AstropayAudit {
 			$msg['settled_currency'] = 'USD';
 			$msg['settled_gross'] = $row['Amount (USD)'];
 		}
+	}
+
+	protected function getContributionTrackingId( $invoice ) {
+		$parts = explode( '.', $invoice );
+		return $parts[0];
 	}
 }

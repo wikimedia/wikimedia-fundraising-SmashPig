@@ -43,6 +43,7 @@ class AuditTest extends \BaseSmashPigUnitTestCase {
 		$actual = $output[0];
 		$expected = array(
 			'gateway' => 'astropay',
+			'contribution_tracking_id' => '314159265',
 			'date' => 1434747909,
 			'gross' => '5.00',
 			'gateway_parent_id' => '7654321',
