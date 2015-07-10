@@ -1,4 +1,4 @@
-<?php namespace SmashPig\PaymentProviders\Astropay;
+<?php namespace SmashPig\PaymentProviders\AstroPay;
 
 use SmashPig\Core\Http\Request;
 use SmashPig\Core\Messages\ListenerMessage;
@@ -8,13 +8,13 @@ use SmashPig\Core\Listeners\RestListener;
 use SmashPig\Core\Logging\Logger;
 
 /**
- * Responds to payment messages from Astropay
+ * Responds to payment messages from AstroPay
  */
-class AstropayListener extends RestListener {
+class AstroPayListener extends RestListener {
 
 	protected $byResult = array(
-		'9' => 'SmashPig\PaymentProviders\Astropay\ExpatriatedMessages\PaymentMessage',
-		'8' => 'SmashPig\PaymentProviders\Astropay\ExpatriatedMessages\ExpirationMessage',
+		'9' => 'SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages\PaymentMessage',
+		'8' => 'SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages\ExpirationMessage',
 	);
 
 	protected function parseEnvelope( Request $request ) {
@@ -30,7 +30,7 @@ class AstropayListener extends RestListener {
 		$missing = array_diff( $required, array_keys( $requestValues ) );
 		if ( count( $missing ) ) {
 			$list = implode( ',', $missing );
-			throw new ListenerDataException( "Astropay message missing required key(s) $list." );
+			throw new ListenerDataException( "AstroPay message missing required key(s) $list." );
 		}
 
 		$result = $requestValues['result'];

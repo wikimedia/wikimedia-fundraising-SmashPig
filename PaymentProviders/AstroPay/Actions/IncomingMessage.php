@@ -1,4 +1,4 @@
-<?php namespace SmashPig\PaymentProviders\Astropay\Actions;
+<?php namespace SmashPig\PaymentProviders\AstroPay\Actions;
 
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\Context;

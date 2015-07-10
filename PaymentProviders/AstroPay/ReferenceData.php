@@ -1,4 +1,4 @@
-<?php namespace SmashPig\PaymentProviders\Astropay;
+<?php namespace SmashPig\PaymentProviders\AstroPay;
 
 use OutOfBoundsException;
 

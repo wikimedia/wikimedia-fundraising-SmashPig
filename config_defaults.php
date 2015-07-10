@@ -129,12 +129,12 @@ $config_defaults = array(
 
 	'astropay' => array(
 		'actions' => array(
-			'SmashPig\PaymentProviders\Astropay\Actions\IncomingMessage',
+			'SmashPig\PaymentProviders\AstroPay\Actions\IncomingMessage',
 		),
 
 		'endpoints' => array(
 			'listener' => array(
-				'class' => 'SmashPig\PaymentProviders\Astropay\AstropayListener',
+				'class' => 'SmashPig\PaymentProviders\AstroPay\AstroPayListener',
 				'inst-args' => array(),
 			),
 		),

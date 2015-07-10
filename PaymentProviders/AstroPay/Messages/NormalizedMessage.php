@@ -1,4 +1,4 @@
-<?php namespace SmashPig\PaymentProviders\Astropay\Messages;
+<?php namespace SmashPig\PaymentProviders\AstroPay\Messages;
 
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 

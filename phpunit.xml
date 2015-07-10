@@ -7,8 +7,8 @@
       <testsuite name="Amazon tests">
         <directory>PaymentProviders/Amazon/Tests/phpunit</directory>
       </testsuite>
-      <testsuite name="Astropay tests">
-        <directory>PaymentProviders/Astropay/Tests/phpunit</directory>
+      <testsuite name="AstroPay tests">
+        <directory>PaymentProviders/AstroPay/Tests/phpunit</directory>
       </testsuite>
     </testsuites>
 </phpunit>

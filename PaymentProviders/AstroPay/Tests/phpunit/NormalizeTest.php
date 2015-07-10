@@ -1,6 +1,6 @@
-<?php namespace SmashPig\PaymentProviders\Astropay\Test;
+<?php namespace SmashPig\PaymentProviders\AstroPay\Test;
 
-use SmashPig\PaymentProviders\Astropay\ExpatriatedMessages\PaymentMessage;
+use SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages\PaymentMessage;
 
 class NormalizeTest extends \BaseSmashPigUnitTestCase {
 	function setUp() {

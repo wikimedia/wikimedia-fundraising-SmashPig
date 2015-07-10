@@ -1,9 +1,9 @@
-<?php namespace SmashPig\PaymentProviders\Astropay\ExpatriatedMessages;
+<?php namespace SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages;
 
 /**
  * Message indicating a successfult payment
  */
-class PaymentMessage extends AstropayMessage {
+class PaymentMessage extends AstroPayMessage {
 	public function getDestinationQueue() {
 		return 'verified';
 	}

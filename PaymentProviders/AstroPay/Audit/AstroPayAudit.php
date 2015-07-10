@@ -1,10 +1,10 @@
-<?php namespace SmashPig\PaymentProviders\Astropay\Audit;
+<?php namespace SmashPig\PaymentProviders\AstroPay\Audit;
 
 use OutOfBoundsException;
 use SmashPig\Core\UtcDate;
-use SmashPig\PaymentProviders\Astropay\ReferenceData;
+use SmashPig\PaymentProviders\AstroPay\ReferenceData;
 
-class AstropayAudit {
+class AstroPayAudit {
 
 	protected $columnHeaders;
 	protected $ignoredStatuses;
@@ -27,9 +27,9 @@ class AstropayAudit {
 			// These two fields refer to the original donation for refunds
 			'Transaction Reference',
 			'Transaction Invoice',
-			'Fee', // In USD.  Astropay's processing fee
+			'Fee', // In USD.  AstroPay's processing fee
 			'IOF', // In USD.  Fee for financial transactions in Brazil
-			// The IOF is included in Astropay's fee, but broken out by request
+			// The IOF is included in AstroPay's fee, but broken out by request
 		);
 		// We don't need do anything with some audit lines
 		$this->ignoredStatuses = array(

@@ -1,9 +1,9 @@
-<?php namespace SmashPig\PaymentProviders\Astropay\ExpatriatedMessages;
+<?php namespace SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages;
 
 use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\PaymentProviders\Astropay\Messages\NormalizedMessage;
+use SmashPig\PaymentProviders\AstroPay\Messages\NormalizedMessage;
 
-abstract class AstropayMessage extends ListenerMessage {
+abstract class AstroPayMessage extends ListenerMessage {
 
 	protected $fields = array(
 		'result',
@@ -52,16 +52,16 @@ abstract class AstropayMessage extends ListenerMessage {
 	abstract function getDestinationQueue();
 
 	/**
-	 * Map Astropay's fields to ours
+	 * Map AstroPay's fields to ours
 	 *
-	 * @return \SmashPig\PaymentProviders\Astropay\Messages\NormalizedMessage associative queue message thing
+	 * @return \SmashPig\PaymentProviders\AstroPay\Messages\NormalizedMessage associative queue message thing
 	 */
 	public function normalizeForQueue() {
 		$queueMsg = new NormalizedMessage();
 
 		$queueMsg->gateway = 'astropay';
 
-		// Astropay invoice format is ct_id.numAttempt
+		// AstroPay invoice format is ct_id.numAttempt
 		$invoiceParts = explode( '.', $this->x_invoice );
 		$queueMsg->contribution_tracking_id = $invoiceParts[0];
 

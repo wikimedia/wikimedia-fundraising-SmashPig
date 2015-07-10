@@ -1,16 +1,16 @@
-<?php namespace SmashPig\PaymentProviders\Astropay\Test;
+<?php namespace SmashPig\PaymentProviders\AstroPay\Test;
 
-use SmashPig\PaymentProviders\Astropay\Audit\AstropayAudit;
+use SmashPig\PaymentProviders\AstroPay\Audit\AstroPayAudit;
 
 /**
- * Verify Astropay audit file processor functions
+ * Verify AstroPay audit file processor functions
  */
 class AuditTest extends \BaseSmashPigUnitTestCase {
 	/**
 	 * Normal donation
 	 */
 	public function testProcessDonation() {
-		$processor = new AstropayAudit();
+		$processor = new AstroPayAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/donation.csv' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one donation' );
 		$actual = $output[0];
@@ -37,7 +37,7 @@ class AuditTest extends \BaseSmashPigUnitTestCase {
 	 * Now try a refund
 	 */
 	public function testProcessRefund() {
-		$processor = new AstropayAudit();
+		$processor = new AstroPayAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/refund.csv' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
 		$actual = $output[0];
@@ -47,7 +47,7 @@ class AuditTest extends \BaseSmashPigUnitTestCase {
 			'date' => 1434747909,
 			'gross' => '5.00',
 			'gateway_parent_id' => '7654321',
-			'gateway_refund_id' => 'refund:12345',
+			'gateway_refund_id' => 'RFD 12345',
 			'gross_currency' => 'BRL',
 			'type' => 'refund',
 		);
