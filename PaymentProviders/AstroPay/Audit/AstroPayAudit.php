@@ -97,6 +97,7 @@ class AstroPayAudit {
 		$msg['gateway_parent_id'] = $row['Transaction Reference'];
 		$msg['gateway_refund_id'] = 'RFD ' . $row['Reference'];
 		$msg['gross_currency'] = 'BRL'; // FIXME when AP adds this column!
+		$msg['log_id'] = $row['Transaction Invoice'];
 		$msg['type'] = strtolower( $row['Type'] );
 	}
 
@@ -107,6 +108,7 @@ class AstroPayAudit {
 		$msg['email'] = $row['User Mail'];
 		$msg['settled_fee'] = $row['Fee']; // settled_fee since it's given in USD
 		$msg['gateway_txn_id'] = $row['Reference'];
+		$msg['log_id'] = $row['Invoice'];
 		$msg['payment_method'] = ReferenceData::decodePaymentMethod( $row['Payment Method Type'] );
 		$msg['payment_submethod'] = ReferenceData::decodePaymentSubmethod( $row['Payment Method'] );
 		if ( $row['Settlement date'] ) {
