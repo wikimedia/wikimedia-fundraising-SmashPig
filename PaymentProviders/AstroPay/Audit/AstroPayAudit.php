@@ -8,6 +8,7 @@ class AstroPayAudit {
 
 	protected $columnHeaders;
 	protected $ignoredStatuses;
+	protected $fileData = array();
 
 	public function __construct() {
 		// FIXME: where the heck is currency code?
