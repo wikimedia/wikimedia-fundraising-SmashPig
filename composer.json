@@ -16,6 +16,10 @@
         {
             "name": "Adam Roses Wight",
             "email": "awight@wikimedia.org"
+        },
+        {
+            "name": "Elliott Eggleston",
+            "email": "eeggleston@wikimedia.org"
         }
     ],
     "require": {
