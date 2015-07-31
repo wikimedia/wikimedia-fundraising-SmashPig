@@ -11,7 +11,6 @@ class AstroPayAudit {
 	protected $fileData = array();
 
 	public function __construct() {
-		// FIXME: where the heck is currency code?
 		$this->columnHeaders = array(
 			'Type', // 'Payment' or 'Refund'
 			'Creation date', // YYYY-MM-dd HH:mm:ss
@@ -23,6 +22,7 @@ class AstroPayAudit {
 			'Payment Method Type', // our payment_method
 			'Net Amount (local)',
 			'Amount (USD)', // gross, including fee
+			'currency', // yup, this one is lower case
 			'Status',
 			'User Mail',
 			// These two fields refer to the original donation for refunds
@@ -97,7 +97,7 @@ class AstroPayAudit {
 		$msg['contribution_tracking_id'] = $this->getContributionTrackingId( $row['Transaction Invoice'] );
 		$msg['gateway_parent_id'] = $row['Transaction Reference'];
 		$msg['gateway_refund_id'] = 'RFD ' . $row['Reference'];
-		$msg['gross_currency'] = 'BRL'; // FIXME when AP adds this column!
+		$msg['gross_currency'] = $row['currency'];
 		$msg['log_id'] = $row['Transaction Invoice'];
 		$msg['type'] = strtolower( $row['Type'] );
 	}
@@ -105,7 +105,7 @@ class AstroPayAudit {
 	protected function parseDonation( array $row, array &$msg ) {
 		$msg['contribution_tracking_id'] = $this->getContributionTrackingId( $row['Invoice'] );
 		$msg['country'] = $row['Country'];
-		$msg['currency'] = 'BRL'; // FIXME when AP adds this column!
+		$msg['currency'] = $row['currency'];
 		$msg['email'] = $row['User Mail'];
 		$msg['settled_fee'] = $row['Fee']; // settled_fee since it's given in USD
 		$msg['gateway_txn_id'] = $row['Reference'];
