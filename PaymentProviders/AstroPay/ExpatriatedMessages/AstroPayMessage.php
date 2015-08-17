@@ -47,6 +47,9 @@ abstract class AstroPayMessage extends ListenerMessage {
 		foreach ( $this->fields as $key ) {
 			$this->$key = ( array_key_exists( $key, $values ) ? $values[$key] : '');
 		}
+		// Need to set the correlationId during construction
+		// or inflight message store will get confused
+		$this->correlationId = "astropay-{$this->x_document}";
 	}
 
 	abstract function getDestinationQueue();
@@ -70,8 +73,7 @@ abstract class AstroPayMessage extends ListenerMessage {
 		$queueMsg->gross = $this->x_amount;
 		$queueMsg->date = time();
 		$queueMsg->gateway_status = $this->result;
-
-		$queueMsg->correlationId = "{$queueMsg->gateway}-{$queueMsg->gateway_txn_id}";
+		$queueMsg->correlationId = $this->correlationId;
 
 		// This message has no donor info.  Add a key to indicate that there is
 		// a message in the pending queue with the rest of the info we need.
