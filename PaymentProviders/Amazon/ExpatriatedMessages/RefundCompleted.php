@@ -1,6 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\ExpatriatedMessages;
 
-class PaymentSuccess extends TransactionCommon {
+class RefundCompleted extends PaymentRefund {
 	public function getDestinationQueue() {
 		return 'verified';
 	}

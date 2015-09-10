@@ -1,47 +1,39 @@
 <?php
-
-use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\SubscriptionPaymentSuccess;
-use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\SubscriptionSuccessful;
+use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted;
+use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;
 
 class NormalizeTest extends BaseSmashPigUnitTestCase {
 	function setUp() {
 		parent::setUp();
-		$this->subscriptionPaymentSuccess = $this->loadJson( __DIR__ . "/../Data/IPN/SubscriptionPaymentSuccess.json" );
-		$this->subscriptionSuccessful = $this->loadJson( __DIR__ . "/../Data/IPN/SubscriptionSuccessful.json" );
+		$this->captureCompleted = $this->loadJson( __DIR__ . "/../Data/IPN/CaptureCompleted.json" );
+		$this->captureDeclined = $this->loadJson( __DIR__ . "/../Data/IPN/CaptureDeclined.json" );
+		$this->refundCompleted = $this->loadJson( __DIR__ . "/../Data/IPN/RefundCompleted.json" );
+		$this->refundDeclined = $this->loadJson( __DIR__ . "/../Data/IPN/RefundDeclined.json" );
 	}
 
 	function normalizedToArray( $message ) {
 		return json_decode( $message->toJson(), true );
 	}
 
-	function testNormalizeSubscriptionPaymentSuccess() {
+	function testNormalizeCaptureCompleted() {
 		$expected = array(
-			'city' => '',
-			'contribution_tracking_id' => '450',
-			'correlationId' => 'amazon-17PJULZUA5ZLH6A184D2T6ST5NTBAQ18165',
-			'country' => '',
+			'completion_message_id' => 'amazon-98765432.1',
+			'contribution_tracking_id' => '98765432',
+			'correlationId' => 'amazon-P01-0000000-0000000-000000',
 			'currency' => 'USD',
-			'date' => '1367543022',
-			'email' => 'foo@d.net',
+			'date' => 1357002061,
+			'fee' => '0.0',
 			'gateway' => 'amazon',
-			'gateway_status' => 'PS',
-			'gateway_txn_id' => '17PJULZUA5ZLH6A184D2T6ST5NTBAQ18165',
-			'gross' => '1.00',
-			'last_name' => 'bart spanger',
-			'postal_code' => '',
-			'recurring' => 1,
-			'state_province' => '',
-			'street_address' => '',
-			'subscr_id' => 'f138980f-90ca-43ba-9421-41a4996779ea',
-			'supplemental_address_1' => '',
-			'txn_type' => 'subscr_payment',
+			'gateway_status' => 'Completed',
+			'gateway_txn_id' => 'P01-0000000-0000000-000000',
+			'gross' => '10.0',
+			'payment_method' => 'amazon',
 		);
 		$stripFields = array(
 			'propertiesExportedAsKeys',
 			'propertiesExcludedFromExport',
 		);
-		$message = new SubscriptionPaymentSuccess();
-		$message->constructFromValues( $this->subscriptionPaymentSuccess );
+		$message = new CaptureCompleted( $this->captureCompleted );
 		$normalized = $this->normalizedToArray( $message->normalizeForQueue() );
 		foreach ( $stripFields as $field ) {
 			unset( $normalized[$field] );
@@ -49,36 +41,23 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $expected, $normalized );
 	}
 
-	function testNormalizeSubscriptionSuccessful() {
+	function testNormalizeRefundCompleted() {
 		$expected = array(
-			'city' => '',
-			'contribution_tracking_id' => '450',
-			'correlationId' => 'amazon-f138980f-90ca-43ba-9421-41a4996779ea',
-			'country' => '',
-			'currency' => 'USD',
-			'date' => '1367543021',
-			'email' => 'foo@d.net',
-			'frequency_interval' => 1,
-			'frequency_unit' => 'month',
+			'correlationId' => 'amazon-P01-0000000-0000000-R00000',
+			'gross_currency' => 'USD',
+			'date' => 1357002061,
 			'gateway' => 'amazon',
-			'gateway_status' => 'SubscriptionSuccessful',
-			'gross' => '1.00',
-			'installments' => 0,
-			'last_name' => 'bart spanger',
-			'postal_code' => '',
-			'recurring' => 1,
-			'state_province' => '',
-			'street_address' => '',
-			'subscr_id' => 'f138980f-90ca-43ba-9421-41a4996779ea',
-			'supplemental_address_1' => '',
-			'txn_type' => 'subscr_signup',
+			'gateway_parent_id' => 'P01-0000000-0000000-C00000',
+			'gateway_refund_id' => 'P01-0000000-0000000-R00000',
+			'gross' => '10.0',
+			'gross_currency' => 'USD',
+			'type' => 'refund',
 		);
 		$stripFields = array(
 			'propertiesExportedAsKeys',
 			'propertiesExcludedFromExport',
 		);
-		$message = new SubscriptionSuccessful();
-		$message->constructFromValues( $this->subscriptionSuccessful );
+		$message = new RefundCompleted( $this->refundCompleted );
 		$normalized = $this->normalizedToArray( $message->normalizeForQueue() );
 		foreach ( $stripFields as $field ) {
 			unset( $normalized[$field] );

@@ -3,87 +3,101 @@
 use SmashPig\Core\Http\Request;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Listeners\ListenerSecurityException;
+use SmashPig\Core\Listeners\ListenerDataException;
 use SmashPig\Core\Listeners\RestListener;
 use SmashPig\Core\Logging\Logger;
 
-use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages as MsgDefs;
+use PayWithAmazon\IpnHandler;
 
 /**
- * Dispatches incoming messages accoring to type
- *
- * @see https://amazonpayments.s3.amazonaws.com/FPS_ASP_Guides/ASP_Advanced_Users_Guide.pdf
+ * Uses the Amazon SDK to parse incoming IPN messages
  */
 class AmazonListener extends RestListener {
-	protected $byTypes = array(
-		'TransactionStatus' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\TransactionStatus',
-		'TokenCancellation' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\TokenCancellation',
-	);
-
-	protected $byStatus = array(
-		'PS' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\PaymentSuccess',
-		'PF' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\PaymentFailed',
-		'PI' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\PaymentInitiated',
-		'PR' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\PaymentReversed',
-		'RS' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundSuccessful',
-		'RF' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundFailed',
-		'PaymentSuccess' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\SubscriptionPaymentSuccess',
-		'PendingUserAction' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\PendingUserAction',
-		'PaymentRescheduled' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\PaymentRescheduled',
-		'PaymentCancelled' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\SubscriptionPaymentCancelled',
-		'SubscriptionCancelled' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\SubscriptionCancelled',
-		'SubscriptionCompleted' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\SubscriptionCompleted',
-		'SubscriptionSuccessful' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\SubscriptionSuccessful',
+	protected $messageClasses = array(
+		'PaymentCapture' => array(
+			'Completed' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted',
+			'Declined' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureDeclined',
+		),
+		'PaymentRefund' => array(
+			'Completed' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted',
+			'Declined' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundDeclined',
+		),
 	);
 
 	protected function parseEnvelope( Request $request ) {
-		$requestValues = $request->getValues();
+		// Symfony's framework gives us each header's value as an array
+		// (to account for potential repeated headers?
+		// IpnHandler's constructor expects scalar values, so we flatten them
+		$headers = array();
+		foreach( $request->headers->all() as $header => $annoyingArray ) {
+			if ( count( $annoyingArray ) !== 1 ) {
+				throw new ListenerDataException( "header '$header' should have a single value" );
+			}
+			$headers[$header] = $annoyingArray[0];
+		};
+		$json = $request->getRawRequest();
 
 		$secureLog = Logger::getTaggedLogger( 'RawData' );
-		$secureLog->info( "Incoming message (raw)", $requestValues );
+		$secureLog->info(
+			'Incoming message (raw)',
+			array(
+				'headers' => $headers,
+				'body' => $json
+			)
+		);
 
 		$messages = array();
-		if ( array_key_exists( 'notificationType', $requestValues ) ) {
-			$type = $requestValues['notificationType'];
-			if ( array_key_exists( $type, $this->byType ) ) {
-				$klass = $this->byType[$type];
-				$message = new $klass();
-				$message->constructFromValues($requestValues);
-
-				$secureLog->debug( "Processed message (normalized)", $message );
-
-				$messages[] = $message;
-			} else {
-				Logger::info( "Message ignored: notificationType = {$type}" );
-			}
-		} elseif ( array_key_exists( 'status', $requestValues ) ) {
-			$status = $requestValues['status'];
-			if ( array_key_exists( $status, $this->byStatus ) ) {
-				$klass = $this->byStatus[$status];
-				$message = new $klass();
-				$message->constructFromValues($requestValues);
-
-				$secureLog->debug( "Processed message (normalized)", $message );
-
+		try{
+			$amazonHandlerMessage = new IpnHandler(
+				$headers,
+				$json
+			);
+		} catch ( \Exception $ex ) {
+			// FIXYOU: IpnHandler should use exception subclasses or error codes
+			// Assuming here that IpnHandler's problem was with the signature
+			// We can get away with throwing ListenerSecurityException here
+			// because of how RestListener is implemented and because we only
+			// process one message per request
+			// Bad form, but it would be odd to hold this till doMessageSecurity
+			throw new ListenerSecurityException( $ex->getMessage() );
+		}
+		$messageValues = $amazonHandlerMessage->toArray();
+		$type = $messageValues['NotificationType'];
+		if ( array_key_exists( $type, $this->messageClasses ) ) {
+			$byStatus = $this->messageClasses[$type];
+			$status = $this->getMessageStatus( $messageValues, $type );
+			if ( array_key_exists( $status, $byStatus ) ) {
+				$klass = $byStatus[$status];
+				$message = new $klass( $messageValues );
+				$secureLog->debug( 'Created message', $message );
 				$messages[] = $message;
 			} else {
 				Logger::info( "Message ignored: status = {$status}" );
 			}
+		} else {
+			Logger::info( "Message ignored: notificationType = {$type}" );
 		}
 
 		return $messages;
 	}
 
+	protected function getMessageStatus( $values, $type ) {
+		switch ( $type ) {
+			case 'PaymentCapture':
+				return $values['CaptureDetails']['CaptureStatus']['State'];
+			case 'PaymentRefund':
+				return $values['RefundDetails']['RefundStatus']['State'];
+			default:
+				return false;
+		}
+	}
+
 	/**
-	 * Validate message signature
+	 * Stub, since IpnHandler validates the signature on the way in
 	 *
 	 * @param ListenerMessage $msg Message object to operate on
-	 *
-	 * @throws ListenerSecurityException on security violation
 	 */
 	protected function doMessageSecurity( ListenerMessage $msg ) {
-		if ( !AmazonAPI::verifySignature( $msg->getRawValues() ) ) {
-			throw new ListenerSecurityException();
-		}
 		return true;
 	}
 

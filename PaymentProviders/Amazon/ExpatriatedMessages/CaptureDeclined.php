@@ -1,4 +1,4 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\ExpatriatedMessages;
 
-class SubscriptionPaymentCancelled extends TransactionCommon {
+class CaptureDeclined extends PaymentCapture {
 }
