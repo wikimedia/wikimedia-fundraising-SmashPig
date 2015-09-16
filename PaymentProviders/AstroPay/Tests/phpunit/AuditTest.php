@@ -55,4 +55,26 @@ class AuditTest extends \BaseSmashPigUnitTestCase {
 		);
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
+
+	/**
+	 * And a chargeback
+	 */
+	public function testProcessChargeback() {
+		$processor = new AstroPayAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/chargebacks.csv' );
+		$this->assertEquals( 1, count( $output ), 'Should have found one chargeback' );
+		$actual = $output[0];
+		$expected = array(
+			'gateway' => 'astropay',
+			'contribution_tracking_id' => '314159265',
+			'date' => 1434747909,
+			'gross' => '5.00',
+			'gateway_parent_id' => '7654321',
+			'gateway_refund_id' => 'RFD 12345',
+			'gross_currency' => 'BRL',
+			'log_id' => '314159265.0',
+			'type' => 'chargeback',
+		);
+		$this->assertEquals( $expected, $actual, 'Did not parse chargeback correctly' );
+	}
 }

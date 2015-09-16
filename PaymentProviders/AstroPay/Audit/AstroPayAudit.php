@@ -84,6 +84,7 @@ class AstroPayAudit {
 				break;
 			case 'Refund':
 			case 'Chargeback':
+			case 'Chargebacks': // started seeing these with the 's'
 				$this->parseRefund( $row, $msg );
 				break;
 			default:
@@ -100,6 +101,10 @@ class AstroPayAudit {
 		$msg['gross_currency'] = $row['currency'];
 		$msg['log_id'] = $row['Transaction Invoice'];
 		$msg['type'] = strtolower( $row['Type'] );
+		if ( $msg['type'] === 'chargebacks' ) {
+			// deal with stray plural form, but don't break if they fix it
+			$msg['type'] = 'chargeback';
+		}
 	}
 
 	protected function parseDonation( array $row, array &$msg ) {
