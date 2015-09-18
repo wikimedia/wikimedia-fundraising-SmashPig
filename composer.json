@@ -24,11 +24,17 @@
         "phpmailer/phpmailer": "5.2.6",
         "symfony/event-dispatcher": ">=2.1,<2.4-dev",
         "symfony/http-foundation": ">=2.1,<2.4-dev",
-        "amzn/login-and-pay-with-amazon-sdk-php": "^1.0"
+        "amzn/login-and-pay-with-amazon-sdk-php": "dev-master"
     },
     "autoload": {
         "psr-4": {
             "SmashPig\\": "./"
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/ejegg/login-and-pay-with-amazon-sdk-php"
+        }
+    ]
 }
