@@ -17,12 +17,10 @@ abstract class PaymentCapture extends AmazonMessage {
 
 		$this->setGatewayIds( $details['AmazonCaptureId'] );
 
-		// Our local order id has a dot, but we had to replace it with a dash
-		// to use it as a merchant reference with Amazon
-		$this->completion_message_id = 'amazon-'
-			. str_replace( '-', '.', $details['CaptureReferenceId'] );
+		$captureReferenceId = $details['CaptureReferenceId'];
+		$this->completion_message_id = "amazon-$captureReferenceId";
 
-		$parts = explode( '-', $details['CaptureReferenceId'] );
+		$parts = explode( '-', $captureReferenceId );
 		$this->contribution_tracking_id = $parts[0];
 
 		$this->date = UtcDate::getUtcTimestamp( $details['CreationTimestamp'] );

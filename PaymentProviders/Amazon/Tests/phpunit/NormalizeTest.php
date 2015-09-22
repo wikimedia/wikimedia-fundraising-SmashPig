@@ -17,7 +17,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 
 	function testNormalizeCaptureCompleted() {
 		$expected = array(
-			'completion_message_id' => 'amazon-98765432.1',
+			'completion_message_id' => 'amazon-98765432-1',
 			'contribution_tracking_id' => '98765432',
 			'correlationId' => 'amazon-P01-0000000-0000000-000000',
 			'currency' => 'USD',
