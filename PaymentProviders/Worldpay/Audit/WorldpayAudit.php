@@ -12,7 +12,8 @@ class WorldpayAudit {
 		// FIXME: this should be specified in configuration
 		$fileTypes = array(
 			'SmashPig\PaymentProviders\Worldpay\Audit\TransactionReconciliationFile',
-			'SmashPig\PaymentProviders\Worldpay\Audit\LynkReconciliationFile',
+			// FIXME: Disabled due to brokenness.
+			//'SmashPig\PaymentProviders\Worldpay\Audit\LynkReconciliationFile',
 		);
 
 		foreach ( $fileTypes as $type ) {
