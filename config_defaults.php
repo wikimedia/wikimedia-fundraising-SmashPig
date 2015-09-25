@@ -117,6 +117,7 @@ $config_defaults = array(
 	'amazon' => array(
 		'actions' => array(
 			'SmashPig\PaymentProviders\Amazon\Actions\IncomingMessage',
+			'SmashPig\PaymentProviders\Amazon\Actions\CloseOrderReference',
 		),
 
 		'endpoints' => array(
@@ -125,6 +126,17 @@ $config_defaults = array(
 				'inst-args' => array(),
 			)
 		),
+
+		'credentials' => array(
+			'SellerID' => '', // 13 or so uppercase letters
+			'ClientID' => '', // app or site-specific, starts with amznX.application
+			'ClientSecret' => '', // 64 hex characters
+			'MWSAccessKey' => '', // 20 alphanumeric characters
+			'MWSSecretKey' => '', // 40 base-64 encoded chars
+			'Region' => '', // 'de', 'jp', 'uk', or 'us'
+		),
+
+		'test-mode' => false,
 	),
 
 	'astropay' => array(
