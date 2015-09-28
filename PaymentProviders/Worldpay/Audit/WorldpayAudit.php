@@ -8,6 +8,11 @@ class WorldpayAudit {
 		AuditRetriever::retrieveAll( 'worldpay' );
 	}
 
+	/**
+	 * @param string $file Full path to audit file.
+	 * @return array List of normalized messages, or empty if the file couldn't be parsed.
+	 * @throws Exception If an error interrupts processing.
+	 */
 	function parseFile( $file ) {
 		// FIXME: this should be specified in configuration
 		$fileTypes = array(
@@ -16,6 +21,7 @@ class WorldpayAudit {
 			//'SmashPig\PaymentProviders\Worldpay\Audit\LynkReconciliationFile',
 		);
 
+		$data = array();
 		foreach ( $fileTypes as $type ) {
 			if ( $type::isMine( $file ) ) {
 				$parser = new $type();
