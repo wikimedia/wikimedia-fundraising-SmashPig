@@ -4,7 +4,7 @@ use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
-use PayWithAmazon\Client;
+use PayWithAmazon\PaymentsClient;
 
 class CloseOrderReference implements IListenerMessageAction {
 	const MESSAGE_CLASS = 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted';
@@ -17,7 +17,7 @@ class CloseOrderReference implements IListenerMessageAction {
 
 		$config = Context::get()->getConfiguration();
 		$creds = $config->val( 'credentials' );
-		$client = new Client( array(
+		$client = new PaymentsClient( array(
 			'merchant_id' => $creds['SellerID'],
 			'access_key' => $creds['MWSAccessKey'],
 			'secret_key' => $creds['MWSSecretKey'],
