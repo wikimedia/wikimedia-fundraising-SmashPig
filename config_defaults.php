@@ -136,6 +136,11 @@ $config_defaults = array(
 			'Region' => '', // 'de', 'jp', 'uk', or 'us'
 		),
 
+		'audit' => array (
+			'download-path' => '',
+			'archive-path' => '',
+		),
+
 		'test-mode' => false,
 	),
 
