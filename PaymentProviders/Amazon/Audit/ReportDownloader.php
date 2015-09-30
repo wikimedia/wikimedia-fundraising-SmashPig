@@ -8,28 +8,29 @@ use PayWithAmazon\ReportsClient;
  */
 class ReportDownloader {
 
-	protected $reportsClient;
+	protected $archivePath;
 	protected $downloadPath;
 	protected $days;
 	protected $downloadedIds = array();
+	protected $clientConfig;
+
 	const FILE_REGEX = '/\d{4}-\d{2}-\d{2}-(?P<id>\d+).csv/';
 
 	public function __construct( $config ) {
+		$this->archivePath = $config['ArchivePath'];
 		$this->downloadPath = $config['DownloadPath'];
 		$this->days = $config['Days'];
-		$this->reportsClient = $this->getReportsClient( $config );
-		$this->ensureAndScanFolder( $config['ArchivePath'] );
-		$this->ensureAndScanFolder( $config['DownloadPath'] );
-	}
-
-	protected function getReportsClient( $config ) {
-		return new ReportsClient( array(
+		$this->clientConfig = array(
 			'merchant_id' => $config['SellerID'],
 			'access_key' => $config['MWSAccessKey'],
 			'secret_key' => $config['MWSSecretKey'],
 			'client_id' => $config['ClientID'],
 			'region' => $config['Region'],
-		) );
+		);
+	}
+
+	protected function getReportsClient( $config ) {
+		return new ReportsClient( $config );
 	}
 
 	protected function ensureAndScanFolder( $path ) {
@@ -38,7 +39,9 @@ class ReportDownloader {
 				throw new \RuntimeException( "$path exists and is not a directory!" );
 			}
 			Logger::info( "Creating missing directory $path" );
-			mkdir( $path );
+			if ( !mkdir( $path ) ) {
+				throw new \RuntimeException( "Unable to create directory $path!" );
+			};
 		}
 		foreach ( scandir( $path ) as $file ) {
 			if ( preg_match( self::FILE_REGEX, $file, $matches ) ) {
@@ -48,14 +51,18 @@ class ReportDownloader {
 	}
 
 	public function download() {
+		$this->ensureAndScanFolder( $this->archivePath );
+		$this->ensureAndScanFolder( $this->downloadPath );
+		
+		$reportsClient = $this->getReportsClient( $this->clientConfig );
 		// TODO: use AvailableFromDate and ReportTypeList parameters
 		Logger::info( 'Getting report list' );
-		$list = $this->reportsClient->getReportList()->toArray();
+		$list = $reportsClient->getReportList()->toArray();
 		foreach ( $list['GetReportListResult']['ReportInfo'] as $reportInfo ) {
 			$id = $reportInfo['ReportId'];
 			if ( array_search( $id, $this->downloadedIds ) === false ) {
 				Logger::debug( "Downloading report with id: $id" );
-				$report = $this->reportsClient->getReport( array(
+				$report = $reportsClient->getReport( array(
 					'report_id' => $id,
 				) );
 				$date = substr( $reportInfo['AvailableDate'], 0, 10 );
