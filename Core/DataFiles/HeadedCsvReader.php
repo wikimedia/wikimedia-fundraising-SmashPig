@@ -8,12 +8,16 @@
 class HeadedCsvReader extends CsvReader {
 	/** @var string[] */
 	protected $colNames;
+	protected $colIndexes;
 
 	public function __construct( $file, $delimiter = ',', $maxRowLength = 4098 ) {
 		parent::__construct( $file, $delimiter, $maxRowLength );
 
 		// Extract the header information
 		$this->colNames = parent::current();
+		foreach( $this->colNames as $index => $name ) {
+			$this->colIndexes[$name] = $index;
+		}
 		parent::next();
 	}
 
@@ -30,11 +34,11 @@ class HeadedCsvReader extends CsvReader {
 	 * @return string Contents of the column
 	 */
 	public function extractCol( $colName, &$row ) {
-		$col = array_search( $colName, $this->colNames );
-		if ( $col === false ) {
-			throw new DataFileException( "Column name {$this->colNames} not found!" );
+		if ( !isset( $this->colIndexes[$colName] ) ) {
+			throw new DataFileException( "Column name {$colName} not found!" );
 		}
-		return $row[$col];
+		$index = $this->colIndexes[$colName];
+		return $row[$index];
 	}
 
 	/**
