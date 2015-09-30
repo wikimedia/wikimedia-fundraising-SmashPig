@@ -10,9 +10,13 @@ class HeadedCsvReader extends CsvReader {
 	protected $colNames;
 	protected $colIndexes;
 
-	public function __construct( $file, $delimiter = ',', $maxRowLength = 4098 ) {
+	public function __construct( $file, $delimiter = ',', $maxRowLength = 4098, $skipRows = 0 ) {
 		parent::__construct( $file, $delimiter, $maxRowLength );
 
+		while ( $skipRows > 0 ) {
+			parent::next();
+			$skipRows--;
+		}
 		// Extract the header information
 		$this->colNames = parent::current();
 		foreach( $this->colNames as $index => $name ) {
