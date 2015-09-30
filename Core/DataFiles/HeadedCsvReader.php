@@ -46,6 +46,18 @@ class HeadedCsvReader extends CsvReader {
 	}
 
 	/**
+	 * Convenience function to extract a column's value from the current row
+	 *
+	 * @param string $colName Name of the column to extract
+	 *
+	 * @throws DataFileException if the column name does not exist.
+	 * @return string Contents of the column
+	 */
+	public function currentCol( $colName ) {
+		return $this->extractCol( $colName, $this->currentElement );
+	}
+
+	/**
 	 * @return string[] CSV file headers in order of columns
 	 */
 	public function headers() {
