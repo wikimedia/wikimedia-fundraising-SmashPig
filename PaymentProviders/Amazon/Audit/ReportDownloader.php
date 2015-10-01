@@ -13,8 +13,9 @@ class ReportDownloader {
 	protected $days;
 	protected $downloadedIds = array();
 	protected $clientConfig;
+	protected $reportsClient;
 
-	const FILE_REGEX = '/\d{4}-\d{2}-\d{2}-(?P<id>\d+).csv/';
+	const FILE_REGEX = '/\d{4}-\d{2}-\d{2}-[_A-Z0-9]+_(?P<id>\d+).csv/';
 
 	public function __construct( $config ) {
 		$this->archivePath = $config['ArchivePath'];
@@ -41,7 +42,7 @@ class ReportDownloader {
 			Logger::info( "Creating missing directory $path" );
 			if ( !mkdir( $path ) ) {
 				throw new \RuntimeException( "Unable to create directory $path!" );
-			};
+			}
 		}
 		foreach ( scandir( $path ) as $file ) {
 			if ( preg_match( self::FILE_REGEX, $file, $matches ) ) {
@@ -53,26 +54,38 @@ class ReportDownloader {
 	public function download() {
 		$this->ensureAndScanFolder( $this->archivePath );
 		$this->ensureAndScanFolder( $this->downloadPath );
-		
-		$reportsClient = $this->getReportsClient( $this->clientConfig );
+
+		$this->reportsClient = $this->getReportsClient( $this->clientConfig );
 		// TODO: use AvailableFromDate and ReportTypeList parameters
 		Logger::info( 'Getting report list' );
-		$list = $reportsClient->getReportList()->toArray();
+		$list = $this->reportsClient->getReportList()->toArray();
 		foreach ( $list['GetReportListResult']['ReportInfo'] as $reportInfo ) {
-			$id = $reportInfo['ReportId'];
-			if ( array_search( $id, $this->downloadedIds ) === false ) {
-				Logger::debug( "Downloading report with id: $id" );
-				$report = $reportsClient->getReport( array(
-					'report_id' => $id,
-				) );
-				$date = substr( $reportInfo['AvailableDate'], 0, 10 );
-				$path = "{$this->downloadPath}/{$date}-{$id}.csv";
-				Logger::info( "Saving report to $path" );
-				file_put_contents( $path, $report['ResponseBody'] );
-			} else {
-				Logger::debug( "Skipping downloaded report with id: $id" );
-			}
+			// If you're planning to download more than 15 reports at a time, be
+			// aware that the client will handle throttling by default, retrying
+			// up to four times with successively longer wait times.
+			$this->downloadReport( $reportInfo );
+		}
+	}
+
+	protected function downloadReport( $reportInfo ) {
+		$id = $reportInfo['ReportId'];
+		// Remove common prefix from report type
+		$type = str_replace(
+			'_GET_FLAT_FILE_OFFAMAZONPAYMENTS_',
+			'',
+			$reportInfo['ReportType']
+		);
+		if ( array_search( $id, $this->downloadedIds ) === false ) {
+			Logger::debug( "Downloading report with id: $id" );
+			$report = $this->reportsClient->getReport( array(
+				'report_id' => $id,
+			) );
+			$date = substr( $reportInfo['AvailableDate'], 0, 10 );
+			$path = "{$this->downloadPath}/{$date}-{$type}{$id}.csv";
+			Logger::info( "Saving report to $path" );
+			file_put_contents( $path, $report['ResponseBody'] );
+		} else {
+			Logger::debug( "Skipping downloaded report with id: $id" );
 		}
 	}
 }
-
