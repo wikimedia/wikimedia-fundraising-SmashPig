@@ -1,5 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\Audit;
 
+use \DateTime;
+use \DateTimeZone;
 use SmashPig\Core\Logging\Logger;
 use PayWithAmazon\ReportsClient;
 
@@ -58,7 +60,15 @@ class ReportDownloader {
 		$this->reportsClient = $this->getReportsClient( $this->clientConfig );
 		// TODO: use AvailableFromDate and ReportTypeList parameters
 		Logger::info( 'Getting report list' );
-		$list = $this->reportsClient->getReportList()->toArray();
+		$startDate = new DateTime( "-{$this->days} days", new DateTimeZone( 'UTC' ) );
+		$list = $this->reportsClient->getReportList( array(
+			'available_from_date' => $startDate->format( DateTime::ATOM ),
+			'max_count' => 100,
+			'report_type_list' => array(
+				ReportsClient::OFFAMAZONPAYMENTS_SETTLEMENT,
+				ReportsClient::OFFAMAZONPAYMENTS_REFUND,
+			),
+		) )->toArray();
 		foreach ( $list['GetReportListResult']['ReportInfo'] as $reportInfo ) {
 			// If you're planning to download more than 15 reports at a time, be
 			// aware that the client will handle throttling by default, retrying
