@@ -26,6 +26,16 @@
         "symfony/http-foundation": ">=2.1,<2.4-dev",
         "amzn/login-and-pay-with-amazon-sdk-php": "dev-master"
     },
+	"require-dev": {
+		"jakub-onderka/php-parallel-lint": "0.9",
+		"phpunit/phpunit": "4.8.*"
+	},
+	"scripts": {
+		"test": [
+			"parallel-lint . --exclude vendor",
+			"phpunit"
+		]
+	},
     "autoload": {
         "psr-4": {
             "SmashPig\\": "./"
