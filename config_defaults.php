@@ -128,21 +128,32 @@ $config_defaults = array(
 			)
 		),
 
-		'credentials' => array(
-			'SellerID' => '', // 13 or so uppercase letters
-			'ClientID' => '', // app or site-specific, starts with amznX.application
-			'ClientSecret' => '', // 64 hex characters
-			'MWSAccessKey' => '', // 20 alphanumeric characters
-			'MWSSecretKey' => '', // 40 base-64 encoded chars
-			'Region' => '', // 'de', 'jp', 'uk', or 'us'
+		// need an array within an array to give clients get a single
+		// constructor argument
+		'credentials' => array( array(
+			'merchant_id' => '', // 13 or so uppercase letters
+			'client_id' => '', // app or site-specific, starts with amznX.application
+			'access_key' => '', // 20 alphanumeric characters
+			'secret_key' => '', // 40 base-64 encoded chars
+			'region' => '', // 'de', 'jp', 'uk', or 'us'
+			'sandbox' => false,
+		) ),
+
+		// Override these to mock the Amazon SDK classes
+		'payments-client' => array(
+			'class' => 'PayWithAmazon\PaymentsClient',
+			'inst-args@' => 'credentials'
 		),
+		'reports-client' => array(
+			'class' => 'PayWithAmazon\ReportsClient',
+			'inst-args@' => 'credentials'
+		),
+		'ipn-handler-class' => 'PayWithAmazon\IpnHandler',
 
 		'audit' => array (
 			'download-path' => '',
 			'archive-path' => '',
 		),
-
-		'test-mode' => false,
 	),
 
 	'astropay' => array(

@@ -1,8 +1,10 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\Audit;
 
+use SmashPig\Core\Context;
+use SmashPig\Core\Logging\Logger;
+
 use \DateTime;
 use \DateTimeZone;
-use SmashPig\Core\Logging\Logger;
 use PayWithAmazon\ReportsClient;
 
 /**
@@ -14,26 +16,20 @@ class ReportDownloader {
 	protected $downloadPath;
 	protected $days;
 	protected $downloadedIds = array();
-	protected $clientConfig;
-	protected $reportsClient;
 
 	const FILE_REGEX = '/\d{4}-\d{2}-\d{2}-[_A-Z0-9]+_(?P<id>\d+).csv/';
 
-	public function __construct( $config ) {
-		$this->archivePath = $config['ArchivePath'];
-		$this->downloadPath = $config['DownloadPath'];
-		$this->days = $config['Days'];
-		$this->clientConfig = array(
-			'merchant_id' => $config['SellerID'],
-			'access_key' => $config['MWSAccessKey'],
-			'secret_key' => $config['MWSSecretKey'],
-			'client_id' => $config['ClientID'],
-			'region' => $config['Region'],
-		);
-	}
-
-	protected function getReportsClient( $config ) {
-		return new ReportsClient( $config );
+	public function __construct( $overrides ) {
+		$config = Context::get()->getConfiguration();
+		$this->archivePath =
+			empty( $overrides['archive-path'] )
+			? $config->val( 'audit/archive-path' )
+			: $overrides['archive-path'];
+		$this->downloadPath =
+			empty( $overrides['download-path'] )
+			? $config->val( 'audit/download-path' )
+			: $overrides['download-path'];
+		$this->days = $overrides['days'];
 	}
 
 	protected function ensureAndScanFolder( $path ) {
@@ -57,8 +53,9 @@ class ReportDownloader {
 		$this->ensureAndScanFolder( $this->archivePath );
 		$this->ensureAndScanFolder( $this->downloadPath );
 
-		$this->reportsClient = $this->getReportsClient( $this->clientConfig );
-		// TODO: use AvailableFromDate and ReportTypeList parameters
+		$this->reportsClient =
+			Context::get()->getConfiguration()->obj( 'reports-client', true );
+
 		Logger::info( 'Getting report list' );
 		$startDate = new DateTime( "-{$this->days} days", new DateTimeZone( 'UTC' ) );
 		$list = $this->reportsClient->getReportList( array(
