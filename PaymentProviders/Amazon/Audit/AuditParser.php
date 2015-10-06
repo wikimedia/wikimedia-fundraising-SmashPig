@@ -3,6 +3,7 @@
 use SmashPig\Core\DataFiles\DataFileException;
 use SmashPig\Core\DataFiles\HeadedCsvReader;
 use SmashPig\Core\UtcDate;
+use SmashPig\PaymentProviders\Amazon\AmazonApi;
 
 /**
  * Parses settlement reports from Amazon MWS
@@ -70,9 +71,8 @@ class AuditParser {
 	}
 
 	protected function parseRefund( HeadedCsvReader $csv, array &$msg, $type ) {
-		// We need to set this when refunding.  TODO: figure out chargebacks!
-		$msg['gateway_parent_id'] = $csv->currentCol( 'SellerReferenceId' );
-		$msg['gateway_refund_id'] = 'RFD ' . $csv->currentCol( 'AmazonTransactionId' );
+		$msg['gateway_refund_id'] = $csv->currentCol( 'AmazonTransactionId' );
+		$msg['gateway_parent_id'] = AmazonApi::findRefundParentId( $msg['gateway_refund_id'] );
 		$msg['gross_currency'] = $csv->currentCol( 'CurrencyCode' );
 		$msg['type'] = strtolower( $type );
 	}

@@ -119,6 +119,7 @@ $config_defaults = array(
 		'actions' => array(
 			'SmashPig\PaymentProviders\Amazon\Actions\IncomingMessage',
 			'SmashPig\PaymentProviders\Amazon\Actions\CloseOrderReference',
+			'SmashPig\PaymentProviders\Amazon\Actions\AssociateRefundParent',
 		),
 
 		'endpoints' => array(
