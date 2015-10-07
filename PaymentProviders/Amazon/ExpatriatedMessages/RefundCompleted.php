@@ -2,6 +2,6 @@
 
 class RefundCompleted extends PaymentRefund {
 	public function getDestinationQueue() {
-		return 'verified';
+		return 'refund';
 	}
 }

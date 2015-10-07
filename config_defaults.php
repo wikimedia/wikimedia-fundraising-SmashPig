@@ -41,6 +41,7 @@ $config_defaults = array(
 					'verified' => '/queue/donations',
 					'failed' => '/queue/failed',
 					'pending' => '/queue/pending',
+					'refund' => '/queue/refund',
 					'jobs' => '/queue/job-requests',
 				),
 			),
