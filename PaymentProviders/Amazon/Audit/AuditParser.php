@@ -80,7 +80,8 @@ class AuditParser {
 	protected function parseDonation( HeadedCsvReader $csv, array &$msg ) {
 		$msg['contribution_tracking_id'] = $this->getContributionTrackingId( $csv );
 		$msg['currency'] = $csv->currentCol( 'CurrencyCode' );
-		$msg['fee'] = $csv->currentCol( 'TotalTransactionFee' );
+		// Fees are listed as negative amounts in audit files
+		$msg['fee'] = -1 * $csv->currentCol( 'TotalTransactionFee' );
 		$msg['gateway_txn_id'] = $csv->currentCol( 'AmazonTransactionId' );
 		$msg['log_id'] = $csv->currentCol( 'SellerReferenceId' );
 		$msg['payment_method'] = 'amazon';
