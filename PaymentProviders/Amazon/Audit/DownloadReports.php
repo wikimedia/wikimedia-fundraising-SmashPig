@@ -3,7 +3,6 @@
 require( __DIR__ . '/../../../Maintenance/MaintenanceBase.php' );
 
 use SmashPig\Maintenance\MaintenanceBase;
-use SmashPig\Core\Context;
 
 $maintClass = '\SmashPig\PaymentProviders\Amazon\Audit\DownloadReports';
 

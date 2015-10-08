@@ -154,6 +154,10 @@ $config_defaults = array(
 		'audit' => array (
 			'download-path' => '',
 			'archive-path' => '',
+			'file-types' => array(
+				'SmashPig\PaymentProviders\Amazon\Audit\RefundReport',
+				'SmashPig\PaymentProviders\Amazon\Audit\SettlementReport',
+			),
 		),
 	),
 

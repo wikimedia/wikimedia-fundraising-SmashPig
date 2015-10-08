@@ -9,6 +9,7 @@ use PayWithAmazon\ReportsClient;
 
 /**
  * Downloads transaction reports via MWS
+ * http://amazonpayments.s3.amazonaws.com/documents/Programmatic%20Access%20to%20Amazon%20Payments%20Reports.pdf
  */
 class ReportDownloader {
 
