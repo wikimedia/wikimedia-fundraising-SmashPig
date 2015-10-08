@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\Worldpay\Audit;
 
 class WorldpayAudit {
 
+	// FIXME this never gets called and refers to a non-existent class
 	function retrieveFiles() {
 		AuditRetriever::retrieveAll( 'worldpay' );
 	}
@@ -19,6 +20,7 @@ class WorldpayAudit {
 			'SmashPig\PaymentProviders\Worldpay\Audit\TransactionReconciliationFile',
 			// FIXME: Disabled due to brokenness.
 			//'SmashPig\PaymentProviders\Worldpay\Audit\LynkReconciliationFile',
+			'SmashPig\PaymentProviders\Worldpay\Audit\WpgReconciliationFile',
 		);
 
 		$data = array();
