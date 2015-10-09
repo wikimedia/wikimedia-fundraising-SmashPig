@@ -34,7 +34,6 @@ class SettlementReport {
 	}
 
 	/**
-	 * 
 	 * @param HeadedCsvReader $csv
 	 * @throws OutOfBoundsException
 	 */

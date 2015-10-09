@@ -13,7 +13,7 @@ class AssociateRefundParent implements IListenerMessageAction {
 
 	public function execute( ListenerMessage $msg ) {
 		// Bail out if not a refund
-		if ( get_class( $msg ) !== self::MESSAGE_CLASS ) {
+		if ( !( $msg instanceof $this->MESSAGE_CLASS ) ) {
 			return true;
 		}
 		$refundId = $msg->gateway_txn_id;

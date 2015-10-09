@@ -37,11 +37,7 @@ class AmazonApi {
 				"No authorizations found for order reference $orderReferenceId!"
 			);
 		}
-		if ( is_array( $details['IdList']['member'] ) ) {
-			$authorizationIds = $details['IdList']['member'];
-		} else {
-			$authorizationIds = array( $details['IdList']['member'] );
-		}
+		$authorizationIds = ( array ) $details['IdList']['member'];
 		// Check the status of each authorization against the order reference
 		foreach ( $authorizationIds as $id ) {
 			$authResult = $client->getAuthorizationDetails( array(
