@@ -9,7 +9,6 @@ abstract class AmazonMessage extends ListenerMessage {
 	protected $currency;
 	protected $date;
 	protected $gross;
-	protected $merchantReference;
 
 	/**
 	 * Do common normalizations.  Subclasses should perform normalizations

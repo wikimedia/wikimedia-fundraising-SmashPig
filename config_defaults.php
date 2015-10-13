@@ -14,6 +14,11 @@ $config_defaults = array(
 				'inst-args' => array( 'pending' ),
 			),
 
+			'refund' => array(
+				'class' => 'SmashPig\Core\DataStores\StompDataStore',
+				'inst-args' => array( 'refund' ),
+			),
+
 			'limbo' => array(
 				'class' => 'SmashPig\Core\DataStores\StompDataStore',
 				'inst-args' => array( 'limbo' ),
@@ -117,9 +122,9 @@ $config_defaults = array(
 
 	'amazon' => array(
 		'actions' => array(
-			'SmashPig\PaymentProviders\Amazon\Actions\IncomingMessage',
 			'SmashPig\PaymentProviders\Amazon\Actions\CloseOrderReference',
 			'SmashPig\PaymentProviders\Amazon\Actions\AssociateRefundParent',
+			'SmashPig\PaymentProviders\Amazon\Actions\AddMessageToQueue',
 		),
 
 		'endpoints' => array(

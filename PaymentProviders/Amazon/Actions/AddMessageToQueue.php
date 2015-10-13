@@ -5,7 +5,7 @@ use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
 
-class IncomingMessage implements IListenerMessageAction {
+class AddMessageToQueue implements IListenerMessageAction {
 	public function execute( ListenerMessage $msg ) {
 		//FIXME: I don't like this dispatch style
 		$destinationQueue = $msg->getDestinationQueue();

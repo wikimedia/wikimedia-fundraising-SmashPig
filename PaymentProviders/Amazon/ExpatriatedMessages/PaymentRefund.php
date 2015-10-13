@@ -21,11 +21,6 @@ abstract class PaymentRefund extends AmazonMessage {
 		$this->currency = $details['RefundAmount']['CurrencyCode'];
 		$this->gross = $details['RefundAmount']['Amount'];
 		// TODO: do we need to use FeeRefunded for anything?
-
-		// Note: When we programmatically refund anything, we'll have to set
-		// the seller refund reference ID to the Amazon ID of the capture we're
-		// refunding, to avoid a torturous dance of many API calls to find it
-		$this->gateway_parent_id = $details['RefundReferenceId'];
 	}
 
 	public function normalizeForQueue() {
@@ -41,5 +36,9 @@ abstract class PaymentRefund extends AmazonMessage {
 		$queueMsg->type = 'refund';
 
 		return $queueMsg;
+	}
+
+	public function setParentId( $parentId ) {
+		$this->gateway_parent_id = $parentId;
 	}
 }

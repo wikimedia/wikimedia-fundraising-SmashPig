@@ -42,12 +42,13 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 	}
 
 	function testNormalizeRefundCompleted() {
+		$id = 'P01-0000000-0000000-C' . mt_rand( 10000, 99999 );
 		$expected = array(
 			'correlationId' => 'amazon-P01-0000000-0000000-R00000',
 			'gross_currency' => 'USD',
 			'date' => 1357002061,
 			'gateway' => 'amazon',
-			'gateway_parent_id' => 'P01-0000000-0000000-C00000',
+			'gateway_parent_id' => $id,
 			'gateway_refund_id' => 'P01-0000000-0000000-R00000',
 			'gross' => '10.0',
 			'gross_currency' => 'USD',
@@ -58,6 +59,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 			'propertiesExcludedFromExport',
 		);
 		$message = new RefundCompleted( $this->refundCompleted );
+		$message->setParentId( $id );
 		$normalized = $this->normalizedToArray( $message->normalizeForQueue() );
 		foreach ( $stripFields as $field ) {
 			unset( $normalized[$field] );

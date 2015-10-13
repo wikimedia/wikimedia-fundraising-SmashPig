@@ -10,7 +10,7 @@ class CloseOrderReference implements IListenerMessageAction {
 
 	public function execute( ListenerMessage $msg ) {
 		// only close after successful capture
-		if ( !( $msg instanceof $this->MESSAGE_CLASS ) ) {
+		if ( get_class( $msg ) !== self::MESSAGE_CLASS ) {
 			return true;
 		}
 
