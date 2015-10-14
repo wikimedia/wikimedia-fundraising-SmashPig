@@ -56,7 +56,7 @@ class AuditTest extends \BaseSmashPigUnitTestCase {
 			'gateway_parent_id' => 'P01-4968629-7654321-C070794',
 			'gross_currency' => 'USD',
 			'type' => 'refund',
-			'gateway_txn_id' => 'P01-4968629-7654321-R017571',
+			'gateway_refund_id' => 'P01-4968629-7654321-R017571',
 		);
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
@@ -75,7 +75,7 @@ class AuditTest extends \BaseSmashPigUnitTestCase {
 			'gross' => '1.00',
 			'gateway_parent_id' => 'P01-4968629-2345678-C070794',
 			'gross_currency' => 'USD',
-			'gateway_txn_id' => 'P01-4968629-2345678-R017571',
+			'gateway_refund_id' => 'P01-4968629-2345678-R017571',
 			'type' => 'chargeback',
 		);
 		$this->assertEquals( $expected, $actual, 'Did not parse chargeback correctly' );

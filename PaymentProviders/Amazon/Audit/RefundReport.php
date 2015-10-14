@@ -48,7 +48,7 @@ class RefundReport {
 		);
 		$msg['gateway'] = 'amazon';
 		$msg['gateway_parent_id'] = $csv->currentCol( 'AmazonCaptureId' );
-		$msg['gateway_txn_id'] = $csv->currentCol( 'AmazonRefundId' );
+		$msg['gateway_refund_id'] = $csv->currentCol( 'AmazonRefundId' );
 		$msg['gross'] = $csv->currentCol( 'RefundAmount' );
 		$msg['gross_currency'] = $csv->currentCol( 'CurrencyCode' );
 		if ( $csv->currentCol( 'RefundType' ) === 'SellerInitiated' ) {

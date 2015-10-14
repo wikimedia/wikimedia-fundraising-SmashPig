@@ -97,7 +97,7 @@ class AstroPayAudit {
 	protected function parseRefund( array $row, array &$msg ) {
 		$msg['contribution_tracking_id'] = $this->getContributionTrackingId( $row['Transaction Invoice'] );
 		$msg['gateway_parent_id'] = $row['Transaction Reference'];
-		$msg['gateway_refund_id'] = 'RFD ' . $row['Reference'];
+		$msg['gateway_refund_id'] = $row['Reference'];
 		$msg['gross_currency'] = $row['currency'];
 		$msg['log_id'] = $row['Transaction Invoice'];
 		$msg['type'] = strtolower( $row['Type'] );
