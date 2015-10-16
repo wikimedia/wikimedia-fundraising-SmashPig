@@ -40,6 +40,11 @@ class WpgReconciliationFile {
 		}
 
 		while ( $line = fgetcsv( $this->file, 0, "\t" ) ) {
+			// "A blank line in a CSV file will be returned as an array compri-
+			// sing a single null field, and will not be treated as an error."
+			if ( count( $line ) === 1 && is_null( $line[0] ) ) {
+				continue;
+			}
 			try {
 				$this->parseLine( $line );
 			} catch ( JunkRowException $ex ) {
