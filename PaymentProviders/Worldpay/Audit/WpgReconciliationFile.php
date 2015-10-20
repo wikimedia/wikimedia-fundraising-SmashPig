@@ -83,6 +83,7 @@ class WpgReconciliationFile {
 			case 'AUTHORISED':
 			case 'REFUSED':
 			case 'SENT_FOR_REFUND':
+			case 'EXPIRED':
 				return null;
 			case 'CAPTURED':
 				$queue = 'donations';
