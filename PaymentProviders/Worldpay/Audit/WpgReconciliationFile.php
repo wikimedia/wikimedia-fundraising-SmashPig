@@ -102,7 +102,7 @@ class WpgReconciliationFile {
 		if ( $queue === 'refund' ) {
 			$msg['gross_currency'] = $record['CurrencyCode'];
 			$msg['gateway_parent_id'] = $record['OrderCode'];
-			$msg['gateway_refund_id'] = $record['OrderCode'] . 'R';
+			$msg['gateway_refund_id'] = $record['OrderCode'];
 			$msg['type'] = 'refund';
 			return $msg;
 		}

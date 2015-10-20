@@ -10,5 +10,8 @@
       <testsuite name="AstroPay tests">
         <directory>PaymentProviders/AstroPay/Tests/phpunit</directory>
       </testsuite>
+      <testsuite name="Worldpay tests">
+        <directory>PaymentProviders/Worldpay/Tests/phpunit</directory>
+      </testsuite>
     </testsuites>
 </phpunit>

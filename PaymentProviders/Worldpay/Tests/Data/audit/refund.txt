@@ -1,0 +1,2 @@
+OrderCode	Date	PaymentMethod	Status	CurrencyCode	Amount	Commission	Batch ID
+27905662.1	2015-10-05 08:20:15	CARTEBLEUE-SSL	REFUNDED	EUR	-1.20		100
