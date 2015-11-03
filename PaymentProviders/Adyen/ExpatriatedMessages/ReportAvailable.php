@@ -22,15 +22,12 @@ class ReportAvailable extends AdyenMessage {
 
 		$jobQueueObj = Context::get()->getConfiguration()->obj( 'data-store/jobs' );
 		if ( strpos( $this->pspReference, 'payments_accounting_report' ) === 0 ) {
-			Logger::info( 'DISABLED: Not doing anything with nightly audit file, see bug T117451' );
-			/**
-			 * $jobQueueObj->addObject(
-			 * 	ProcessAccountingReportJob::factory(
-			 * 		$this->merchantAccountCode,
-			 * 		$this->reason
-			 * 	)
-			 * );
-			 */
+			$jobQueueObj->addObject(
+				ProcessAccountingReportJob::factory(
+					$this->merchantAccountCode,
+					$this->reason
+				)
+			);
 		} else {
 			// We don't know how to handle this report yet
 			Logger::notice( "Do not know how to handle report with name '{$this->pspReference}'" );
