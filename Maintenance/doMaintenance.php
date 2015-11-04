@@ -1,4 +1,5 @@
 <?php namespace SmashPig\Maintenance;
+use SmashPig\Core\Context;
 
 if ( !defined( 'RUN_MAINTENANCE_IF_MAIN' ) ) {
 	print( "This file must be included after MaintenanceBase.php\n" );
@@ -20,6 +21,14 @@ $maintenance = new $maintClass();
 if ( $maintenance instanceof MaintenanceBase ) {
 	// Perform setup
 	$maintenance->setup();
+
+	// Now that we have a config node, check for disablement
+	$config = Context::get()->getConfiguration();
+	if ( $config->nodeExists( 'disabled' ) && $config->val( 'disabled' ) ) {
+		print( 'Processor disabled, will not execute.' );
+		exit( 1 );
+	}
+
 	$retval = $maintenance->execute();
 
 	if ( $retval ) {

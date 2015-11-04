@@ -60,7 +60,7 @@ class RequestHandler {
 		if ( $config->nodeExists( 'disabled' ) && $config->val( 'disabled' ) ) {
 			Logger::debug( '403 will be given for disabled view.', $uri );
 			$response->setStatusCode( 403, "View '$view' disabled. Cannot continue." );
-			return $response;			
+			return $response;
 		}
 
 		if ( $config->nodeExists( 'charset' ) ) {
