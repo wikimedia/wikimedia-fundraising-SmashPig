@@ -15,10 +15,12 @@ $maintClass = '\SmashPig\Maintenance\StompJobRunner';
 class StompJobRunner extends MaintenanceBase {
 
 	protected $datastore = null;
+	protected $damagedDatastore = null;
 
 	public function __construct() {
 		parent::__construct();
 		$this->addOption( 'queue', 'queue name to consume from', 'jobs' );
+		$this->addOption( 'damaged-queue', 'name of queue to hold failed job messages', 'jobs-damaged' );
 		$this->addOption( 'time-limit', 'Try to keep execution under <n> seconds', 60, 't' );
 		$this->addOption( 'max-messages', 'At most consume <n> messages', 10, 'm' );
 	}
@@ -28,6 +30,7 @@ class StompJobRunner extends MaintenanceBase {
 	 */
 	public function execute() {
 		$this->datastore = new StompDataStore( $this->getOption( 'queue' ) );
+		$this->damagedDatastore = new StompDataStore( $this->getOption( 'damaged-queue' ) );
 
 		$startTime = time();
 		$messageCount = 0;
@@ -46,13 +49,15 @@ class StompJobRunner extends MaintenanceBase {
 					$successCount += 1;
 					$this->datastore->queueAckObject();
 				} else {
-					Logger::info( "Job tells us that it did not successfully execute. Re-queueing for later.", $jobObj );
-					$this->datastore->queueIgnoreObject();
+					Logger::info( "Job tells us that it did not successfully execute. Sending to damaged message queue.", $jobObj );
+					$this->damagedDatastore->queueAddObject( $jobObj );
+					$this->datastore->queueAckObject();
 				}
 			} else {
-				$this->datastore->queueIgnoreObject();
+				$this->damagedDatastore->queueAddObject( $jobObj );
+				$this->datastore->queueAckObject();
 				Logger::warning(
-					get_class( $jobObj ) . " is not an instance of RunnableJob. Could not execute and re-queueing."
+					get_class( $jobObj ) . " is not an instance of RunnableJob. Could not execute and sending to damaged message queue."
 				);
 			}
 
