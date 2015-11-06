@@ -4,7 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "5f5c36af76d4b594773cc2d4becf8546",
+    "hash": "931ce297ec8f650e6bfa6f6dec5fdb26",
+    "content-hash": "d04f0480c0000612cad713682277bcba",
     "packages": [
         {
             "name": "amzn/login-and-pay-with-amazon-sdk-php",
@@ -43,7 +44,7 @@
                 "payment",
                 "payments"
             ],
-            "time": "2015-10-07 15:01:25"
+            "time": "2015-10-07 20:06:54"
         },
         {
             "name": "fusesource/stomp-php",
@@ -149,25 +150,24 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.3.30",
+            "version": "v2.3.34",
             "target-dir": "Symfony/Component/EventDispatcher",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "af8fba40bdab97fc666173a8c2087e02445c231c"
+                "url": "https://github.com/symfony/event-dispatcher.git",
+                "reference": "26692d64c66d679dbb6669703ea3a029418dfb80"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/af8fba40bdab97fc666173a8c2087e02445c231c",
-                "reference": "af8fba40bdab97fc666173a8c2087e02445c231c",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/26692d64c66d679dbb6669703ea3a029418dfb80",
+                "reference": "26692d64c66d679dbb6669703ea3a029418dfb80",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
             },
             "require-dev": {
-                "symfony/dependency-injection": "~2.0,>=2.0.5",
-                "symfony/phpunit-bridge": "~2.7"
+                "symfony/dependency-injection": "~2.0,>=2.0.5"
             },
             "suggest": {
                 "symfony/dependency-injection": "",
@@ -200,28 +200,25 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2015-05-15 13:28:34"
+            "time": "2015-10-11 09:37:49"
         },
         {
             "name": "symfony/http-foundation",
-            "version": "v2.3.30",
+            "version": "v2.3.34",
             "target-dir": "Symfony/Component/HttpFoundation",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/HttpFoundation.git",
-                "reference": "a2223f6d2202af50ac2029bc9e2fa770de84fa3f"
+                "url": "https://github.com/symfony/http-foundation.git",
+                "reference": "33260c5fb76df5729115a0c1b97bd8b13f681aec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/HttpFoundation/zipball/a2223f6d2202af50ac2029bc9e2fa770de84fa3f",
-                "reference": "a2223f6d2202af50ac2029bc9e2fa770de84fa3f",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/33260c5fb76df5729115a0c1b97bd8b13f681aec",
+                "reference": "33260c5fb76df5729115a0c1b97bd8b13f681aec",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3"
-            },
-            "require-dev": {
-                "symfony/phpunit-bridge": "~2.7"
             },
             "type": "library",
             "extra": {
@@ -253,10 +250,10 @@
             ],
             "description": "Symfony HttpFoundation Component",
             "homepage": "https://symfony.com",
-            "time": "2015-05-20 08:53:09"
+            "time": "2015-10-19 11:54:32"
         }
     ],
-    "packages-dev": [],
+    "packages-dev": null,
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
