@@ -53,6 +53,7 @@ $config_defaults = array(
 					'pending' => '/queue/pending',
 					'refund' => '/queue/refund',
 					'jobs' => '/queue/job-requests',
+					'jobs-damaged' => '/queue/jobs-damaged',
 				),
 			),
 		),
