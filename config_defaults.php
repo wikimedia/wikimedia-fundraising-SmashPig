@@ -24,6 +24,11 @@ $config_defaults = array(
 				'inst-args' => array( 'limbo' ),
 			),
 
+			'jobs-damaged' => array(
+				'class' => 'SmashPig\Core\DataStores\StompDataStore',
+				'inst-args' => array( 'jobs-damaged' ),
+			),
+
 			'jobs' => array(
 				'class' => 'SmashPig\Core\DataStores\StompDataStore',
 				'inst-args' => array( 'jobs' ),
