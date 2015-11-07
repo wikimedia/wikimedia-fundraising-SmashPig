@@ -4,6 +4,7 @@ require( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\StompDataStore;
+use SmashPig\Core\SmashPigException;
 
 $maintClass = '\SmashPig\Maintenance\StompJobRunner';
 
@@ -44,8 +45,9 @@ class StompJobRunner extends MaintenanceBase {
 				break;
 			}
 
+			$success = false;
+
 			if ( $jobObj instanceof \SmashPig\Core\Jobs\RunnableJob ) {
-				$success = false;
 				try {
 					if ( $jobObj->execute() ) {
 						$success = true;
@@ -53,22 +55,20 @@ class StompJobRunner extends MaintenanceBase {
 						Logger::info( "Job tells us that it did not successfully execute. Sending to damaged message queue.", $jobObj );
 					}
 				} catch ( SmashPigException $ex ) {
-					Logger::info( "Job threw exception {$ex->getMessage()}. Sending to damaged message queue.", $jobObj );
-				}
-				if ( $success ) {
-					$successCount += 1;
-					$this->datastore->queueAckObject();
-				} else {
-					$this->damagedDatastore->queueAddObject( $jobObj );
-					$this->datastore->queueAckObject();
+					Logger::error( "Job threw exception {$ex->getMessage()}. Sending to damaged message queue.", $jobObj );
 				}
 			} else {
-				$this->damagedDatastore->queueAddObject( $jobObj );
-				$this->datastore->queueAckObject();
 				Logger::warning(
 					get_class( $jobObj ) . " is not an instance of RunnableJob. Could not execute and sending to damaged message queue."
 				);
 			}
+			if ( $success ) {
+				$successCount += 1;
+			} else {
+				$this->damagedDatastore->queueAddObject( $jobObj );
+			}
+
+			$this->datastore->queueAckObject();
 
 		} while (
 			( ( time() - $startTime ) < $this->getOption( 'time-limit' ) ) &&
