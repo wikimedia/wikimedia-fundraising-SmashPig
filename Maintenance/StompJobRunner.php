@@ -52,10 +52,10 @@ class StompJobRunner extends MaintenanceBase {
 					if ( $jobObj->execute() ) {
 						$success = true;
 					} else {
-						Logger::info( "Job tells us that it did not successfully execute. Sending to damaged message queue.", $jobObj );
+						Logger::info( "Job tells us that it did not successfully execute. Sending to damaged message queue." );
 					}
 				} catch ( SmashPigException $ex ) {
-					Logger::error( "Job threw exception {$ex->getMessage()}. Sending to damaged message queue.", $jobObj );
+					Logger::error( "Job threw exception. Sending to damaged message queue.", null, $ex );
 				}
 			} else {
 				Logger::warning(
