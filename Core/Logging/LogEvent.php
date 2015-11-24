@@ -49,6 +49,7 @@ class LogEvent {
 		$this->exception = $exception;
 
 		if ( !is_null( $data ) ) {
+			$jdata = false;
 			if ( $data instanceof JsonSerializableObject ) {
 				try {
 					$jdata = $data->toJson();
