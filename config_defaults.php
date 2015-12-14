@@ -114,11 +114,26 @@ $config_defaults = array(
                 'payments-wsdl' => 'https://pal-live.adyen.com/pal/Payment.wsdl',
 
                 'accounts' => array(
-                    /* 'account-name' => array(
-                        'ws-username' => '',
-                        'ws-passowrd' => '',
-                    )
-                    */
+                    /**
+                     * For each Adyen merchant account, add an entry like the
+                     * following with the merchant account name as the key.
+                     * The ws- credentials should be a user authorized to make
+                     * API calls, and the report- credentials should be a user
+                     * authorized to download reports. Reports will be
+                     * downloaded to the location specified in report-location
+                     * and moved to report-archive-location after processing.
+                     *
+                     * At least one account and all subkeys are required.
+                     *
+                     * 'example-account-name' => array(
+                     *   'ws-username' => '',
+                     *   'ws-password' => '',
+                     *   'report-username' => '',
+                     *   'report-password' => '',
+                     *   'report-location' => '/tmp',
+                     *	 'report-archive-location' => '/var/spool/audit/adyen/completed',
+                     * )
+                     **/
                 ),
             ),
         ),

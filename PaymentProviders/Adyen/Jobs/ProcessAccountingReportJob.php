@@ -100,8 +100,14 @@ class ProcessAccountingReportJob extends RunnableJob {
 			$this->logger->leaveContext(); // Must be the last line in this loop
 		}
 
-		// OK; we're done here, delete the file
-		unlink( $this->downloadLoc );
+		// OK; we're done here, move the file to the archive folder
+		try {
+			$archiveLocation =
+				$c->val( "payment-provider/adyen/accounts/{$this->account}/report-archive-location" );
+			rename( $this->downloadLoc, $archiveLocation . '/' . $fileName );
+		} catch ( ConfigurationKeyException $ex ) {
+			$this->logger->warning( 'Report archive location not configured!' );
+		}
 
 		return true;
 	}
