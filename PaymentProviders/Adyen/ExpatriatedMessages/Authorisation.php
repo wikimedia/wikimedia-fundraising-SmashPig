@@ -1,6 +1,5 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\ExpatriatedMessages;
 
-use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
 use SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem;
 
@@ -18,11 +17,14 @@ class Authorisation extends AdyenMessage {
 	 * When success is false, this is a string describing the refusal reason. */
 	public $reason = '';
 
+	public $cvvResult = '';
+	public $avsResult = '';
+
 	/**
 	 * Overloads the generic Adyen method adding fields specific to the Authorization message
 	 * type.
 	 *
-	 * @param \SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem $obj
+	 * @param \SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem $msgObj
 	 */
 	protected function constructFromWSDL( NotificationRequestItem $msgObj ) {
 		parent::constructFromWSDL( $msgObj );
@@ -39,6 +41,27 @@ class Authorisation extends AdyenMessage {
 
 		// Recreate the correlation ID because we have more information about things
 		$this->correlationId = static::createCorrelationId( $this->merchantReference );
+
+		// Add AVS and CVV results from additionalData if any is provided
+		if ( is_null( $msgObj->additionalData ) || !is_array( $msgObj->additionalData->entry ) ) {
+			return;
+		}
+
+		$firstSegment = function( $value ) {
+			$parts = explode( ' ', $value );
+			return $parts[0];
+		};
+
+		foreach ( $msgObj->additionalData->entry as $entry ) {
+			switch( $entry->key ) {
+				case 'cvcResult':
+					$this->cvvResult = $firstSegment( $entry->value );
+					break;
+				case 'avsResult':
+					$this->avsResult = $firstSegment( $entry->value );
+					break;
+			}
+		}
 	}
 
 	/**

@@ -6,6 +6,7 @@ use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
  * Message sent to the 'cc-limbo' queue when a payment has been initiated and sent off to the gateway.
  */
 class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
+	public $capture_requested = false;
 	public $city = '';
 	public $city_2 = '';
 	public $comment = '';
@@ -35,6 +36,7 @@ class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
 	public $recurring = '';
 	public $referrer = '';
 	public $response = '';
+	public $risk_score = '';
 	public $size = '';
 	public $state_province = '';
 	public $state_province_2 = '';

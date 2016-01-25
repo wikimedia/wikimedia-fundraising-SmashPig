@@ -138,6 +138,36 @@ $config_defaults = array(
 			),
 		),
 
+		'fraud-filters' => array(
+			'risk-threshold' => 75,
+			/**
+			 * Authorization notifications include AVS and CVV result codes.
+			 * The following maps set a risk score for each result code, which
+			 * we combine with any risk score computed on the payment site to
+			 * decide whether to capture the payment or leave it for review.
+			 * https://docs.adyen.com/manuals/api-manual/payment-responses/additionaldata-payment-responses
+			 */
+			'avs-map' => array(
+				'0' => 100,
+				'1' => 75,
+				'2' => 100,
+				'3' => 50,
+				'4' => 50,
+				'5' => 50,
+				'6' => 75,
+				'7' => 0,
+			),
+			'cvv-map' => array(
+				'0' => 100,
+				'1' => 0,
+				'2' => 100,
+				'3' => 50,
+				'4' => 100,
+				'5' => 50,
+				'6' => 50,
+			),
+		),
+
 		'actions' => array( ),
 	),
 

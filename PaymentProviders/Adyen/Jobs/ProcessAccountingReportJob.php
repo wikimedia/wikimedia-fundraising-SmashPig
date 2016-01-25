@@ -46,8 +46,10 @@ class ProcessAccountingReportJob extends RunnableJob {
 
 		// Now iterate through; finding all the ones marked Authorised and SentForSettle
 		// The Authorised entries at the end that do not have a SentForSettle need to be
-		// sent out again.
-		$this->logger->debug( "Now starting Authorized -> SentForSettle search loop" );
+		// reviewed in the payment console.
+		// TODO: we should confirm settled transactions like the rest of the
+		// audit parsers.
+		$this->logger->debug( "Finding uncaptured authorizations" );
 		$f = new HeadedCsvReader( $this->downloadLoc );
 		$tempQueue = array();
 
@@ -83,18 +85,8 @@ class ProcessAccountingReportJob extends RunnableJob {
 			$account = $f->extractCol( 'Merchant Account', $row );
 
 			$this->logger->info(
-				"Recreating Adyen capture job for {$currency} {$amount} with id {$correlationId} and " .
+				"Please review authorization for {$currency} {$amount} with id {$correlationId} and " .
 				"psp reference {$pspRef}."
-			);
-			$jobQueueObj = $c->obj( 'data-store/jobs' );
-			$jobQueueObj->addObject(
-				ProcessCaptureRequestJob::factory(
-					$correlationId,
-					$account,
-					$currency,
-					$amount,
-					$pspRef
-				)
 			);
 
 			$this->logger->leaveContext(); // Must be the last line in this loop

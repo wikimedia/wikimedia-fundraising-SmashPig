@@ -1,16 +1,15 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
-use SmashPig\Core\Jobs\RunnableJob;
-use SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI;
-use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Jobs\RunnableJob;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
+use SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI;
+use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 
 /**
- * Job that merges inbound IPN calls from Adyen with a limbo message in the queue
- * and then places that into the verified queue. Is idempotent with respect to the
- * limbo queue state -- e.g. if no limbo message is found it assumes that the message
- * was already processed.
+ * Job that checks authorization IPN messages from Adyen and requests payment
+ * capture if not yet processed and if the risk score is below our threshold.
  *
  * Class ProcessCaptureRequestJob
  *
@@ -22,15 +21,19 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected $currency;
 	protected $amount;
 	protected $pspReference;
+	protected $avsResult;
+	protected $cvvResult;
 
-	public static function factory( $correlationId, $account, $currency, $amount, $pspReference ) {
+	public static function factory( Authorisation $authMessage ) {
 		$obj = new ProcessCaptureRequestJob();
 
-		$obj->correlationId = $correlationId;
-		$obj->account = $account;
-		$obj->currency = $currency;
-		$obj->amount = $amount;
-		$obj->pspReference = $pspReference;
+		$obj->correlationId = $authMessage->correlationId;
+		$obj->account = $authMessage->merchantAccountCode;
+		$obj->currency = $authMessage->currency;
+		$obj->amount = $authMessage->amount;
+		$obj->pspReference = $authMessage->pspReference;
+		$obj->cvvResult = $authMessage->cvvResult;
+		$obj->avsResult = $authMessage->avsResult;
 
 		return $obj;
 	}
@@ -42,21 +45,23 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			"and correlation id '{$this->correlationId}'."
 		);
 
-		// Determine if a message exists in the pending queue; if it does then we haven't
-		// processed this particular transaction before
+		// Determine if a message exists in the pending queue; if it does not then
+		// this payment has already been sent to the verified queue. If it does,
+		// we need to check $capture_requested in case we have requested a capture
+		// but have not yet received notification of capture success.
 		Logger::debug( 'Attempting to locate associated message in pending queue' );
 		$pendingQueue = Configuration::getDefaultConfig()->obj( 'data-store/pending' );
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
 
-		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
-			Logger::debug( 'A valid message was obtained from the pending queue' );
-
+		if ( $this->shouldCapture( $queueMessage ) ) {
 			// Attempt to capture the payment
 			$api = new AdyenPaymentsAPI( $this->account );
 			$captureResult = $api->capture( $this->currency, $this->amount, $this->pspReference );
 
 			if ( $captureResult ) {
-				// Success! Queue it as completed
+				// Success! Add gateway txn id and queue it as completed
+				// TODO: only queue as completed after getting capture IPN message
+				$queueMessage->gateway_txn_id = $this->pspReference;
 				Logger::info( "Successfully captured payment! Returned reference: '{$captureResult}'" );
 				Configuration::getDefaultConfig()->obj( 'data-store/verified' )->addObject( $queueMessage );
 
@@ -70,21 +75,55 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				);
 			}
 
-			// Remove it from all the queues
-			Logger::debug( "Removing all references to donation in pending and limbo queues" );
+			// Remove it from the pending queue; TODO: re-queue it with capture_requested in pending
+			Logger::debug( "Removing all references to donation in pending queue" );
 			$pendingQueue->queueAckObject();
 			$pendingQueue->removeObjectsById( $this->correlationId );
-			Configuration::getDefaultConfig()->obj( 'data-store/limbo' )->removeObjectsById( $this->correlationId );
+		}
 
+		Logger::leaveContext();
+		return true;
+	}
+
+	protected function shouldCapture( $queueMessage ) {
+		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
+			Logger::debug( 'A valid message was obtained from the pending queue' );
 		} else {
 			Logger::warning(
 				"Could not find a processable message for PSP Reference '{$this->pspReference}' and correlation ".
 					"ID '{$this->correlationId}'.",
 				$queueMessage
 			);
+			return false;
 		}
+		if ( $queueMessage->capture_requested ) {
+			Logger::warning(
+				"Duplicate capture job for PSP Reference '{$this->pspReference}' and correlation ".
+					"ID '{$this->correlationId}'.",
+				$queueMessage
+			);
+			return false;
+		}
+		return $this->checkRiskScores( $queueMessage );
+	}
 
-		Logger::leaveContext();
-		return true;
+	protected function checkRiskScores( DonationInterfaceMessage $queueMessage ) {
+		$config = Configuration::getDefaultConfig();
+		$riskScore = $queueMessage->risk_score ? $queueMessage->risk_score : 0;
+		Logger::debug( "Base risk score from payments site is $riskScore." );
+		$cvvMap = $config->val( 'fraud-filters/cvv-map' );
+		$avsMap = $config->val( 'fraud-filters/avs-map' );
+		$threshold = $config->val( 'fraud-filters/risk-threshold' );
+		if ( array_key_exists( $this->cvvResult, $cvvMap ) ) {
+			$cvvScore = $cvvMap[$this->cvvResult];
+			Logger::debug( "CVV result {$this->cvvResult} adds risk score $cvvScore." );
+			$riskScore += $cvvScore;
+		}
+		if ( array_key_exists( $this->avsResult, $avsMap ) ) {
+			$avsScore = $avsMap[$this->avsResult];
+			Logger::debug( "AVS result {$this->avsResult} adds risk score $avsScore." );
+			$riskScore += $avsScore;
+		}
+		return $riskScore < $threshold;
 	}
 }

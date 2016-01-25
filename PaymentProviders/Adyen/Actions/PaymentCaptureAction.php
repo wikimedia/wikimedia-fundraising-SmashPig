@@ -1,6 +1,5 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
-use SmashPig\Core\Configuration;
 Use SmashPig\Core\Context;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
@@ -26,13 +25,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 				);
 				$jobQueueObj = Context::get()->getConfiguration()->obj( 'data-store/jobs' );
 				$jobQueueObj->addObject(
-					ProcessCaptureRequestJob::factory(
-						$msg->correlationId,
-						$msg->merchantAccountCode,
-						$msg->currency,
-						$msg->amount,
-						$msg->pspReference
-					)
+					ProcessCaptureRequestJob::factory( $msg )
 				);
 
 			} else {
@@ -41,8 +34,6 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					"Adyen payment with correlation id {$msg->correlationId} reported status failed: '{$msg->reason}'. Deleting orphans."
 				);
 				$tl->debug( "Deleting all queue objects with correlation ID '{$msg->correlationId}'" );
-				$limboQueueObj = Context::get()->getConfiguration()->obj( 'data-store/limbo' );
-				$limboQueueObj->removeObjectsById( $msg->correlationId );
 				$pendingQueueObj = Context::get()->getConfiguration()->obj( 'data-store/pending' );
 				$pendingQueueObj->removeObjectsById( $msg->correlationId );
 			}
