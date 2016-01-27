@@ -3,6 +3,7 @@
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\CrmLink\Messages\DonationInterfaceAntifraud;
 use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 use SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
@@ -113,17 +114,27 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		Logger::debug( "Base risk score from payments site is $riskScore." );
 		$cvvMap = $config->val( 'fraud-filters/cvv-map' );
 		$avsMap = $config->val( 'fraud-filters/avs-map' );
-		$threshold = $config->val( 'fraud-filters/risk-threshold' );
+		$scoreBreakdown = array();
 		if ( array_key_exists( $this->cvvResult, $cvvMap ) ) {
-			$cvvScore = $cvvMap[$this->cvvResult];
+			$scoreBreakdown['getCVVResult'] = $cvvScore = $cvvMap[$this->cvvResult];
 			Logger::debug( "CVV result {$this->cvvResult} adds risk score $cvvScore." );
 			$riskScore += $cvvScore;
 		}
 		if ( array_key_exists( $this->avsResult, $avsMap ) ) {
-			$avsScore = $avsMap[$this->avsResult];
+			$scoreBreakdown['getAVSResult'] = $avsScore = $avsMap[$this->avsResult];
 			Logger::debug( "AVS result {$this->avsResult} adds risk score $avsScore." );
 			$riskScore += $avsScore;
 		}
-		return $riskScore < $threshold;
+		$shouldCapture = ( $riskScore < $config->val( 'fraud-filters/risk-threshold' ) );
+		$this->sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $shouldCapture );
+		return $shouldCapture;
+	}
+
+	protected function sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $shouldCapture ) {
+		$action = $shouldCapture ? 'process' : 'review';
+		$antifraudMessage = DonationInterfaceAntifraud::factory(
+			$queueMessage, $riskScore, $scoreBreakdown, $action
+		);
+		Configuration::getDefaultConfig()->obj( 'data-store/antifraud' )->addObj( $antifraudMessage );
 	}
 }

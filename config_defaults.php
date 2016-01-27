@@ -9,6 +9,11 @@ $config_defaults = array(
 				'inst-args' => array( '/tmp/' ),
 			),
 
+			'antifraud' => array(
+				'class' => 'SmashPig\Core\DataStores\StompDataStore',
+				'inst-args' => array( 'antifraud' ),
+			),
+
 			'pending' => array(
 				'class' => 'SmashPig\Core\DataStores\StompDataStore',
 				'inst-args' => array( 'pending' ),
@@ -47,6 +52,7 @@ $config_defaults = array(
 				'convert-string-expressions' => false,
 
 				'queues' => array(
+					'antifraud' => '/queue/payments-antifraud',
 					'limbo' => '/queue/limbo',
 					'verified' => '/queue/donations',
 					'failed' => '/queue/failed',
