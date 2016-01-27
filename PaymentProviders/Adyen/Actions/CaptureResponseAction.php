@@ -1,10 +1,11 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
+use SmashPig\Core\Actions\IListenerMessageAction;
+use SmashPig\Core\Configuration;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
-use SmashPig\Core\Logging\Logger;
+use SmashPig\PaymentProviders\Adyen\Jobs\RecordCaptureJob;
 
 /**
  * Action that takes place after a Capture modification request has completed.
@@ -16,20 +17,16 @@ class CaptureResponseAction implements IListenerMessageAction {
 		$tl = new TaggedLogger( 'CaptureResponseAction' );
 
 		if ( $msg instanceof Capture ) {
-			if ( !$msg->success ) {
-				// Crap; we've already recorded that this message has succeeded; guess
-				// we should just send an email saying hey! something unexpected happened!
-				$tl->error(
-					"Payment with reference {$msg->pspReference} and correlation id {$msg->correlationId} previously " .
-						"recorded as a success has failed to be successfully captured! Fix your records!",
+			if ( $msg->success ) {
+				$recordJob = RecordCaptureJob::factory( $msg );
+				$jobQueue = Configuration::getDefaultConfig()->obj( 'data-store/jobs' );
+				$jobQueue->addObject( $recordJob );
+			} else {
+				$tl->warning(
+					"Capture failed for payment with reference {$msg->pspReference} and correlation id {$msg->correlationId}.",
 					$msg
 				);
 			}
-			/* else {
-				// TODO: This is probably where we should record payment, but I don't want to
-				// add the complexity of a second job at this time.
-			}
-			*/
 		}
 
 		return true;

@@ -59,27 +59,28 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			$api = new AdyenPaymentsAPI( $this->account );
 			$captureResult = $api->capture( $this->currency, $this->amount, $this->pspReference );
 
-			if ( $captureResult ) {
-				// Success! Add gateway txn id and queue it as completed
-				// TODO: only queue as completed after getting capture IPN message
-				$queueMessage->gateway_txn_id = $this->pspReference;
-				Logger::info( "Successfully captured payment! Returned reference: '{$captureResult}'" );
-				Configuration::getDefaultConfig()->obj( 'data-store/verified' )->addObject( $queueMessage );
+			// Remove it from the pending queue
+			$pendingQueue->queueAckObject();
+			$pendingQueue->removeObjectsById( $this->correlationId );
 
+			if ( $captureResult ) {
+				// Success!
+				Logger::info(
+					"Successfully captured payment! Returned reference: '{$captureResult}'. " .
+						'Will requeue message as processed.');
+				// Indicate that it has been captured and re-queue it for use
+				// when the capture IPN message comes in.
+				$queueMessage->capture_requested = true;
+				$pendingQueue->addObj( $queueMessage );
 			} else {
-				// Crap; couldn't capture it. Log it!
+				// Crap; couldn't capture it.
 				Logger::error(
 					"Failed to capture payment on account '{$this->account}' with reference " .
 						"'{$this->pspReference}' and correlation id '{$this->correlationId}'. This " .
-						"message will be removed from the queues. Error return was: '{$captureResult}'",
+						'message has been removed from the pending queue.',
 					$queueMessage
 				);
 			}
-
-			// Remove it from the pending queue; TODO: re-queue it with capture_requested in pending
-			Logger::debug( "Removing all references to donation in pending queue" );
-			$pendingQueue->queueAckObject();
-			$pendingQueue->removeObjectsById( $this->correlationId );
 		}
 
 		Logger::leaveContext();

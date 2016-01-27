@@ -39,9 +39,6 @@ class Authorisation extends AdyenMessage {
 
 		$this->reason = $msgObj->reason;
 
-		// Recreate the correlation ID because we have more information about things
-		$this->correlationId = static::createCorrelationId( $this->merchantReference );
-
 		// Add AVS and CVV results from additionalData if any is provided
 		if ( is_null( $msgObj->additionalData ) || !is_array( $msgObj->additionalData->entry ) ) {
 			return;

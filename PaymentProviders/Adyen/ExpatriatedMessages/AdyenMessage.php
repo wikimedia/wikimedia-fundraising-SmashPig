@@ -70,8 +70,8 @@ abstract class AdyenMessage extends ListenerMessage {
 		return $obj;
 	}
 
-	protected static function createCorrelationId( $pspReference ) {
-		return "adyen-$pspReference";
+	protected static function createCorrelationId( $merchantReference ) {
+		return "adyen-$merchantReference";
 	}
 
 	/**
@@ -93,7 +93,7 @@ abstract class AdyenMessage extends ListenerMessage {
 		$this->success = (bool)$msgObj->success;
 		$this->reason = $msgObj->reason;
 
-		$this->correlationId = static::createCorrelationId( $this->pspReference );
+		$this->correlationId = static::createCorrelationId( $this->merchantReference );
 	}
 
 	/**
