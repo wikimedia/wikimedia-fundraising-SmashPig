@@ -65,7 +65,7 @@ class StompJobRunner extends MaintenanceBase {
 			if ( $success ) {
 				$successCount += 1;
 			} else {
-				$this->damagedDatastore->queueAddObject( $jobObj );
+				$this->damagedDatastore->addObject( $jobObj );
 			}
 
 			$this->datastore->queueAckObject();
