@@ -53,38 +53,40 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		Logger::debug( 'Attempting to locate associated message in pending queue' );
 		$pendingQueue = Configuration::getDefaultConfig()->obj( 'data-store/pending' );
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
+		$success = true;
 
 		if ( $this->shouldCapture( $queueMessage ) ) {
 			// Attempt to capture the payment
 			$api = new AdyenPaymentsAPI( $this->account );
 			$captureResult = $api->capture( $this->currency, $this->amount, $this->pspReference );
 
-			// Remove it from the pending queue
-			$pendingQueue->queueAckObject();
-			$pendingQueue->removeObjectsById( $this->correlationId );
-
 			if ( $captureResult ) {
 				// Success!
 				Logger::info(
 					"Successfully captured payment! Returned reference: '{$captureResult}'. " .
 						'Will requeue message as processed.');
+				// Remove it from the pending queue
+				$pendingQueue->queueAckObject();
+				$pendingQueue->removeObjectsById( $this->correlationId );
 				// Indicate that it has been captured and re-queue it for use
 				// when the capture IPN message comes in.
 				$queueMessage->capture_requested = true;
 				$pendingQueue->addObj( $queueMessage );
 			} else {
-				// Crap; couldn't capture it.
+				// Some kind of error in the request. We should keep the pending
+				// message, complain loudly, and move this capture job to the
+				// damaged queue.
 				Logger::error(
 					"Failed to capture payment on account '{$this->account}' with reference " .
-						"'{$this->pspReference}' and correlation id '{$this->correlationId}'. This " .
-						'message has been removed from the pending queue.',
+						"'{$this->pspReference}' and correlation id '{$this->correlationId}'.",
 					$queueMessage
 				);
+				$success = false;
 			}
 		}
 
 		Logger::leaveContext();
-		return true;
+		return $success;
 	}
 
 	protected function shouldCapture( $queueMessage ) {
