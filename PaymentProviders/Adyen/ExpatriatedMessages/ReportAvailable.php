@@ -2,7 +2,7 @@
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\PaymentProviders\Adyen\Jobs\ProcessAccountingReportJob;
+use SmashPig\PaymentProviders\Adyen\Jobs\DownloadReportJob;
 
 class ReportAvailable extends AdyenMessage {
 	/**
@@ -21,9 +21,9 @@ class ReportAvailable extends AdyenMessage {
 		);
 
 		$jobQueueObj = Context::get()->getConfiguration()->obj( 'data-store/jobs' );
-		if ( strpos( $this->pspReference, 'payments_accounting_report' ) === 0 ) {
+		if ( strpos( $this->pspReference, 'settlement_detail_report' ) === 0 ) {
 			$jobQueueObj->addObject(
-				ProcessAccountingReportJob::factory(
+				DownloadReportJob::factory(
 					$this->merchantAccountCode,
 					$this->reason
 				)

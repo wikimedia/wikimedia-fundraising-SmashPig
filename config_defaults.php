@@ -126,8 +126,7 @@ $config_defaults = array(
 					 * The ws- credentials should be a user authorized to make
 					 * API calls, and the report- credentials should be a user
 					 * authorized to download reports. Reports will be
-					 * downloaded to the location specified in report-location
-					 * and moved to report-archive-location after processing.
+					 * downloaded to the location specified in report-location.
 					 *
 					 * At least one account and all subkeys are required.
 					 *
@@ -137,7 +136,6 @@ $config_defaults = array(
 					 *   'report-username' => '',
 					 *   'report-password' => '',
 					 *   'report-location' => '/tmp',
-					 *   'report-archive-location' => '/var/spool/audit/adyen/completed',
 					 * )
 					 **/
 				),
