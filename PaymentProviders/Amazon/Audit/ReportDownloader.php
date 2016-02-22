@@ -84,7 +84,7 @@ class ReportDownloader {
 			$reportInfo['ReportType']
 		);
 		if ( array_search( $id, $this->downloadedIds ) === false ) {
-			Logger::debug( "Downloading report with id: $id" );
+			Logger::debug( "Downloading report dated {$reportInfo['AvailableDate']} with id: $id" );
 			$report = $this->reportsClient->getReport( array(
 				'report_id' => $id,
 			) );
