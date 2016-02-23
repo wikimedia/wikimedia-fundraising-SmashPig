@@ -77,7 +77,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				// Indicate that it has been captured and re-queue it for use
 				// when the capture IPN message comes in.
 				$queueMessage->capture_requested = true;
-				$pendingQueue->addObj( $queueMessage );
+				$pendingQueue->addObject( $queueMessage );
 			} else {
 				// Some kind of error in the request. We should keep the pending
 				// message, complain loudly, and move this capture job to the
@@ -150,6 +150,6 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			$queueMessage, $this->merchantReference, $riskScore, $scoreBreakdown, $action
 		);
 		Logger::debug( "Sending antifraud message with risk score $riskScore and action $action." );
-		Configuration::getDefaultConfig()->obj( 'data-store/antifraud' )->addObj( $antifraudMessage );
+		Configuration::getDefaultConfig()->obj( 'data-store/antifraud' )->addObject( $antifraudMessage );
 	}
 }
