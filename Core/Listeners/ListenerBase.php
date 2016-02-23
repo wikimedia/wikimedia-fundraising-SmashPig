@@ -25,7 +25,7 @@ abstract class ListenerBase implements IHttpActionHandler {
 
 	public function __construct() {
 		$this->c = Context::get()->getConfiguration();
-		$this->inflightStore = $this->c->obj( 'data-store/inflight' );
+		$this->inflightStore = $this->c->object( 'data-store/inflight' );
 	}
 
 	public function execute( Request $request, Response $response, $pathParts ) {

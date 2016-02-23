@@ -17,7 +17,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 			true
 		);
 		Context::init( $config );
-		$this->mockClient = Context::get()->getConfiguration()->obj( 'payments-client', true );
+		$this->mockClient = Context::get()->getConfiguration()->object( 'payments-client', true );
 		$this->mockClient->calls = array();
 		$this->mockClient->returns = array();
 		$this->mockClient->exceptions = array();

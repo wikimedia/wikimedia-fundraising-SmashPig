@@ -97,7 +97,7 @@ class RequestHandler {
 		}
 
 		// --- Actually get the endpoint object and start the request ---
-		$endpointObj = $config->obj( "endpoints/$action" );
+		$endpointObj = $config->object( "endpoints/$action" );
 		if ( $endpointObj instanceof IHttpActionHandler ) {
 			$endpointObj->execute( $request, $response, $parts );
 		} else {
