@@ -21,6 +21,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected $account;
 	protected $currency;
 	protected $amount;
+	protected $merchantReference;
 	protected $pspReference;
 	protected $avsResult;
 	protected $cvvResult;
@@ -32,6 +33,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$obj->account = $authMessage->merchantAccountCode;
 		$obj->currency = $authMessage->currency;
 		$obj->amount = $authMessage->amount;
+		$obj->merchantReference = $authMessage->merchantReference;
 		$obj->pspReference = $authMessage->pspReference;
 		$obj->cvvResult = $authMessage->cvvResult;
 		$obj->avsResult = $authMessage->avsResult;
@@ -136,7 +138,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected function sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $shouldCapture ) {
 		$action = $shouldCapture ? 'process' : 'review';
 		$antifraudMessage = DonationInterfaceAntifraud::factory(
-			$queueMessage, $riskScore, $scoreBreakdown, $action
+			$queueMessage, $this->merchantReference, $riskScore, $scoreBreakdown, $action
 		);
 		Configuration::getDefaultConfig()->obj( 'data-store/antifraud' )->addObj( $antifraudMessage );
 	}

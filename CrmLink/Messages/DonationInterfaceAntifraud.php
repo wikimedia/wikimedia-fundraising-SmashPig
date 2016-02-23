@@ -20,6 +20,7 @@ class DonationInterfaceAntifraud extends KeyedOpaqueStorableObject {
 
 	public static function factory(
 		DonationInterfaceMessage $message,
+		$order_id,
 		$riskScore,
 		$scoreBreakdown = array(),
 		$validationAction = 'process' ) {
@@ -33,7 +34,7 @@ class DonationInterfaceAntifraud extends KeyedOpaqueStorableObject {
 		$obj->date = $message->date;
 		$obj->gateway = $message->gateway;
 		$obj->gateway_txn_id = $message->gateway_txn_id;
-		$obj->order_id = $message->order_id;
+		$obj->order_id = $order_id;
 		$obj->payment_method = $message->payment_method;
 		// no 'server' available
 		$obj->user_ip = $message->user_ip;
