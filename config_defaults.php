@@ -152,23 +152,42 @@ $config_defaults = array(
 			 * https://docs.adyen.com/manuals/api-manual/payment-responses/additionaldata-payment-responses
 			 */
 			'avs-map' => array(
-				'0' => 100,
-				'1' => 75,
-				'2' => 100,
-				'3' => 50,
-				'4' => 50,
-				'5' => 50,
-				'6' => 75,
-				'7' => 0,
-			),
-			'cvv-map' => array(
-				'0' => 100,
-				'1' => 0,
-				'2' => 100,
-				'3' => 50,
-				'4' => 100,
-				'5' => 50,
-				'6' => 50,
+				'0' => 100, // Unknown
+				'1' => 75, // Address matches, postal code doesn't
+				'2' => 100, // Neither postal code nor address match
+				'3' => 50, // AVS unavailable
+				'4' => 50, // AVS not supported for this card type
+				'5' => 50, // No AVS data provided
+				'6' => 75, // Postal code matches, address doesn't match
+				'7' => 0, // Both postal code and address match
+				'8' => 50, // Address not checked, postal code unknown
+				'9' => 25, // Address matches, postal code unknown
+				'10' => 50, // Address doesn't match, postal code unknown
+				'11' => 75, // Postal code not checked, address unknown
+				'12' => 50, // Address matches, postal code not checked
+				'13' => 0, // Address doesn't match, postal code not checked
+				'14' => 50, // Postal code matches, address unknown
+				'15' => 50, // Postal code matches, address not checked
+				'16' => 75, // Postal code doesn't match, address unknown
+				'17' => 100, // Postal code doesn't match, address not checked
+				'18' => 25, // Neither postal code nor address were checked
+				'19' => 0, // Name and postal code matches
+				'20' => 0, // Name, address and postal code matches
+				'21' => 0, // Name and address matches
+				'22' => 50, // Name matches
+				'23' => 50, // Postal code matches, name doesn't match
+				'24' => 25, // Both postal code and address matches, name doesn't match
+				'25' => 50, // Address matches, name doesn't match
+				'26' => 100, // Neither postal code, address nor name matches
+		),
+		'cvv-map' => array(
+				'0' => 100, // Unknown
+				'1' => 0, // Matches
+				'2' => 100, // Doesn't match
+				'3' => 50, // Not checked
+				'4' => 100, // No CVC/CVV provided, but was required
+				'5' => 50, // Issuer not certified for CVC/CVV
+				'6' => 50, // No CVC/CVV provided
 			),
 		),
 
