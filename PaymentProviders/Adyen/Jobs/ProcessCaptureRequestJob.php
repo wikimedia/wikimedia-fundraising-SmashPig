@@ -44,7 +44,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	public function execute() {
 		Logger::enterContext( "corr_id-{$this->correlationId}" );
 		Logger::info(
-			"Attempting to capture payment on account '{$this->account}' with reference '{$this->pspReference}' " .
+			"Running capture request job on account '{$this->account}' with reference '{$this->pspReference}' " .
 			"and correlation id '{$this->correlationId}'."
 		);
 
@@ -52,7 +52,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		// this payment has already been sent to the verified queue. If it does,
 		// we need to check $capture_requested in case we have requested a capture
 		// but have not yet received notification of capture success.
-		Logger::debug( 'Attempting to locate associated message in pending queue' );
+		Logger::debug( 'Attempting to locate associated message in pending queue.' );
 		$pendingQueue = Configuration::getDefaultConfig()->obj( 'data-store/pending' );
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
 		$success = true;
@@ -60,6 +60,10 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		if ( $this->shouldCapture( $queueMessage ) ) {
 			// Attempt to capture the payment
 			$api = new AdyenPaymentsAPI( $this->account );
+			Logger::info(
+				"Attempting capture API call for currency '{$this->currency}', " .
+				"amount '{$this->amount}', reference '{$this->pspReference}'."
+			);
 			$captureResult = $api->capture( $this->currency, $this->amount, $this->pspReference );
 
 			if ( $captureResult ) {
@@ -93,7 +97,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 
 	protected function shouldCapture( $queueMessage ) {
 		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
-			Logger::debug( 'A valid message was obtained from the pending queue' );
+			Logger::debug( 'A valid message was obtained from the pending queue.' );
 		} else {
 			Logger::warning(
 				"Could not find a processable message for PSP Reference '{$this->pspReference}' and correlation ".
@@ -116,19 +120,24 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected function checkRiskScores( DonationInterfaceMessage $queueMessage ) {
 		$config = Configuration::getDefaultConfig();
 		$riskScore = $queueMessage->risk_score ? $queueMessage->risk_score : 0;
-		Logger::debug( "Base risk score from payments site is $riskScore." );
+		Logger::debug( "Base risk score from payments site is $riskScore, " .
+			"raw CVV result is '{$this->cvvResult}' and raw AVS result is '{$this->avsResult}'." );
 		$cvvMap = $config->val( 'fraud-filters/cvv-map' );
 		$avsMap = $config->val( 'fraud-filters/avs-map' );
 		$scoreBreakdown = array();
 		if ( array_key_exists( $this->cvvResult, $cvvMap ) ) {
 			$scoreBreakdown['getCVVResult'] = $cvvScore = $cvvMap[$this->cvvResult];
-			Logger::debug( "CVV result {$this->cvvResult} adds risk score $cvvScore." );
+			Logger::debug( "CVV result '{$this->cvvResult}' adds risk score $cvvScore." );
 			$riskScore += $cvvScore;
+		} else {
+			Logger::warning( "CVV result '{$this->cvvResult}' not found in cvv-map.", $cvvMap );
 		}
 		if ( array_key_exists( $this->avsResult, $avsMap ) ) {
 			$scoreBreakdown['getAVSResult'] = $avsScore = $avsMap[$this->avsResult];
-			Logger::debug( "AVS result {$this->avsResult} adds risk score $avsScore." );
+			Logger::debug( "AVS result '{$this->avsResult}' adds risk score $avsScore." );
 			$riskScore += $avsScore;
+		} else {
+			Logger::warning( "AVS result '{$this->avsResult}' not found in avs-map.", $avsMap );
 		}
 		$shouldCapture = ( $riskScore < $config->val( 'fraud-filters/risk-threshold' ) );
 		$this->sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $shouldCapture );
@@ -140,6 +149,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$antifraudMessage = DonationInterfaceAntifraud::factory(
 			$queueMessage, $this->merchantReference, $riskScore, $scoreBreakdown, $action
 		);
+		Logger::debug( "Sending antifraud message with risk score $riskScore and action $action." );
 		Configuration::getDefaultConfig()->obj( 'data-store/antifraud' )->addObj( $antifraudMessage );
 	}
 }
