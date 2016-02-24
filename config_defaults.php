@@ -143,7 +143,10 @@ $config_defaults = array(
 		),
 
 		'fraud-filters' => array(
-			'risk-threshold' => 75,
+			// Automatically capture authorizations under this score
+			'review-threshold' => 75,
+			// Automatically cancel authorizations with at least this score
+			'reject-threshold' => 100,
 			/**
 			 * Authorization notifications include AVS and CVV result codes.
 			 * The following maps set a risk score for each result code, which

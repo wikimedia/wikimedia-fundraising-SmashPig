@@ -25,6 +25,11 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected $pspReference;
 	protected $avsResult;
 	protected $cvvResult;
+	// Actions to take after examining capture request and queue message
+	const ACTION_IGNORE = 'ignore'; // no donor info or auth already captured, do nothing
+	const ACTION_PROCESS = 'process'; // all clear to capture payment
+	const ACTION_REJECT = 'reject'; // very likely fraud - cancel the authorization
+	const ACTION_REVIEW = 'review'; // potential fraud - do not capture now
 
 	public static function factory( Authorisation $authMessage ) {
 		$obj = new ProcessCaptureRequestJob();
@@ -57,7 +62,8 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
 		$success = true;
 
-		if ( $this->shouldCapture( $queueMessage ) ) {
+		$action = $this->determineAction( $queueMessage );
+		if ( $action == self::ACTION_PROCESS ) {
 			// Attempt to capture the payment
 			$api = new AdyenPaymentsAPI( $this->account );
 			Logger::info(
@@ -89,13 +95,26 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				);
 				$success = false;
 			}
+		} else if ( $action == self::ACTION_REJECT ) {
+			Logger::debug( "Cancelling authorization with reference '{$this->pspReference}'" );
+			$api = new AdyenPaymentsAPI( $this->account );
+			$result = $api->cancel( $this->pspReference );
+			if ( $result ) {
+				Logger::debug( "Successfully cancelled authorization" );
+			} else {
+				// Not a big deal
+				Logger::warning( "Failed to cancel authorization, it will remain in the payment console" );
+			}
+			// Delete the queue message whatever happened
+			$pendingQueue->queueAckObject();
+			$pendingQueue->removeObjectsById( $this->correlationId );
 		}
 
 		Logger::leaveContext();
 		return $success;
 	}
 
-	protected function shouldCapture( $queueMessage ) {
+	protected function determineAction( $queueMessage ) {
 		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
 			Logger::debug( 'A valid message was obtained from the pending queue.' );
 		} else {
@@ -104,7 +123,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					"ID '{$this->correlationId}'.",
 				$queueMessage
 			);
-			return false;
+			return self::ACTION_IGNORE;
 		}
 		if ( $queueMessage->capture_requested ) {
 			Logger::warning(
@@ -112,12 +131,12 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					"ID '{$this->correlationId}'.",
 				$queueMessage
 			);
-			return false;
+			return self::ACTION_IGNORE;
 		}
-		return $this->checkRiskScores( $queueMessage );
+		return $this->getRiskAction( $queueMessage );
 	}
 
-	protected function checkRiskScores( DonationInterfaceMessage $queueMessage ) {
+	protected function getRiskAction( DonationInterfaceMessage $queueMessage ) {
 		$config = Configuration::getDefaultConfig();
 		$riskScore = $queueMessage->risk_score ? $queueMessage->risk_score : 0;
 		Logger::debug( "Base risk score from payments site is $riskScore, " .
@@ -139,13 +158,18 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		} else {
 			Logger::warning( "AVS result '{$this->avsResult}' not found in avs-map.", $avsMap );
 		}
-		$shouldCapture = ( $riskScore < $config->val( 'fraud-filters/risk-threshold' ) );
-		$this->sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $shouldCapture );
-		return $shouldCapture;
+		$action = self::ACTION_PROCESS;
+		if ( $riskScore >= $config->val( 'fraud-filters/review-threshold' ) ) {
+			$action = self::ACTION_REVIEW;
+		}
+		if ( $riskScore >= $config->val( 'fraud-filters/reject-threshold' ) ) {
+			$action = self::ACTION_REJECT;
+		}
+		$this->sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $action );
+		return $action;
 	}
 
-	protected function sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $shouldCapture ) {
-		$action = $shouldCapture ? 'process' : 'review';
+	protected function sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $action ) {
 		$antifraudMessage = DonationInterfaceAntifraud::factory(
 			$queueMessage, $this->merchantReference, $riskScore, $scoreBreakdown, $action
 		);
