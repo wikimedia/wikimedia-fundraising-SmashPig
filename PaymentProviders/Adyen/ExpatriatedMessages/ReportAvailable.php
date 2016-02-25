@@ -20,7 +20,7 @@ class ReportAvailable extends AdyenMessage {
 			$this->reason
 		);
 
-		$jobQueueObj = Context::get()->getConfiguration()->obj( 'data-store/jobs' );
+		$jobQueueObj = Context::get()->getConfiguration()->object( 'data-store/jobs' );
 		if ( strpos( $this->pspReference, 'settlement_detail_report' ) === 0 ) {
 			$jobQueueObj->addObject(
 				DownloadReportJob::factory(

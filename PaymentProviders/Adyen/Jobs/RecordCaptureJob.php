@@ -43,7 +43,7 @@ class RecordCaptureJob extends RunnableJob {
 		$config = Configuration::getDefaultConfig();
 		// Find the details from the payment site in the pending queue.
 		Logger::debug( 'Attempting to locate associated message in pending queue' );
-		$pendingQueue = $config->obj( 'data-store/pending' );
+		$pendingQueue = $config->object( 'data-store/pending' );
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
 
 		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
@@ -51,7 +51,7 @@ class RecordCaptureJob extends RunnableJob {
 
 			// Add the gateway transaction ID and send it to the completed queue
 			$queueMessage->gateway_txn_id = $this->pspReference;
-			$config->obj( 'data-store/verified' )->addObject( $queueMessage );
+			$config->object( 'data-store/verified' )->addObject( $queueMessage );
 
 			// Remove it from the pending queue
 			Logger::debug( "Removing all references to donation in pending queue" );

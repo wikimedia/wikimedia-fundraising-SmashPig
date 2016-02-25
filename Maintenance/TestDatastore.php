@@ -32,7 +32,7 @@ class TestDatastore extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 */
 	public function execute() {
-		$this->datastore = Context::get()->getConfiguration()->obj(
+		$this->datastore = Context::get()->getConfiguration()->object(
 			'data-store/' . $this->getArgument( 0, 'test' ),
 			false
 		);
@@ -51,7 +51,7 @@ class TestDatastore extends MaintenanceBase {
 		shuffle( $this->testObjects );
 
 		// Now attempt to find them and their pairs!
-		$this->datastore = Context::get()->getConfiguration()->obj(
+		$this->datastore = Context::get()->getConfiguration()->object(
 			'data-store/' . $this->getArgument( 0, 'test' ),
 			false
 		);

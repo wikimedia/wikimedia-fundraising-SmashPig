@@ -58,7 +58,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		// we need to check $capture_requested in case we have requested a capture
 		// but have not yet received notification of capture success.
 		Logger::debug( 'Attempting to locate associated message in pending queue.' );
-		$pendingQueue = Configuration::getDefaultConfig()->obj( 'data-store/pending' );
+		$pendingQueue = Configuration::getDefaultConfig()->object( 'data-store/pending' );
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
 		$success = true;
 
@@ -174,6 +174,6 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			$queueMessage, $this->merchantReference, $riskScore, $scoreBreakdown, $action
 		);
 		Logger::debug( "Sending antifraud message with risk score $riskScore and action $action." );
-		Configuration::getDefaultConfig()->obj( 'data-store/antifraud' )->addObject( $antifraudMessage );
+		Configuration::getDefaultConfig()->object( 'data-store/antifraud' )->addObject( $antifraudMessage );
 	}
 }

@@ -35,7 +35,7 @@ class Logger {
 			$streams = $config->val( 'logging/enabled-log-streams' );
 
 			foreach ( $streams as $streamName ) {
-				$streamObjs[] = $config->obj( "logging/log-streams/$streamName", false );
+				$streamObjs[] = $config->object( "logging/log-streams/$streamName", false );
 			}
 
 		} catch ( \Exception $ex ) {

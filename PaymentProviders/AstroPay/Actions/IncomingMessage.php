@@ -11,7 +11,7 @@ class IncomingMessage implements IListenerMessageAction {
 		$destinationQueue = $msg->getDestinationQueue();
 
 		if ( $destinationQueue ) {
-			$queue = Context::get()->getConfiguration()->obj( "data-store/{$destinationQueue}" );
+			$queue = Context::get()->getConfiguration()->object( "data-store/{$destinationQueue}" );
 			$queueMsg = $msg->normalizeForQueue();
 
 			$queue->addObject( $queueMsg );

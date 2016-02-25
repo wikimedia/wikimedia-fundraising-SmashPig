@@ -224,7 +224,7 @@ class Configuration {
 	 *                           value is contained under additional keys.
 	 * @param bool   $persistent If true the object is saved for future calls.
 	 */
-	public function &obj( $node, $persistent = true ) {
+	public function &object( $node, $persistent = true ) {
 		// First look and see if we already have a $persistent object.
 		if ( array_key_exists( $node, $this->objects ) ) {
 			return $this->objects[ $node ];

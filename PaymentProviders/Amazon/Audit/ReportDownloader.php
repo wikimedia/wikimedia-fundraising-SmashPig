@@ -55,7 +55,7 @@ class ReportDownloader {
 		$this->ensureAndScanFolder( $this->downloadPath );
 
 		$this->reportsClient =
-			Context::get()->getConfiguration()->obj( 'reports-client', true );
+			Context::get()->getConfiguration()->object( 'reports-client', true );
 
 		Logger::info( 'Getting report list' );
 		$startDate = new DateTime( "-{$this->days} days", new DateTimeZone( 'UTC' ) );

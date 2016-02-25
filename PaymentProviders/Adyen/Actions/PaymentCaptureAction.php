@@ -23,7 +23,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 				$tl->info(
 					"Adding Adyen capture job for {$msg->currency} {$msg->amount} with id {$msg->correlationId} and psp reference {$msg->pspReference}."
 				);
-				$jobQueueObj = Context::get()->getConfiguration()->obj( 'data-store/jobs' );
+				$jobQueueObj = Context::get()->getConfiguration()->object( 'data-store/jobs' );
 				$jobQueueObj->addObject(
 					ProcessCaptureRequestJob::factory( $msg )
 				);
@@ -34,7 +34,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					"Adyen payment with correlation id {$msg->correlationId} reported status failed: '{$msg->reason}'. Deleting orphans."
 				);
 				$tl->debug( "Deleting all queue objects with correlation ID '{$msg->correlationId}'" );
-				$pendingQueueObj = Context::get()->getConfiguration()->obj( 'data-store/pending' );
+				$pendingQueueObj = Context::get()->getConfiguration()->object( 'data-store/pending' );
 				$pendingQueueObj->removeObjectsById( $msg->correlationId );
 			}
 		}

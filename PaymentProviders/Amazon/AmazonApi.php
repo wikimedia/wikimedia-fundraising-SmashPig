@@ -16,7 +16,7 @@ class AmazonApi {
 
 	public static function findRefundParentId( $refundId ) {
 		$config = Context::get()->getConfiguration();
-		$client = $config->obj( 'payments-client', true );
+		$client = $config->object( 'payments-client', true );
 
 		// The order reference ID is the first 19 characters of the refund ID
 		$orderReferenceId = substr( $refundId, 0, 19 );

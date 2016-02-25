@@ -19,7 +19,7 @@ class CaptureResponseAction implements IListenerMessageAction {
 		if ( $msg instanceof Capture ) {
 			if ( $msg->success ) {
 				$recordJob = RecordCaptureJob::factory( $msg );
-				$jobQueue = Configuration::getDefaultConfig()->obj( 'data-store/jobs' );
+				$jobQueue = Configuration::getDefaultConfig()->object( 'data-store/jobs' );
 				$jobQueue->addObject( $recordJob );
 			} else {
 				$tl->warning(
