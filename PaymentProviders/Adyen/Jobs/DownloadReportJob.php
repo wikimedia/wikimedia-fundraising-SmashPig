@@ -81,5 +81,6 @@ class DownloadReportJob extends RunnableJob {
 			$this->logger->error( "Report downloaded(?), but with incorrect HTTP code: {$httpCode}" );
 			throw new SmashPigException( "Could not download report." );
 		}
+		return true;
 	}
 }
