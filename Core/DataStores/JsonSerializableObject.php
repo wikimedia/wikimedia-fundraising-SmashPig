@@ -1,7 +1,5 @@
 <?php namespace SmashPig\Core\DataStores;
 
-use SmashPig\Core\Logging\Logger;
-
 /**
  * Base class providing generic serialization/deserialization capabilities.
  */
@@ -57,11 +55,10 @@ abstract class JsonSerializableObject {
 	public function toJson( $resumeUse = true ) {
 		$this->__sleep();
 
-		$ignore = array_flip( $this->propertiesExcludedFromExport );
 		$properties = array();
 
 		foreach ( get_object_vars( $this ) as $propName => $propValue ) {
-			if ( !array_key_exists( $propName, $ignore ) ) {
+			if ( !array_key_exists( $propName, $this->propertiesExcludedFromExport ) ) {
 				if ( is_object( $propValue ) ) {
 					if ( $propValue instanceof JsonSerializableObject ) {
 						$properties[ $propName ] = $propValue->toJson( $resumeUse );
