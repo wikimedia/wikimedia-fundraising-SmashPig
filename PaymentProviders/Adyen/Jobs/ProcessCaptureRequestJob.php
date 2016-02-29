@@ -54,9 +54,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		);
 
 		// Determine if a message exists in the pending queue; if it does not then
-		// this payment has already been sent to the verified queue. If it does,
-		// we need to check $capture_requested in case we have requested a capture
-		// but have not yet received notification of capture success.
+		// this payment has already been sent to the verified queue.
 		Logger::debug( 'Attempting to locate associated message in pending queue.' );
 		$pendingQueue = Configuration::getDefaultConfig()->object( 'data-store/pending' );
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
@@ -76,14 +74,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				// Success!
 				Logger::info(
 					"Successfully captured payment! Returned reference: '{$captureResult}'. " .
-						'Will requeue message as processed.');
-				// Remove it from the pending queue
-				$pendingQueue->queueAckObject();
-				$pendingQueue->removeObjectsById( $this->correlationId );
-				// Indicate that it has been captured and re-queue it for use
-				// when the capture IPN message comes in.
-				$queueMessage->capture_requested = true;
-				$pendingQueue->addObject( $queueMessage );
+						'Leaving pending message in queue for record capture job.');
 			} else {
 				// Some kind of error in the request. We should keep the pending
 				// message, complain loudly, and move this capture job to the
@@ -120,14 +111,6 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		} else {
 			Logger::warning(
 				"Could not find a processable message for PSP Reference '{$this->pspReference}' and correlation ".
-					"ID '{$this->correlationId}'.",
-				$queueMessage
-			);
-			return self::ACTION_IGNORE;
-		}
-		if ( $queueMessage->capture_requested ) {
-			Logger::warning(
-				"Duplicate capture job for PSP Reference '{$this->pspReference}' and correlation ".
 					"ID '{$this->correlationId}'.",
 				$queueMessage
 			);
