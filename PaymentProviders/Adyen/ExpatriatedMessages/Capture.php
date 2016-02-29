@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\ExpatriatedMessages;
 
 use SmashPig\PaymentProviders\Adyen\Actions\CaptureResponseAction;
+use SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem;
 
 /**
  * An Adyen Capture message is sent from the server to SmashPig after
@@ -14,6 +15,24 @@ use SmashPig\PaymentProviders\Adyen\Actions\CaptureResponseAction;
  * @package SmashPig\PaymentProviders\Adyen\ExpatriatedMessages
  */
 class Capture extends AdyenMessage {
+
+	/**
+	 * @var string the reference for this capture's original payment authorization
+	 */
+	public $originalReference;
+
+	/**
+	 * Overloads the generic Adyen method adding fields specific to the Capture message
+	 * type.
+	 *
+	 * @param \SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem $msgObj
+	 */
+	protected function constructFromWSDL( NotificationRequestItem $msgObj )
+	{
+		parent::constructFromWSDL($msgObj);
+
+		$this->originalReference = $msgObj->originalReference;
+	}
 
 	/**
 	 * Will run all the actions that are loaded (from the 'actions' configuration

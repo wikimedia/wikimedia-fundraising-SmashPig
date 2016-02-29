@@ -7,8 +7,8 @@ use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
 
 /**
- * Job that merges capture IPN calls from Adyen with a pending message in the
- * queue and then places that into the verified queue.
+ * Job that merges a capture IPN message from Adyen with donor info from the
+ * pending queue, then places that into the verified queue.
  *
  * Class RecordCaptureJob
  *
@@ -19,7 +19,7 @@ class RecordCaptureJob extends RunnableJob {
 	protected $account;
 	protected $currency;
 	protected $amount;
-	protected $pspReference;
+	protected $originalReference;
 
 	public static function factory( Capture $captureMessage ) {
 		$obj = new RecordCaptureJob();
@@ -28,7 +28,7 @@ class RecordCaptureJob extends RunnableJob {
 		$obj->account = $captureMessage->merchantAccountCode;
 		$obj->currency = $captureMessage->currency;
 		$obj->amount = $captureMessage->amount;
-		$obj->pspReference = $captureMessage->pspReference;
+		$obj->originalReference = $captureMessage->originalReference;
 
 		return $obj;
 	}
@@ -36,8 +36,8 @@ class RecordCaptureJob extends RunnableJob {
 	public function execute() {
 		Logger::enterContext( "corr_id-{$this->correlationId}" );
 		Logger::info(
-			"Recording successful capture on account '{$this->account}' with reference '{$this->pspReference}' " .
-			"and correlation id '{$this->correlationId}'."
+			"Recording successful capture on account '{$this->account}' with authorization reference " .
+				"'{$this->originalReference}' and correlation id '{$this->correlationId}'."
 		);
 
 		$config = Configuration::getDefaultConfig();
@@ -50,7 +50,7 @@ class RecordCaptureJob extends RunnableJob {
 			Logger::debug( 'A valid message was obtained from the pending queue' );
 
 			// Add the gateway transaction ID and send it to the completed queue
-			$queueMessage->gateway_txn_id = $this->pspReference;
+			$queueMessage->gateway_txn_id = $this->originalReference;
 			$config->object( 'data-store/verified' )->addObject( $queueMessage );
 
 			// Remove it from the pending queue
@@ -60,8 +60,8 @@ class RecordCaptureJob extends RunnableJob {
 
 		} else {
 			Logger::error(
-				"Could not find a processable message for PSP Reference '{$this->pspReference}' and correlation ".
-					"ID '{$this->correlationId}'.",
+				"Could not find a processable message for authorization Reference '{$this->originalReference}' " .
+					"and correlation ID '{$this->correlationId}'.",
 				$queueMessage
 			);
 		}
