@@ -53,7 +53,7 @@ class ReferenceData {
 			'RL' => 'red_link',
 			'RP' => 'cash_rapipago',
 			'SB' => 'santander', // Brazil
-			'SI' => 'santander', // Argentina
+			'SI' => 'santander_rio', // Argentina
 			'SM' => 'cash_santander', // Mexico
 			'SP' => 'servipag',
 			'SX' => 'surtimax',
