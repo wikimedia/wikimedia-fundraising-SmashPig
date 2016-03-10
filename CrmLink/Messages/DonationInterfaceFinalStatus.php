@@ -5,7 +5,7 @@ use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 /**
  * Message sent once frontend donation processing is completed
  */
-class DonationInterfaceAntifraud extends KeyedOpaqueStorableObject {
+class DonationInterfaceFinalStatus extends KeyedOpaqueStorableObject {
 	public $amount = '';
 	public $contribution_tracking_id = '';
 	public $country = '';
