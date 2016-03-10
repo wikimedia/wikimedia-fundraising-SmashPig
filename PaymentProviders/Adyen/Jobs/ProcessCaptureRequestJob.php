@@ -62,6 +62,9 @@ class ProcessCaptureRequestJob extends RunnableJob {
 
 		$action = $this->determineAction( $queueMessage );
 		if ( $action == self::ACTION_PROCESS ) {
+			// Tell the pending queue to keep the message around for the RecordCaptureJob
+			$pendingQueue->queueIgnoreObject();
+
 			// Attempt to capture the payment
 			$api = new AdyenPaymentsAPI( $this->account );
 			Logger::info(
