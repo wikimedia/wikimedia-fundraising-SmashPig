@@ -17,24 +17,24 @@ class AdyenAudit {
 	protected $ignoredStatuses;
 	protected $fileData = array();
 	protected static $ignoredTypes = array(
-		'Fee',
-		'MiscCosts',
-		'MerchantPayout',
-		'ChargebackReversed', // oh hey, we could try to handle these
-		'RefundedReversed',
-		'DepositCorrection',
-		'InvoiceDeduction',
-		'MatchedStatement',
-		'ManualCorrected',
-		'AuthorisationSchemeFee',
-		'BankInstructionReturned',
-		'InternalCompanyPayout',
-		'EpaPaid',
-		'BalanceTransfer',
-		'PaymentCost',
-		'SettleCost',
-		'PaidOut',
-		'PaidOutReversed',
+		'fee',
+		'misccosts',
+		'merchantpayout',
+		'chargebackreversed', // oh hey, we could try to handle these
+		'refundedreversed',
+		'depositcorrection',
+		'invoicededuction',
+		'matchedstatement',
+		'manualcorrected',
+		'authorisationschemefee',
+		'bankinstructionreturned',
+		'internalcompanypayout',
+		'epapaid',
+		'balancetransfer',
+		'paymentcost',
+		'settlecost',
+		'paidout',
+		'paidoutreversed',
 	);
 
 	public function __construct() {
@@ -97,7 +97,7 @@ class AdyenAudit {
 
 	protected function parseLine( $line ) {
 		$row = array_combine( $this->columnHeaders, $line );
-		$type = $row['Type'];
+		$type = strtolower( $row['Type'] );
 		if ( in_array( $type, self::$ignoredTypes ) ) {
 			return;
 		}
@@ -111,11 +111,11 @@ class AdyenAudit {
 		$msg['contribution_tracking_id'] = $parts[0];
 
 		switch( $type ) {
-			case 'Settled':
+			case 'settled':
 				$this->parseDonation( $row, $msg );
 				break;
-			case 'Chargeback':
-			case 'Refunded':
+			case 'chargeback':
+			case 'refunded':
 				$this->parseRefund( $row, $msg );
 				break;
 			default:
@@ -134,7 +134,7 @@ class AdyenAudit {
 
 		$msg['gateway_parent_id'] = $row['Psp Reference'];
 		$msg['gateway_refund_id'] = $row['Modification Reference'];
-		if ( $row['Type'] === 'Chargeback' ) {
+		if ( strtolower( $row['Type'] ) === 'chargeback' ) {
 			$msg['type'] = 'chargeback';
 		} else {
 			$msg['type'] = 'refund';
