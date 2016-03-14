@@ -102,6 +102,10 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			// Delete the queue message whatever happened
 			$pendingQueue->queueAckObject();
 			$pendingQueue->removeObjectsById( $this->correlationId );
+		} else {
+			// Not cancelling, just leaving the authorization in the console for review.
+			// Put the donor details back on the pending queue.
+			$pendingQueue->queueIgnoreObject();
 		}
 
 		Logger::leaveContext();
