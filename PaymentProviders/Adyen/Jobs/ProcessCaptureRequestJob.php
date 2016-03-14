@@ -26,10 +26,10 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected $avsResult;
 	protected $cvvResult;
 	// Actions to take after examining capture request and queue message
-	const ACTION_IGNORE = 'ignore'; // no donor info or auth already captured, do nothing
 	const ACTION_PROCESS = 'process'; // all clear to capture payment
 	const ACTION_REJECT = 'reject'; // very likely fraud - cancel the authorization
 	const ACTION_REVIEW = 'review'; // potential fraud - do not capture now
+	const ACTION_DUPLICATE = 'duplicate'; // probable duplicate - cancel the authorization
 
 	public static function factory( Authorisation $authMessage ) {
 		$obj = new ProcessCaptureRequestJob();
@@ -54,7 +54,11 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		);
 
 		// Determine if a message exists in the pending queue; if it does not then
-		// this payment has already been sent to the verified queue.
+		// this payment has already been sent to the verified queue. If it does,
+		// we need to check $capture_requested in case we have requested a capture
+		// but have not yet received notification of capture success. Either case can
+		// occur when a donor submits their credit card details multiple times against
+		// a single order ID. We should cancel all the duplicate authorizations.
 		Logger::debug( 'Attempting to locate associated message in pending queue.' );
 		/**
 		 * @var \SmashPig\Core\DataStores\KeyedOpaqueDataStore
@@ -64,51 +68,58 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$success = true;
 
 		$action = $this->determineAction( $queueMessage );
-		if ( $action == self::ACTION_PROCESS ) {
-			// Tell the pending queue to keep the message around for the RecordCaptureJob
-			$pendingQueue->queueIgnoreObject();
-
-			// Attempt to capture the payment
-			$api = $this->getApi();
-			Logger::info(
-				"Attempting capture API call for currency '{$this->currency}', " .
-				"amount '{$this->amount}', reference '{$this->pspReference}'."
-			);
-			$captureResult = $api->capture( $this->currency, $this->amount, $this->pspReference );
-
-			if ( $captureResult ) {
-				// Success!
+		switch( $action ) {
+			case self::ACTION_PROCESS:
+				// Attempt to capture the payment
+				$api = $this->getApi();
 				Logger::info(
-					"Successfully captured payment! Returned reference: '{$captureResult}'. " .
-						'Leaving pending message in queue for record capture job.');
-			} else {
-				// Some kind of error in the request. We should keep the pending
-				// message, complain loudly, and move this capture job to the
-				// damaged queue.
-				Logger::error(
-					"Failed to capture payment on account '{$this->account}' with reference " .
-						"'{$this->pspReference}' and correlation id '{$this->correlationId}'.",
-					$queueMessage
+					"Attempting capture API call for currency '{$this->currency}', " .
+					"amount '{$this->amount}', reference '{$this->pspReference}'."
 				);
-				$success = false;
-			}
-		} else if ( $action == self::ACTION_REJECT ) {
-			Logger::debug( "Cancelling authorization with reference '{$this->pspReference}'" );
-			$api = $this->getApi();
-			$result = $api->cancel( $this->pspReference );
-			if ( $result ) {
-				Logger::debug( "Successfully cancelled authorization" );
-			} else {
-				// Not a big deal
-				Logger::warning( "Failed to cancel authorization, it will remain in the payment console" );
-			}
-			// Delete the queue message whatever happened
-			$pendingQueue->queueAckObject();
-			$pendingQueue->removeObjectsById( $this->correlationId );
-		} else {
-			// Not cancelling, just leaving the authorization in the console for review.
-			// Put the donor details back on the pending queue.
-			$pendingQueue->queueIgnoreObject();
+				$captureResult = $api->capture( $this->currency, $this->amount, $this->pspReference );
+
+				if ( $captureResult ) {
+					// Success!
+					Logger::info(
+						"Successfully captured payment! Returned reference: '{$captureResult}'. " .
+							'Marking pending queue message as captured.'
+					);
+					$pendingQueue->queueAckObject();
+					$queueMessage->captured = true;
+					$pendingQueue->addObject( $queueMessage );
+				} else {
+					// Some kind of error in the request. We should keep the pending
+					// message, complain loudly, and move this capture job to the
+					// damaged queue.
+					Logger::error(
+						"Failed to capture payment on account '{$this->account}' with reference " .
+							"'{$this->pspReference}' and correlation id '{$this->correlationId}'.",
+						$queueMessage
+					);
+					$pendingQueue->queueIgnoreObject();
+					$success = false;
+				}
+				break;
+			case self::ACTION_REJECT:
+				$this->cancelAuthorization();
+				// Delete the fraudy donor details
+				$pendingQueue->queueAckObject();
+				$pendingQueue->removeObjectsById( $this->correlationId );
+				break;
+			case self::ACTION_DUPLICATE:
+				// We have already captured one payment for this donation attempt, so
+				// cancel the duplicate authorization. If there is a pending message,
+				// leave it intact for the legitimate RecordCaptureJob.
+				$this->cancelAuthorization();
+				if ( $queueMessage ) {
+					$pendingQueue->queueIgnoreObject();
+				}
+				break;
+			case self::ACTION_REVIEW:
+				// Don't capture the payment right now, but leave the donor details in
+				// the pending queue in case the authorization is captured via the console.
+				$pendingQueue->queueIgnoreObject();
+				break;
 		}
 
 		Logger::leaveContext();
@@ -124,7 +135,14 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					"ID '{$this->correlationId}'.",
 				$queueMessage
 			);
-			return self::ACTION_IGNORE;
+			return self::ACTION_DUPLICATE;
+		}
+		if ( $queueMessage->captured ) {
+			Logger::info(
+				"Duplicate PSP Reference '{$this->pspReference}' for correlation ID '{$this->correlationId}'.",
+				$queueMessage
+			);
+			return self::ACTION_DUPLICATE;
 		}
 		return $this->getRiskAction( $queueMessage );
 	}
@@ -177,5 +195,17 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$api = Configuration::getDefaultConfig()->object( 'payment-provider/adyen/api' );
 		$api->setAccount( $this->account );
 		return $api;
+	}
+
+	protected function cancelAuthorization() {
+		Logger::debug( "Cancelling authorization with reference '{$this->pspReference}'" );
+		$api = $this->getApi();
+		$result = $api->cancel( $this->pspReference );
+		if ( $result ) {
+			Logger::debug( "Successfully cancelled authorization" );
+		} else {
+			// Not a big deal
+			Logger::warning( "Failed to cancel authorization, it will remain in the payment console" );
+		}
 	}
 }

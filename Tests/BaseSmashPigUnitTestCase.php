@@ -20,6 +20,13 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 		return json_decode( file_get_contents( $path ), true );
 	}
 
+	/**
+	 * Set a test configuration and initialize the context
+	 *
+	 * @param string $configPath path to configuration override file
+	 * @param string $configNode node to use for configuration overrides
+	 * @return Configuration
+	 */
 	function setConfig( $configPath = null, $configNode = 'default' ) {
 		$defaultConfig = __DIR__ . '/../config_defaults.php';
 		$config = new Configuration(
@@ -34,5 +41,6 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 			Logger::init( 'test', 'debug', $config );
 			self::$loggerCreated = true;
 		}
+		return $config;
 	}
 }

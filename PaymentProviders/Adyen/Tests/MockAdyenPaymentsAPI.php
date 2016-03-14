@@ -7,6 +7,9 @@ class MockAdyenPaymentsAPI implements AdyenPaymentsInterface {
 	protected $account = '';
 	protected $returnCode = false;
 
+	public $captured = array();
+	public $cancelled = array();
+
 	public function __construct( $returnCode ) {
 		$this->returnCode = $returnCode;
 	}
@@ -25,6 +28,11 @@ class MockAdyenPaymentsAPI implements AdyenPaymentsInterface {
 	 * @returns bool|string The return code set in the constructor.
 	 */
 	public function capture( $currency, $amount, $pspReference ) {
+		$this->captured[] = array(
+			'currency' => $currency,
+			'amount' => $amount,
+			'pspReference' => $pspReference,
+		);
 		return $this->returnCode;
 	}
 
@@ -36,6 +44,7 @@ class MockAdyenPaymentsAPI implements AdyenPaymentsInterface {
 	 * @returns bool|string The return code set in the constructor.
 	 */
 	public function cancel( $pspReference ) {
+		$this->cancelled[] = $pspReference;
 		return $this->returnCode;
 	}
 }
