@@ -1,16 +1,15 @@
 <?php namespace SmashPig\PaymentProviders\Adyen;
 
 use SmashPig\Core\Context;
-use SmashPig\Core\Configuration;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 
-class AdyenPaymentsAPI {
+class AdyenPaymentsAPI implements AdyenPaymentsInterface {
 
 	protected $soapClient = null;
 	protected $account = '';
 
-	public function __construct( $account ) {
+	public function setAccount( $account ) {
 		require_once( 'WSDL/Payment.php' );
 
 		$this->account = $account;
@@ -26,16 +25,6 @@ class AdyenPaymentsAPI {
 		);
 	}
 
-	/**
-	 * Performs a Capture modification to a given Adyen transaction.
-	 *
-	 * @param string    $currency       Original currency of the request
-	 * @param int       $amount         Amount to be captured. Less than or equal to the original request
-	 * @param string    $pspReference   Original pspReference of the request
-	 *
-	 * @returns bool|string Result will be false on SOAP exception or remote request denial. If request was successful
-	 * the return result will be a pspReference string to this modification.
-	 */
 	public function capture( $currency, $amount, $pspReference ) {
 		$data = new WSDL\capture();
 		$data->modificationRequest = new WSDL\ModificationRequest();
@@ -64,14 +53,6 @@ class AdyenPaymentsAPI {
 		}
 	}
 
-	/**
-	 * Cancels an Adyen authorization
-	 *
-	 * @param string $pspReference Original pspReference of the request
-	 *
-	 * @returns bool|string Result will be false on SOAP exception or remote request denial.
-	 * If request was successful the return result will be a pspReference string to this modification.
-	 */
 	public function cancel( $pspReference ) {
 		$data = new WSDL\cancel();
 		$data->modificationRequest = new WSDL\ModificationRequest();

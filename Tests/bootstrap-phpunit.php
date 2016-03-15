@@ -2,3 +2,4 @@
 
 require_once( 'vendor/autoload.php' );
 require_once( 'Tests/BaseSmashPigUnitTestCase.php' );
+require_once( 'Tests/MockDataStore.php' );

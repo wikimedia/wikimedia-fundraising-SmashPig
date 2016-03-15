@@ -56,6 +56,9 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		// Determine if a message exists in the pending queue; if it does not then
 		// this payment has already been sent to the verified queue.
 		Logger::debug( 'Attempting to locate associated message in pending queue.' );
+		/**
+		 * @var \SmashPig\Core\DataStores\KeyedOpaqueDataStore
+		 */
 		$pendingQueue = Configuration::getDefaultConfig()->object( 'data-store/pending' );
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
 		$success = true;
@@ -66,7 +69,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			$pendingQueue->queueIgnoreObject();
 
 			// Attempt to capture the payment
-			$api = new AdyenPaymentsAPI( $this->account );
+			$api = $this->getApi();
 			Logger::info(
 				"Attempting capture API call for currency '{$this->currency}', " .
 				"amount '{$this->amount}', reference '{$this->pspReference}'."
@@ -91,7 +94,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			}
 		} else if ( $action == self::ACTION_REJECT ) {
 			Logger::debug( "Cancelling authorization with reference '{$this->pspReference}'" );
-			$api = new AdyenPaymentsAPI( $this->account );
+			$api = $this->getApi();
 			$result = $api->cancel( $this->pspReference );
 			if ( $result ) {
 				Logger::debug( "Successfully cancelled authorization" );
@@ -165,5 +168,14 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		);
 		Logger::debug( "Sending antifraud message with risk score $riskScore and action $action." );
 		Configuration::getDefaultConfig()->object( 'data-store/antifraud' )->addObject( $antifraudMessage );
+	}
+
+	/**
+	 * @return \SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface
+	 */
+	protected function getApi() {
+		$api = Configuration::getDefaultConfig()->object( 'payment-provider/adyen/api' );
+		$api->setAccount( $this->account );
+		return $api;
 	}
 }

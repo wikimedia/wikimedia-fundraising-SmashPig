@@ -48,7 +48,7 @@ class Context {
 	 */
 	public static function set( Context $c = null ) {
 		$old = Context::$instance;
-		Context::$instance = ( $c === null ) ? new Context() : $c;
+		Context::$instance = $c;
 
 		return $old;
 	}

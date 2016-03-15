@@ -117,6 +117,11 @@ $config_defaults = array(
 
 		'payment-provider' => array(
 			'adyen' => array(
+				'api' => array(
+					'class' => 'SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI',
+					'inst-args' => array(),
+				),
+
 				'payments-wsdl' => 'https://pal-live.adyen.com/pal/Payment.wsdl',
 
 				'accounts' => array(

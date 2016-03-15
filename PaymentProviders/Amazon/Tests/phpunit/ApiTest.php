@@ -10,13 +10,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$config = new Configuration(
-			__DIR__ . '/../../../../config_defaults.php',
-			__DIR__ . '/../config_test.php',
-			'amazon',
-			true
-		);
-		Context::init( $config );
+		$this->setConfig( __DIR__ . '/../config_test.php', 'amazon' );
 		$this->mockClient = Context::get()->getConfiguration()->object( 'payments-client', true );
 		$this->mockClient->calls = array();
 		$this->mockClient->returns = array();
