@@ -29,6 +29,7 @@ class EmptyQueueToDump extends MaintenanceBase {
 		$this->addOption( 'max-messages', 'At most consume <n> messages, 0 is infinite', 10, 'm' );
 		$this->addOption( 'outfile', 'File to place JSON encoded messages into', 'messages.json', 'f' );
 		$this->addOption( 'raw', 'Do not ensure that extracted messages are SmashPig objects' );
+		$this->addOption( 'no-ack', 'Do not ack messages - leave them in the queue' );
 		$this->addArgument( 'selector', 'STOMP selector to use', false );
 		$this->addArgument( 'selector2', 'Additional STOMP selectors...', false );
 	}
@@ -44,6 +45,7 @@ class EmptyQueueToDump extends MaintenanceBase {
 		$messageCount = 0;
 
 		$raw = $this->getOption( 'raw' );
+		$ignore = $this->getOption( 'no-ack' );
 
 		// Construct the selectors
 		$argId = 0;
@@ -82,7 +84,11 @@ class EmptyQueueToDump extends MaintenanceBase {
 				Logger::warning( "Possibly caught an antimessage. Not adding to file.", null, $ex );
 			}
 
-			$this->datastore->queueAckObject();
+			if ( $ignore ) {
+				$this->datastore->queueIgnoreObject();
+			} else {
+				$this->datastore->queueAckObject();
+			}
 
 			$messageCount += 1;
 
