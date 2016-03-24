@@ -452,7 +452,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			);
 		}
 
-		Logger::debug( "Acking STOMP message" );
+		Logger::debug( "Acking STOMP message {$this->queueMsg->headers[ 'message-id' ]}" );
 		$this->stompObj->ack( $this->queueMsg );
 
 		$this->queueMsg = null;
@@ -469,7 +469,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			);
 		}
 
-		Logger::debug( "Acking STOMP message" );
+		Logger::debug( "Acking STOMP message {$this->queueMsg->headers[ 'message-id' ]}" );
 		$this->stompObj->ack( $this->queueMsg );
 
 		Logger::debug( "Re-adding STOMP message to queue" );
