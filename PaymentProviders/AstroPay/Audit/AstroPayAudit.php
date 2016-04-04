@@ -118,8 +118,12 @@ class AstroPayAudit {
 		$msg['settled_fee'] = $row['Fee']; // settled_fee since it's given in USD
 		$msg['gateway_txn_id'] = $row['Reference'];
 		$msg['log_id'] = $row['Invoice'];
-		$msg['payment_method'] = ReferenceData::decodePaymentMethod( $row['Payment Method Type'] );
-		$msg['payment_submethod'] = ReferenceData::decodePaymentSubmethod( $row['Payment Method'] );
+		list( $method, $submethod ) = ReferenceData::decodePaymentMethod(
+			$row['Payment Method Type'],
+			$row['Payment Method']
+		);
+		$msg['payment_method'] = $method;
+		$msg['payment_submethod'] = $submethod;
 		if ( $row['Settlement date'] ) {
 			$msg['settled_date'] = UtcDate::getUtcTimestamp( $row['Settlement date'] );
 		}
