@@ -1,14 +1,17 @@
 <?php namespace SmashPig\PaymentProviders\AstroPay\Audit;
 
 use OutOfBoundsException;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\AstroPay\ReferenceData;
+use SmashPig\PaymentProviders\Worldpay\Audit\NormalizationException;
 
 class AstroPayAudit {
 
 	protected $columnHeaders;
 	protected $ignoredStatuses;
 	protected $fileData = array();
+	protected $file;
 
 	public function __construct() {
 		$this->columnHeaders = array(
