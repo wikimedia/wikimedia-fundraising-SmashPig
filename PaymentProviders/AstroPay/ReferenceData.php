@@ -11,6 +11,8 @@ class ReferenceData {
 		'Debit Card' => 'cc',
 	);
 
+	// At least one AstroPay bank code is used for both credit cards
+	// and bank transfers. We have a different internal code for each.
 	protected static $multiTypeSubmethods = array(
 		'WP' => array(
 			'cc' => 'webpay',
