@@ -89,6 +89,8 @@ class WpgReconciliationFile {
 				$queue = 'donations';
 				break;
 			case 'REFUNDED':
+			case 'CANCELLED':
+			case 'CHARGED_BACK':
 				$queue = 'refund';
 				break;
 			default:
