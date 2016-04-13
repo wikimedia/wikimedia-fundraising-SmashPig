@@ -6,6 +6,9 @@ use SmashPig\Core\Logging\TaggedLogger;
 
 class AdyenPaymentsAPI implements AdyenPaymentsInterface {
 
+	/**
+	 * @var WSDL\Payment
+	 */
 	protected $soapClient = null;
 	protected $account = '';
 
@@ -61,19 +64,19 @@ class AdyenPaymentsAPI implements AdyenPaymentsInterface {
 		$data->modificationRequest->originalReference = $pspReference;
 
 		$tl = new TaggedLogger( 'RawData' );
-		$tl->info( 'Launching SOAP capture request', $data );
+		$tl->info( 'Launching SOAP cancel request', $data );
 
 		try {
 			$resp = $this->soapClient->cancel( $data );
 		} catch ( \Exception $ex ) {
-			Logger::error( 'SOAP capture request threw exception!', null, $ex );
+			Logger::error( 'SOAP cancel request threw exception!', null, $ex );
 			return false;
 		}
 
-		if ( $resp->captureResult->response == '[cancel-received]' ) {
-			return $resp->captureResult->pspReference;
+		if ( $resp->cancelResult->response == '[cancel-received]' ) {
+			return $resp->cancelResult->pspReference;
 		} else {
-			Logger::error( 'SOAP capture request did not work as expected!', $resp );
+			Logger::error( 'SOAP cancel request did not work as expected!', $resp );
 			return false;
 		}
 	}
