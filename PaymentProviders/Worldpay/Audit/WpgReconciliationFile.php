@@ -105,7 +105,14 @@ class WpgReconciliationFile {
 			$msg['gross_currency'] = $record['CurrencyCode'];
 			$msg['gateway_parent_id'] = $record['OrderCode'];
 			$msg['gateway_refund_id'] = $record['OrderCode'];
+
 			$msg['type'] = 'refund';
+			if ( $record['Status'] == 'CHARGED_BACK' ) {
+				$msg['type'] = 'chargeback';
+			} elseif ( $record['Status'] == 'CANCELLED' ) {
+				$msg['type'] = 'cancel';
+			}
+
 			return $msg;
 		}
 
