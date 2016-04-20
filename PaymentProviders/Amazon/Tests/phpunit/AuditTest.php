@@ -1,22 +1,17 @@
-<?php namespace SmashPig\PaymentProviders\Amazon\Test;
+<?php
+namespace SmashPig\PaymentProviders\Amazon\Test;
 
-use SmashPig\Core\Configuration;
-use SmashPig\Core\Context;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
 use SmashPig\PaymentProviders\Amazon\Audit\AuditParser;
 
 /**
  * Verify Amazon audit file processor functions
  */
-class AuditTest extends \BaseSmashPigUnitTestCase {
+class AuditTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
-		$config = new Configuration(
-			__DIR__ . '/../../../../config_defaults.php',
-			null,
-			'amazon',
-			true
-		);
-		Context::init( $config );
+
+		$this->setConfig( null, 'amazon' );
 	}
 
 	/**

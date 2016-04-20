@@ -4,9 +4,9 @@
     bootstrap="Tests/bootstrap-phpunit.php">
 
     <testsuites>
-      <testSuite name="Message tests">
-        <file>Tests/MessageTest.php</file>
-      </testSuite>
+      <testsuite name="Core tests">
+        <directory>Tests</directory>
+      </testsuite>
       <testsuite name="Adyen tests">
         <directory>PaymentProviders/Adyen/Tests/phpunit</directory>
       </testsuite>

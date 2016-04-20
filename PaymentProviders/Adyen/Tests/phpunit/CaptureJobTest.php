@@ -3,11 +3,12 @@
 use SmashPig\Core\Configuration;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * Verify Adyen Capture job functions
  */
-class CaptureJobTest extends \BaseSmashPigUnitTestCase {
+class CaptureJobTest extends BaseSmashPigUnitTestCase {
 
 	/**
 	 * For a legit donation, ProcessCaptureJob should leave donor data

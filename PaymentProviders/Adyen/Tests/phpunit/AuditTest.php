@@ -1,11 +1,13 @@
-<?php namespace SmashPig\PaymentProviders\Adyen\Test;
+<?php
+namespace SmashPig\PaymentProviders\Adyen\Test;
 
 use SmashPig\PaymentProviders\Adyen\Audit\AdyenAudit;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * Verify Adyen audit file processor functions
  */
-class AuditTest extends \BaseSmashPigUnitTestCase {
+class AuditTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * Normal donation
 	 */

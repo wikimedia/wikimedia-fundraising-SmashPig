@@ -1,22 +1,19 @@
-<?php namespace SmashPig\PaymentProviders\Worldpay\Test;
+<?php
+namespace SmashPig\PaymentProviders\Worldpay\Test;
 
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\PaymentProviders\Worldpay\Audit\WpgReconciliationFile;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * Verify Amazon audit file processor functions
  */
-class AuditTest extends \BaseSmashPigUnitTestCase {
+class AuditTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
-		$config = new Configuration(
-			__DIR__ . '/../../../../config_defaults.php',
-			null,
-			'Worldpay',
-			true
-		);
-		Context::init( $config );
+
+		$this->setConfig( null, 'Worldpay' );
 	}
 
 	public function testProcessDonation() {

@@ -1,7 +1,11 @@
 <?php
+namespace SmashPig\Tests;
+
 use SmashPig\Core\Context;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Logging\Logger;
+
+use PHPUnit_Framework_TestCase;
 
 class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 	protected static $loggerCreated = false; // Aaargh!

@@ -1,8 +1,10 @@
-<?php namespace SmashPig\PaymentProviders\AstroPay\Test;
+<?php
+namespace SmashPig\PaymentProviders\AstroPay\Test;
 
 use SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages\PaymentMessage;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
-class NormalizeTest extends \BaseSmashPigUnitTestCase {
+class NormalizeTest extends BaseSmashPigUnitTestCase {
 	function setUp() {
 		parent::setUp();
 		$this->paymentSuccess = $this->loadJson( __DIR__ . "/../Data/paid.json" );

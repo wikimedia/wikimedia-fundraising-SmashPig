@@ -1,11 +1,13 @@
-<?php namespace SmashPig\PaymentProviders\AstroPay\Test;
+<?php
+namespace SmashPig\PaymentProviders\AstroPay\Test;
 
 use SmashPig\PaymentProviders\AstroPay\Audit\AstroPayAudit;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * Verify AstroPay audit file processor functions
  */
-class AuditTest extends \BaseSmashPigUnitTestCase {
+class AuditTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * Normal donation
 	 */

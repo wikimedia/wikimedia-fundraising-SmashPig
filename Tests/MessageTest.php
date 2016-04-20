@@ -1,11 +1,13 @@
 <?php
+namespace SmashPig\Tests;
+
 use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 use SmashPig\CrmLink\Messages\DonationInterfaceAntifraud;
 
 /**
  * Test CrmLink message functions
  */
-class MessageTest extends \BaseSmashPigUnitTestCase {
+class MessageTest extends BaseSmashPigUnitTestCase {
 
 	public function testAntifraudFactory() {
 		$diMessage = new DonationInterfaceMessage();

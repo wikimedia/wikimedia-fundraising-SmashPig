@@ -1,8 +1,10 @@
 <?php
+namespace SmashPig\PaymentProviders\Amazon\Test;
 
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\PaymentProviders\Amazon\AmazonApi;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 class ApiTest extends BaseSmashPigUnitTestCase {
 

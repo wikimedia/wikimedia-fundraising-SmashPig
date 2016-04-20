@@ -1,6 +1,9 @@
 <?php
+namespace SmashPig\PaymentProviders\Amazon\Test;
+
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted;
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 class NormalizeTest extends BaseSmashPigUnitTestCase {
 	function setUp() {
