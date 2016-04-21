@@ -1,4 +1,6 @@
 <?php
+namespace SmashPig\Tests;
+
 use SmashPig\Core\DataStores\DataStoreException;
 use SmashPig\Core\DataStores\DataStoreTransactionException;
 use SmashPig\Core\DataStores\KeyedOpaqueDataStore;

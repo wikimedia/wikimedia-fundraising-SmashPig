@@ -4,11 +4,11 @@ $config = array(
 	'adyen' => array(
 		'data-store' => array(
 			'pending' => array(
-				'class' => 'MockDataStore',
+				'class' => 'SmashPig\Tests\MockDataStore',
 				'inst-args' => array(),
 			),
 			'antifraud' => array(
-				'class' => 'MockDataStore',
+				'class' => 'SmashPig\Tests\MockDataStore',
 				'inst-args' => array(),
 			),
 		),
