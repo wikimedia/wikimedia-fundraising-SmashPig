@@ -32,7 +32,8 @@ class TaggedFileLogStream implements ILogStream {
 	 *
 	 * @param LogContextHandler $ch Context handler object
 	 */
-	public function registerContextHandler( LogContextHandler $ch ) { }
+	public function registerContextHandler( LogContextHandler $ch ) {
+	}
 
 	/**
 	 * Process a new event into the log stream.
@@ -86,5 +87,6 @@ class TaggedFileLogStream implements ILogStream {
 	/**
 	 * Notification callback that the logging infrastructure is shutting down
 	 */
-	public function shutdown() { }
+	public function shutdown() {
+	}
 }

@@ -76,7 +76,7 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 		$this->addKeyedLinkingFile( 'class', get_class( $obj ), $objFileName, $objFsPath );
 
 		/* --- Everything else --- */
-		foreach( $keys as $key => $value ) {
+		foreach ( $keys as $key => $value ) {
 			$this->addKeyedLinkingFile( $key, $value, $objFileName, $objFsPath );
 		}
 	}
@@ -110,7 +110,7 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 				// It's a match! DELETE IT ALL!
 				unlink( $this->objectsPath . '/' . $filename );
 				$this->removeKeyedLinkingFile( 'class', $className, $filename );
-				foreach( explode( '.', $filename ) as $key ) {
+				foreach ( explode( '.', $filename ) as $key ) {
 					$parts = explode( '=', $key );
 					if ( count( $parts ) === 2 ) {
 						$this->removeKeyedLinkingFile( $parts[0], $parts[1], $filename );
@@ -158,7 +158,7 @@ class DiskFileDataStore extends KeyedOpaqueDataStore {
 			// Now delete everything
 			unlink( $objPath );
 			$this->removeKeyedLinkingFile( 'class', $className, $filename );
-			foreach( explode( '.', $filename ) as $key ) {
+			foreach ( explode( '.', $filename ) as $key ) {
 				$parts = explode( '=', $key );
 				if ( count( $parts ) === 2 ) {
 					$this->removeKeyedLinkingFile( $parts[0], $parts[1], $filename );

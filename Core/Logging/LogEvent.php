@@ -54,7 +54,8 @@ class LogEvent {
 				try {
 					$jdata = $data->toJson();
 				}
-				catch( DataSerializationException $ex ) {}
+				catch ( DataSerializationException $ex ) {
+	   }
 			} else {
 				$jdata = json_encode( $data );
 			}

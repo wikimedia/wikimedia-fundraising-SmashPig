@@ -19,7 +19,7 @@ class LogContextHandler {
 		$this->contextString = self::createQualifiedContextName( $this->contextNames );
 
 		$this->logStreams = $logStreams;
-		foreach( $this->logStreams as $stream ) {
+		foreach ( $this->logStreams as $stream ) {
 			$stream->registerContextHandler( $this );
 			$stream->enterContext( $this->contextNames );
 		}
@@ -32,7 +32,7 @@ class LogContextHandler {
 
 		// This acts as an implicit leaveContext() because it wont allow us to leave
 		// the final context.
-		foreach( $this->logStreams as $stream ) {
+		foreach ( $this->logStreams as $stream ) {
 			$stream->shutdown();
 		}
 	}
@@ -94,7 +94,7 @@ class LogContextHandler {
 	 */
 	public function addEventToContext( LogEvent $event ) {
 		$this->contextData[ 0 ][ ] = $event;
-		foreach( $this->logStreams as $stream ) {
+		foreach ( $this->logStreams as $stream ) {
 			$stream->processEvent( $event );
 		}
 	}
@@ -110,7 +110,7 @@ class LogContextHandler {
 	 */
 	public function leaveContext() {
 		if ( count( $this->contextNames ) > 1 ) {
-			foreach( $this->logStreams as $stream ) {
+			foreach ( $this->logStreams as $stream ) {
 				$stream->leaveContext( $this->contextNames );
 			}
 

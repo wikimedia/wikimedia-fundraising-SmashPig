@@ -17,9 +17,9 @@ abstract class RestListener extends ListenerBase {
 
 			if ( is_array( $msgs ) ) {
 				foreach ( $msgs as $msg ) {
-					//FIXME: this looks like an elaborate try-catch.  If there's
-					//a fatal exception, the remaining messages are toast anyway,
-					//so we should... do something different here.
+					// FIXME: this looks like an elaborate try-catch.  If there's
+					// a fatal exception, the remaining messages are toast anyway,
+					// so we should... do something different here.
 					$this->inflightStore->addObject( $msg );
 					if ( $this->processMessage( $msg ) ) {
 						$this->inflightStore->removeObjects( $msg );

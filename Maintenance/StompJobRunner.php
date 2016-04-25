@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Maintenance;
 
-require( 'MaintenanceBase.php' );
+require ( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\StompDataStore;
@@ -52,14 +52,16 @@ class StompJobRunner extends MaintenanceBase {
 					if ( $jobObj->execute() ) {
 						$success = true;
 					} else {
-						Logger::info( "Job tells us that it did not successfully execute. Sending to damaged message queue." );
+						Logger::info( "Job tells us that it did not successfully "
+							. "execute. Sending to damaged message queue." );
 					}
 				} catch ( Exception $ex ) {
 					Logger::error( "Job threw exception. Sending to damaged message queue.", null, $ex );
 				}
 			} else {
 				Logger::warning(
-					get_class( $jobObj ) . " is not an instance of RunnableJob. Could not execute and sending to damaged message queue."
+					get_class( $jobObj ) . " is not an instance of RunnableJob. "
+						. "Could not execute and sending to damaged message queue."
 				);
 			}
 			if ( $success ) {
@@ -83,4 +85,4 @@ class StompJobRunner extends MaintenanceBase {
 
 }
 
-require( RUN_MAINTENANCE_IF_MAIN );
+require ( RUN_MAINTENANCE_IF_MAIN );

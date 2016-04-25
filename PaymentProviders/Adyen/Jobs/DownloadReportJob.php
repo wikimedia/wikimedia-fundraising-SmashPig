@@ -57,19 +57,19 @@ class DownloadReportJob extends RunnableJob {
 		}
 
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $this->reportUrl);
+		curl_setopt( $ch, CURLOPT_URL, $this->reportUrl );
 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-		curl_setopt($ch, CURLOPT_FILE, $fp );
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, false );
+		curl_setopt( $ch, CURLOPT_FILE, $fp );
 
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1 );
 
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY );
-		curl_setopt($ch, CURLOPT_USERPWD, "{$user}:{$pass}" );
+		curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, true );
+		curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 2 );
+		curl_setopt( $ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY );
+		curl_setopt( $ch, CURLOPT_USERPWD, "{$user}:{$pass}" );
 
-		$result = curl_exec($ch);
+		$result = curl_exec( $ch );
 		$httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
 		$error = curl_error( $ch );
 		curl_close( $ch );

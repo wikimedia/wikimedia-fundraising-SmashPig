@@ -1,6 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
-Use SmashPig\Core\Context;
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Actions\IListenerMessageAction;

@@ -13,7 +13,7 @@ class LynkReconciliationFile {
 	const filenamePattern = '/^TranDetVer2_.*/';
 
 	protected $recordTypes;
-	protected $fileData = array( );
+	protected $fileData = array();
 
 	function __construct() {
 		$this->columnHeaders = array(
@@ -135,7 +135,7 @@ class LynkReconciliationFile {
 	 * See https://wikitech.wikimedia.org/wiki/Fundraising/Queue_messages
 	 */
 	protected function normalize( $record ) {
-		$msg = array( );
+		$msg = array();
 
 		switch ( $record['Transaction Type'] ) {
 		case 'Credit Sale':
@@ -170,7 +170,7 @@ class LynkReconciliationFile {
 			return $msg;
 		}
 
-		$msg['payment_method'] = 'cc'; //this one is okay, because WP only does cc at this point. Maybe forever?
+		$msg['payment_method'] = 'cc'; // this one is okay, because WP only does cc at this point. Maybe forever?
 		$msg['payment_submethod'] = $this->lookupCardType( $record['Card Network Type'] );
 
 		return $msg;

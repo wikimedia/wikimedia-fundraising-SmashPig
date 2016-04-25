@@ -32,11 +32,11 @@ class ConsoleLogStream implements ILogStream {
 	public function processEvent( LogEvent $event ) {
 		$name = $this->levelNames[ $event->level ];
 
-		print( sprintf( "%s [%-7s] {%s} %s\n", $event->datestring, $name, $this->contextName, $event->message ) );
+		print ( sprintf( "%s [%-7s] {%s} %s\n", $event->datestring, $name, $this->contextName, $event->message ) );
 
 		$expStr = implode( "\n\t", $event->getExceptionBlob() );
 		if ( $expStr ) {
-			print( $expStr . "\n" );
+			print ( $expStr . "\n" );
 		}
 	}
 
@@ -67,7 +67,8 @@ class ConsoleLogStream implements ILogStream {
 	 * @param string[] $contextNames Stack of context names. $contextName[0] is
 	 *                               the new name of the current context
 	 */
-	public function leaveContext( $contextNames ) { }
+	public function leaveContext( $contextNames ) {
+	}
 
 	/**
 	 * Notification callback that the logging infrastructure is shutting down

@@ -27,7 +27,7 @@ class AmazonListener extends RestListener {
 		// (to account for potential repeated headers?
 		// IpnHandler's constructor expects scalar values, so we flatten them
 		$headers = array();
-		foreach( $request->headers->all() as $header => $annoyingArray ) {
+		foreach ( $request->headers->all() as $header => $annoyingArray ) {
 			if ( count( $annoyingArray ) !== 1 ) {
 				throw new ListenerDataException( "header '$header' should have a single value" );
 			}
@@ -107,6 +107,6 @@ class AmazonListener extends RestListener {
 	}
 
 	protected function ackEnvelope() {
-		//pass
+		// pass
 	}
 }

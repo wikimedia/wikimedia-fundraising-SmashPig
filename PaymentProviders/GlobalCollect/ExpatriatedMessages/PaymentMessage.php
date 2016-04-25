@@ -17,16 +17,16 @@ class PaymentMessage extends GlobalCollectMessage {
 
 	protected $fields = array(
 		'additional_reference',
-		'amount' => array('map' => 'gross'),
+		'amount' => array( 'map' => 'gross' ),
 		'attempt_id',
-		'currency_code' => array('map' => 'currency'),
+		'currency_code' => array( 'map' => 'currency' ),
 		'effort_id',
 		'merchant_id',
-		'order_id' => array('map' => 'gateway_txn_id'),
+		'order_id' => array( 'map' => 'gateway_txn_id' ),
 		'payment_method_id',
-		'payment_product_id' => array('map' => 'payment_product'),
+		'payment_product_id' => array( 'map' => 'payment_product' ),
 		'payment_reference',
-		'received_date' => array('map' => 'date'),
+		'received_date' => array( 'map' => 'date' ),
 		'status_date',
 		'status_id',
 	);

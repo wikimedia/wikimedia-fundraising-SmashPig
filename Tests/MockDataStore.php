@@ -18,7 +18,8 @@ class MockDataStore extends KeyedOpaqueDataStore {
 
 	protected $currentQueue = null;
 
-	public function __construct() {}
+	public function __construct() {
+	}
 
 	/**
 	 * Adds an object to the persistent data store.

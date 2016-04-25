@@ -1,5 +1,6 @@
 <?php
 namespace SmashPig\Core;
+
 use SmashPig\Core\Logging\Logger;
 
 /**

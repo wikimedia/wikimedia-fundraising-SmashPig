@@ -24,7 +24,7 @@ class AdyenListener extends SoapListener {
 	);
 
 	public function __construct() {
-		require_once( 'WSDL/Notification.php' );
+		require_once ( 'WSDL/Notification.php' );
 		parent::__construct();
 	}
 
@@ -101,7 +101,7 @@ class AdyenListener extends SoapListener {
 				}
 			}
 
-			Logger::info( 'Finished processing of IPN message, retuning accepted.');
+			Logger::info( 'Finished processing of IPN message, retuning accepted.' );
 			$respstring = '[accepted]';
 
 		} else {

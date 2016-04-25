@@ -1,6 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\Audit;
 
-require( __DIR__ . '/../../../Maintenance/MaintenanceBase.php' );
+require ( __DIR__ . '/../../../Maintenance/MaintenanceBase.php' );
 
 use SmashPig\Maintenance\MaintenanceBase;
 
@@ -30,4 +30,4 @@ class DownloadReports extends MaintenanceBase {
 	}
 }
 
-require( RUN_MAINTENANCE_IF_MAIN );
+require ( RUN_MAINTENANCE_IF_MAIN );

@@ -5,7 +5,7 @@ class CsvReader implements \Iterator {
 	 * @var int Maximum length of line to read from the CSV file.
 	 */
 	protected $maxRowLength = 4096;
-	
+
 	/**
 	 * @var resource The pointer to the cvs file.
 	 */

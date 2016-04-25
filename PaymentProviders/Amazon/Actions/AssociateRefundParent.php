@@ -23,7 +23,7 @@ class AssociateRefundParent implements IListenerMessageAction {
 			$parentId = AmazonApi::findRefundParentId( $refundId );
 			$msg->setParentId( $parentId );
 			return true;
-		} catch( SmashPigException $ex ) {
+		} catch ( SmashPigException $ex ) {
 			Logger::error( $ex->getMessage() );
 			return false;
 		}

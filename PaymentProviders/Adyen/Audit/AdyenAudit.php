@@ -110,7 +110,7 @@ class AdyenAudit {
 		$parts = explode( '.', $row['Merchant Reference'] );
 		$msg['contribution_tracking_id'] = $parts[0];
 
-		switch( $type ) {
+		switch ( $type ) {
 			case 'settled':
 				$this->parseDonation( $row, $msg );
 				break;

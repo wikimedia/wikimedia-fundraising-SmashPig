@@ -50,7 +50,7 @@ class Authorisation extends AdyenMessage {
 		};
 
 		foreach ( $msgObj->additionalData->entry as $entry ) {
-			switch( $entry->key ) {
+			switch ( $entry->key ) {
 				case 'cvcResult':
 					$this->cvvResult = $firstSegment( $entry->value );
 					break;

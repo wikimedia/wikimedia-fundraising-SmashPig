@@ -27,9 +27,9 @@ class Capture extends AdyenMessage {
 	 *
 	 * @param \SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem $msgObj
 	 */
-	protected function constructFromWSDL( NotificationRequestItem $msgObj )
-	{
-		parent::constructFromWSDL($msgObj);
+	protected function constructFromWSDL( NotificationRequestItem $msgObj ) {
+
+		parent::constructFromWSDL( $msgObj );
 
 		$this->originalReference = $msgObj->originalReference;
 	}

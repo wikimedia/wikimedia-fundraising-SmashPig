@@ -496,13 +496,13 @@ class Payment extends \SoapClient {
 		'Type' => 'Type',
 	);
 
-	public function Payment($wsdl = "https://pal-live.adyen.com/pal/Payment.wsdl", $options = array()) {
-		foreach(self::$classmap as $key => $value) {
-			if(!isset($options['classmap'][$key])) {
+	public function Payment( $wsdl = "https://pal-live.adyen.com/pal/Payment.wsdl", $options = array() ) {
+		foreach ( self::$classmap as $key => $value ) {
+			if ( !isset( $options['classmap'][$key] ) ) {
 				$options['classmap'][$key] = $value;
 			}
 		}
-		parent::__construct($wsdl, $options);
+		parent::__construct( $wsdl, $options );
 	}
 
 	/**
@@ -511,8 +511,8 @@ class Payment extends \SoapClient {
 	 * @param authorise $parameters
 	 * @return authoriseResponse
 	 */
-	public function authorise(authorise $parameters) {
-		return $this->__soapCall('authorise', array($parameters), array(
+	public function authorise( authorise $parameters ) {
+		return $this->__soapCall( 'authorise', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -525,8 +525,8 @@ class Payment extends \SoapClient {
 	 * @param authorise3d $parameters
 	 * @return authorise3dResponse
 	 */
-	public function authorise3d(authorise3d $parameters) {
-		return $this->__soapCall('authorise3d', array($parameters), array(
+	public function authorise3d( authorise3d $parameters ) {
+		return $this->__soapCall( 'authorise3d', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -539,8 +539,8 @@ class Payment extends \SoapClient {
 	 * @param authoriseReferral $parameters
 	 * @return authoriseReferralResponse
 	 */
-	public function authoriseReferral(authoriseReferral $parameters) {
-		return $this->__soapCall('authoriseReferral', array($parameters), array(
+	public function authoriseReferral( authoriseReferral $parameters ) {
+		return $this->__soapCall( 'authoriseReferral', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -553,8 +553,8 @@ class Payment extends \SoapClient {
 	 * @param balanceCheck $parameters
 	 * @return balanceCheckResponse
 	 */
-	public function balanceCheck(balanceCheck $parameters) {
-		return $this->__soapCall('balanceCheck', array($parameters), array(
+	public function balanceCheck( balanceCheck $parameters ) {
+		return $this->__soapCall( 'balanceCheck', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -567,8 +567,8 @@ class Payment extends \SoapClient {
 	 * @param cancel $parameters
 	 * @return cancelResponse
 	 */
-	public function cancel(cancel $parameters) {
-		return $this->__soapCall('cancel', array($parameters), array(
+	public function cancel( cancel $parameters ) {
+		return $this->__soapCall( 'cancel', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -581,8 +581,8 @@ class Payment extends \SoapClient {
 	 * @param cancelOrRefund $parameters
 	 * @return cancelOrRefundResponse
 	 */
-	public function cancelOrRefund(cancelOrRefund $parameters) {
-		return $this->__soapCall('cancelOrRefund', array($parameters), array(
+	public function cancelOrRefund( cancelOrRefund $parameters ) {
+		return $this->__soapCall( 'cancelOrRefund', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -595,8 +595,8 @@ class Payment extends \SoapClient {
 	 * @param capture $parameters
 	 * @return captureResponse
 	 */
-	public function capture(capture $parameters) {
-		return $this->__soapCall('capture', array($parameters), array(
+	public function capture( capture $parameters ) {
+		return $this->__soapCall( 'capture', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -609,8 +609,8 @@ class Payment extends \SoapClient {
 	 * @param checkFraud $parameters
 	 * @return checkFraudResponse
 	 */
-	public function checkFraud(checkFraud $parameters) {
-		return $this->__soapCall('checkFraud', array($parameters), array(
+	public function checkFraud( checkFraud $parameters ) {
+		return $this->__soapCall( 'checkFraud', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -623,8 +623,8 @@ class Payment extends \SoapClient {
 	 * @param directdebit $parameters
 	 * @return directdebitFuncResponse
 	 */
-	public function directdebit(directdebit $parameters) {
-		return $this->__soapCall('directdebit', array($parameters), array(
+	public function directdebit( directdebit $parameters ) {
+		return $this->__soapCall( 'directdebit', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -637,8 +637,8 @@ class Payment extends \SoapClient {
 	 * @param fundTransfer $parameters
 	 * @return fundTransferResponse
 	 */
-	public function fundTransfer(fundTransfer $parameters) {
-		return $this->__soapCall('fundTransfer', array($parameters), array(
+	public function fundTransfer( fundTransfer $parameters ) {
+		return $this->__soapCall( 'fundTransfer', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -651,8 +651,8 @@ class Payment extends \SoapClient {
 	 * @param refund $parameters
 	 * @return refundResponse
 	 */
-	public function refund(refund $parameters) {
-		return $this->__soapCall('refund', array($parameters), array(
+	public function refund( refund $parameters ) {
+		return $this->__soapCall( 'refund', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)
@@ -665,8 +665,8 @@ class Payment extends \SoapClient {
 	 * @param refundWithData $parameters
 	 * @return refundWithDataResponse
 	 */
-	public function refundWithData(refundWithData $parameters) {
-		return $this->__soapCall('refundWithData', array($parameters), array(
+	public function refundWithData( refundWithData $parameters ) {
+		return $this->__soapCall( 'refundWithData', array( $parameters ), array(
 				'uri' => 'http://payment.services.adyen.com',
 				'soapaction' => ''
 			)

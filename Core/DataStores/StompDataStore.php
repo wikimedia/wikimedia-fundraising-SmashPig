@@ -128,7 +128,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 		$bodyJson = $obj->toJson();
 		try {
 			$this->addObjectRaw( $bodyJson, $headers );
-        } catch ( DataStoreException $ex ) {
+		} catch ( DataStoreException $ex ) {
 			Logger::error(
 				"Could not queue message ({$objClass}) with id '{$objKeys[ 'correlationId' ]}' to '{$this->queue_id}' on '{$this->uri}'",
 				$bodyJson
@@ -282,7 +282,7 @@ class StompDataStore extends KeyedOpaqueDataStore {
 			}
 
 			return $classObj;
-		} else if ( $msgObj && !$deserialize ) {
+		} elseif ( $msgObj && !$deserialize ) {
 			return array(
 				'headers' => $msgObj->headers,
 				'body' => $msgObj->body,

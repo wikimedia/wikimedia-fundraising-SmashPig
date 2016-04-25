@@ -17,7 +17,7 @@ abstract class ListenerMessage extends KeyedOpaqueStorableObject {
 	 *
 	 * @return bool True if the message was complete and can be processed
 	 */
-	public abstract function validate();
+	abstract public function validate();
 
 	/**
 	 * Will run all the actions that are loaded (from the 'actions' configuration

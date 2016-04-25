@@ -97,7 +97,7 @@ $config_defaults = array(
 		'actions' => array(),
 
 		'email' => array(
-			'from-address' => array('sender@contoso.com', 'Example Sender'),
+			'from-address' => array( 'sender@contoso.com', 'Example Sender' ),
 			'bounce-address' => 'bounce+$1@contoso.com',
 			'archive-addresses' => array(),
 		),
@@ -187,8 +187,8 @@ $config_defaults = array(
 				'24' => 25, // Both postal code and address matches, name doesn't match
 				'25' => 50, // Address matches, name doesn't match
 				'26' => 100, // Neither postal code, address nor name matches
-		),
-		'cvv-map' => array(
+			),
+			'cvv-map' => array(
 				'0' => 100, // Unknown
 				'1' => 0, // Matches
 				'2' => 100, // Doesn't match
@@ -199,7 +199,7 @@ $config_defaults = array(
 			),
 		),
 
-		'actions' => array( ),
+		'actions' => array(),
 	),
 
 	'amazon' => array(
@@ -238,7 +238,7 @@ $config_defaults = array(
 		),
 		'ipn-handler-class' => 'PayWithAmazon\IpnHandler',
 
-		'audit' => array (
+		'audit' => array(
 			'download-path' => '',
 			'archive-path' => '',
 			'file-types' => array(

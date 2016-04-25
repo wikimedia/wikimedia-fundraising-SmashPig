@@ -68,7 +68,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$success = true;
 
 		$action = $this->determineAction( $queueMessage );
-		switch( $action ) {
+		switch ( $action ) {
 			case self::ACTION_PROCESS:
 				// Attempt to capture the payment
 				$api = $this->getApi();

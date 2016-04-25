@@ -12,7 +12,7 @@ class TransactionReconciliationFile {
 	const filenamePattern = '/^MA\.PISCESSW\.#M\.RECON\..*/';
 
 	protected $recordTypes;
-	protected $fileData = array( );
+	protected $fileData = array();
 
 	function __construct() {
 		$this->row_header_segment = array(
@@ -158,8 +158,8 @@ class TransactionReconciliationFile {
 		if ( !$record ) {
 			// FIXME: correct Exception type, and get context (path) from log context
 			// SUPERFIXME: This introduces an extreme degree of fragility into the system. One weird line can't blow up the whole thing; We'd get killed by the schrapnel on the daily.
-//			throw new \Exception( "Unknown record type {$row_info['record_type']} while processing {$this->path}, aborting!" );
-			//for now...
+// 			throw new \Exception( "Unknown record type {$row_info['record_type']} while processing {$this->path}, aborting!" );
+			// for now...
 			error_log( "Unknown record type {$row_info['record_type']} while processing {$this->path}. Rolling over it." );
 		}
 
@@ -208,7 +208,7 @@ class TransactionReconciliationFile {
 
 		# Verify that the data and supplemental data are a pair
 		if ( $this->pending_supplemental_data ) {
-			if ( ( int ) ($this->pending_supplemental_data['sequence_no']) !== ( $this->pending_data['sequence_no'] + 1 ) ) {
+			if ( (int) ( $this->pending_supplemental_data['sequence_no'] ) !== ( $this->pending_data['sequence_no'] + 1 ) ) {
 				throw new \Exception( "Mismatched data and supplemental data! " . print_r( $this->pending_supplemental_data, true ) . " " . print_r( $this->pending_data, true ) );
 			}
 			$record = array_merge( $record, $this->pending_supplemental_data );
@@ -231,20 +231,20 @@ class TransactionReconciliationFile {
 	 * See https://wikitech.wikimedia.org/wiki/Fundraising/Queue_messages
 	 */
 	protected function normalize( $record ) {
-		$msg = array( );
+		$msg = array();
 
 		if ( $record["transaction_type"] == "0" ) {
 			$queue = "donations";
 		} elseif ( $record["transaction_type"] == "5" ) {
 			$queue = "refund";
 		} else {
-			//FIXME: This also seems incredibly fragile.
+			// FIXME: This also seems incredibly fragile.
 			throw new \Exception( "Don't know how to handle transaction type {$record["transaction_type"]}" );
 		}
 
-		//ARGH.
-		//transaction_date looks like ddmmyy.
-		//@TODO: Verify that the transaction_time is in fact UTC, and not some other weirdo country time.
+		// ARGH.
+		// transaction_date looks like ddmmyy.
+		// @TODO: Verify that the transaction_time is in fact UTC, and not some other weirdo country time.
 		$datestring = '20' . substr( $record["transaction_date"], 4, 2 ) . substr( $record["transaction_date"], 2, 2 ) . substr( $record["transaction_date"], 0, 2 );
 		$datestring .= ' ' . $record["transaction_time"] . '-0000';
 
@@ -262,10 +262,10 @@ class TransactionReconciliationFile {
 		# comes from a different field when currency != GBP :(
 		if ( trim( $record["local_currency_code"] ) ) {
 			$msg["currency"] = $record["local_currency_code"];
-			$msg["gross"] = ( int ) ( $record["local_value"] ) * self::exponent_to_multiplier( $record["local_exponent"] );
+			$msg["gross"] = (int) ( $record["local_value"] ) * self::exponent_to_multiplier( $record["local_exponent"] );
 		} else {
 			$msg["currency"] = "GBP";
-			$msg["gross"] = ( int ) ( $record["transaction_value"] ) * self::exponent_to_multiplier( 2 );
+			$msg["gross"] = (int) ( $record["transaction_value"] ) * self::exponent_to_multiplier( 2 );
 		}
 
 		if ( $queue === "refund" ) {
@@ -275,8 +275,8 @@ class TransactionReconciliationFile {
 			$msg["gateway_refund_id"] = $msg["gateway_txn_id"];
 			# FIXME: chargeback vs refund info is not available in this file.
 			$msg["type"] = "refund";
-			#log.info("+Sending\t{id}\t{date}\t{type}".format(id=msg["gateway_parent_id"], date=iso_date, type=msg["type"]))
-			#self.send(queue, msg)
+			# log.info("+Sending\t{id}\t{date}\t{type}".format(id=msg["gateway_parent_id"], date=iso_date, type=msg["type"]))
+			# self.send(queue, msg)
 			return $msg;
 		}
 
@@ -289,10 +289,10 @@ class TransactionReconciliationFile {
 		# Switch behavior depending on the status.  We only like "accepted" transactions.
 		$status = trim( $record["status"] );
 		if ( $status == "P" ) {
-			#log.info("-Pending\t{id}\t{date}\t{type}".format(id=msg["gateway_txn_id"], date=iso_date, type=queue))
+			# log.info("-Pending\t{id}\t{date}\t{type}".format(id=msg["gateway_txn_id"], date=iso_date, type=queue))
 			return;
 		} elseif ( $status == "R" ) {
-			#log.info("-Rejection\t{id}\t{date}\t{type}".format(id=msg["gateway_txn_id"], date=iso_date, type=queue))
+			# log.info("-Rejection\t{id}\t{date}\t{type}".format(id=msg["gateway_txn_id"], date=iso_date, type=queue))
 			return;
 		} elseif ( $status != "A" ) {
 			throw new \Exception( "Unknown gateway status: {$status}" );
@@ -305,10 +305,10 @@ class TransactionReconciliationFile {
 			} else {
 				$msg["settlement_currency"] = "GBP";
 			}
-			$msg["settlement_amount"] = ( int ) ( $record["settlement_value"] ) * self::exponent_to_multiplier( $record["settlement_exponent"] );
+			$msg["settlement_amount"] = (int) ( $record["settlement_value"] ) * self::exponent_to_multiplier( $record["settlement_exponent"] );
 		}
 
-		$msg["payment_method"] = "cc"; //this one is okay, because WP only does cc at this point. Maybe forever?
+		$msg["payment_method"] = "cc"; // this one is okay, because WP only does cc at this point. Maybe forever?
 		$msg["payment_submethod"] = ReferenceData::decode_card_type( trim( $record["card_type"] ) );
 
 		# custom values
@@ -334,7 +334,7 @@ class TransactionReconciliationFile {
 			$exponent = 2;
 		}
 
-		return pow( 10, 0 - ( int ) ( $exponent ) );
+		return pow( 10, 0 - (int) ( $exponent ) );
 	}
 
 }
@@ -342,7 +342,7 @@ class TransactionReconciliationFile {
 class FixedLengthRecordSpecification {
 
 	public $prefix;
-	public $fields = array( );
+	public $fields = array();
 
 	function __construct( $prefix, $fieldSegments ) {
 		$this->prefix = $prefix;
@@ -365,7 +365,7 @@ class FixedLengthRecordParser {
 
 	static function parse( $fields, $line ) {
 		$pos = 0;
-		$out = array( );
+		$out = array();
 		foreach ( $fields as $field ) {
 			list( $fieldName, $length ) = $field;
 			$out[$fieldName] = substr( $line, $pos, $length );

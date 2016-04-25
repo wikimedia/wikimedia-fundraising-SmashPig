@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Maintenance;
 
-require( 'MaintenanceBase.php' );
+require ( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\StompDataStore;
@@ -19,7 +19,8 @@ class PopulateQueueFromDump extends MaintenanceBase {
 	public function __construct() {
 		parent::__construct();
 		$this->addOption( 'queue', 'queue name to inject into', 'test' );
-		$this->addArgument( 'file', 'File, created by EmptyQueueToDump, with JSON format messages to inject', true );
+		$this->addArgument( 'file',
+			'File, created by EmptyQueueToDump, with JSON format messages to inject', true );
 	}
 
 	/**
@@ -56,10 +57,10 @@ class PopulateQueueFromDump extends MaintenanceBase {
 
 			$messageCount++;
 			if ( $messageCount % 1000 == 0 ) {
-				print( '.' );
+				print ( '.' );
 			}
 		}
-		print( '\n' );
+		print ( '\n' );
 
 		$elapsedTime = time() - $startTime;
 		Logger::info(
@@ -69,4 +70,4 @@ class PopulateQueueFromDump extends MaintenanceBase {
 
 }
 
-require( RUN_MAINTENANCE_IF_MAIN );
+require ( RUN_MAINTENANCE_IF_MAIN );

@@ -81,7 +81,7 @@ class AstroPayAudit {
 		$msg['gateway'] = 'astropay';
 		$msg['gross'] = $row['Net Amount (local)'];
 
-		switch( $row['Type'] ) {
+		switch ( $row['Type'] ) {
 			case 'Payment':
 				$this->parseDonation( $row, $msg );
 				break;

@@ -25,7 +25,8 @@ class SyslogLogStream implements ILogStream {
 	 *
 	 * @param LogContextHandler $ch Context handler object
 	 */
-	public function registerContextHandler( LogContextHandler $ch ) { }
+	public function registerContextHandler( LogContextHandler $ch ) {
+	}
 
 	/**
 	 * Process a new event into the log stream.
@@ -54,7 +55,7 @@ class SyslogLogStream implements ILogStream {
 	public function enterContext( $contextNames ) {
 		$this->rootContext = array_slice( $contextNames, -1 );
 		$this->additionalContext = LogContextHandler::createQualifiedContextName(
-			array_slice( $contextNames, 0, -1)
+			array_slice( $contextNames, 0, -1 )
 		);
 	}
 
@@ -68,7 +69,7 @@ class SyslogLogStream implements ILogStream {
 	public function renameContext( $contextNames, $oldTopName ) {
 		$this->rootContext = array_slice( $contextNames, -1 );
 		$this->additionalContext = LogContextHandler::createQualifiedContextName(
-			array_slice( $contextNames, 0, -1)
+			array_slice( $contextNames, 0, -1 )
 		);
 	}
 
@@ -82,12 +83,13 @@ class SyslogLogStream implements ILogStream {
 	public function leaveContext( $contextNames ) {
 		// We assume here that the root context will not have changed!
 		$this->additionalContext = LogContextHandler::createQualifiedContextName(
-			array_slice( $contextNames, 1, -1)
+			array_slice( $contextNames, 1, -1 )
 		);
 	}
 
 	/**
 	 * Notification callback that the logging infrastructure is shutting down
 	 */
-	public function shutdown() { }
+	public function shutdown() {
+	}
 }

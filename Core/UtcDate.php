@@ -11,7 +11,7 @@ class UtcDate {
 			$obj = new DateTime( $dateString, new DateTimeZone( $timeZone ) );
 			return $obj->getTimestamp();
 		} catch ( Exception $ex ) {
-			Logger::warning ( 'Caught date exception: ' . $ex->getMessage(), $dateString );
+			Logger::warning( 'Caught date exception: ' . $ex->getMessage(), $dateString );
 			return null;
 		}
 	}

@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Maintenance;
 
-require( 'MaintenanceBase.php' );
+require ( 'MaintenanceBase.php' );
 
 use SmashPig\Core\DataStores\DataSerializationException;
 use SmashPig\Core\Logging\Logger;
@@ -79,7 +79,7 @@ class EmptyQueueToDump extends MaintenanceBase {
 				} else {
 					fwrite( $f, get_class( $queueObj ) . "=" . $queueObj->toJson( false ) . "\n" );
 				}
-			} catch( DataSerializationException $ex ) {
+			} catch ( DataSerializationException $ex ) {
 				// We probably caught an anti-message here; log the exception and continue on
 				Logger::warning( "Possibly caught an antimessage. Not adding to file.", null, $ex );
 			}
@@ -102,4 +102,4 @@ class EmptyQueueToDump extends MaintenanceBase {
 
 }
 
-require( RUN_MAINTENANCE_IF_MAIN );
+require ( RUN_MAINTENANCE_IF_MAIN );

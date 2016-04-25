@@ -1,4 +1,5 @@
 <?php namespace SmashPig\Maintenance;
+
 /**
  * Base include file for all PHP maintenance scripts.
  *
@@ -21,7 +22,7 @@ if ( !defined( "SMASHPIG_ENTRY_POINT" ) ) {
 	define( "SMASHPIG_ENTRY_POINT", $argv[0] );
 
 	$root = __DIR__ . '/../';
-	require_once( $root . 'vendor/autoload.php' );
+	require_once ( $root . 'vendor/autoload.php' );
 
 	/** @var MaintenanceBase $maintClass Set this to the name of the class to execute */
 	$maintClass = false;
@@ -35,7 +36,9 @@ abstract class MaintenanceBase {
 	/** Const for getStdin() **/
 	const STDIN_ALL = 'all';
 
-	/** @var array Desired parameters. Keys are long names, values are arrays with keys 'desc', 'default', and 'alias' */
+	/** @var array Desired parameters. Keys are long names, values are arrays
+	 * with keys 'desc', 'default', and 'alias'
+	 */
 	protected $desiredOptions = array();
 
 	/** @var array Map aliased parameter names to long ones, e.g. -h -> --help */
@@ -162,8 +165,10 @@ abstract class MaintenanceBase {
 	protected function addDefaultParams() {
 		$this->addOption( 'help', 'Display this help message', null, 'h' );
 		$this->addOption( 'config-file', 'Path to additional configuration file', false );
-		$this->addOption( 'config-node', 'Specific configuration node to load, if not default', 'default' );
-		$this->addOption( 'memory-limit', 'Set a specific memory limit for the script, "max" for no limit', 'default' );
+		$this->addOption( 'config-node',
+			'Specific configuration node to load, if not default', 'default' );
+		$this->addOption( 'memory-limit',
+			'Set a specific memory limit for the script, "max" for no limit', 'default' );
 	}
 
 	/**
@@ -172,9 +177,12 @@ abstract class MaintenanceBase {
 	 *
 	 * @param string $name 			Long name of the param, used with -- (ie help, version, etc)
 	 * @param string $description 	Description of the param to show on --help
-	 * @param mixed  $default		Value given back to the script if no argument is given. If this remains null
-	 * 								the option is treated as a boolean with no argument expected; returning true
-	 * 								if the option is present in the command line string.
+	 * @param mixed  $default		Value given back to the script if no
+	 *                              argument is given. If this remains null the
+	 *                              option is treated as a boolean with no
+	 *                              argument expected; returning true if the
+	 *                              option is present in the command line
+	 *                              string.
 	 * @param string $alias 		Optional character to use as short name, used with -
 	 */
 	protected function addOption( $name, $description, $default = null, $alias = false ) {
@@ -189,7 +197,8 @@ abstract class MaintenanceBase {
 
 		if ( $alias ) {
 			if ( in_array( $alias, $this->aliasParamsMap ) ) {
-				throw new \SmashPig\Core\SmashPigException( "Option '$name' cannot take alias '$alias'. Already in use." );
+				throw new SmashPigException(
+					"Option '$name' cannot take alias '$alias'. Already in use." );
 			}
 			$this->aliasParamsMap[$alias] = $name;
 		}
@@ -234,8 +243,9 @@ abstract class MaintenanceBase {
 	 *
 	 * @param string $arg           Name of the argument, like 'start'
 	 * @param string $description   Description of the argument
-	 * @param bool   $required      If true and the argument is not provided, will not execute the script. Instead
-	 *                              will display the help message.
+	 * @param bool   $required      If true and the argument is not provided,
+	 *                              will not execute the script. Instead will
+	 *                              display the help message.
 	 *
 	 * @throws SmashPigException if an argument is required after an optional argument
 	 */
@@ -245,7 +255,8 @@ abstract class MaintenanceBase {
 		reset( $this->expectedArguments );
 
 		if ( ( $last !== false ) && ( $last['required'] == false ) && $required ) {
-			throw new SmashPigException( "May not add a required argument after optional arguments already in the stack." );
+			throw new SmashPigException(
+				"May not add a required argument after optional arguments already in the stack." );
 		}
 
 		$this->expectedArguments[] = array(
@@ -282,7 +293,8 @@ abstract class MaintenanceBase {
 			if ( array_key_exists( $id, $this->expectedArgumentIdMap ) ) {
 				$id = $this->expectedArgumentIdMap[$id];
 			} else {
-				throw new SmashPigException( "Requested named argument '{$id}' was not registered with addArgument()" );
+				throw new SmashPigException(
+					"Requested named argument '{$id}' was not registered with addArgument()" );
 			}
 		}
 		return $this->hasArgument( $id ) ? $this->args[$id] : $default;
@@ -317,7 +329,7 @@ abstract class MaintenanceBase {
 					if ( !array_key_exists( $option, $this->aliasParamsMap ) ||
 						 !array_key_exists( $this->aliasParamsMap[$option], $this->desiredOptions )
 					) {
-						print( "\nERROR: $option parameter was not expected\n" );
+						print ( "\nERROR: $option parameter was not expected\n" );
 						$this->helpIfRequested( true );
 					} else {
 						$option = $this->aliasParamsMap[$option];
@@ -325,7 +337,7 @@ abstract class MaintenanceBase {
 				}
 
 				if ( array_key_exists( $option, $this->options ) ) {
-					print( "\nERROR: $option parameter given twice!\n" );
+					print ( "\nERROR: $option parameter given twice!\n" );
 					$this->helpIfRequested( true );
 				}
 
@@ -335,7 +347,7 @@ abstract class MaintenanceBase {
 						// Expecting parameter
 						$param = next( $argv_local );
 						if ( $param === false ) {
-							print( "\nERROR: $option parameter requires a value\n" );
+							print ( "\nERROR: $option parameter requires a value\n" );
 							$this->helpIfRequested( true );
 						}
 
@@ -349,7 +361,7 @@ abstract class MaintenanceBase {
 					$this->options[$option] = $param;
 
 				} else {
-					print( "\nERROR: $option parameter was not expected\n" );
+					print ( "\nERROR: $option parameter was not expected\n" );
 					$this->helpIfRequested( true );
 				}
 			} else {
@@ -361,9 +373,11 @@ abstract class MaintenanceBase {
 
 		// Validate number of required arguments
 		$count = 0;
-		array_walk( $this->expectedArguments, function($el) use (&$count) { $count += $el['required'] ? 1 : 0; } );
+		array_walk( $this->expectedArguments, function( $el ) use ( &$count ) {
+			$count += $el['required'] ? 1 : 0;
+		} );
 		if ( count( $this->args ) < $count ) {
-			print( "\nERROR: Script expects $count arguments." );
+			print ( "\nERROR: Script expects $count arguments." );
 			$this->helpIfRequested( true );
 		}
 
@@ -444,7 +458,7 @@ abstract class MaintenanceBase {
 	 * @param $force boolean Whether to force the help to show, default false
 	 */
 	protected function helpIfRequested( $force = false ) {
-		if( !$force && !$this->getOption( 'help' ) ) {
+		if ( !$force && !$this->getOption( 'help' ) ) {
 			return;
 		}
 
@@ -458,23 +472,23 @@ abstract class MaintenanceBase {
 
 		// Print description
 		if ( $this->description ) {
-			print( "\n" . $this->description . "\n" );
+			print ( "\n" . $this->description . "\n" );
 		}
 
 		// Usage string
-		print( "Usage {$this->scriptName} [OPTIONS] " );
+		print ( "Usage {$this->scriptName} [OPTIONS] " );
 		foreach ( $this->expectedArguments as $arg ) {
 			if ( $arg['required'] ) {
-				print( "<" . $arg['name'] ."> " );
+				print ( "<" . $arg['name'] ."> " );
 			} else {
-				print( "[" . $arg['name'] . "] " );
+				print ( "[" . $arg['name'] . "] " );
 			}
 		}
-		print( "\n" );
+		print ( "\n" );
 
 		// Describe arguments
 		if ( count( $this->expectedArguments ) > 0 ) {
-			print( "\nArguments: \n" );
+			print ( "\nArguments: \n" );
 			foreach ( $this->expectedArguments as $arg ) {
 				$str = $tab . $arg['name'];
 				$str = str_pad( $str, $nameWidth - count( $str ), ' ' );
@@ -482,13 +496,13 @@ abstract class MaintenanceBase {
 					$str .= "\n" . str_pad( '', $nameWidth, ' ' );
 				}
 				$str .= wordwrap( $arg['desc'], $descWidth, "\n$namePad", true );
-				print( $str . "\n" );
+				print ( $str . "\n" );
 			}
 		}
 
 		// Describe options
 		if ( count( $this->desiredOptions ) > 0 ) {
-			print( "\nOptions: \n" );
+			print ( "\nOptions: \n" );
 			foreach ( $this->desiredOptions as $name => $opt ) {
 				$str = $tab . '--' . $name;
 				if ( $opt['alias'] ) {
@@ -503,7 +517,7 @@ abstract class MaintenanceBase {
 					$str .= "\n" . str_pad( '', $nameWidth, ' ' );
 				}
 				$str .= wordwrap( $opt['desc'], $descWidth, "\n$namePad", true );
-				print( $str . "\n" );
+				print ( $str . "\n" );
 			}
 		}
 
@@ -563,8 +577,8 @@ abstract class MaintenanceBase {
 	}
 
 	/**
-	 * Hook from set_exception_handler(). Will clear output data, set the HTTP status to 500: Internal Error
-	 * and then die.
+	 * Hook from set_exception_handler(). Will clear output data, set the HTTP
+	 * status to 500: Internal Error and then die.
 	 *
 	 * @param \Exception $ex The uncaught exception
 	 */

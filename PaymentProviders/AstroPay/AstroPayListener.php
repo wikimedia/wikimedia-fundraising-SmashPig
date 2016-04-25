@@ -75,6 +75,6 @@ class AstroPayListener extends RestListener {
 	}
 
 	protected function ackEnvelope() {
-		//pass
+		// pass
 	}
 }

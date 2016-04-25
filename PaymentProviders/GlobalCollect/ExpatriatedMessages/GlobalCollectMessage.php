@@ -21,7 +21,7 @@ abstract class GlobalCollectMessage extends ListenerMessage {
 	public function constructFromValues( array $values ) {
 		foreach ( $this->getFieldInfo() as $key => $info ) {
 			$upperKey = str_replace( '_', '', strtoupper( $key ) );
-			$this->$key = (array_key_exists( $upperKey, $values ) ? $values[$upperKey] : '');
+			$this->$key = ( array_key_exists( $upperKey, $values ) ? $values[$upperKey] : '' );
 		}
 	}
 
@@ -35,7 +35,7 @@ abstract class GlobalCollectMessage extends ListenerMessage {
 		$queueMsg = new NormalizedMessage();
 
 		foreach ( $this->getFieldInfo() as $key => $info ) {
-			$destKey = (array_key_exists( 'map', $info ) ? $info['map'] : $key );
+			$destKey = ( array_key_exists( 'map', $info ) ? $info['map'] : $key );
 			$queueMsg->$destKey = $this->$key;
 		}
 

@@ -120,9 +120,9 @@ class FailmailLogStream implements ILogStream {
 		$body = array( "A problem has developed in SmashPig -- the available context is shown below. Data "
 			. "objects are excluded for security but may be found in alternative log streams if configured.\n\n"
 			. "NOTE: Additional errors may have occurred this session, but this email will only be sent "
-			. "once. Check log streams for additional errors in this session.\n");
+			. "once. Check log streams for additional errors in this session.\n" );
 
-		foreach( $events as $event ) {
+		foreach ( $events as $event ) {
 			$name = $this->levels[ $event->level ];
 			if ( $event->tag ) {
 				$body[] = sprintf(

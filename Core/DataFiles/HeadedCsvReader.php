@@ -19,7 +19,7 @@ class HeadedCsvReader extends CsvReader {
 		}
 		// Extract the header information
 		$this->colNames = parent::current();
-		foreach( $this->colNames as $index => $name ) {
+		foreach ( $this->colNames as $index => $name ) {
 			if ( isset( $this->colIndexes[$name] ) ) {
 				throw new DataFileException( "Duplicate column name {$name}!" );
 			}

@@ -28,7 +28,7 @@ abstract class AmazonMessage extends ListenerMessage {
 	}
 
 	public function getDestinationQueue() {
-		//stub
+		// stub
 		return null;
 	}
 

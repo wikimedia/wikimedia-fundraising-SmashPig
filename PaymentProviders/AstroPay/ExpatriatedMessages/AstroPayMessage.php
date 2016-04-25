@@ -45,7 +45,7 @@ abstract class AstroPayMessage extends ListenerMessage {
 
 	public function constructFromValues( array $values ) {
 		foreach ( $this->fields as $key ) {
-			$this->$key = ( array_key_exists( $key, $values ) ? $values[$key] : '');
+			$this->$key = ( array_key_exists( $key, $values ) ? $values[$key] : '' );
 		}
 		// Need to set the correlationId during construction
 		// or inflight message store will get confused

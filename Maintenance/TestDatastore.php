@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Maintenance;
 
-require( 'MaintenanceBase.php' );
+require ( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
@@ -42,7 +42,7 @@ class TestDatastore extends MaintenanceBase {
 			$this->testObjects[] = TestObject::factory();
 		}
 		// And repeat the objects and inject so we have something else to find
-		foreach( $this->testObjects as $obj ) {
+		foreach ( $this->testObjects as $obj ) {
 			$this->datastore->addObject( $obj );
 			$this->datastore->addObject( TestObject::factory( $obj->correlationId ) );
 		}
@@ -55,19 +55,26 @@ class TestDatastore extends MaintenanceBase {
 			'data-store/' . $this->getArgument( 0, 'test' ),
 			false
 		);
-		foreach( $this->testObjects as $obj ) {
+		foreach ( $this->testObjects as $obj ) {
 			$obj1 = $this->datastore->queueGetObject( null, $obj->correlationId );
-			if ( $obj1 !== null ) { $this->datastore->queueAckObject(); }
-			else { $this->error( "Could not find original object with id {$obj->correlationId}" ); continue; }
+			if ( $obj1 !== null ) { $this->datastore->queueAckObject();
+	  }
+			else { $this->error( "Could not find original object with id {$obj->correlationId}" );
+continue;
+	  }
 
 			$obj2 = $this->datastore->queueGetObject( null, $obj->correlationId );
-			if ( $obj2 !== null ) { $this->datastore->queueAckObject(); }
-			else { $this->error( "Could not find secondary object with id {$obj->correlationId}" ); continue; }
+			if ( $obj2 !== null ) { $this->datastore->queueAckObject();
+	  }
+			else { $this->error( "Could not find secondary object with id {$obj->correlationId}" );
+continue;
+	  }
 
 			$obj3 = $this->datastore->queueGetObject( null, $obj->correlationId );
 			if ( $obj3 !== null ) {
 				$this->datastore->queueAckObject();
-				$this->error( "Found tertiary object with id {$obj3->correlationId} while looking for id {$obj->correlationId}" );
+				$this->error( "Found tertiary object with id {$obj3->correlationId} "
+					. "while looking for id {$obj->correlationId}" );
 				continue;
 			}
 
@@ -83,7 +90,9 @@ class TestDatastore extends MaintenanceBase {
 }
 
 class TestObject extends KeyedOpaqueStorableObject {
-	/** @var array List of object properties that can be considered 'identifying' or 'filtering' properties */
+	/** @var array List of object properties that can be considered
+	 * 'identifying' or 'filtering' properties
+	 */
 	protected $propertiesExportedAsKeys = array( 'correlationId', 'testkey1', 'testkey2' );
 
 	public $testkey1 = null;
@@ -99,4 +108,4 @@ class TestObject extends KeyedOpaqueStorableObject {
 	}
 }
 
-require( RUN_MAINTENANCE_IF_MAIN );
+require ( RUN_MAINTENANCE_IF_MAIN );
