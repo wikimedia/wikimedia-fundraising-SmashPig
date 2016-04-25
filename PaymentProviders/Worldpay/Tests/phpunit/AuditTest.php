@@ -13,7 +13,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->setConfig( null, 'Worldpay' );
+		$this->setConfig( 'worldpay' );
 	}
 
 	public function testProcessDonation() {

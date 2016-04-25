@@ -11,7 +11,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->setConfig( null, 'amazon' );
+		$this->setConfig( 'amazon' );
 	}
 
 	/**

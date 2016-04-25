@@ -46,13 +46,7 @@ class RequestHandler {
 		$action = array_shift( $parts );
 
 		// --- Initialize core services ---
-		$configPath = __DIR__ . '/../../';
-		$config = new Configuration(
-			$configPath . 'config_defaults.php',
-			$configPath . 'config.php',
-			$view,
-			true
-		);
+		$config = new Configuration( $view );
 		Logger::init( $config->val( 'logging/root-context' ), $config->val( 'logging/log-level' ), $config );
 		Context::init( $config );
 		Logger::enterContext( Context::get()->getContextId() );

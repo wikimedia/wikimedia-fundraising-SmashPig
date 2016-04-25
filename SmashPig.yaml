@@ -1,0 +1,311 @@
+# Default values will be loaded at a lower priority than custom config.
+# To override, create a file in:
+#   /etc/fundraising/SmashPig.yaml
+#   $HOME/.fundraising/SmashPig.yaml
+#   or edit this file if you're feeling cheeky, and be careful when upgrading.
+
+default:
+    data-store:
+        # Store definitions
+        inflight:
+            class: SmashPig\Core\DataStores\DiskFileDataStore
+            inst-args:
+                - /tmp/
+
+        antifraud:
+            class: SmashPig\Core\DataStores\StompDataStore
+            inst-args:
+                - antifraud
+
+        pending:
+            class: SmashPig\Core\DataStores\StompDataStore
+            inst-args:
+                - pending
+
+        refund:
+            class: SmashPig\Core\DataStores\StompDataStore
+            inst-args:
+                - refund
+
+        limbo:
+            class: SmashPig\Core\DataStores\StompDataStore
+            inst-args:
+                - limbo
+
+        jobs-damaged:
+            class: SmashPig\Core\DataStores\StompDataStore
+            inst-args:
+                - jobs-damaged
+
+        jobs:
+            class: SmashPig\Core\DataStores\StompDataStore
+            inst-args:
+                - jobs
+
+        verified:
+            class: SmashPig\Core\DataStores\StompDataStore
+            inst-args:
+                - verified
+
+        # Library definitions
+        stomp:
+            uri: tcp://localhost:61613
+            timeout: 1
+            refresh-connection: false
+            convert-string-expressions: false
+
+            queues:
+                antifraud: /queue/payments-antifraud
+                limbo: /queue/limbo
+                verified: /queue/donations
+                failed: /queue/failed
+                pending: /queue/pending
+                refund: /queue/refund
+                jobs: /queue/job-requests
+                jobs-damaged: /queue/jobs-damaged
+
+    logging:
+        root-context: SmashPig
+        # LOG_INFO
+        log-level: 6
+
+        enabled-log-streams:
+            - syslog
+
+        log-streams:
+            syslog:
+                class: SmashPig\Core\Logging\LogStreams\SyslogLogStream
+                inst-args:
+                    # LOG_LOCAL0
+                    - 128
+                    # LOG_NDELAY
+                    - 8
+
+    security:
+        ip-header-name: ""
+        ip-trusted-proxies: []
+        ip-whitelist: []
+
+    endpoints: []
+
+    namespaces: []
+
+    include-files: []
+
+    include-paths: []
+
+    payment-provider: []
+
+    actions: []
+
+    email:
+        from-address:
+            - sender@contoso.com
+            - Example Sender
+        bounce-address: bounce+$1@contoso.com
+        archive-addresses: []
+
+adyen:
+    logging:
+        root-context: SmashPig-Adyen
+
+    endpoints:
+        listener:
+            class: SmashPig\PaymentProviders\Adyen\AdyenListener
+            inst-args: []
+
+    payment-provider:
+        adyen:
+            api:
+                class: SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI
+                inst-args: []
+
+            payments-wsdl: https://pal-live.adyen.com/pal/Payment.wsdl
+
+            accounts:
+                # For each Adyen merchant account, add an entry like the
+                # following with the merchant account name as the key.
+                # The ws- credentials should be a user authorized to make
+                # API calls, and the report- credentials should be a user
+                # authorized to download reports. Reports will be
+                # downloaded to the location specified in report-location.
+                # 
+                # At least one account and all subkeys are required.
+                # 
+                # example-account-name:
+                #   ws-username: ""
+                #   ws-password: ""
+                #   report-username: ""
+                #   report-password: ""
+                #   report-location: "/tmp"
+
+    fraud-filters:
+        # Automatically capture authorizations under this score
+        review-threshold: 75
+        # Automatically cancel authorizations with at least this score
+        reject-threshold: 100
+
+        # Authorization notifications include AVS and CVV result codes.
+        # The following maps set a risk score for each result code, which
+        # we combine with any risk score computed on the payment site to
+        # decide whether to capture the payment or leave it for review.
+        # https://docs.adyen.com/manuals/api-manual/payment-responses/additionaldata-payment-responses
+        avs-map:
+            # Unknown
+            0: 100
+            # Address matches, postal code doesn't
+            1: 75
+            # Neither postal code nor address match
+            2: 100
+            # AVS unavailable
+            3: 50
+            # AVS not supported for this card type
+            4: 50
+            # No AVS data provided
+            5: 50
+            # Postal code matches, address doesn't match
+            6: 75
+            # Both postal code and address match
+            7: 0
+            # Address not checked, postal code unknown
+            8: 50
+            # Address matches, postal code unknown
+            9: 25
+            # Address doesn't match, postal code unknown
+            10: 50
+            # Postal code not checked, address unknown
+            11: 75
+            # Address matches, postal code not checked
+            12: 50
+            # Address doesn't match, postal code not checked
+            13: 0
+            # Postal code matches, address unknown
+            14: 50
+            # Postal code matches, address not checked
+            15: 50
+            # Postal code doesn't match, address unknown
+            16: 75
+            # Postal code doesn't match, address not checked
+            17: 100
+            # Neither postal code nor address were checked
+            18: 25
+            # Name and postal code matches
+            19: 0
+            # Name, address and postal code matches
+            20: 0
+            # Name and address matches
+            21: 0
+            # Name matches
+            22: 50
+            # Postal code matches, name doesn't match
+            23: 50
+            # Both postal code and address matches, name doesn't match
+            24: 25
+            # Address matches, name doesn't match
+            25: 50
+            # Neither postal code, address nor name matches
+            26: 100
+
+        cvv-map:
+                # Unknown
+                0: 100
+                # Matches
+                1: 0
+                # Doesn't match
+                2: 100
+                # Not checked
+                3: 50
+                # No CVC/CVV provided, but was required
+                4: 100
+                # Issuer not certified for CVC/CVV
+                5: 50
+                # No CVC/CVV provided
+                6: 50
+
+    actions: []
+
+amazon:
+    actions:
+        - SmashPig\PaymentProviders\Amazon\Actions\CloseOrderReference
+        - SmashPig\PaymentProviders\Amazon\Actions\AssociateRefundParent
+        - SmashPig\PaymentProviders\Amazon\Actions\AddMessageToQueue
+
+    endpoints:
+        listener:
+            class: SmashPig\PaymentProviders\Amazon\AmazonListener
+            inst-args: []
+
+    # need an array within an array to give clients get a single
+    # constructor argument
+    credentials: &CREDENTIALS
+        -
+            # 13 or so uppercase letters
+            merchant_id: ''
+            # app or site-specific, starts with amznX.application
+            client_id: ''
+            # 20 alphanumeric characters
+            access_key: ''
+            # 40 base-64 encoded chars
+            secret_key: ''
+            # 'de', 'jp', 'uk', or 'us'
+            region: ''
+            sandbox: false
+
+
+    # Override these to mock the Amazon SDK classes
+    payments-client:
+        class: PayWithAmazon\PaymentsClient
+        inst-args:
+            <<: *CREDENTIALS
+
+    reports-client:
+        class: PayWithAmazon\ReportsClient
+        inst-args:
+            <<: *CREDENTIALS
+
+    ipn-handler-class: PayWithAmazon\IpnHandler
+
+    audit:
+        download-path: ""
+        archive-path: ""
+        file-types:
+            - SmashPig\PaymentProviders\Amazon\Audit\RefundReport
+            - SmashPig\PaymentProviders\Amazon\Audit\SettlementReport
+
+astropay:
+    actions:
+        - SmashPig\PaymentProviders\AstroPay\Actions\IncomingMessage
+
+    endpoints:
+        listener:
+            class: SmashPig\PaymentProviders\AstroPay\AstroPayListener
+            inst-args: []
+
+    login: createlogin
+    secret: "secretkey"
+    charset: iso-8859-1
+
+paypal:
+    listener:
+        # For testing purposes override this config.php to
+        # postback-url: https://www.sandbox.paypal.com/cgi-bin/webscr
+        postback-url: https://www.paypal.com/cgi-bin/webscr
+
+    data-store:
+        stomp:
+            queues:
+                pending: /queue/pending_paypal
+
+globalcollect:
+    actions:
+        - SmashPig\PaymentProviders\GlobalCollect\Actions\IncomingMessage
+
+    endpoints:
+        listener:
+            class: SmashPig\PaymentProviders\GlobalCollect\GlobalCollectListener
+            inst-args: []
+
+    data-store:
+        stomp:
+            queues:
+                pending: /queue/pending_globalcollect

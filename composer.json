@@ -28,6 +28,7 @@
         "phpmailer/phpmailer": "5.2.6",
         "symfony/event-dispatcher": ">=2.1,<2.4-dev",
         "symfony/http-foundation": ">=2.1,<2.4-dev",
+        "symfony/yaml": "2.8.3",
         "amzn/login-and-pay-with-amazon-sdk-php": "dev-master"
     },
 	"require-dev": {

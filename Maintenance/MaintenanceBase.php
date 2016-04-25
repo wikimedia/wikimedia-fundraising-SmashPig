@@ -130,14 +130,9 @@ abstract class MaintenanceBase {
 		$this->adjustMemoryLimit();
 
 		// --- Initialize core services ---
-		$configFile = $this->getOption( 'config-file' );
 		$configNode = $this->getOption( 'config-node' );
-		$config = new Configuration(
-			__DIR__ . '/../config_defaults.php',
-			$configFile,
-			$configNode,
-			true
-		);
+		$configFile = $this->getOption( 'config-file' );
+		$config = new Configuration( $configNode, $configFile );
 		Context::init( $config );
 		Logger::init(
 			$config->val( 'logging/root-context' ) . '-' . end( explode( "\\", $maintClass ) ),
@@ -164,7 +159,7 @@ abstract class MaintenanceBase {
 	 */
 	protected function addDefaultParams() {
 		$this->addOption( 'help', 'Display this help message', null, 'h' );
-		$this->addOption( 'config-file', 'Path to additional configuration file', false );
+		$this->addOption( 'config-file', 'Path to additional configuration file', null );
 		$this->addOption( 'config-node',
 			'Specific configuration node to load, if not default', 'default' );
 		$this->addOption( 'memory-limit',

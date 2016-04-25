@@ -27,18 +27,12 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 	/**
 	 * Set a test configuration and initialize the context
 	 *
-	 * @param string $configPath path to configuration override file
 	 * @param string $configNode node to use for configuration overrides
+	 * @param string $configPath path to configuration override file
 	 * @return Configuration
 	 */
-	function setConfig( $configPath = null, $configNode = 'default' ) {
-		$defaultConfig = __DIR__ . '/../config_defaults.php';
-		$config = new Configuration(
-			$defaultConfig,
-			$configPath,
-			$configNode,
-			true
-		);
+	function setConfig( $configNode = 'default', $configPath = null ) {
+		$config = new Configuration( $configNode, $configPath );
 		Context::init( $config );
 		if ( !self::$loggerCreated ) {
 			// Don't care which config the logger gets, let's just not explode

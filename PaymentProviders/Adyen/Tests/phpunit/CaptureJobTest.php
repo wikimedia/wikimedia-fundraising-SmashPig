@@ -10,15 +10,22 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
  */
 class CaptureJobTest extends BaseSmashPigUnitTestCase {
 
+	public $config;
+
+	public function setUp() {
+		parent::setUp();
+
+		$this->config = $this->setConfig( 'adyen', __DIR__ . '/../config_test_success.yaml' );
+	}
+
 	/**
 	 * For a legit donation, ProcessCaptureJob should leave donor data
 	 * on the pending queue, add an antifraud message, and return true.
 	 */
 	public function testSuccessfulCapture() {
-		$config = $this->setConfig( __DIR__ . '/../config_test_success.php', 'adyen' );
-		$antifraudQueue = $config->object( 'data-store/antifraud', true );
-		$pendingQueue = $config->object( 'data-store/pending', true );
-		$api = $config->object( 'payment-provider/adyen/api', true );
+		$antifraudQueue = $this->config->object( 'data-store/antifraud', true );
+		$pendingQueue = $this->config->object( 'data-store/pending', true );
+		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
 		$pendingQueue->addObject(
 			KeyedOpaqueStorableObject::fromJsonProxy(
@@ -72,10 +79,9 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * we should not capture the payment, but leave the donor details.
 	 */
 	public function testReviewThreshold() {
-		$config = $this->setConfig( __DIR__ . '/../config_test_success.php', 'adyen' );
-		$antifraudQueue = $config->object( 'data-store/antifraud', true );
-		$pendingQueue = $config->object( 'data-store/pending', true );
-		$api = $config->object( 'payment-provider/adyen/api', true );
+		$antifraudQueue = $this->config->object( 'data-store/antifraud', true );
+		$pendingQueue = $this->config->object( 'data-store/pending', true );
+		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
 		$pendingQueue->addObject(
 			KeyedOpaqueStorableObject::fromJsonProxy(
@@ -126,10 +132,9 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * we should cancel the authorization and delete the donor details.
 	 */
 	public function testRejectThreshold() {
-		$config = $this->setConfig( __DIR__ . '/../config_test_success.php', 'adyen' );
-		$antifraudQueue = $config->object( 'data-store/antifraud', true );
-		$pendingQueue = $config->object( 'data-store/pending', true );
-		$api = $config->object( 'payment-provider/adyen/api', true );
+		$antifraudQueue = $this->config->object( 'data-store/antifraud', true );
+		$pendingQueue = $this->config->object( 'data-store/pending', true );
+		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
 		$pendingQueue->addObject(
 			KeyedOpaqueStorableObject::fromJsonProxy(
@@ -181,9 +186,8 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * should cancel the second one and leave the donor details in pending.
 	 */
 	public function testDuplicateAuthorisation() {
-		$config = $this->setConfig( __DIR__ . '/../config_test_success.php', 'adyen' );
-		$pendingQueue = $config->object( 'data-store/pending', true );
-		$api = $config->object( 'payment-provider/adyen/api', true );
+		$pendingQueue = $this->config->object( 'data-store/pending', true );
+		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
 		$pendingQueue->addObject(
 			KeyedOpaqueStorableObject::fromJsonProxy(

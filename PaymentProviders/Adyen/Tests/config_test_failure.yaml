@@ -1,0 +1,16 @@
+adyen:
+    data-store:
+        pending:
+            class: SmashPig\Tests\MockDataStore
+            inst-args: []
+
+        antifraud:
+            class: SmashPig\Tests\MockDataStore
+            inst-args: []
+
+    payment-provider:
+        adyen:
+            api:
+                class: SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI
+                inst-args:
+                    - false
