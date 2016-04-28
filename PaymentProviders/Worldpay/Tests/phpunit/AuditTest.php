@@ -50,4 +50,21 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
 
+	public function testProcessCancel() {
+		$processor = new WpgReconciliationFile();
+		$output = $processor->parse( __DIR__ . '/../Data/audit/cancel.txt' );
+		$this->assertEquals( 1, count( $output ), 'Should have found one cancel' );
+		$actual = $output[0];
+		$expected = array(
+			'gateway' => 'worldpay',
+			'date' => 1458050554,
+			'gross' => '-1.00',
+			'gateway_parent_id' => '34489782.1',
+			'gross_currency' => 'EUR',
+			'type' => 'cancel',
+			'gateway_refund_id' => '34489782.1',
+		);
+		$this->assertEquals( $expected, $actual, 'Did not parse cancel correctly' );
+	}
+
 }
