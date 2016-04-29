@@ -20,11 +20,12 @@ class Logger {
 	 * @param string        $name      Root context name
 	 * @param int           $threshold Minimum log level to record into the context
 	 * @param Configuration $config    Configuration object to use
+	 * @param string        $prefix    Base prefix for logger
 	 *
 	 * @throws \SmashPig\Core\SmashPigException if the logging framework was attempted
 	 * to be initialized twice
 	 */
-	static function init( $name, $threshold, Configuration $config ) {
+	static function init( $name, $threshold, Configuration $config, $prefix ) {
 		if ( self::$context ) {
 			throw new SmashPigException( "Attempting to reinitialize the logger is not allowed!" );
 		}
@@ -47,6 +48,7 @@ class Logger {
 		}
 
 		self::$context = new LogContextHandler( $name, $streamObjs );
+		self::$context->enterContext( $prefix );
 		self::$threshold = $threshold;
 	}
 
@@ -77,48 +79,6 @@ class Logger {
 			throw new SmashPigException( "No context available. Logger not initialized?" );
 		}
 		return Logger::$context;
-	}
-
-	/**
-	 * Enters a new context with the current context as its parent.
-	 * Shadows @ref LogContextHandler->enterContext()
-	 *
-	 * @param string $name Child context name
-	 */
-	public static function enterContext( $name ) {
-		static::$context->enterContext( $name );
-	}
-
-	/**
-	 * Renames the current logging context. Effects the log prefix used for all
-	 * events under this context. May have adverse effects on logstreams that log
-	 * in real time (IE: Syslog) because they will have logged items under the old
-	 * context name.
-	 *
-	 * Shadows @ref LogContextHandler->renameContext()
-	 *
-	 * @param string   $newName     New name for the current context
-	 * @param bool     $addLogEntry If false will not create a log line stating the name change
-	 *
-	 * @return string The old name of this context
-	 */
-	public static function renameContext( $newName, $addLogEntry = true ) {
-		return static::$context->renameContext( $newName, $addLogEntry );
-	}
-
-	/**
-	 * Leaves the current context for the parent context. You may not leave the root
-	 * context.
-	 *
-	 * Side effects include removing all stored log lines for this context. Before this
-	 * happens all LogStreams have the opportunity to do last chance processing.
-	 *
-	 * Shadows @ref LogContextHandler->leaveContext()
-	 *
-	 * @return string|bool The current context name, or false if this is the root context
-	 */
-	public static function leaveContext() {
-		return static::$context->leaveContext();
 	}
 
 	/* === EVENT HANDLING === */

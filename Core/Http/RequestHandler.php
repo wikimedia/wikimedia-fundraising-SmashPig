@@ -47,9 +47,13 @@ class RequestHandler {
 
 		// --- Initialize core services ---
 		$config = new Configuration( $view );
-		Logger::init( $config->val( 'logging/root-context' ), $config->val( 'logging/log-level' ), $config );
 		Context::init( $config );
-		Logger::enterContext( Context::get()->getContextId() );
+		Logger::init(
+			$config->val( 'logging/root-context' ),
+			$config->val( 'logging/log-level' ),
+			$config,
+			Context::get()->getContextId()
+		);
 
 		if ( $config->nodeExists( 'disabled' ) && $config->val( 'disabled' ) ) {
 			Logger::debug( '403 will be given for disabled view.', $uri );

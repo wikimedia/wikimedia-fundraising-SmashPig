@@ -22,49 +22,6 @@ class TaggedLogger {
 		$this->context = Logger::getContext();
 	}
 
-	/* === CONTEXT HELPER METHODS === */
-	/**
-	 * Enters a new context with the current context as its parent.
-	 * Shadows @ref LogContextHandler->enterContext()
-	 *
-	 * @param string $name Child context name
-	 */
-	public static function enterContext( $name ) {
-		Logger::enterContext( $name );
-	}
-
-	/**
-	 * Renames the current logging context. Effects the log prefix used for all
-	 * events under this context. May have adverse effects on logstreams that log
-	 * in real time (IE: Syslog) because they will have logged items under the old
-	 * context name.
-	 *
-	 * Shadows @ref LogContextHandler->renameContext()
-	 *
-	 * @param string   $newName     New name for the current context
-	 * @param bool     $addLogEntry If false will not create a log line stating the name change
-	 *
-	 * @return string The old name of this context
-	 */
-	public static function renameContext( $newName, $addLogEntry = true ) {
-		return Logger::renameContext( $newName, $addLogEntry );
-	}
-
-	/**
-	 * Leaves the current context for the parent context. You may not leave the root
-	 * context.
-	 *
-	 * Side effects include removing all stored log lines for this context. Before this
-	 * happens all LogStreams have the opportunity to do last chance processing.
-	 *
-	 * Shadows @ref LogContextHandler->leaveContext()
-	 *
-	 * @return string|bool The current context name, or false if this is the root context
-	 */
-	public static function leaveContext() {
-		return Logger::leaveContext();
-	}
-
 	/* === EVENT HANDLING === */
 	/**
 	 * Log an immediate/critical failure. Will be immediately forwarded to the designated

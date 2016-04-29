@@ -36,7 +36,7 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 		Context::init( $config );
 		if ( !self::$loggerCreated ) {
 			// Don't care which config the logger gets, let's just not explode
-			Logger::init( 'test', 'debug', $config );
+			Logger::init( 'test', 'debug', $config, 'test' );
 			self::$loggerCreated = true;
 		}
 		return $config;

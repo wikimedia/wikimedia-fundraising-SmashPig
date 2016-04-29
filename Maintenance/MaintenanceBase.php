@@ -137,11 +137,10 @@ abstract class MaintenanceBase {
 		Logger::init(
 			$config->val( 'logging/root-context' ) . '-' . end( explode( "\\", $maintClass ) ),
 			$config->val( 'logging/log-level' ),
-			$config
+			$config,
+			Context::get()->getContextId()
 		);
 		Logger::getContext()->addLogStream( new ConsoleLogStream() );
-
-		Logger::enterContext( Context::get()->getContextId() );
 
 		set_error_handler( '\SmashPig\Maintenance\MaintenanceBase::lastChanceErrorHandler' );
 		set_exception_handler( '\SmashPig\Maintenance\MaintenanceBase::lastChanceExceptionHandler' );
