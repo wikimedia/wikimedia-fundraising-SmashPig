@@ -3,6 +3,7 @@
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\CrmLink\Messages\DonationInterfaceAntifraud;
 use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 use SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface;
@@ -25,6 +26,11 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected $pspReference;
 	protected $avsResult;
 	protected $cvvResult;
+	/**
+	 * @var TaggedLogger
+	 */
+	protected $logger;
+
 	// Actions to take after examining capture request and queue message
 	const ACTION_PROCESS = 'process'; // all clear to capture payment
 	const ACTION_REJECT = 'reject'; // very likely fraud - cancel the authorization
@@ -47,8 +53,8 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	public function execute() {
-		Logger::enterContext( "corr_id-{$this->correlationId}" );
-		Logger::info(
+		$this->logger = Logger::getTaggedLogger( "corr_id-{$this->correlationId}" );
+		$this->logger->info(
 			"Running capture request job on account '{$this->account}' with reference '{$this->pspReference}' " .
 			"and correlation id '{$this->correlationId}'."
 		);
@@ -59,7 +65,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		// but have not yet received notification of capture success. Either case can
 		// occur when a donor submits their credit card details multiple times against
 		// a single order ID. We should cancel all the duplicate authorizations.
-		Logger::debug( 'Attempting to locate associated message in pending queue.' );
+		$this->logger->debug( 'Attempting to locate associated message in pending queue.' );
 		/**
 		 * @var \SmashPig\Core\DataStores\KeyedOpaqueDataStore
 		 */
@@ -75,7 +81,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				 * @var AdyenPaymentsInterface
 				 */
 				$api = $this->getApi();
-				Logger::info(
+				$this->logger->info(
 					"Attempting capture API call for currency '{$this->currency}', " .
 					"amount '{$this->amount}', reference '{$this->pspReference}'."
 				);
@@ -83,7 +89,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 
 				if ( $captureResult ) {
 					// Success!
-					Logger::info(
+					$this->logger->info(
 						"Successfully captured payment! Returned reference: '{$captureResult}'. " .
 							'Marking pending queue message as captured.'
 					);
@@ -94,7 +100,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					// Some kind of error in the request. We should keep the pending
 					// message, complain loudly, and move this capture job to the
 					// damaged queue.
-					Logger::error(
+					$this->logger->error(
 						"Failed to capture payment on account '{$this->account}' with reference " .
 							"'{$this->pspReference}' and correlation id '{$this->correlationId}'.",
 						$queueMessage
@@ -125,15 +131,14 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				break;
 		}
 
-		Logger::leaveContext();
 		return $success;
 	}
 
 	protected function determineAction( $queueMessage ) {
 		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
-			Logger::debug( 'A valid message was obtained from the pending queue.' );
+			$this->logger->debug( 'A valid message was obtained from the pending queue.' );
 		} else {
-			Logger::warning(
+			$this->logger->warning(
 				"Could not find a processable message for PSP Reference '{$this->pspReference}' and correlation ".
 					"ID '{$this->correlationId}'.",
 				$queueMessage
@@ -141,7 +146,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			return self::ACTION_DUPLICATE;
 		}
 		if ( $queueMessage->captured ) {
-			Logger::info(
+			$this->logger->info(
 				"Duplicate PSP Reference '{$this->pspReference}' for correlation ID '{$this->correlationId}'.",
 				$queueMessage
 			);
@@ -153,24 +158,24 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected function getRiskAction( DonationInterfaceMessage $queueMessage ) {
 		$config = Configuration::getDefaultConfig();
 		$riskScore = $queueMessage->risk_score ? $queueMessage->risk_score : 0;
-		Logger::debug( "Base risk score from payments site is $riskScore, " .
+		$this->logger->debug( "Base risk score from payments site is $riskScore, " .
 			"raw CVV result is '{$this->cvvResult}' and raw AVS result is '{$this->avsResult}'." );
 		$cvvMap = $config->val( 'fraud-filters/cvv-map' );
 		$avsMap = $config->val( 'fraud-filters/avs-map' );
 		$scoreBreakdown = array();
 		if ( array_key_exists( $this->cvvResult, $cvvMap ) ) {
 			$scoreBreakdown['getCVVResult'] = $cvvScore = $cvvMap[$this->cvvResult];
-			Logger::debug( "CVV result '{$this->cvvResult}' adds risk score $cvvScore." );
+			$this->logger->debug( "CVV result '{$this->cvvResult}' adds risk score $cvvScore." );
 			$riskScore += $cvvScore;
 		} else {
-			Logger::warning( "CVV result '{$this->cvvResult}' not found in cvv-map.", $cvvMap );
+			$this->logger->warning( "CVV result '{$this->cvvResult}' not found in cvv-map.", $cvvMap );
 		}
 		if ( array_key_exists( $this->avsResult, $avsMap ) ) {
 			$scoreBreakdown['getAVSResult'] = $avsScore = $avsMap[$this->avsResult];
-			Logger::debug( "AVS result '{$this->avsResult}' adds risk score $avsScore." );
+			$this->logger->debug( "AVS result '{$this->avsResult}' adds risk score $avsScore." );
 			$riskScore += $avsScore;
 		} else {
-			Logger::warning( "AVS result '{$this->avsResult}' not found in avs-map.", $avsMap );
+			$this->logger->warning( "AVS result '{$this->avsResult}' not found in avs-map.", $avsMap );
 		}
 		$action = self::ACTION_PROCESS;
 		if ( $riskScore >= $config->val( 'fraud-filters/review-threshold' ) ) {
@@ -187,7 +192,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$antifraudMessage = DonationInterfaceAntifraud::factory(
 			$queueMessage, $this->merchantReference, $riskScore, $scoreBreakdown, $action
 		);
-		Logger::debug( "Sending antifraud message with risk score $riskScore and action $action." );
+		$this->logger->debug( "Sending antifraud message with risk score $riskScore and action $action." );
 		Configuration::getDefaultConfig()->object( 'data-store/antifraud' )->addObject( $antifraudMessage );
 	}
 
@@ -201,14 +206,14 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	protected function cancelAuthorization() {
-		Logger::debug( "Cancelling authorization with reference '{$this->pspReference}'" );
+		$this->logger->debug( "Cancelling authorization with reference '{$this->pspReference}'" );
 		$api = $this->getApi();
 		$result = $api->cancel( $this->pspReference );
 		if ( $result ) {
-			Logger::debug( "Successfully cancelled authorization" );
+			$this->logger->debug( "Successfully cancelled authorization" );
 		} else {
 			// Not a big deal
-			Logger::warning( "Failed to cancel authorization, it will remain in the payment console" );
+			$this->logger->warning( "Failed to cancel authorization, it will remain in the payment console" );
 		}
 	}
 }
