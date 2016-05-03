@@ -23,6 +23,7 @@
         }
     ],
     "require": {
+        "coderkungfu/php-queue": "dev-master",
         "fusesource/stomp-php": "2.*",
         "php": ">=5.3.3",
         "phpmailer/phpmailer": "5.2.6",
@@ -47,6 +48,10 @@
         }
     },
     "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://gerrit.wikimedia.org/r/p/wikimedia/fundraising/php-queue.git"
+        },
         {
             "type": "git",
             "url": "https://github.com/ejegg/login-and-pay-with-amazon-sdk-php"
