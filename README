@@ -1,7 +1,15 @@
-This project uses Composer [https://getcomposer.org] to manage dependencies. Upon first
-install, and any upgrade please run the composer installer.
+This project uses Composer [https://getcomposer.org] to manage dependencies.
+Upon first install and any upgrade please run composer install.
 
-It is recommended that a config.php file is created at the root.
+Default configuration values are located in SmashPig.yaml. These are
+overridden by values in /etc/fundraising/SmashPig.yaml, then by values in
+~/.fundraising/SmashPig.yaml.
+
+Command-line maintenance scripts have some common options:
+    --help
+    --memory-limit overrides the limit specified in php.ini
+    --config-path specifies a top-priority override configuration file path
+    --config-node specifies which configuration node to use
 
 -- 3rd Party Licences --
 The favicon is licenced under CC Attribution. http://creativecommons.org/licenses/by/3.0/legalcode

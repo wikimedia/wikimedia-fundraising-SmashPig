@@ -1,8 +1,6 @@
 <?php
 namespace SmashPig\PaymentProviders\Worldpay\Test;
 
-use SmashPig\Core\Configuration;
-use SmashPig\Core\Context;
 use SmashPig\PaymentProviders\Worldpay\Audit\WpgReconciliationFile;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 

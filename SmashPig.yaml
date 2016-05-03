@@ -62,7 +62,7 @@ default:
                 pending: /queue/pending
                 refund: /queue/refund
                 jobs: /queue/job-requests
-                jobs-damaged: /queue/jobs-damaged
+                jobs-damaged: /queue/jobs-requests-damaged
 
     logging:
         root-context: SmashPig
@@ -287,7 +287,7 @@ astropay:
 
 paypal:
     listener:
-        # For testing purposes override this config.php to
+        # For testing purposes override this entry with
         # postback-url: https://www.sandbox.paypal.com/cgi-bin/webscr
         postback-url: https://www.paypal.com/cgi-bin/webscr
 

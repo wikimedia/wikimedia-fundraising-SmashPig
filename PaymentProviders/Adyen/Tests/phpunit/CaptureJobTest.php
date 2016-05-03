@@ -10,6 +10,9 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
  */
 class CaptureJobTest extends BaseSmashPigUnitTestCase {
 
+	/**
+	 * @var Configuration
+	 */
 	public $config;
 
 	public function setUp() {

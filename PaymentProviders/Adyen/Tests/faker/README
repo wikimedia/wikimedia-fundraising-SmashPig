@@ -13,14 +13,14 @@ contribution tracking IDs, order IDs, and gateway transaction IDs.
 
 First import the pending queue messages using the SmashPig maintenance script:
 
-~/src/SmashPig$ php Maintenance/PopulateQueueFromDump.php --config-file config.php --queue pending adyen-12345-pending.json
+~/src/SmashPig$ php Maintenance/PopulateQueueFromDump.php --queue pending adyen-12345-pending.json
 
 Then use the soap injector to simulate some IPN messages for the authorizations:
 ~/src/SmashPig/Tests/SoapInjector$ ./soapinject.py localhost '/ipn/smashpig_http_handler.php?p=adyen/listener' ../../adyen-12345-auths.xml
 
 This should queue up some capture request jobs. Run them like this:
 
-~/src/SmashPig$ php Maintenance/StompJobRunner.php --config-file config.php --config-node adyen
+~/src/SmashPig$ php Maintenance/StompJobRunner.php --config-node adyen
 TODO: fake API endpoint
 
 Then inject some capture success messages
