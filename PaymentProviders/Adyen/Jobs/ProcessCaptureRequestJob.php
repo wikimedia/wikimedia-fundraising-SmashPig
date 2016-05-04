@@ -5,7 +5,7 @@ use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\CrmLink\Messages\DonationInterfaceAntifraud;
 use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
-use SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI;
+use SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 
 /**
@@ -71,6 +71,9 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		switch ( $action ) {
 			case self::ACTION_PROCESS:
 				// Attempt to capture the payment
+				/**
+				 * @var AdyenPaymentsInterface
+				 */
 				$api = $this->getApi();
 				Logger::info(
 					"Attempting capture API call for currency '{$this->currency}', " .
