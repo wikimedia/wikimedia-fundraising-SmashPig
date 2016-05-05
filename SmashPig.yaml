@@ -22,10 +22,30 @@ default:
             inst-args:
                 - pending
 
-        pending-db:
-            class: \PDO
+        pending-atomic:
+            class: PHPQueue\Backend\Predis
             inst-args:
-                - 'mysql://localhost/pending'
+                -
+                    queue: pending
+                    servers:
+                        scheme: tcp
+                        host: 127.0.0.1
+                        port: 6379
+
+        pending-damaged:
+            class: PHPQueue\Backend\Predis
+            inst-args:
+                -
+                    queue: pending-damaged
+                    servers:
+                        scheme: tcp
+                        host: 127.0.0.1
+                        port: 6379
+
+        pending-db:
+            class: PDO
+            inst-args:
+                - 'mysql:host=127.0.0.1;dbname=pending'
 
         refund:
             class: SmashPig\Core\DataStores\StompDataStore
@@ -65,6 +85,7 @@ default:
                 verified: /queue/donations
                 failed: /queue/failed
                 pending: /queue/pending
+                pending-damaged: /queue/pending-damaged
                 refund: /queue/refund
                 jobs: /queue/job-requests
                 jobs-damaged: /queue/jobs-requests-damaged
@@ -115,6 +136,10 @@ default:
         job-runner:
             time-limit: 60
             max-messages: 10
+
+        consume-pending:
+            time-limit: 60
+            max-messages: 0
 
 adyen:
     logging:
