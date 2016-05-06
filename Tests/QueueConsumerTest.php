@@ -35,7 +35,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$consumer = new QueueConsumer( 'test', $cb );
 		$payload = array(
 			'wednesday' => 'addams',
-			'rand' => mt_rand(),
+			'spookiness' => mt_rand(),
 		);
 		$this->queue->push( $payload );
 		$count = $consumer->dequeueMessages();
@@ -67,10 +67,51 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		} catch ( \Exception $ex ) {
 			$this->assertEquals( 'kaboom!', $ex->getMessage(), 'Exception mutated' );
 		}
+		$this->assertTrue( $ran, 'Callback was not called' );
 		$this->assertEquals(
 			$payload,
 			$this->queue->popAtomic( function( $unused ) {} ),
 			'Should not delete message when exception is thrown'
+		);
+	}
+
+	public function testDamagedQueue() {
+		$damagedQueue = Context::get()->getConfiguration()->object(
+			'data-store/damaged', true
+		);
+		$damagedQueue->createTable('damaged'); // FIXME: should not need
+
+		$payload = array(
+			'cousin' => 'itt',
+			'kookiness' => mt_rand(),
+		);
+		$self = $this;
+		$ran = false;
+		$cb = function( $message ) use ( &$ran, $payload, $self ) {
+			$self->assertEquals( $message, $payload );
+			$ran = true;
+			throw new \Exception( 'kaboom!' );
+		};
+
+		$consumer = new QueueConsumer( 'test', $cb, 0, 0, 'damaged' );
+
+		$this->queue->push( $payload );
+		try {
+			$consumer->dequeueMessages();
+		} catch ( \Exception $ex ) {
+			$this->fail(
+				'Exception should not have bubbled up: ' . $ex->getMessage()
+			);
+		}
+		$this->assertTrue( $ran, 'Callback was not called' );
+		$this->assertEquals(
+			$payload,
+			$damagedQueue->popAtomic( function( $unused ) {} ),
+			'Should move message to damaged queue when exception is thrown'
+		);
+		$this->assertNull(
+			$this->queue->popAtomic( function( $unused ) {} ),
+			'Should delete message on exception when damaged queue exists'
 		);
 	}
 }
