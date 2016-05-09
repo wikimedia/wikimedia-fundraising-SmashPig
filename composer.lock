@@ -13,7 +13,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ejegg/login-and-pay-with-amazon-sdk-php",
-                "reference": "d1daf1ae268c47ce3f946da4d9b434696ef6ee0f"
+                "reference": "855d642f85f14c76ca810013b0323ae4ac37f1c6"
             },
             "require": {
                 "ext-curl": "*",
@@ -93,7 +93,7 @@
             "source": {
                 "type": "git",
                 "url": "https://gerrit.wikimedia.org/r/p/wikimedia/fundraising/php-queue.git",
-                "reference": "deef7ae14e023a2e557144fa31250f1a1b753f6e"
+                "reference": "d1daf1ae268c47ce3f946da4d9b434696ef6ee0"
             },
             "require": {
                 "clio/clio": "@stable",
