@@ -3,7 +3,6 @@
 namespace SmashPig\Tests;
 
 use PHPQueue\Interfaces\FifoQueueStore;
-use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\QueueConsumer;
 
 class QueueConsumerTest extends BaseSmashPigUnitTestCase {
@@ -16,7 +15,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->setConfig( 'default', __DIR__ . '/data/config_queue.yaml' );
-		$this->queue = Context::get()->getConfiguration()->object( 'data-store/test' );
+		$this->queue = QueueConsumer::getQueue( 'test' );
 		$this->queue->createTable( 'test' );
 	}
 
@@ -76,9 +75,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testDamagedQueue() {
-		$damagedQueue = Context::get()->getConfiguration()->object(
-			'data-store/damaged', true
-		);
+		$damagedQueue = QueueConsumer::getQueue( 'damaged' );
 		$damagedQueue->createTable('damaged'); // FIXME: should not need
 
 		$payload = array(

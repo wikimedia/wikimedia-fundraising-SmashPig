@@ -58,10 +58,7 @@ class QueueConsumer {
 		$this->timeLimit = $timeLimit;
 		$this->messageLimit = $messageLimit;
 
-		$config = Context::get()->getConfiguration();
-		$this->backend = $config->object(
-			"data-store/$queueName", true
-		);
+		$this->backend = self::getQueue( $queueName );
 
 		if ( !$this->backend instanceof AtomicReadBuffer ) {
 			throw new InvalidArgumentException( "Queue $queueName is not an AtomicReadBuffer" );
@@ -72,9 +69,7 @@ class QueueConsumer {
 		}
 
 		if ( $damagedQueue ) {
-			$this->damagedQueue = $config->object(
-				"data-store/$damagedQueue", true
-			);
+			$this->damagedQueue = self::getQueue( $damagedQueue );
 
 			if (
 				!$this->damagedQueue instanceof FifoQueueStore &&
@@ -127,5 +122,21 @@ class QueueConsumer {
 			);
 			$this->damagedQueue->push( $message );
 		}
+	}
+
+	public static function getQueue( $queueName ) {
+		$config = Context::get()->getConfiguration();
+		$key = "data-store/$queueName";
+
+		// Get a reference to the config node so we can mess with it
+		$node =& $config->val( $key, true );
+		if (
+			empty( $node['inst-args'] ) ||
+			empty( $node['inst-args'][0]['queue'] )
+		) {
+			$node['inst-args'][0]['queue'] = $queueName;
+		}
+
+		return $config->object( $key, true );
 	}
 }

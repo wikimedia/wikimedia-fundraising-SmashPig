@@ -5,10 +5,9 @@ default:
             inst-args:
                 -
                     connection_string: 'sqlite::memory:'
-                    queue: 'test'
+
         damaged:
             class: PHPQueue\Backend\PDO
             inst-args:
                 -
                     connection_string: 'sqlite::memory:'
-                    queue: 'damaged'
