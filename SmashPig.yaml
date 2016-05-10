@@ -22,6 +22,11 @@ default:
             inst-args:
                 - pending
 
+        pending-db:
+            class: \PDO
+            inst-args:
+                - 'mysql://localhost/pending'
+
         refund:
             class: SmashPig\Core\DataStores\StompDataStore
             inst-args:
@@ -105,6 +110,11 @@ default:
             - Example Sender
         bounce-address: bounce+$1@contoso.com
         archive-addresses: []
+
+    maintenance:
+        job-runner:
+            time-limit: 60
+            max-messages: 10
 
 adyen:
     logging:
