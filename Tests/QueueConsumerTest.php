@@ -111,4 +111,81 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			'Should delete message on exception when damaged queue exists'
 		);
 	}
+
+	public function testMessageLimit() {
+		$messages = array();
+		for ( $i = 0; $i < 5; $i++ ) {
+			$message = array(
+				'box' => 'thing' . $i,
+				'creepiness' => mt_rand(),
+			);
+			$messages[] = $message;
+			$this->queue->push( $message );
+		}
+		$processedMessages = array();
+		$callback = function( $message ) use ( &$processedMessages ) {
+			$processedMessages[] = $message;
+		};
+		// Should work when you pass in the limits as strings.
+		$consumer = new QueueConsumer( 'test', $callback, 0, '3' );
+		$count = $consumer->dequeueMessages();
+		$this->assertEquals( 3, $count, 'dequeueMessages returned wrong count' );
+		$this->assertEquals( 3, count( $processedMessages ), 'Called callback wrong number of times' );
+
+		for ( $i = 0; $i < 3; $i++ ) {
+			$this->assertEquals( $messages[$i], $processedMessages[$i], 'Message mutated' );
+		}
+		$this->assertEquals(
+			$messages[3],
+			$this->queue->popAtomic( function( $unused ) {} ),
+			'Messed with too many messages'
+		);
+	}
+
+	public function testKeepRunningOnDamage() {
+		$damagedQueue = QueueConsumer::getQueue( 'damaged' );
+		$damagedQueue->createTable( 'damaged' ); // FIXME: should not need
+
+		$messages = array();
+		for ( $i = 0; $i < 5; $i++ ) {
+			$message = array(
+				'box' => 'thing' . $i,
+				'creepiness' => mt_rand(),
+			);
+			$messages[] = $message;
+			$this->queue->push( $message );
+		}
+		$processedMessages = array();
+		$cb = function( $message ) use ( &$processedMessages ) {
+			$processedMessages[] = $message;
+			throw new \Exception( 'kaboom!' );
+		};
+
+		$consumer = new QueueConsumer( 'test', $cb, 0, 3, 'damaged' );
+		$count = 0;
+		try {
+			$count = $consumer->dequeueMessages();
+		} catch ( \Exception $ex ) {
+			$this->fail(
+				'Exception should not have bubbled up: ' . $ex->getMessage()
+			);
+		}
+		$this->assertEquals( 3, $count, 'dequeueMessages returned wrong count' );
+		$this->assertEquals( 3, count( $processedMessages ), 'Called callback wrong number of times' );
+
+		for ( $i = 0; $i < 3; $i++ ) {
+			$this->assertEquals( $messages[$i], $processedMessages[$i], 'Message mutated' );
+			$this->assertEquals(
+				$messages[$i],
+				$damagedQueue->popAtomic( function( $unused ) {} ),
+				'Should move message to damaged queue when exception is thrown'
+			);
+		}
+		$this->assertEquals(
+			$messages[3],
+			$this->queue->popAtomic( function( $unused ) {} ),
+			'message 4 should be at the head of the queue'
+		);
+	}
+
 }

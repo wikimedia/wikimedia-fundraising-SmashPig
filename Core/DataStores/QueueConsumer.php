@@ -54,18 +54,24 @@ class QueueConsumer {
 		$messageLimit = 0,
 		$damagedQueue = null
 	) {
+		if ( !is_numeric( $timeLimit ) ) {
+			throw new InvalidArgumentException( 'timeLimit must be numeric' );
+		}
+		if ( !is_numeric( $messageLimit ) ) {
+			throw new InvalidArgumentException( 'messageLimit must be numeric' );
+		}
+		if ( !is_callable( $callback ) ) {
+			throw new InvalidArgumentException( "Processing callback must be callable" );
+		}
+
 		$this->callback = $callback;
-		$this->timeLimit = $timeLimit;
-		$this->messageLimit = $messageLimit;
+		$this->timeLimit = intval( $timeLimit );
+		$this->messageLimit = intval( $messageLimit );
 
 		$this->backend = self::getQueue( $queueName );
 
 		if ( !$this->backend instanceof AtomicReadBuffer ) {
 			throw new InvalidArgumentException( "Queue $queueName is not an AtomicReadBuffer" );
-		}
-
-		if ( !is_callable( $callback ) ) {
-			throw new InvalidArgumentException( "Processing callback is not callable" );
 		}
 
 		if ( $damagedQueue ) {
@@ -105,7 +111,7 @@ class QueueConsumer {
 				$processed++;
 			}
 			$timeOk = $this->timeLimit === 0 || time() <= $startTime + $this->timeLimit;
-			$countOk = $this->messageLimit === 0 || $processed <= $this->messageLimit;
+			$countOk = $this->messageLimit === 0 || $processed < $this->messageLimit;
 		}
 		while( $timeOk && $countOk && $data !== null );
 		return $processed;
