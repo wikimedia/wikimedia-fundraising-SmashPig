@@ -34,7 +34,6 @@ class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
 	public $postal_code_2 = '';
 	public $premium_language = '';
 	public $recurring = '';
-	public $referrer = '';
 	public $response = '';
 	public $risk_score = '';
 	public $size = '';
