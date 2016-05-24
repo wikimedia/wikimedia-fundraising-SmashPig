@@ -99,6 +99,7 @@ default:
     actions: []
 
     email:
+        # TODO: Instead, format like: Name <email@domain>
         from-address:
             - sender@contoso.com
             - Example Sender
@@ -121,6 +122,7 @@ adyen:
                 inst-args: []
 
             payments-wsdl: https://pal-live.adyen.com/pal/Payment.wsdl
+            #payments-wsdl: https://pal-test.adyen.com/pal/Payment.wsdl
 
             accounts: {}
                 # FIXME: Provide sample account config more consistently.  The
