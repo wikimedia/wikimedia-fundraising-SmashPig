@@ -238,8 +238,6 @@ amazon:
             class: SmashPig\PaymentProviders\Amazon\AmazonListener
             inst-args: []
 
-    # need an array within an array to give clients get a single
-    # constructor argument
     credentials: &CREDENTIALS
         # 13 or so uppercase letters
         merchant_id: ''
