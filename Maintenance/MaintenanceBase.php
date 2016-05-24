@@ -158,11 +158,12 @@ abstract class MaintenanceBase {
 	 */
 	protected function addDefaultParams() {
 		$this->addOption( 'help', 'Display this help message', null, 'h' );
-		$this->addOption( 'config-file', 'Path to additional configuration file', null );
+		# FIXME: default to null, not magic empty string to trigger bad argv code.
+		$this->addOption( 'config-file', 'Path to additional configuration file', '' );
 		$this->addOption( 'config-node',
 			'Specific configuration node to load, if not default', 'default' );
 		$this->addOption( 'memory-limit',
-			'Set a specific memory limit for the script, "max" for no limit', 'default' );
+			'Set a specific memory limit for the script, "max" for no limit', 'max' );
 	}
 
 	/**
@@ -359,6 +360,9 @@ abstract class MaintenanceBase {
 				if ( array_key_exists( $option, $this->desiredOptions ) ) {
 					if ( $this->desiredOptions[$option]['default'] !== null ) {
 						// Expecting parameter
+						// FIXME: This is a crappy way to signal flag vs.
+						// freeform parameter.  In fact, just don't reinvent
+						// all the argv parsing and use a standard instead.
 						$param = next( $argv_local );
 						if ( $param === false ) {
 							print ( "\nERROR: $option parameter requires a value\n" );
