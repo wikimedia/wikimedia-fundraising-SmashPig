@@ -122,7 +122,10 @@ adyen:
 
             payments-wsdl: https://pal-live.adyen.com/pal/Payment.wsdl
 
-            accounts:
+            accounts: {}
+                # FIXME: Provide sample account config more consistently.  The
+                # empty map above is easy to overlook.
+
                 # For each Adyen merchant account, add an entry like the
                 # following with the merchant account name as the key.
                 # The ws- credentials should be a user authorized to make
@@ -238,30 +241,28 @@ amazon:
     # need an array within an array to give clients get a single
     # constructor argument
     credentials: &CREDENTIALS
-        -
-            # 13 or so uppercase letters
-            merchant_id: ''
-            # app or site-specific, starts with amznX.application
-            client_id: ''
-            # 20 alphanumeric characters
-            access_key: ''
-            # 40 base-64 encoded chars
-            secret_key: ''
-            # 'de', 'jp', 'uk', or 'us'
-            region: ''
-            sandbox: false
-
+        # 13 or so uppercase letters
+        merchant_id: ''
+        # app or site-specific, starts with amznX.application
+        client_id: ''
+        # 20 alphanumeric characters
+        access_key: ''
+        # 40 base-64 encoded chars
+        secret_key: ''
+        # 'de', 'jp', 'uk', or 'us'
+        region: ''
+        sandbox: false
 
     # Override these to mock the Amazon SDK classes
     payments-client:
         class: PayWithAmazon\PaymentsClient
         inst-args:
-            <<: *CREDENTIALS
+            - <<: *CREDENTIALS
 
     reports-client:
         class: PayWithAmazon\ReportsClient
         inst-args:
-            <<: *CREDENTIALS
+            - <<: *CREDENTIALS
 
     ipn-handler-class: PayWithAmazon\IpnHandler
 
