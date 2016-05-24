@@ -188,6 +188,24 @@ class Configuration {
 	 *                            duration of the session.
 	 */
 	public function &val( $node, $returnRef = false ) {
+		/*
+		 * Magic "/" returns the entire configuration tree.
+		 *
+		 * Question: Is this "/" trick intuitive enough to absolve it of being
+		 * a magic number?
+		 *
+		 * Note: Never log this tree insecurely, it will contain processor
+		 * credentials and other sensitive information.
+		 */
+		if ( $node === '/' ) {
+			if ( $returnRef ) {
+				$options = &$this->options;
+			} else {
+				$options = $this->options;
+			}
+			return $options;
+		}
+
 		$keys = explode( '/', $node );
 
 		$croot = & $this->options;
