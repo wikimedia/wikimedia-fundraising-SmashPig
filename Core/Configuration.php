@@ -285,21 +285,61 @@ class Configuration {
 	 *
 	 * @param array $base  The base array to merge into
 	 * @param array $graft Values to merge into the $base
+	 *
+	 * @param string $myRoot Internal recursion state: parent node path so far,
+	 * or empty string to begin.
 	 */
-	private static function treeMerge( &$base, $graft ) {
+	private static function treeMerge( &$base, $graft, $myRoot = '' ) {
 		foreach ( $graft as $graftNodeName => $graftNodeValue ) {
+			$node = ($myRoot ? "{$myRoot}/{$graftNodeName}" : $graftNodeName);
+
 			if ( array_key_exists( $graftNodeName, $base ) ) {
+				$baseNodeRef = &$base[$graftNodeName];
 				// Nodes that are present in the base and in the graft
-				if ( is_array( $base[ $graftNodeName ] ) ) {
-					static::treeMerge( $base[ $graftNodeName ], $graftNodeValue );
+
+				if (!self::isMergable($baseNodeRef, $graftNodeValue)) {
+					// Stop if types don't match.
+					throw new SmashPigException(
+						"Dissimilar types cannot be merged at configuration node {$node}." );
+				}
+
+				if ( is_array( $graftNodeValue ) ) {
+					// Recursively merge arrays.
+					static::treeMerge( $baseNodeRef, $graftNodeValue, $node );
 				} else {
-					$base[ $graftNodeName ] = $graftNodeValue;
+					$baseNodeRef = $graftNodeValue;
 				}
 			} else {
 				// Nodes that are only present in the graft
-				$base[ $graftNodeName ] = $graftNodeValue;
+				$base[$graftNodeName] = $graftNodeValue;
 			}
 		}
+	}
+
+	/**
+	 * Check that valueB can be merged on top of valueA.
+	 */
+	static protected function isMergable($valueA, $valueB) {
+		if (gettype($valueA) !== gettype($valueB)) {
+			// Plain old different type
+			return false;
+		}
+
+		// Test for numeric vs map "array"--gotta love it.
+		if (is_array($valueA) && is_array($valueB)
+
+			// If either is empty, don't sweat it.
+			&& $valueA && $valueB
+
+			// If either has element [0], so must the other.
+			&& (array_key_exists(0, $valueA)
+				xor array_key_exists(0, $valueB))
+		) {
+			return false;
+		}
+
+		// Feeling lucky.
+		return true;
 	}
 }
 
