@@ -34,8 +34,8 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	// Actions to take after examining capture request and queue message
 	const ACTION_PROCESS = 'process'; // all clear to capture payment
 	const ACTION_REJECT = 'reject'; // very likely fraud - cancel the authorization
-	const ACTION_REVIEW = 'review'; // potential fraud - do not capture now
-	const ACTION_DUPLICATE = 'duplicate'; // probable duplicate - cancel the authorization
+	const ACTION_REVIEW = 'review'; // potential fraud or duplicate - do not capture now
+	const ACTION_DUPLICATE = 'duplicate'; // known duplicate - cancel the authorization
 
 	public static function factory( Authorisation $authMessage ) {
 		$obj = new ProcessCaptureRequestJob();
@@ -60,11 +60,13 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		);
 
 		// Determine if a message exists in the pending queue; if it does not then
-		// this payment has already been sent to the verified queue. If it does,
-		// we need to check $capture_requested in case we have requested a capture
-		// but have not yet received notification of capture success. Either case can
-		// occur when a donor submits their credit card details multiple times against
-		// a single order ID. We should cancel all the duplicate authorizations.
+		// this payment has already been sent to the verified queue, or there is a
+		// problem with the queue. If it does exist, we need to check
+		// $capture_requested in case we have requested a capture but have not yet
+		// received notification of capture success. Either case can occur when a
+		// donor submits their credit card details multiple times against a single
+		// order ID. We should cancel duplicate authorizations, but leave payments
+		// with missing donor details open for potential manual capture.
 		$this->logger->debug( 'Attempting to locate associated message in pending queue.' );
 		/**
 		 * @var \SmashPig\Core\DataStores\KeyedOpaqueDataStore
@@ -143,7 +145,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					"ID '{$this->correlationId}'.",
 				$queueMessage
 			);
-			return self::ACTION_DUPLICATE;
+			return self::ACTION_REVIEW;
 		}
 		if ( $queueMessage->captured ) {
 			$this->logger->info(
