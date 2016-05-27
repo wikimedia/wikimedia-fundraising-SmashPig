@@ -18,6 +18,9 @@ class CaptureResponseAction implements IListenerMessageAction {
 
 		if ( $msg instanceof Capture ) {
 			if ( $msg->success ) {
+				$tl->info(
+					"Adding record capture job for {$msg->currency} {$msg->amount} with id {$msg->correlationId} and psp reference {$msg->pspReference}."
+				);
 				$recordJob = RecordCaptureJob::factory( $msg );
 				$jobQueue = Configuration::getDefaultConfig()->object( 'data-store/jobs' );
 				$jobQueue->addObject( $recordJob );
