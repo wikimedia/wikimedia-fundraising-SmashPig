@@ -158,7 +158,7 @@ adyen:
         # Automatically capture authorizations under this score
         review-threshold: 75
         # Automatically cancel authorizations with at least this score
-        reject-threshold: 100
+        reject-threshold: 125
 
         # Authorization notifications include AVS and CVV result codes.
         # The following maps set a risk score for each result code, which
@@ -166,8 +166,8 @@ adyen:
         # decide whether to capture the payment or leave it for review.
         # https://docs.adyen.com/manuals/api-manual/payment-responses/additionaldata-payment-responses
         avs-map:
-            # Unknown
-            0: 100
+            # Unknown. This is often returned in non-AVS countries.
+            0: 50
             # Address matches, postal code doesn't
             1: 75
             # Neither postal code nor address match
