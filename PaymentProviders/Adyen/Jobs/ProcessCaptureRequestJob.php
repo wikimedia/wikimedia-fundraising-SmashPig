@@ -116,7 +116,6 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				$this->cancelAuthorization();
 				// Delete the fraudy donor details
 				$pendingQueue->queueAckObject();
-				$pendingQueue->removeObjectsById( $this->correlationId );
 				break;
 			case self::ACTION_DUPLICATE:
 				// We have already captured one payment for this donation attempt, so

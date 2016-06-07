@@ -54,9 +54,8 @@ class RecordCaptureJob extends RunnableJob {
 			$config->object( 'data-store/verified' )->addObject( $queueMessage );
 
 			// Remove it from the pending queue
-			$logger->debug( "Removing all references to donation in pending queue" );
+			$logger->debug( "Acking donor details message in pending queue" );
 			$pendingQueue->queueAckObject();
-			$pendingQueue->removeObjectsById( $this->correlationId );
 
 		} else {
 			$logger->error(
