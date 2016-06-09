@@ -30,7 +30,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	 * @var TaggedLogger
 	 */
 	protected $logger;
-
+	protected $propertiesExcludedFromExport = array( 'logger' );
 	// Actions to take after examining capture request and queue message
 	const ACTION_PROCESS = 'process'; // all clear to capture payment
 	const ACTION_REJECT = 'reject'; // very likely fraud - cancel the authorization
