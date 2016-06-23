@@ -1,5 +1,7 @@
 <?php namespace SmashPig\Core\DataStores;
 
+use SmashPig\Core\Logging\Logger;
+
 /**
  * Base class providing generic serialization/deserialization capabilities.
  */
