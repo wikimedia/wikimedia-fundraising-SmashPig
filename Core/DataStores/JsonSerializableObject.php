@@ -64,9 +64,7 @@ abstract class JsonSerializableObject {
 						$properties[ $propName ] = $propValue->toJson( $resumeUse );
 					} else {
 						$className = get_class();
-						throw new DataSerializationException(
-							"Object contained in property {$className}->$propName is not instance of JsonSerializableObject."
-						);
+						Logger::warning( "Object contained in property {$className}->$propName is not instance of JsonSerializableObject." );
 					}
 				} else {
 					$properties[ $propName ] = $propValue;
