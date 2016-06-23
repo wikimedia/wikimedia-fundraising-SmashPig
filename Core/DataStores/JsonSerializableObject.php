@@ -58,7 +58,7 @@ abstract class JsonSerializableObject {
 		$properties = array();
 
 		foreach ( get_object_vars( $this ) as $propName => $propValue ) {
-			if ( !array_key_exists( $propName, $this->propertiesExcludedFromExport ) ) {
+			if ( !in_array( $propName, $this->propertiesExcludedFromExport ) ) {
 				if ( is_object( $propValue ) ) {
 					if ( $propValue instanceof JsonSerializableObject ) {
 						$properties[ $propName ] = $propValue->toJson( $resumeUse );
