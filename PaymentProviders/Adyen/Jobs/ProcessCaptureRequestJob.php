@@ -36,6 +36,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	const ACTION_REJECT = 'reject'; // very likely fraud - cancel the authorization
 	const ACTION_REVIEW = 'review'; // potential fraud or duplicate - do not capture now
 	const ACTION_DUPLICATE = 'duplicate'; // known duplicate - cancel the authorization
+	const ACTION_MISSING = 'missing'; // missing donor details - shunt job to damaged queue
 
 	public static function factory( Authorisation $authMessage ) {
 		$obj = new ProcessCaptureRequestJob();
@@ -131,6 +132,10 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				// the pending queue in case the authorization is captured via the console.
 				$pendingQueue->queueIgnoreObject();
 				break;
+			case self::ACTION_MISSING:
+				// Missing donor details - nothing to do but return failure
+				$success = false;
+				break;
 		}
 
 		return $success;
@@ -145,7 +150,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					"ID '{$this->correlationId}'.",
 				$queueMessage
 			);
-			return self::ACTION_REVIEW;
+			return self::ACTION_MISSING;
 		}
 		if ( $queueMessage->captured ) {
 			$this->logger->info(
