@@ -3,7 +3,7 @@
     "description": "The open source PHP flexible payments library and frontend/backend mediator.",
     "keywords": ["payments", "donations"],
     "homepage": "http://smashpig.org",
-    "license": "GPLv2",
+    "license": "GPL-2.0",
     "authors": [
         {
             "name": "Katie Horn",
