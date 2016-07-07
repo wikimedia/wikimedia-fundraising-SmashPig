@@ -22,6 +22,31 @@ default:
             inst-args:
                 - pending
 
+        pending-atomic:
+            class: PHPQueue\Backend\Predis
+            inst-args:
+                -
+                    queue: pending
+                    servers:
+                        scheme: tcp
+                        host: 127.0.0.1
+                        port: 6379
+
+        pending-damaged:
+            class: PHPQueue\Backend\Predis
+            inst-args:
+                -
+                    queue: pending-damaged
+                    servers:
+                        scheme: tcp
+                        host: 127.0.0.1
+                        port: 6379
+
+        pending-db:
+            class: PDO
+            inst-args:
+                - 'mysql:host=127.0.0.1;dbname=pending'
+
         refund:
             class: SmashPig\Core\DataStores\StompDataStore
             inst-args:
@@ -60,6 +85,7 @@ default:
                 verified: /queue/donations
                 failed: /queue/failed
                 pending: /queue/pending
+                pending-damaged: /queue/pending-damaged
                 refund: /queue/refund
                 jobs: /queue/job-requests
                 jobs-damaged: /queue/jobs-requests-damaged
@@ -106,6 +132,15 @@ default:
         bounce-address: bounce+$1@contoso.com
         archive-addresses: []
 
+    maintenance:
+        job-runner:
+            time-limit: 60
+            max-messages: 10
+
+        consume-pending:
+            time-limit: 60
+            max-messages: 0
+
 adyen:
     logging:
         root-context: SmashPig-Adyen
@@ -148,7 +183,7 @@ adyen:
         # Automatically capture authorizations under this score
         review-threshold: 75
         # Automatically cancel authorizations with at least this score
-        reject-threshold: 100
+        reject-threshold: 125
 
         # Authorization notifications include AVS and CVV result codes.
         # The following maps set a risk score for each result code, which
@@ -156,8 +191,8 @@ adyen:
         # decide whether to capture the payment or leave it for review.
         # https://docs.adyen.com/manuals/api-manual/payment-responses/additionaldata-payment-responses
         avs-map:
-            # Unknown
-            0: 100
+            # Unknown. This is often returned in non-AVS countries.
+            0: 50
             # Address matches, postal code doesn't
             1: 75
             # Neither postal code nor address match

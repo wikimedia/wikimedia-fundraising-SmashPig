@@ -200,26 +200,6 @@ abstract class MaintenanceBase {
 	}
 
 	/**
-	 * Add a parameter to the script whose default value is derived from config files.
-	 * Will be displayed on --help with the associated description
-	 * @see MaintenanceBase::addOption
-	 *
-	 * @param string $name 			Long name of the param, used with -- (ie help, version, etc)
-	 * @param string $description 	Description of the param to show on --help
-	 * @param string $defaultNode	Path of configuration node holding default value
-	 * @param string $alias 		Optional character to use as short name, used with -
-	 */
-	protected function addOptionWithConfigDefault( $name, $description, $defaultNode, $alias = false ) {
-		$config = Context::get()->getConfiguration();
-		if ( $config->nodeExists( $defaultNode ) ) {
-			$default = $config->val( $defaultNode );
-		} else {
-			$default = null;
-		}
-		$this->addOption( $name, $description, $default, $alias );
-	}
-
-	/**
 	 * Checks to see if a particular option was explicitly provided.
 	 *
 	 * @param string $name Name of option
@@ -251,6 +231,26 @@ abstract class MaintenanceBase {
 		}
 
 		return trim( $value, "\" '\t\n\r\0\x0B" ); // The response from everything unfriendly
+	}
+
+	/**
+	 * Get the value of a given option. Will return the value at configuration node
+	 * $defaultNode if the node exists and the option was not explicitly set, else
+	 * will return the default set when the option was created.
+	 *
+	 * @param string $name			Name of the option to retrieve
+	 * @param string $defaultNode	Config node holding override for the option
+	 *
+	 * @return mixed Value of the option or null if no default was provided
+	 */
+	protected function getOptionOrConfig( $name, $defaultNode ) {
+		$config = Context::get()->getConfiguration();
+		if ( $config->nodeExists( $defaultNode ) ) {
+			$default = $config->val( $defaultNode );
+		} else {
+			$default = null;
+		}
+		return $this->getOption( $name, $default );
 	}
 
 	/**
