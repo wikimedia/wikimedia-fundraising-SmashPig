@@ -91,4 +91,36 @@ class PendingDatabase {
 		}
 		$prepared->execute();
 	}
+
+	/**
+	 * Return all records matching a (gateway, order_id)
+	 *
+	 * Note that the sort order is arbitrary.
+	 *
+	 * @param $gatewayName string
+	 * @param $orderId string
+	 * @return array List of records related to a transaction
+	 */
+	public function fetchMessagesByGatewayOrderId( $gatewayName, $orderId ) {
+		$prepared = $this->db->prepare( '
+			select * from pending
+			where gateway = :gateway
+				and order_id = :order_id' );
+		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
+		$prepared->bindValue( ':order_id', $orderId, PDO::PARAM_STR );
+		$prepared->execute();
+		return $prepared->fetchAll( PDO::FETCH_ASSOC );
+	}
+
+	/**
+	 * Delete a message, given its pending db primary key
+	 *
+	 * FIXME: schema uses bigint
+	 * @param $primaryDbId int
+	 */
+	public function deleteMessage( $primaryDbId ) {
+		$prepared = $this->db->prepare( 'delete from pending where id = :id' );
+		$prepared->bindValue( ':id', $primaryDbId, PDO::PARAM_INT );
+		$prepared->execute();
+	}
 }
