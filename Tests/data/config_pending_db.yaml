@@ -1,0 +1,6 @@
+default:
+    data-store:
+        pending-db:
+            class: PDO
+            inst-args:
+                - 'sqlite::memory:'
