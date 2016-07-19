@@ -1,2 +1,0 @@
-OrderCode	Date	PaymentMethod	Status	CurrencyCode	Amount	Commission	Batch ID
-34489782.1	2016-03-15 14:02:34	CARTEBLEUE-SSL	CANCELLED	EUR	-1.00		304

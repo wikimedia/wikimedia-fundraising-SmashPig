@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Audit;
 
 use OutOfBoundsException;
+use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\Adyen\ReferenceData;
 

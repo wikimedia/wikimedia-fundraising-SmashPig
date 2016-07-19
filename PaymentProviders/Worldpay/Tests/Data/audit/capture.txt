@@ -1,2 +1,0 @@
-OrderCode	Date	PaymentMethod	Status	CurrencyCode	Amount	Commission	Batch ID
-27943765.0	2015-10-04 07:51:54	CB-SSL	CAPTURED	EUR	10.00		144
