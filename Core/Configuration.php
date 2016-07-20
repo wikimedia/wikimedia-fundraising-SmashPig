@@ -111,6 +111,18 @@ class Configuration {
 	}
 
 	/**
+	 * Override configuration with an array of data
+	 *
+	 * This should only be used in tests--note that these overrides take
+	 * precedence over every configuration file.
+	 *
+	 * @param $data array
+	 */
+	public function override( $data ) {
+		static::treeMerge( $this->options, $data );
+	}
+
+	/**
 	 * Loads a configuration file from the cache if it is still valid (ie: source files have not
 	 * changed)
 	 *
