@@ -77,6 +77,23 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 			'Fetched record matches stored message.' );
 	}
 
+	public function testFetchMessageByGatewayOldest() {
+		$message1 = $this->getTestMessage();
+		$message2 = $this->getTestMessage();
+
+		// Make the second message newer.
+		$message2['date'] = $message1['date'] - 100;
+
+		$this->db->storeMessage( $message1 );
+		$this->db->storeMessage( $message2 );
+
+		$fetched = $this->db->fetchMessageByGatewayOldest( 'test' );
+		$this->assertNotNull( $fetched,
+			'Retrieved a record using fetchMessageByGatewayOldest' );
+		$this->assertEquals( $message2['date'], $fetched['date'],
+			'Got the oldest record.' );
+	}
+
 	public function testDeleteMessage() {
 		$uniq = mt_rand();
 		$message1 = $this->getTestMessage( $uniq );

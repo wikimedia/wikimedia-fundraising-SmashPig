@@ -103,9 +103,32 @@ class PendingDatabase {
 		$prepared = $this->db->prepare( '
 			select * from pending
 			where gateway = :gateway
-				and order_id = :order_id' );
+				and order_id = :order_id
+			limit 1' );
 		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
 		$prepared->bindValue( ':order_id', $orderId, PDO::PARAM_STR );
+		$prepared->execute();
+		$row = $prepared->fetch( PDO::FETCH_ASSOC );
+		if ( !$row ) {
+			return null;
+		}
+		$message = json_decode( $row['message'], true );
+		return $message;
+	}
+
+	/**
+	 * Get the oldest message for a given gateway.
+	 *
+	 * @param $gatewayName string
+	 * @return array|null Message or null if nothing is found.
+	 */
+	public function fetchMessageByGatewayOldest( $gatewayName ) {
+		$prepared = $this->db->prepare( '
+			select * from pending
+			where gateway = :gateway
+			order by date asc
+			limit 1' );
+		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
 		$prepared->execute();
 		$row = $prepared->fetch( PDO::FETCH_ASSOC );
 		if ( !$row ) {
