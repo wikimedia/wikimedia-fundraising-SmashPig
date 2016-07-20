@@ -23,7 +23,7 @@ class ConsumePendingQueue extends MaintenanceBase {
 
 	public function __construct() {
 		parent::__construct();
-		$this->addOption( 'queue', 'queue name to consume from', 'pending-atomic' );
+		$this->addOption( 'queue', 'queue name to consume from', 'pending-new' );
 		$this->addOption( 'time-limit', 'Try to keep execution under <n> seconds', 60, 't' );
 		$this->addOption( 'max-messages', 'At most consume <n> messages', 0, 'm' );
 	}

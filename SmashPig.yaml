@@ -22,7 +22,7 @@ default:
             inst-args:
                 - pending
 
-        pending-atomic:
+        pending-new:
             class: PHPQueue\Backend\Predis
             inst-args:
                 -
