@@ -100,6 +100,7 @@ class QueueConsumer {
 	public function dequeueMessages() {
 		$startTime = time();
 		$processed = 0;
+		// FIXME: Use a single code path
 		if ( $this->damagedQueue ) {
 			$realCallback = array( $this, 'wrappedCallback' );
 		} else {

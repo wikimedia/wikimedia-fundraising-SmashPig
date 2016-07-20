@@ -40,8 +40,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$count = $consumer->dequeueMessages();
 		$this->assertEquals( 1, $count, 'Should report 1 message processed' );
 		$this->assertEquals( array( $payload ), $processed, 'Bad message' );
-		$this->assertNull(
-			$this->queue->popAtomic( function( $unused ) {} ),
+		$this->assertNull( $this->queue->pop(),
 			'Should delete message when processing is successful'
 		);
 	}
@@ -69,7 +68,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$this->assertTrue( $ran, 'Callback was not called' );
 		$this->assertEquals(
 			$payload,
-			$this->queue->popAtomic( function( $unused ) {} ),
+			$this->queue->pop(),
 			'Should not delete message when exception is thrown'
 		);
 	}
@@ -103,11 +102,11 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$this->assertTrue( $ran, 'Callback was not called' );
 		$this->assertEquals(
 			$payload,
-			$damagedQueue->popAtomic( function( $unused ) {} ),
+			$damagedQueue->pop(),
 			'Should move message to damaged queue when exception is thrown'
 		);
 		$this->assertNull(
-			$this->queue->popAtomic( function( $unused ) {} ),
+			$this->queue->pop(),
 			'Should delete message on exception when damaged queue exists'
 		);
 	}
@@ -137,7 +136,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		}
 		$this->assertEquals(
 			$messages[3],
-			$this->queue->popAtomic( function( $unused ) {} ),
+			$this->queue->pop(),
 			'Messed with too many messages'
 		);
 	}
@@ -177,13 +176,13 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			$this->assertEquals( $messages[$i], $processedMessages[$i], 'Message mutated' );
 			$this->assertEquals(
 				$messages[$i],
-				$damagedQueue->popAtomic( function( $unused ) {} ),
+				$damagedQueue->pop(),
 				'Should move message to damaged queue when exception is thrown'
 			);
 		}
 		$this->assertEquals(
 			$messages[3],
-			$this->queue->popAtomic( function( $unused ) {} ),
+			$this->queue->pop(),
 			'message 4 should be at the head of the queue'
 		);
 	}
