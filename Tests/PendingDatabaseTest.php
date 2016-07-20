@@ -65,13 +65,16 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 			'Stored message had expected contents' );
 	}
 
-	public function testFetchGatewayTransactionMessages() {
+	public function testFetchMessageByGatewayOrderId() {
 		$message = self::getTestMessage();
 		$this->db->storeMessage( $message );
 
-		$records = $this->db->fetchMessagesByGatewayOrderId( 'test', $message['order_id'] );
-		$this->assertEquals( 1, count( $records ),
-			'One record retrieved by fetchMessagesByGatewayOrderId.' );
+		$fetched = $this->db->fetchMessageByGatewayOrderId( 'test', $message['order_id'] );
+		$this->assertNotNull( $fetched,
+			'Record retrieved by fetchMessageByGatewayOrderId.' );
+
+		$this->assertEquals( $message, $fetched,
+			'Fetched record matches stored message.' );
 	}
 
 	public function testDeleteMessage() {
@@ -84,15 +87,21 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 		$this->db->storeMessage( $message1 );
 		$this->db->storeMessage( $message2 );
 
-		$records = $this->db->fetchMessagesByGatewayOrderId( 'test', $message1['order_id'] );
-		$this->assertEquals( 2, count( $records ),
-			'Both records retrieved by fetchMessagesByGatewayOrderId.' );
-		$this->assertNotNull( $records[0]['id'],
+		// Confirm work without using the API.
+		$pdo = $this->db->getDatabase();
+		$result = $pdo->query( "
+			select * from pending
+			where gateway='test'
+				and order_id = '{$message1['order_id']}'" );
+		$rows = $result->fetchAll( PDO::FETCH_ASSOC );
+		$this->assertEquals( 2, count( $rows ),
+			'Both records were stored.' );
+		$this->assertNotNull( $rows[0]['id'],
 			'Record includes a primary row id' );
-		$this->assertNotEquals( $records[0]['id'], $records[1]['id'],
+		$this->assertNotEquals( $rows[0]['id'], $rows[1]['id'],
 			'Records have unique primary ids' );
 
-		$this->db->deleteMessage( $records[0]['id'] );
+		$this->db->deleteMessage( $message1 );
 
 		// Confirm work without using the API.
 		$pdo = $this->db->getDatabase();
@@ -101,9 +110,7 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 			where gateway = 'test'
 				and order_id = '{$message1['order_id']}'" );
 		$rows = $result->fetchAll( PDO::FETCH_ASSOC );
-		$this->assertEquals( 1, count( $rows ),
-			'Row deleted.' );
-		$this->assertEquals( $records[1]['id'], $rows[0]['id'],
-			'Correct row deleted.' );
+		$this->assertEquals( 0, count( $rows ),
+			'All rows deleted.' );
 	}
 }

@@ -93,15 +93,13 @@ class PendingDatabase {
 	}
 
 	/**
-	 * Return all records matching a (gateway, order_id)
-	 *
-	 * Note that the sort order is arbitrary.
+	 * Return record matching a (gateway, order_id), or null
 	 *
 	 * @param $gatewayName string
 	 * @param $orderId string
-	 * @return array List of records related to a transaction
+	 * @return array|null Record related to a transaction, or null if nothing matches
 	 */
-	public function fetchMessagesByGatewayOrderId( $gatewayName, $orderId ) {
+	public function fetchMessageByGatewayOrderId( $gatewayName, $orderId ) {
 		$prepared = $this->db->prepare( '
 			select * from pending
 			where gateway = :gateway
@@ -109,18 +107,28 @@ class PendingDatabase {
 		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
 		$prepared->bindValue( ':order_id', $orderId, PDO::PARAM_STR );
 		$prepared->execute();
-		return $prepared->fetchAll( PDO::FETCH_ASSOC );
+		$row = $prepared->fetch( PDO::FETCH_ASSOC );
+		if ( !$row ) {
+			return null;
+		}
+		$message = json_decode( $row['message'], true );
+		return $message;
 	}
 
 	/**
-	 * Delete a message, given its pending db primary key
+	 * Delete a message from the database
 	 *
-	 * FIXME: schema uses bigint
-	 * @param $primaryDbId int
+	 * Note that we delete by (gateway, order_id) internally.
+	 *
+	 * @param array $message
 	 */
-	public function deleteMessage( $primaryDbId ) {
-		$prepared = $this->db->prepare( 'delete from pending where id = :id' );
-		$prepared->bindValue( ':id', $primaryDbId, PDO::PARAM_INT );
+	public function deleteMessage( $message ) {
+		$prepared = $this->db->prepare( '
+			delete from pending
+			where gateway = :gateway
+				and order_id = :order_id' );
+		$prepared->bindValue( ':gateway', $message['gateway'], PDO::PARAM_STR );
+		$prepared->bindValue( ':order_id', $message['order_id'], PDO::PARAM_STR );
 		$prepared->execute();
 	}
 }
