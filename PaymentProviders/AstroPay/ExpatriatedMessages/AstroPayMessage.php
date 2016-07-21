@@ -79,7 +79,9 @@ abstract class AstroPayMessage extends ListenerMessage {
 		// a message in the pending queue with the rest of the info we need.
 		// This differs from the correlationId because we don't get the gateway
 		// transaction ID unless the donor makes it back to the thank you page.
+		// TODO: see comment on Amazon\ExpatriatedMessages\PaymentCapture->completion_message_id
 		$queueMsg->completion_message_id = 'astropay-' . $this->x_invoice;
+		$queueMsg->order_id = $this->x_invoice;
 
 		return $queueMsg;
 	}

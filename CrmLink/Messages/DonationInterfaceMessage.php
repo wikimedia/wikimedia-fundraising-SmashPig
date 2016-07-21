@@ -28,6 +28,7 @@ class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
 	public $last_name_2 = '';
 	public $middle_name = '';
 	public $net = '';
+	public $order_id = '';
 	public $payment_method = '';
 	public $payment_submethod = '';
 	public $postal_code = '';

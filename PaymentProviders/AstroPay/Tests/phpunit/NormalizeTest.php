@@ -27,6 +27,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 			'gateway_status' => '9',
 			'gateway_txn_id' => '31912',
 			'gross' => '100.00',
+			'order_id' => '32303.1',
 		);
 		$stripFields = array(
 			'propertiesExportedAsKeys',

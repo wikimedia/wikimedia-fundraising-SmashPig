@@ -30,6 +30,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 			'gateway_status' => 'Completed',
 			'gateway_txn_id' => 'P01-0000000-0000000-000000',
 			'gross' => '10.0',
+			'order_id' => '98765432-1',
 			'payment_method' => 'amazon',
 		);
 		$stripFields = array(
