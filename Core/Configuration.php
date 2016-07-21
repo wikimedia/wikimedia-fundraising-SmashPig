@@ -57,8 +57,11 @@ class Configuration {
 		$searchPath = array(
 			__DIR__ . '/../SmashPig.yaml',
 			'/etc/fundraising/SmashPig.yaml',
-			$_SERVER['HOME'] . '/.fundraising/SmashPig.yaml',
 		);
+		if ( isset( $_SERVER['HOME'] ) ) {
+			// FIXME: But I don't understand why this key is missing during testing.
+			$searchPath[] =  $_SERVER['HOME'] . '/.fundraising/SmashPig.yaml';
+		}
 		if ( $overridePath ) {
 			$searchPath[] = $overridePath;
 		}
