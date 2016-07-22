@@ -1,5 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Amazon;
 
+use PayWithAmazon\IpnHandlerInterface;
 use SmashPig\Core\Context;
 use SmashPig\Core\SmashPigException;
 
@@ -8,6 +9,11 @@ use SmashPig\Core\SmashPigException;
  */
 class AmazonApi {
 
+	/**
+	 * @param $headers
+	 * @param $body
+	 * @return IpnHandlerInterface
+	 */
 	public static function createIpnHandler( $headers, $body ) {
 		$config = Context::get()->getConfiguration();
 		$klass = $config->val( 'ipn-handler-class' );

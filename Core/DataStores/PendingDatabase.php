@@ -141,6 +141,32 @@ class PendingDatabase {
 	}
 
 	/**
+	 * Get the newest N messages for a given gateway.
+	 *
+	 * @param string $gatewayName
+	 * @param int $limit fetch at most this many messages
+	 * @return array|null Messages or null if nothing is found.
+	 */
+	public function fetchMessagesByGatewayNewest( $gatewayName, $limit = 1 ) {
+		$prepared = self::$db->prepare( "
+			select * from pending
+			where gateway = :gateway
+			order by date desc
+			limit $limit" );
+		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
+		$prepared->execute();
+		$rows = $prepared->fetchAll( PDO::FETCH_ASSOC );
+		if ( !$rows ) {
+			return null;
+		}
+		$messages = array_map( function( $row ) {
+			return json_decode( $row['message'], true );
+		}, $rows);
+
+		return $messages;
+	}
+
+	/**
 	 * Delete a message from the database
 	 *
 	 * Note that we delete by (gateway, order_id) internally.
