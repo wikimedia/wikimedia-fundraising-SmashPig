@@ -1,5 +1,5 @@
 <?php
-namespace SmashPig\PaymentProviders\Amazon\Test;
+namespace SmashPig\PaymentProviders\Amazon\Tests;
 
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted;
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;

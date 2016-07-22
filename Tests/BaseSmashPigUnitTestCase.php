@@ -8,7 +8,6 @@ use SmashPig\Core\Logging\Logger;
 use PHPUnit_Framework_TestCase;
 
 class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
-	protected static $loggerCreated = false; // Aaargh!
 
 	function setUp() {
 		parent::setUp();
@@ -33,12 +32,7 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 	 */
 	function setConfig( $configNode = 'default', $configPath = null ) {
 		$config = new Configuration( $configNode, $configPath );
-		Context::init( $config );
-		if ( !self::$loggerCreated ) {
-			// Don't care which config the logger gets, let's just not explode
-			Logger::init( 'test', 'debug', $config, 'test' );
-			self::$loggerCreated = true;
-		}
+		Context::initWithLogger( $config );
 		return $config;
 	}
 }

@@ -1,6 +1,7 @@
 <?php
-namespace SmashPig\PaymentProviders\Amazon\Test;
+namespace SmashPig\PaymentProviders\Amazon\Tests;
 
+use SmashPig\Core\Context;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 use SmashPig\PaymentProviders\Amazon\Audit\AuditParser;
 
@@ -11,7 +12,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->setConfig( 'amazon' );
+		Context::initWithLogger( new AmazonTestConfiguration() );
 	}
 
 	/**

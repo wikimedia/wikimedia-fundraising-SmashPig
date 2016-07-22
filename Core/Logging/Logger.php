@@ -21,12 +21,10 @@ class Logger {
 	 * @param int           $threshold Minimum log level to record into the context
 	 * @param Configuration $config    Configuration object to use
 	 * @param string        $prefix    Base prefix for logger
-	 *
-	 * @throws \SmashPig\Core\SmashPigException if the logging framework was attempted
-	 * to be initialized twice
 	 */
 	static function init( $name, $threshold, Configuration $config, $prefix ) {
 		if ( self::$context ) {
+			// FIXME: is this necessary?
 			throw new SmashPigException( "Attempting to reinitialize the logger is not allowed!" );
 		}
 

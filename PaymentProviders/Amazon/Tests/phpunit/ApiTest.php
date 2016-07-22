@@ -1,6 +1,7 @@
 <?php
-namespace SmashPig\PaymentProviders\Amazon\Test;
+namespace SmashPig\PaymentProviders\Amazon\Tests;
 
+use SmashPig\Core\Context;
 use SmashPig\PaymentProviders\Amazon\AmazonApi;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -11,7 +12,8 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		chdir( __DIR__ . '/..' ); // So the mock client can find its response files
-		$config = $this->setConfig( 'amazon',  __DIR__ . '/../config_test.yaml' );
+		$config = new AmazonTestConfiguration();
+		Context::initWithLogger( $config );
 		$this->mockClient = $config->object( 'payments-client', true );
 		$this->mockClient->calls = array();
 		$this->mockClient->returns = array();

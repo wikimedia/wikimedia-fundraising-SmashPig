@@ -3,6 +3,7 @@
 namespace SmashPig\Tests;
 
 use PDO;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\PendingDatabase;
 
 class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
@@ -14,7 +15,7 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$this->setConfig( 'default', __DIR__ . '/data/config_pending_db.yaml' );
+		Context::initWithLogger( new PendingDatabaseTestConfiguration() );
 		$this->db = PendingDatabase::get();
 
 		// Create sqlite schema
