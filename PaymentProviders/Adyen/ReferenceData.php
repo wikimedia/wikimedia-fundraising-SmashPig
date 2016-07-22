@@ -44,6 +44,10 @@ class ReferenceData {
 			'method' => 'rtbt',
 			'submethod' => 'rtbt_ideal',
 		),
+		'jcb' => array(
+			'method' => 'cc',
+			'submethod' => 'jcb',
+		),
 		'mc' => array(
 			'method' => 'cc',
 			'submethod' => 'mc',
