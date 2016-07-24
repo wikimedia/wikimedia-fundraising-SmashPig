@@ -186,6 +186,10 @@ class PendingDatabase {
 	 * @param array $message
 	 */
 	public function deleteMessage( $message ) {
+		if ( !isset( $message['order_id'] ) ) {
+			throw new RuntimeException( 'Message doesn\'t have an order_id!' );
+		}
+
 		$prepared = self::$db->prepare( '
 			delete from pending
 			where gateway = :gateway
