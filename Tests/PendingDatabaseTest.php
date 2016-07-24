@@ -23,6 +23,16 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 		$this->db->getDatabase()->exec( $sql );
 	}
 
+	public function tearDown() {
+		// Reset PDO static member
+		$klass = new \ReflectionClass( 'SmashPig\Core\DataStores\PendingDatabase' );
+		$dbProperty = $klass->getProperty( 'db' );
+		$dbProperty->setAccessible( true );
+		$dbProperty->setValue( null );
+
+		parent::tearDown();
+	}
+
 	protected static function getTestMessage( $uniq = null ) {
 		if ( !$uniq ) { 
 			$uniq = mt_rand();
@@ -74,7 +84,10 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 		$this->assertNotNull( $fetched,
 			'Record retrieved by fetchMessageByGatewayOrderId.' );
 
-		$this->assertEquals( $message, $fetched,
+		$expected = $message + array(
+			'pending_id' => 1,
+		);
+		$this->assertEquals( $expected, $fetched,
 			'Fetched record matches stored message.' );
 	}
 
@@ -82,7 +95,7 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 		$message1 = $this->getTestMessage();
 		$message2 = $this->getTestMessage();
 
-		// Make the second message newer.
+		// Make the second message older.
 		$message2['date'] = $message1['date'] - 100;
 
 		$this->db->storeMessage( $message1 );

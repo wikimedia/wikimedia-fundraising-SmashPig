@@ -13,19 +13,23 @@ class PendingDatabase {
 
 	/**
 	 * @var PDO
+	 * We do the silly singleton thing for convenient testing with in-memory
+	 * databases that would otherwise not be shared between components.
 	 */
-	protected $db;
+	protected static $db;
 
 	protected function __construct() {
 		$config = Context::get()->getConfiguration();
-		$this->db = $config->object( 'data-store/pending-db' );
+		if ( !self::$db ) {
+			self::$db = $config->object( 'data-store/pending-db' );
+		}
 	}
 
 	/**
 	 * @return PDO
 	 */
 	public function getDatabase() {
-		return $this->db;
+		return self::$db;
 	}
 
 	public static function get() {
@@ -80,7 +84,7 @@ class PendingDatabase {
 		$paramList = ':' . implode( ', :', array_keys( $dbRecord ) );
 
 		$insert = "INSERT INTO pending ( $fieldList ) values ( $paramList );";
-		$prepared = $this->db->prepare( $insert );
+		$prepared = self::$db->prepare( $insert );
 
 		foreach ( $dbRecord as $field => $value ) {
 			$prepared->bindValue(
@@ -100,7 +104,7 @@ class PendingDatabase {
 	 * @return array|null Record related to a transaction, or null if nothing matches
 	 */
 	public function fetchMessageByGatewayOrderId( $gatewayName, $orderId ) {
-		$prepared = $this->db->prepare( '
+		$prepared = self::$db->prepare( '
 			select * from pending
 			where gateway = :gateway
 				and order_id = :order_id
@@ -112,18 +116,17 @@ class PendingDatabase {
 		if ( !$row ) {
 			return null;
 		}
-		$message = json_decode( $row['message'], true );
-		return $message;
+		return $this->messageFromDbRow( $row );
 	}
 
 	/**
-	 * Get the oldest message for a given gateway.
+	 * Get the oldest message for a given gateway, by date
 	 *
 	 * @param $gatewayName string
 	 * @return array|null Message or null if nothing is found.
 	 */
 	public function fetchMessageByGatewayOldest( $gatewayName ) {
-		$prepared = $this->db->prepare( '
+		$prepared = self::$db->prepare( '
 			select * from pending
 			where gateway = :gateway
 			order by date asc
@@ -134,8 +137,7 @@ class PendingDatabase {
 		if ( !$row ) {
 			return null;
 		}
-		$message = json_decode( $row['message'], true );
-		return $message;
+		return $this->messageFromDbRow( $row );
 	}
 
 	/**
@@ -146,12 +148,21 @@ class PendingDatabase {
 	 * @param array $message
 	 */
 	public function deleteMessage( $message ) {
-		$prepared = $this->db->prepare( '
+		$prepared = self::$db->prepare( '
 			delete from pending
 			where gateway = :gateway
 				and order_id = :order_id' );
 		$prepared->bindValue( ':gateway', $message['gateway'], PDO::PARAM_STR );
 		$prepared->bindValue( ':order_id', $message['order_id'], PDO::PARAM_STR );
 		$prepared->execute();
+	}
+
+	/**
+	 * Parse a database row and return the normalized message.
+	 */
+	protected function messageFromDbRow( $row ) {
+		$message = json_decode( $row['message'], true );
+		$message['pending_id'] = $row['id'];
+		return $message;
 	}
 }
