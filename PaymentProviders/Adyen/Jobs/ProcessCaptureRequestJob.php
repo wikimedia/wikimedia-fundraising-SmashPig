@@ -1,6 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
 use SmashPig\Core\Configuration;
+use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
@@ -141,15 +143,29 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	protected function determineAction( $queueMessage ) {
+		$db = PendingDatabase::get();
+		$dbMessage = null;
+		if ( $db ) {
+			$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
+		}
 		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
 			$this->logger->debug( 'A valid message was obtained from the pending queue.' );
 		} else {
+			$errMessage =  "Could not find a processable message for " .
+				"PSP Reference '{$this->pspReference}' and ".
+				"correlation ID '{$this->correlationId}'.";
+			if ( $dbMessage ) {
+				$errMessage .= 'There is a pending database entry, though: ' .
+					json_encode( $dbMessage );
+			}
 			$this->logger->warning(
-				"Could not find a processable message for PSP Reference '{$this->pspReference}' and correlation ".
-					"ID '{$this->correlationId}'.",
+				$errMessage,
 				$queueMessage
 			);
 			return self::ACTION_MISSING;
+		}
+		if ( $db ) {
+			$this->comparePending( $queueMessage, $dbMessage );
 		}
 		if ( $queueMessage->captured ) {
 			$this->logger->info(
@@ -220,6 +236,29 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		} else {
 			// Not a big deal
 			$this->logger->warning( "Failed to cancel authorization, it will remain in the payment console" );
+		}
+	}
+
+	/**
+	 * @param KeyedOpaqueStorableObject|null $queueMessage Message from ActiveMQ
+	 * @param array $dbMessage Normalized message from database
+	 */
+	protected function comparePending( $queueMessage, $dbMessage ) {
+		if ( $dbMessage ) {
+			$queueData = json_decode( $queueMessage->toJson(), true );
+			$differences = array_diff_assoc( $queueData, $dbMessage );
+			if ( $differences ) {
+				$this->logger->notice(
+					"Pending message for adyen-{$this->merchantReference} " .
+					'differs between ActiveMQ and pending database: ' .
+					json_encode( $differences, true )
+				);
+			}
+		} else {
+			$this->logger->notice(
+				"Found pending message for adyen-{$this->merchantReference} " .
+				'in ActiveMQ but not in pending database.'
+			);
 		}
 	}
 }

@@ -1,8 +1,10 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Test;
 
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
+use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
@@ -17,8 +19,8 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-
-		$this->config = $this->setConfig( 'adyen', __DIR__ . '/../config_test_success.yaml' );
+		$this->config = AdyenTestConfiguration::get( true );
+		Context::initWithLogger( $this->config );
 	}
 
 	/**
