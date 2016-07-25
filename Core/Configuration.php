@@ -325,7 +325,7 @@ class Configuration {
 	 * or empty string to begin.
 	 * @throws SmashPigException
 	 */
-	private static function treeMerge( &$base, $graft, $myRoot = '' ) {
+	protected static function treeMerge( &$base, $graft, $myRoot = '' ) {
 		foreach ( $graft as $graftNodeName => $graftNodeValue ) {
 			$node = ($myRoot ? "{$myRoot}/{$graftNodeName}" : $graftNodeName);
 
