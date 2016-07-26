@@ -2,6 +2,7 @@
 namespace SmashPig\Core\DataStores;
 
 use PDO;
+use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
@@ -33,8 +34,12 @@ class PendingDatabase {
 	}
 
 	public static function get() {
-		// This is static so we have the option to go singleton if needed.
-		return new PendingDatabase();
+		$config = Context::get()->getConfiguration();
+		if ( $config->nodeExists( 'data-store/pending-db' ) ) {
+			// TODO: remove after transition to new pending queue
+			return new PendingDatabase();
+		}
+		return null;
 	}
 
 	protected function validateMessage( $message ) {
@@ -109,6 +114,11 @@ class PendingDatabase {
 			where gateway = :gateway
 				and order_id = :order_id
 			limit 1' );
+		if ( !$prepared ) {
+			// TODO: remove after transition to new pending queue
+			// database exists but table is not yet set up
+			return null;
+		}
 		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
 		$prepared->bindValue( ':order_id', $orderId, PDO::PARAM_STR );
 		$prepared->execute();
