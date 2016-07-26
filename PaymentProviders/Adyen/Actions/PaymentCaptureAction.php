@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Actions\IListenerMessageAction;
@@ -36,6 +37,13 @@ class PaymentCaptureAction implements IListenerMessageAction {
 				$tl->debug( "Deleting all queue objects with correlation ID '{$msg->correlationId}'" );
 				$pendingQueueObj = Context::get()->getConfiguration()->object( 'data-store/pending' );
 				$pendingQueueObj->removeObjectsById( $msg->correlationId );
+				$db = PendingDatabase::get();
+				if ( $db ) {
+					$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $msg->merchantReference );
+					if ( $dbMessage ) {
+						$db->deleteMessage( $dbMessage );
+					}
+				}
 			}
 		}
 

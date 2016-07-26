@@ -1,7 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
 use SmashPig\Core\Configuration;
-use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
@@ -78,6 +77,13 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
 		$success = true;
 
+		$db = PendingDatabase::get();
+		$dbMessage = null;
+		if ( $db ) {
+			$this->logger->debug( 'Attempting to locate associated message in pending database.' );
+			$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
+			PendingDatabase::comparePending( $queueMessage, $dbMessage );
+		}
 		$action = $this->determineAction( $queueMessage );
 		switch ( $action ) {
 			case self::ACTION_PROCESS:
@@ -101,6 +107,10 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					$pendingQueue->queueAckObject();
 					$queueMessage->captured = true;
 					$pendingQueue->addObject( $queueMessage );
+					if ( $dbMessage ) {
+						$dbMessage['captured'] = true;
+						$db->storeMessage( $dbMessage );
+					}
 				} else {
 					// Some kind of error in the request. We should keep the pending
 					// message, complain loudly, and move this capture job to the
@@ -118,6 +128,9 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				$this->cancelAuthorization();
 				// Delete the fraudy donor details
 				$pendingQueue->queueAckObject();
+				if ( $dbMessage ) {
+					$db->deleteMessage( $dbMessage );
+				}
 				break;
 			case self::ACTION_DUPLICATE:
 				// We have already captured one payment for this donation attempt, so
@@ -143,29 +156,17 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	protected function determineAction( $queueMessage ) {
-		$db = PendingDatabase::get();
-		$dbMessage = null;
-		if ( $db ) {
-			$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
-		}
 		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
 			$this->logger->debug( 'A valid message was obtained from the pending queue.' );
 		} else {
 			$errMessage =  "Could not find a processable message for " .
 				"PSP Reference '{$this->pspReference}' and ".
 				"correlation ID '{$this->correlationId}'.";
-			if ( $dbMessage ) {
-				$errMessage .= 'There is a pending database entry, though: ' .
-					json_encode( $dbMessage );
-			}
 			$this->logger->warning(
 				$errMessage,
 				$queueMessage
 			);
 			return self::ACTION_MISSING;
-		}
-		if ( $db ) {
-			$this->comparePending( $queueMessage, $dbMessage );
 		}
 		if ( $queueMessage->captured ) {
 			$this->logger->info(
@@ -236,29 +237,6 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		} else {
 			// Not a big deal
 			$this->logger->warning( "Failed to cancel authorization, it will remain in the payment console" );
-		}
-	}
-
-	/**
-	 * @param KeyedOpaqueStorableObject|null $queueMessage Message from ActiveMQ
-	 * @param array $dbMessage Normalized message from database
-	 */
-	protected function comparePending( $queueMessage, $dbMessage ) {
-		if ( $dbMessage ) {
-			$queueData = json_decode( $queueMessage->toJson(), true );
-			$differences = array_diff_assoc( $queueData, $dbMessage );
-			if ( $differences ) {
-				$this->logger->notice(
-					"Pending message for adyen-{$this->merchantReference} " .
-					'differs between ActiveMQ and pending database: ' .
-					json_encode( $differences, true )
-				);
-			}
-		} else {
-			$this->logger->notice(
-				"Found pending message for adyen-{$this->merchantReference} " .
-				'in ActiveMQ but not in pending database.'
-			);
 		}
 	}
 }

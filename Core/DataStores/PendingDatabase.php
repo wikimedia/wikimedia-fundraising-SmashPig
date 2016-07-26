@@ -4,8 +4,10 @@ namespace SmashPig\Core\DataStores;
 use PDO;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
+use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 
 /**
  * Data store containing messages waiting to be finalized.
@@ -82,14 +84,14 @@ class PendingDatabase {
 		// Dump the whole message into a text column
 		$dbRecord['message'] = json_encode( $message );
 
-		$fieldList = implode( ',', array_keys( $dbRecord ) );
-
-		// Build a list of parameter names for safe db insert
-		// Same as the field list, but each parameter is prefixed with a colon
-		$paramList = ':' . implode( ', :', array_keys( $dbRecord ) );
-
-		$insert = "INSERT INTO pending ( $fieldList ) values ( $paramList );";
-		$prepared = self::$db->prepare( $insert );
+		$fields = array_keys( $dbRecord );
+		if ( isset( $message['pending_id'] ) ) {
+			$sql = $this->getUpdateStatement( $fields );
+			$dbRecord['id'] = $message['pending_id'];
+		} else {
+			$sql = $this->getInsertStatement( $fields );
+		}
+		$prepared = self::$db->prepare( $sql );
 
 		foreach ( $dbRecord as $field => $value ) {
 			$prepared->bindValue(
@@ -200,5 +202,78 @@ class PendingDatabase {
 		$message = json_decode( $row['message'], true );
 		$message['pending_id'] = $row['id'];
 		return $message;
+	}
+
+	/**
+	 * Ensure a smooth transition of pending message from ActiveMQ to database.
+	 * Log notices if entries differ between queue and db.
+	 * TODO: remove when ActiveMQ is gone
+	 *
+	 * @param DonationInterfaceMessage|null $queueMessage Message from ActiveMQ
+	 * @param array|null $dbMessage Normalized message from pending DB
+	 */
+	public static function comparePending( $queueMessage, $dbMessage ) {
+		if ( $dbMessage ) {
+			$id = $dbMessage['gateway'] . '-' . $dbMessage['order_id'];
+		} else if ( $queueMessage ) {
+			$id = $queueMessage->gateway . '-' . $queueMessage->order_id;
+		} else {
+			// neither exists, nothing to log
+			return;
+		}
+		$logger = Logger::getTaggedLogger( 'PendingComparison' );
+
+		if ( $queueMessage && $dbMessage ) {
+			$queueData = json_decode( $queueMessage->toJson(), true );
+			$differences = array_diff_assoc( $queueData, $dbMessage );
+			if ( $differences ) {
+				$logger->notice(
+					"Pending message for $id " .
+					'differs between ActiveMQ and pending database: ' .
+					json_encode( $differences, true )
+				);
+			}
+		} else if ( $queueMessage && !$dbMessage ) {
+			$logger->notice(
+				"Found pending message for $id " .
+				'in ActiveMQ but not in pending database.'
+			);
+		} else if ( $dbMessage && !$queueMessage ) {
+			$logger->notice(
+				"Found pending message for $id " .
+				'in pending database but not in ActiveMQ: ' .
+				json_encode( $dbMessage )
+			);
+		}
+	}
+
+	/**
+	 * @param array $fields
+	 * @return string SQL to insert a pending record, with parameters
+	 */
+	protected function getInsertStatement( $fields ) {
+		$fieldList = implode( ',', $fields );
+
+		// Build a list of parameter names for safe db insert
+		// Same as the field list, but each parameter is prefixed with a colon
+		$paramList = ':' . implode( ', :', $fields );
+
+		$insert = "INSERT INTO pending ( $fieldList ) VALUES ( $paramList );";
+		return $insert;
+	}
+
+	/**
+	 * @param array $fields
+	 * @return string SQL to update a pending record, with parameters
+	 */
+	protected function getUpdateStatement( $fields ) {
+		$sets = array();
+		foreach( $fields as $field ) {
+			$sets[] = "$field = :$field";
+		}
+		$update = 'UPDATE pending SET ' .
+			implode( ',', $sets ) .
+			' WHERE id = :id';
+		return $update;
 	}
 }
