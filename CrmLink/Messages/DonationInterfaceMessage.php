@@ -48,4 +48,14 @@ class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
 	public $utm_campaign = '';
 	public $utm_medium = '';
 	public $utm_source = '';
+
+	public static function fromValues( $values = array() ) {
+		$message = new DonationInterfaceMessage();
+		foreach ( $values as $key => $value ) {
+			if( property_exists( 'DonationInterfaceMessage', $key ) ) {
+				$message->$key = $value;
+			}
+		}
+		$message->correlationId = "{$message->gateway}-{$message->order_id}";
+	}
 }
