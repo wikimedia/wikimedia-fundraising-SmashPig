@@ -215,7 +215,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			$queueMessage, $this->merchantReference, $riskScore, $scoreBreakdown, $action
 		);
 		$this->logger->debug( "Sending antifraud message with risk score $riskScore and action $action." );
-		Configuration::getDefaultConfig()->object( 'data-store/antifraud' )->addObject( $antifraudMessage );
+		Configuration::getDefaultConfig()->object( 'data-store/antifraud' )->push( $antifraudMessage );
 	}
 
 	/**

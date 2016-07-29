@@ -13,6 +13,12 @@ default:
                 - /tmp/
 
         antifraud:
+            class: SmashPig\Core\DataStores\MultiQueueWriter
+            inst-args:
+                -
+                    - antifraud-stomp
+
+        antifraud-stomp:
             class: SmashPig\Core\DataStores\StompDataStore
             inst-args:
                 - antifraud
@@ -48,6 +54,12 @@ default:
                 - 'mysql:host=127.0.0.1;dbname=pending'
 
         refund:
+            class: SmashPig\Core\DataStores\MultiQueueWriter
+            inst-args:
+                -
+                    - refund-stomp
+
+        refund-stomp:
             class: SmashPig\Core\DataStores\StompDataStore
             inst-args:
                 - refund
@@ -68,6 +80,12 @@ default:
                 - jobs
 
         verified:
+            class: SmashPig\Core\DataStores\MultiQueueWriter
+            inst-args:
+                -
+                    - verified-stomp
+
+        verified-stomp:
             class: SmashPig\Core\DataStores\StompDataStore
             inst-args:
                 - verified

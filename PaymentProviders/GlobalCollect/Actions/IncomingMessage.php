@@ -13,7 +13,7 @@ class IncomingMessage implements IListenerMessageAction {
 			$queue = Context::get()->getConfiguration()->object( "data-store/{$destinationQueue}" );
 			$queueMsg = $msg->normalizeForQueue();
 
-			$queue->addObject( $queueMsg );
+			$queue->push( $queueMsg );
 		} else {
 			$class = get_class( $msg );
 			Logger::warning( "Ignoring message of type {$class}", $msg );

@@ -28,7 +28,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * on the pending queue, add an antifraud message, and return true.
 	 */
 	public function testSuccessfulCapture() {
-		$antifraudQueue = $this->config->object( 'data-store/antifraud', true );
+		$antifraudQueue = $this->config->object( 'data-store/antifraud-stomp', true );
 		$pendingQueue = $this->config->object( 'data-store/pending', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
@@ -84,7 +84,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * we should not capture the payment, but leave the donor details.
 	 */
 	public function testReviewThreshold() {
-		$antifraudQueue = $this->config->object( 'data-store/antifraud', true );
+		$antifraudQueue = $this->config->object( 'data-store/antifraud-stomp', true );
 		$pendingQueue = $this->config->object( 'data-store/pending', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
@@ -137,7 +137,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * we should cancel the authorization and delete the donor details.
 	 */
 	public function testRejectThreshold() {
-		$antifraudQueue = $this->config->object( 'data-store/antifraud', true );
+		$antifraudQueue = $this->config->object( 'data-store/antifraud-stomp', true );
 		$pendingQueue = $this->config->object( 'data-store/pending', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
