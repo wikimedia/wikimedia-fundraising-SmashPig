@@ -84,6 +84,10 @@ class ReferenceData {
 				'visaelectron' => 'visa-electron', // guessing at Adyen code
 			)
 		),
+		'visadankort' => array(
+			'method' => 'cc',
+			'submethod' => 'visa',
+		)
 	);
 
 	/**
