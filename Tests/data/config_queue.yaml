@@ -6,8 +6,7 @@ default:
                 -
                     connection_string: 'sqlite::memory:'
 
-        damaged:
-            class: PHPQueue\Backend\PDO
+        damaged-db:
+            class: PDO
             inst-args:
-                -
-                    connection_string: 'sqlite::memory:'
+                - 'sqlite::memory:'

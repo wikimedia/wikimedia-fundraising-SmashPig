@@ -4,8 +4,6 @@ require ( 'MaintenanceBase.php' );
 
 use RuntimeException;
 
-use PHPQueue\Interfaces\FifoQueueStore;
-
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
@@ -20,18 +18,12 @@ $maintClass = '\SmashPig\Maintenance\QueueJobRunner';
  */
 class QueueJobRunner extends MaintenanceBase {
 
-	/**
-	 * @var FifoQueueStore
-	 */
-	protected $damagedQueue = null;
-
 	protected $successCount = 0;
 
 	public function __construct() {
 		parent::__construct();
 
 		$this->addOption( 'queue', 'queue name to consume from', 'jobs' );
-		$this->addOption( 'damaged-queue', 'name of queue to hold failed job messages', 'jobs-damaged' );
 		$this->addOption( 'time-limit', 'Try to keep execution under <n> seconds', 60, 't' );
 		$this->addOption( 'max-messages', 'At most consume <n> messages', 10, 'm' );
 	}
@@ -48,8 +40,7 @@ class QueueJobRunner extends MaintenanceBase {
 			$this->getOption( 'queue' ),
 			array( $this, 'runJob' ),
 			$this->getOptionOrConfig( 'time-limit', $basePath . 'time-limit' ),
-			$this->getOptionOrConfig( 'max-messages', $basePath . 'message-limit' ),
-			$this->getOption( 'damaged-queue' )
+			$this->getOptionOrConfig( 'max-messages', $basePath . 'message-limit' )
 		);
 
 		$startTime = time();
@@ -63,7 +54,7 @@ class QueueJobRunner extends MaintenanceBase {
 
 	/**
 	 * Instantiates and runs a job defined by a queue message. Depends on
-	 * the queue consumer's damaged message queue functionality to either
+	 * the queue consumer's damaged message store functionality to either
 	 * divert messages or stop execution on bad message or job failure.
 	 * @param array $jobMessage
 	 * @throws \SmashPig\Core\DataStores\DataSerializationException
@@ -82,14 +73,14 @@ class QueueJobRunner extends MaintenanceBase {
 		if ( !( $jobObj instanceof RunnableJob ) ) {
 			throw new RuntimeException(
 				get_class( $jobObj ) . ' is not an instance of RunnableJob. '
-				. 'Could not execute and sending to damaged message queue.'
+				. 'Could not execute and sending to damaged message store.'
 			);
 		}
 
 		if ( !$jobObj->execute() ) {
 			throw new RuntimeException(
 				'Job tells us that it did not successfully execute. '
-				. 'Sending to damaged message queue.'
+				. 'Sending to damaged message store.'
 			);
 		}
 

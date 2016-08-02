@@ -2,7 +2,9 @@
 
 namespace SmashPig\Tests;
 
+use PDO;
 use PHPQueue\Interfaces\FifoQueueStore;
+use SmashPig\Core\DataStores\DamagedDatabase;
 use SmashPig\Core\DataStores\QueueConsumer;
 
 class QueueConsumerTest extends BaseSmashPigUnitTestCase {
@@ -11,12 +13,23 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	 * @var FifoQueueStore
 	 */
 	protected $queue;
+	/**
+	 * @var PDO
+	 */
+	protected $damaged;
 
 	public function setUp() {
 		parent::setUp();
 		$this->setConfig( 'default', __DIR__ . '/data/config_queue.yaml' );
 		$this->queue = QueueConsumer::getQueue( 'test' );
 		$this->queue->createTable( 'test' );
+		$this->damaged = DamagedDatabase::get()->getDatabase();
+
+		// Create sqlite schema
+		$sql = file_get_contents(
+			__DIR__ . '/../Schema/sqlite/002_CreateDamagedTable.sqlite.sql'
+		);
+		$this->damaged->exec( $sql );
 	}
 
 	public function testEmptyQueue() {
@@ -45,39 +58,11 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		);
 	}
 
-	public function testRollBack() {
-		$payload = array(
-			'uncle' => 'fester',
-			'watts' => mt_rand(),
-		);
-		$self = $this;
-		$ran = false;
-		$cb = function( $message ) use ( &$ran, $payload, $self ) {
-			$self->assertEquals( $message, $payload );
-			$ran = true;
-			throw new \Exception( 'kaboom!' );
-		};
-		$consumer = new QueueConsumer( 'test', $cb );
-		$this->queue->push( $payload );
-		try {
-			$consumer->dequeueMessages();
-			$this->fail( 'Exception should have bubbled up' );
-		} catch ( \Exception $ex ) {
-			$this->assertEquals( 'kaboom!', $ex->getMessage(), 'Exception mutated' );
-		}
-		$this->assertTrue( $ran, 'Callback was not called' );
-		$this->assertEquals(
-			$payload,
-			$this->queue->pop(),
-			'Should not delete message when exception is thrown'
-		);
-	}
-
 	public function testDamagedQueue() {
-		$damagedQueue = QueueConsumer::getQueue( 'damaged' );
-		$damagedQueue->createTable('damaged'); // FIXME: should not need
-
 		$payload = array(
+			'gateway' => 'test',
+			'date' => time(),
+			'order_id' => mt_rand(),
 			'cousin' => 'itt',
 			'kookiness' => mt_rand(),
 		);
@@ -89,7 +74,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			throw new \Exception( 'kaboom!' );
 		};
 
-		$consumer = new QueueConsumer( 'test', $cb, 0, 0, 'damaged' );
+		$consumer = new QueueConsumer( 'test', $cb, 0, 0 );
 
 		$this->queue->push( $payload );
 		try {
@@ -100,9 +85,11 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			);
 		}
 		$this->assertTrue( $ran, 'Callback was not called' );
+
+		$damaged = $this->getDamagedQueueMessage( $payload );
 		$this->assertEquals(
 			$payload,
-			$damagedQueue->pop(),
+			$damaged,
 			'Should move message to damaged queue when exception is thrown'
 		);
 		$this->assertNull(
@@ -115,6 +102,9 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$messages = array();
 		for ( $i = 0; $i < 5; $i++ ) {
 			$message = array(
+				'gateway' => 'test',
+				'date' => time(),
+				'order_id' => mt_rand(),
 				'box' => 'thing' . $i,
 				'creepiness' => mt_rand(),
 			);
@@ -142,12 +132,12 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testKeepRunningOnDamage() {
-		$damagedQueue = QueueConsumer::getQueue( 'damaged' );
-		$damagedQueue->createTable( 'damaged' ); // FIXME: should not need
-
 		$messages = array();
 		for ( $i = 0; $i < 5; $i++ ) {
 			$message = array(
+				'gateway' => 'test',
+				'date' => time(),
+				'order_id' => mt_rand(),
 				'box' => 'thing' . $i,
 				'creepiness' => mt_rand(),
 			);
@@ -160,7 +150,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			throw new \Exception( 'kaboom!' );
 		};
 
-		$consumer = new QueueConsumer( 'test', $cb, 0, 3, 'damaged' );
+		$consumer = new QueueConsumer( 'test', $cb, 0, 3 );
 		$count = 0;
 		try {
 			$count = $consumer->dequeueMessages();
@@ -174,9 +164,10 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 
 		for ( $i = 0; $i < 3; $i++ ) {
 			$this->assertEquals( $messages[$i], $processedMessages[$i], 'Message mutated' );
+			$damaged = $this->getDamagedQueueMessage( $messages[$i] );
 			$this->assertEquals(
 				$messages[$i],
-				$damagedQueue->pop(),
+				$damaged,
 				'Should move message to damaged queue when exception is thrown'
 			);
 		}
@@ -185,6 +176,18 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			$this->queue->pop(),
 			'message 4 should be at the head of the queue'
 		);
+	}
+
+	protected function getDamagedQueueMessage( $message ) {
+		$select = $this->damaged->query( "
+			SELECT * FROM damaged
+			WHERE gateway='{$message['gateway']}'
+			AND order_id = '{$message['order_id']}'" );
+		$msg = $select->fetch( PDO::FETCH_ASSOC );
+		if ( $msg ) {
+			return json_decode( $msg['message'], true );
+		}
+		return null;
 	}
 
 }

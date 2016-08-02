@@ -38,16 +38,6 @@ default:
                         host: 127.0.0.1
                         port: 6379
 
-        pending-damaged:
-            class: PHPQueue\Backend\Predis
-            inst-args:
-                -
-                    queue: pending-damaged
-                    servers:
-                        scheme: tcp
-                        host: 127.0.0.1
-                        port: 6379
-
         pending-db:
             class: PDO
             inst-args:

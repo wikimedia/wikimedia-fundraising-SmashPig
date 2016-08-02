@@ -39,8 +39,7 @@ class ConsumePendingQueue extends MaintenanceBase {
 			$this->getOption( 'queue' ),
 			array( $this->pendingDatabase, 'storeMessage' ),
 			$this->getOptionOrConfig( 'time-limit', $basePath . 'time-limit' ),
-			$this->getOptionOrConfig( 'max-messages', $basePath . 'message-limit' ),
-			'pending-damaged'
+			$this->getOptionOrConfig( 'max-messages', $basePath . 'message-limit' )
 		);
 
 		$startTime = time();

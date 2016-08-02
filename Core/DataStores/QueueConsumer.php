@@ -4,15 +4,14 @@ namespace SmashPig\Core\DataStores;
 use Exception;
 use InvalidArgumentException;
 use PHPQueue\Interfaces\AtomicReadBuffer;
-use PHPQueue\Interfaces\FifoQueueStore;
-use PHPQueue\Interfaces\IndexedFifoQueueStore;
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 
 /**
- * Facilitates guaranteed message processing using PHPQueue's
- * AtomicReadBuffer interface.
+ * Facilitates guaranteed message processing using PHPQueue's AtomicReadBuffer
+ * interface. Exceptions in the processing callback will cause the message to
+ * be sent to a damaged message datastore.
  */
 class QueueConsumer {
 
@@ -21,12 +20,17 @@ class QueueConsumer {
 	 */
 	protected $backend;
 
+	protected $queueName;
+
 	/**
 	 * @var callable
 	 */
 	protected $callback;
 
-	protected $damagedQueue;
+	/**
+	 * @var DamagedDatabase
+	 */
+	protected $damagedDb;
 
 	protected $timeLimit = 0;
 
@@ -36,23 +40,17 @@ class QueueConsumer {
 	 * Gets a fresh QueueConsumer
 	 *
 	 * @param string $queueName key of queue configured in data-store, must
-	 *                          implement @see PHPQueue\Interfaces\AtomicReadBuffer
+	 *  implement @see PHPQueue\Interfaces\AtomicReadBuffer.
 	 * @param callable $callback processing function taking message array
 	 * @param int $timeLimit max number of seconds to loop, 0 for no limit
 	 * @param int $messageLimit max number of messages to process, 0 for all
-	 * @param string $damagedQueue if provided, exceptions in the processing
-	 *                             callback will cause the message to be sent
-	 *                             to this queue instead of halting the dequeue
-	 *                             loop. Must support push()
-	 *
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
 	public function __construct(
 		$queueName,
 		$callback,
 		$timeLimit = 0,
-		$messageLimit = 0,
-		$damagedQueue = null
+		$messageLimit = 0
 	) {
 		if ( !is_numeric( $timeLimit ) ) {
 			throw new InvalidArgumentException( 'timeLimit must be numeric' );
@@ -64,6 +62,7 @@ class QueueConsumer {
 			throw new InvalidArgumentException( "Processing callback must be callable" );
 		}
 
+		$this->queueName = $queueName;
 		$this->callback = $callback;
 		$this->timeLimit = intval( $timeLimit );
 		$this->messageLimit = intval( $messageLimit );
@@ -71,41 +70,24 @@ class QueueConsumer {
 		$this->backend = self::getQueue( $queueName );
 
 		if ( !$this->backend instanceof AtomicReadBuffer ) {
-			throw new InvalidArgumentException( "Queue $queueName is not an AtomicReadBuffer" );
+			throw new InvalidArgumentException(
+				"Queue $queueName is not an AtomicReadBuffer"
+			);
 		}
 
-		if ( $damagedQueue ) {
-			$this->damagedQueue = self::getQueue( $damagedQueue );
-
-			if (
-				!$this->damagedQueue instanceof FifoQueueStore &&
-				// FIXME: IndexedFifoQueueStore is deprecated
-				!$this->damagedQueue instanceof IndexedFifoQueueStore
-			) {
-				throw new InvalidArgumentException(
-					"Queue $damagedQueue does not support push"
-				);
-			}
-		}
+		$this->damagedDb = DamagedDatabase::get();
 	}
 
 	/**
 	 * Dequeue and process messages until time limit or message limit is
-	 * reached, or till queue is empty. Using an @see AtomicReadBuffer
-	 * implementation for the backend means that if the processing function
-	 * throws an exception, the message will remain on the queue.
+	 * reached, or till queue is empty.
 	 *
 	 * @return int number of messages processed
 	 */
 	public function dequeueMessages() {
 		$startTime = time();
 		$processed = 0;
-		// FIXME: Use a single code path
-		if ( $this->damagedQueue ) {
-			$realCallback = array( $this, 'wrappedCallback' );
-		} else {
-			$realCallback = $this->callback;
-		}
+		$realCallback = array( $this, 'processMessage' );
 		do {
 			$data = $this->backend->popAtomic( $realCallback );
 			if ( $data !== null ) {
@@ -118,17 +100,32 @@ class QueueConsumer {
 		return $processed;
 	}
 
-	public function wrappedCallback( $message ) {
+	public function processMessage( $message ) {
 		try {
 			call_user_func( $this->callback, $message );
 		} catch ( Exception $ex ) {
-			Logger::error(
-				'Error processing message, moving to damaged queue.',
-				$message,
-				$ex
-			);
-			$this->damagedQueue->push( $message );
+			$this->handleError( $message, $ex );
 		}
+	}
+
+	/**
+	 * Using an AtomicReadBuffer implementation for the backend means that
+	 * if this throws an exception, the message will remain on the queue.
+	 *
+	 * @param array $message
+	 * @param Exception $ex
+	 */
+	protected function handleError( $message, Exception $ex ) {
+		Logger::error(
+			'Error processing message, moving to damaged queue.',
+			$message,
+			$ex
+		);
+		$this->damagedDb->storeMessage(
+			$message,
+			$this->queueName,
+			$ex->getMessage() . "\n" . $ex->getTraceAsString()
+		);
 	}
 
 	public static function getQueue( $queueName ) {
