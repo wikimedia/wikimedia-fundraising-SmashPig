@@ -4,3 +4,8 @@ default:
             class: PDO
             inst-args:
                 - 'sqlite::memory:'
+
+        damaged-db:
+            class: PDO
+            inst-args:
+                - 'sqlite::memory:'

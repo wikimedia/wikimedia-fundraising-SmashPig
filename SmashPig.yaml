@@ -53,6 +53,11 @@ default:
             inst-args:
                 - 'mysql:host=127.0.0.1;dbname=pending'
 
+        damaged-db:
+            class: PDO
+            inst-args:
+                - 'mysql:host=127.0.0.1;dbname=pending'
+
         refund:
             class: SmashPig\Core\DataStores\MultiQueueWriter
             inst-args:
