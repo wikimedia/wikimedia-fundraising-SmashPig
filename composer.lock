@@ -44,7 +44,7 @@
                 "payment",
                 "payments"
             ],
-            "time": "2016-02-17 00:53:20"
+            "time": "2016-02-17 00:44:20"
         },
         {
             "name": "clio/clio",
@@ -93,7 +93,7 @@
             "source": {
                 "type": "git",
                 "url": "https://gerrit.wikimedia.org/r/p/wikimedia/fundraising/php-queue.git",
-                "reference": "9517492e6be44fb7fc48e01e0ee45aeb785f28cc"
+                "reference": "72dd99b732e387e40ac24c3ec870503bc93f14ad"
             },
             "require": {
                 "clio/clio": "0.1.*",
@@ -149,7 +149,7 @@
                 "queue",
                 "transaction"
             ],
-            "time": "2016-07-15 17:35:10"
+            "time": "2016-08-04 21:36:21"
         },
         {
             "name": "fusesource/stomp-php",
@@ -198,6 +198,7 @@
                 "messaging",
                 "stomp"
             ],
+            "abandoned": "stomp-php/stomp-php",
             "time": "2013-02-23 17:34:44"
         },
         {
