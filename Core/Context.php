@@ -12,7 +12,7 @@ use SmashPig\Core\Logging\Logger;
 class Context {
 	/** @var Context Reference to the current global context */
 	protected static $instance;
-
+	protected static $loggerInitialized = false;
 	protected $contextId;
 	protected $sourceRevision = 'unknown';
 
@@ -23,6 +23,23 @@ class Context {
 		if ( !Context::$instance ) {
 			Context::$instance = new Context();
 			Context::$instance->setConfiguration( $config );
+		}
+	}
+
+	public static function initWithLogger(
+		Configuration $config,
+		$loggerPrefix = ''
+	) {
+		self::init( $config );
+		if ( !self::$loggerInitialized ) {
+			// FIXME: Terminate logger crap with extreme prejudice
+			Logger::init(
+				$config->val( 'logging/root-context' ),
+				$config->val( 'logging/log-level' ),
+				$config,
+				$loggerPrefix
+			);
+			self::$loggerInitialized = true;
 		}
 	}
 

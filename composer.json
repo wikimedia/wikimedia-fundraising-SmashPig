@@ -3,7 +3,7 @@
     "description": "The open source PHP flexible payments library and frontend/backend mediator.",
     "keywords": ["payments", "donations"],
     "homepage": "http://smashpig.org",
-    "license": "GPLv2",
+    "license": "GPL-2.0",
     "authors": [
         {
             "name": "Katie Horn",
@@ -24,17 +24,18 @@
     ],
     "require": {
         "coderkungfu/php-queue": "dev-master",
-        "fusesource/stomp-php": "2.*",
-        "php": ">=5.3.3",
-        "phpmailer/phpmailer": "5.2.6",
-        "symfony/event-dispatcher": ">=2.1,<2.4-dev",
-        "symfony/http-foundation": ">=2.1,<2.4-dev",
-        "symfony/yaml": "2.8.3",
+        "fusesource/stomp-php": "^2.1.1",
+        "php": "^5.3.3",
+        "phpmailer/phpmailer": "^5.2",
+        "predis/predis": "^1.1",
+        "symfony/event-dispatcher": "^2.1",
+        "symfony/http-foundation": "^2.1",
+        "symfony/yaml": "^2.8",
         "amzn/login-and-pay-with-amazon-sdk-php": "dev-master"
     },
 	"require-dev": {
-		"jakub-onderka/php-parallel-lint": "0.9",
-		"phpunit/phpunit": "4.8.*"
+		"jakub-onderka/php-parallel-lint": "^0.9",
+		"phpunit/phpunit": "^4.8"
 	},
 	"scripts": {
 		"test": [

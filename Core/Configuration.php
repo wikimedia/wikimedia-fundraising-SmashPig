@@ -57,8 +57,11 @@ class Configuration {
 		$searchPath = array(
 			__DIR__ . '/../SmashPig.yaml',
 			'/etc/fundraising/SmashPig.yaml',
-			$_SERVER['HOME'] . '/.fundraising/SmashPig.yaml',
 		);
+		if ( isset( $_SERVER['HOME'] ) ) {
+			// FIXME: But I don't understand why this key is missing during testing.
+			$searchPath[] =  $_SERVER['HOME'] . '/.fundraising/SmashPig.yaml';
+		}
 		if ( $overridePath ) {
 			$searchPath[] = $overridePath;
 		}
@@ -108,6 +111,18 @@ class Configuration {
 
 		$this->viewName = $view;
 		Configuration::setDefaultConfig( $this );
+	}
+
+	/**
+	 * Override configuration with an array of data
+	 *
+	 * This should only be used in tests--note that these overrides take
+	 * precedence over every configuration file.
+	 *
+	 * @param $data array
+	 */
+	public function override( $data ) {
+		static::treeMerge( $this->options, $data );
 	}
 
 	/**

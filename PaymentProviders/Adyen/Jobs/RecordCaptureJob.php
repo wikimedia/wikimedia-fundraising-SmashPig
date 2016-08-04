@@ -51,12 +51,11 @@ class RecordCaptureJob extends RunnableJob {
 
 			// Add the gateway transaction ID and send it to the completed queue
 			$queueMessage->gateway_txn_id = $this->originalReference;
-			$config->object( 'data-store/verified' )->addObject( $queueMessage );
+			$config->object( 'data-store/verified' )->push( $queueMessage );
 
 			// Remove it from the pending queue
-			$logger->debug( "Removing all references to donation in pending queue" );
+			$logger->debug( "Acking donor details message in pending queue" );
 			$pendingQueue->queueAckObject();
-			$pendingQueue->removeObjectsById( $this->correlationId );
 
 		} else {
 			$logger->error(

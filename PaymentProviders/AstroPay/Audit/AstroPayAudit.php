@@ -2,9 +2,9 @@
 
 use OutOfBoundsException;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\AstroPay\ReferenceData;
-use SmashPig\PaymentProviders\Worldpay\Audit\NormalizationException;
 
 class AstroPayAudit {
 
