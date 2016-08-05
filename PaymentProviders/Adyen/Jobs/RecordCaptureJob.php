@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
 use SmashPig\Core\Configuration;
+use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
@@ -20,6 +21,7 @@ class RecordCaptureJob extends RunnableJob {
 	protected $currency;
 	protected $amount;
 	protected $originalReference;
+	protected $merchantReference;
 
 	public static function factory( Capture $captureMessage ) {
 		$obj = new RecordCaptureJob();
@@ -29,6 +31,7 @@ class RecordCaptureJob extends RunnableJob {
 		$obj->currency = $captureMessage->currency;
 		$obj->amount = $captureMessage->amount;
 		$obj->originalReference = $captureMessage->originalReference;
+		$obj->merchantReference = $captureMessage->merchantReference;
 
 		return $obj;
 	}
@@ -46,6 +49,14 @@ class RecordCaptureJob extends RunnableJob {
 		$pendingQueue = $config->object( 'data-store/pending' );
 		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
 
+		$db = PendingDatabase::get();
+		$dbMessage = null;
+		if ( $db ) {
+			$logger->debug( 'Attempting to locate associated message in pending database.' );
+			$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
+			PendingDatabase::comparePending( $queueMessage, $dbMessage );
+		}
+
 		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
 			$logger->debug( 'A valid message was obtained from the pending queue' );
 
@@ -56,6 +67,9 @@ class RecordCaptureJob extends RunnableJob {
 			// Remove it from the pending queue
 			$logger->debug( "Acking donor details message in pending queue" );
 			$pendingQueue->queueAckObject();
+			if ( $dbMessage ) {
+				$db->deleteMessage( $dbMessage );
+			}
 
 		} else {
 			$logger->error(
