@@ -1,11 +1,12 @@
 <?php
-namespace SmashPig\Core\DataStores;
+namespace SmashPig\Core\QueueConsumers;
 
 use Exception;
 use InvalidArgumentException;
 use PHPQueue\Interfaces\AtomicReadBuffer;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\DataStores\DamagedDatabase;
 use SmashPig\Core\Logging\Logger;
 
 /**
@@ -13,7 +14,7 @@ use SmashPig\Core\Logging\Logger;
  * interface. Exceptions in the processing callback will cause the message to
  * be sent to a damaged message datastore.
  */
-class QueueConsumer {
+abstract class BaseQueueConsumer {
 
 	/**
 	 * @var AtomicReadBuffer
@@ -37,18 +38,24 @@ class QueueConsumer {
 	protected $messageLimit = 0;
 
 	/**
+	 * Do something with the message popped from the queue. Return value is
+	 * ignored, and exceptions will be caught and handled by handleError.
+	 *
+	 * @param array $message
+	 */
+	abstract function processMessage( $message );
+
+	/**
 	 * Gets a fresh QueueConsumer
 	 *
 	 * @param string $queueName key of queue configured in data-store, must
 	 *  implement @see PHPQueue\Interfaces\AtomicReadBuffer.
-	 * @param callable $callback processing function taking message array
 	 * @param int $timeLimit max number of seconds to loop, 0 for no limit
 	 * @param int $messageLimit max number of messages to process, 0 for all
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
 	public function __construct(
 		$queueName,
-		$callback,
 		$timeLimit = 0,
 		$messageLimit = 0
 	) {
@@ -58,12 +65,8 @@ class QueueConsumer {
 		if ( !is_numeric( $messageLimit ) ) {
 			throw new InvalidArgumentException( 'messageLimit must be numeric' );
 		}
-		if ( !is_callable( $callback ) ) {
-			throw new InvalidArgumentException( "Processing callback must be callable" );
-		}
 
 		$this->queueName = $queueName;
-		$this->callback = $callback;
 		$this->timeLimit = intval( $timeLimit );
 		$this->messageLimit = intval( $messageLimit );
 
@@ -87,7 +90,7 @@ class QueueConsumer {
 	public function dequeueMessages() {
 		$startTime = time();
 		$processed = 0;
-		$realCallback = array( $this, 'processMessage' );
+		$realCallback = array( $this, 'processMessageWithErrorHandling' );
 		do {
 			$data = $this->backend->popAtomic( $realCallback );
 			if ( $data !== null ) {
@@ -100,9 +103,15 @@ class QueueConsumer {
 		return $processed;
 	}
 
-	public function processMessage( $message ) {
+	/**
+	 * Call the concrete processMessage function and handle any errors that
+	 * may arise.
+	 *
+	 * @param array $message
+	 */
+	public function processMessageWithErrorHandling( $message ) {
 		try {
-			call_user_func( $this->callback, $message );
+			$this->processMessage( $message );
 		} catch ( Exception $ex ) {
 			$this->handleError( $message, $ex );
 		}
@@ -116,15 +125,28 @@ class QueueConsumer {
 	 * @param Exception $ex
 	 */
 	protected function handleError( $message, Exception $ex ) {
+		$this->sendToDamagedStore( $message, $ex );
+	}
+
+	/**
+	 * @param array $message The data
+	 * @param Exception $ex The problem
+	 * @param int| null $retryDate If provided, retry after this timestamp
+	 * @return int ID of message in damaged database
+	 */
+	protected function sendToDamagedStore(
+		$message, Exception $ex, $retryDate = null
+	) {
 		Logger::error(
-			'Error processing message, moving to damaged queue.',
+			'Error processing message, moving to damaged store.',
 			$message,
 			$ex
 		);
-		$this->damagedDb->storeMessage(
+		return $this->damagedDb->storeMessage(
 			$message,
 			$this->queueName,
-			$ex->getMessage() . "\n" . $ex->getTraceAsString()
+			$ex->getMessage() . "\n" . $ex->getTraceAsString(),
+			$retryDate
 		);
 	}
 

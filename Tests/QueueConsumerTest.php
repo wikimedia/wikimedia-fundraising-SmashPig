@@ -2,10 +2,11 @@
 
 namespace SmashPig\Tests;
 
+use Exception;
 use PDO;
 use PHPQueue\Interfaces\FifoQueueStore;
 use SmashPig\Core\DataStores\DamagedDatabase;
-use SmashPig\Core\DataStores\QueueConsumer;
+use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
 
 class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 
@@ -21,7 +22,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->setConfig( 'default', __DIR__ . '/data/config_queue.yaml' );
-		$this->queue = QueueConsumer::getQueue( 'test' );
+		$this->queue = BaseQueueConsumer::getQueue( 'test' );
 		$this->queue->createTable( 'test' );
 		$this->damaged = DamagedDatabase::get()->getDatabase();
 
@@ -33,18 +34,13 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testEmptyQueue() {
-		$noOp = function( $unused ) {};
-		$consumer = new QueueConsumer( 'test', $noOp );
+		$consumer = new TestingQueueConsumer( 'test' );
 		$count = $consumer->dequeueMessages();
 		$this->assertEquals( 0, $count, 'Should report 0 messages processed' );
 	}
 
 	public function testOneMessage() {
-		$processed = array();
-		$cb = function( $message ) use ( &$processed ) {
-			$processed[] = $message;
-		};
-		$consumer = new QueueConsumer( 'test', $cb );
+		$consumer = new TestingQueueConsumer( 'test' );
 		$payload = array(
 			'wednesday' => 'addams',
 			'spookiness' => mt_rand(),
@@ -52,7 +48,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$this->queue->push( $payload );
 		$count = $consumer->dequeueMessages();
 		$this->assertEquals( 1, $count, 'Should report 1 message processed' );
-		$this->assertEquals( array( $payload ), $processed, 'Bad message' );
+		$this->assertEquals( array( $payload ), $consumer->processed, 'Bad message' );
 		$this->assertNull( $this->queue->pop(),
 			'Should delete message when processing is successful'
 		);
@@ -66,25 +62,23 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			'cousin' => 'itt',
 			'kookiness' => mt_rand(),
 		);
-		$self = $this;
-		$ran = false;
-		$cb = function( $message ) use ( &$ran, $payload, $self ) {
-			$self->assertEquals( $message, $payload );
-			$ran = true;
-			throw new \Exception( 'kaboom!' );
-		};
 
-		$consumer = new QueueConsumer( 'test', $cb, 0, 0 );
+		$consumer = new TestingQueueConsumer( 'test' );
+		$consumer->exception = new Exception( 'kaboom!' );
 
 		$this->queue->push( $payload );
 		try {
 			$consumer->dequeueMessages();
-		} catch ( \Exception $ex ) {
+		} catch ( Exception $ex ) {
 			$this->fail(
 				'Exception should not have bubbled up: ' . $ex->getMessage()
 			);
 		}
-		$this->assertTrue( $ran, 'Callback was not called' );
+		$this->assertEquals(
+			array( $payload ),
+			$consumer->processed,
+			'Processing snafu'
+		);
 
 		$damaged = $this->getDamagedQueueMessage( $payload );
 		$this->assertEquals(
@@ -111,23 +105,29 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			$messages[] = $message;
 			$this->queue->push( $message );
 		}
-		$processedMessages = array();
-		$callback = function( $message ) use ( &$processedMessages ) {
-			$processedMessages[] = $message;
-		};
 		// Should work when you pass in the limits as strings.
-		$consumer = new QueueConsumer( 'test', $callback, 0, '3' );
+		$consumer = new TestingQueueConsumer( 'test', 0, '3' );
 		$count = $consumer->dequeueMessages();
-		$this->assertEquals( 3, $count, 'dequeueMessages returned wrong count' );
-		$this->assertEquals( 3, count( $processedMessages ), 'Called callback wrong number of times' );
+		$this->assertEquals(
+			3, $count, 'dequeueMessages returned wrong count'
+		);
+		$this->assertEquals(
+			3,
+			count( $consumer->processed ),
+			'Called callback wrong number of times'
+		);
 
 		for ( $i = 0; $i < 3; $i++ ) {
-			$this->assertEquals( $messages[$i], $processedMessages[$i], 'Message mutated' );
+			$this->assertEquals(
+				$messages[$i],
+				$consumer->processed[$i],
+				'Message mutated'
+			);
 		}
 		$this->assertEquals(
 			$messages[3],
 			$this->queue->pop(),
-			'Messed with too many messages'
+			'Dequeued too many messages'
 		);
 	}
 
@@ -144,26 +144,30 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			$messages[] = $message;
 			$this->queue->push( $message );
 		}
-		$processedMessages = array();
-		$cb = function( $message ) use ( &$processedMessages ) {
-			$processedMessages[] = $message;
-			throw new \Exception( 'kaboom!' );
-		};
 
-		$consumer = new QueueConsumer( 'test', $cb, 0, 3 );
+		$consumer = new TestingQueueConsumer( 'test', 0, 3 );
+		$consumer->exception = new Exception( 'Kaboom!' );
 		$count = 0;
 		try {
 			$count = $consumer->dequeueMessages();
-		} catch ( \Exception $ex ) {
+		} catch ( Exception $ex ) {
 			$this->fail(
 				'Exception should not have bubbled up: ' . $ex->getMessage()
 			);
 		}
-		$this->assertEquals( 3, $count, 'dequeueMessages returned wrong count' );
-		$this->assertEquals( 3, count( $processedMessages ), 'Called callback wrong number of times' );
+		$this->assertEquals(
+			3, $count, 'dequeueMessages returned wrong count'
+		);
+		$this->assertEquals(
+			3,
+			count( $consumer->processed ),
+			'Called callback wrong number of times'
+		);
 
 		for ( $i = 0; $i < 3; $i++ ) {
-			$this->assertEquals( $messages[$i], $processedMessages[$i], 'Message mutated' );
+			$this->assertEquals(
+				$messages[$i], $consumer->processed[$i], 'Message mutated'
+			);
 			$damaged = $this->getDamagedQueueMessage( $messages[$i] );
 			$this->assertEquals(
 				$messages[$i],

@@ -3,11 +3,9 @@ namespace SmashPig\Maintenance;
 
 require ( 'MaintenanceBase.php' );
 
-use \PDO;
-
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\PendingDatabase;
-use SmashPig\Core\DataStores\QueueConsumer;
+use SmashPig\Core\QueueConsumers\PendingQueueConsumer;
 
 $maintClass = '\SmashPig\Maintenance\ConsumePendingQueue';
 
@@ -32,12 +30,10 @@ class ConsumePendingQueue extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 */
 	public function execute() {
-		$this->pendingDatabase = PendingDatabase::get();
 
 		$basePath = 'maintenance/consume-pending/';
-		$consumer = new QueueConsumer(
+		$consumer = new PendingQueueConsumer(
 			$this->getOption( 'queue' ),
-			array( $this->pendingDatabase, 'storeMessage' ),
 			$this->getOptionOrConfig( 'time-limit', $basePath . 'time-limit' ),
 			$this->getOptionOrConfig( 'max-messages', $basePath . 'message-limit' )
 		);
