@@ -34,7 +34,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 	}
 
 	protected static function getTestMessage( $uniq = null ) {
-		if ( !$uniq ) { 
+		if ( !$uniq ) {
 			$uniq = mt_rand();
 		}
 		return array(
@@ -85,7 +85,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 		$message = self::getTestMessage();
 		$this->db->storeMessage( $message, 'test_queue', '', time() - 1 );
 
-		$fetched = $this->db->fetchRetryMessages();
+		$fetched = $this->db->fetchRetryMessages( 10 );
 
 		$this->assertNotNull( $fetched,
 			'No record retrieved by fetchRetryMessages.' );

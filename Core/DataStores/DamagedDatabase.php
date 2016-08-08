@@ -113,21 +113,21 @@ class DamagedDatabase {
 	/**
 	 * Return messages ready to be retried
 	 *
+	 * @param int $limit number of records to return
 	 * @return array|null Records with retry_date prior to now
 	 */
-	public function fetchRetryMessages() {
+	public function fetchRetryMessages( $limit ) {
 		$prepared = self::$db->prepare( '
 			SELECT * FROM damaged
-			WHERE retry_date < :now'
+			WHERE retry_date < :now
+			ORDER BY retry_date ASC
+			LIMIT ' . $limit
 		);
 		$prepared->bindValue(
 			':now', UtcDate::getUtcDatabaseString(), PDO::PARAM_STR
 		);
 		$prepared->execute();
 		$rows = $prepared->fetchAll( PDO::FETCH_ASSOC );
-		if ( !$rows ) {
-			return null;
-		}
 		return array_map(
 			array( $this, 'messageFromDbRow' ),
 			$rows
