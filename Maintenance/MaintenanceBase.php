@@ -179,10 +179,11 @@ abstract class MaintenanceBase {
 	 *                              option is present in the command line
 	 *                              string.
 	 * @param string $alias 		Optional character to use as short name, used with -
+	 * @throws SmashPigException
 	 */
 	protected function addOption( $name, $description, $default = null, $alias = false ) {
 		if ( in_array( $name, $this->desiredOptions ) ) {
-			throw new \SmashPig\Core\SmashPigException( "Option '$name' already exists. Cannot add again." );
+			throw new SmashPigException( "Option '$name' already exists. Cannot add again." );
 		}
 		$this->desiredOptions[$name] = array(
 			'desc' => $description,
@@ -302,6 +303,7 @@ abstract class MaintenanceBase {
 	 * @param mixed	$default	Default value to return if argument does not exist.
 	 *
 	 * @return mixed
+	 * @throws SmashPigException
 	 */
 	protected function getArgument( $id, $default = null ) {
 		if ( is_string( $id ) ) {

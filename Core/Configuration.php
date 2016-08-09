@@ -198,9 +198,11 @@ class Configuration {
 	 *
 	 * @param string $node        Parameter node to obtain. If this contains '/' it is assumed that the
 	 *                            value is contained under additional keys.
-	 * @param bool   $returnRef   If true will return a reference to the configuration node. This will
+	 * @param bool $returnRef     If true will return a reference to the configuration node. This will
 	 *                            mean that any modifications to the node will be stored in RAM for the
 	 *                            duration of the session.
+	 * @return mixed
+	 * @throws ConfigurationKeyException
 	 */
 	public function &val( $node, $returnRef = false ) {
 		/*
@@ -260,7 +262,9 @@ class Configuration {
 	 * @param string $node       Parameter node to obtain. If this contains '/'
 	 *                           it is assumed that the value is contained
 	 *                           under additional keys.
-	 * @param bool   $persistent If true the object is saved for future calls.
+	 * @param bool $persistent   If true the object is saved for future calls.
+	 * @return mixed|object
+	 * @throws ConfigurationKeyException
 	 */
 	public function &object( $node, $persistent = true ) {
 		// First look and see if we already have a $persistent object.
@@ -291,7 +295,7 @@ class Configuration {
 	/**
 	 * Determine if a given configuration node exists in the loaded configuration.
 	 *
-	 * @param $node Node path; ie: logging/logstreams/syslog/class
+	 * @param string $node Node path; ie: logging/logstreams/syslog/class
 	 *
 	 * @return bool True if the node exists
 	 */
@@ -321,6 +325,7 @@ class Configuration {
 	 *
 	 * @param string $myRoot Internal recursion state: parent node path so far,
 	 * or empty string to begin.
+	 * @throws SmashPigException
 	 */
 	private static function treeMerge( &$base, $graft, $myRoot = '' ) {
 		foreach ( $graft as $graftNodeName => $graftNodeValue ) {
