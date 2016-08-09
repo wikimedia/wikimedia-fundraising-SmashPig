@@ -17,11 +17,9 @@ use Symfony\Component\HttpFoundation\ParameterBag;
  */
 class RequestHandler {
 	/**
-	 * @param null $configPath
-	 *
 	 * @return Response
 	 */
-	public static function process( $configPath = null ) {
+	public static function process() {
 		// Can go away once we require PHP 5.6
 		ini_set( 'default_charset', 'UTF-8' );
 

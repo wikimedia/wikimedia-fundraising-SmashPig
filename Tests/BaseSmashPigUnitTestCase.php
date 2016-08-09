@@ -3,7 +3,6 @@ namespace SmashPig\Tests;
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Configuration;
-use SmashPig\Core\Logging\Logger;
 
 use PHPUnit_Framework_TestCase;
 

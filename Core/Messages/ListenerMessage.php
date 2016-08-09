@@ -1,7 +1,6 @@
 <?php namespace SmashPig\Core\Messages;
 
 use SmashPig\Core\Actions\IListenerMessageAction;
-use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\Core\Logging\Logger;

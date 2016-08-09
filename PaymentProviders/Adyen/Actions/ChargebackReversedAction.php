@@ -4,7 +4,6 @@ use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\ChargebackReversed;
-use SmashPig\Core\Logging\Logger;
 
 /**
  * Action to fire when an iniated chargeback is canceled.

@@ -2,7 +2,7 @@
 
 namespace SmashPig\Tests;
 
-use \SmashPig\Core\Configuration;
+use SmashPig\Core\Configuration;
 
 class PendingDatabaseTestConfiguration extends Configuration {
 	public function __construct() {

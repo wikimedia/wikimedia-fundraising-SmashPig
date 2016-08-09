@@ -2,7 +2,7 @@
 namespace SmashPig\Core\DataStores;
 
 use PDO;
-use SmashPig\Core\Configuration;
+use RuntimeException;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;

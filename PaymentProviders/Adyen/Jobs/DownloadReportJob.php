@@ -1,7 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
 use SmashPig\Core\Context;
-use SmashPig\Core\DataFiles\HeadedCsvReader;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\Jobs\RunnableJob;
