@@ -20,12 +20,17 @@ class UtcDate {
 
 	/**
 	 * Format a UTC timestamp for database insertion
-	 * @param int $timestamp
+	 * @param int|null $timestamp, defaults to time()
 	 * @param string $format optional time format
 	 * @return string
 	 * @throws Exception
 	 */
-	public static function getUtcDatabaseString( $timestamp, $format = 'YmdHis') {
+	public static function getUtcDatabaseString(
+		$timestamp = null, $format = 'YmdHis'
+	) {
+		if ( $timestamp === null ) {
+			$timestamp = time();
+		}
 		$obj = new DateTime( '@' . $timestamp, new DateTimeZone( 'UTC' ) );
 		return $obj->format( $format );
 	}
