@@ -38,7 +38,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					'Queueing job to delete pending records.'
 				);
 				$jobQueueObj->addObject(
-					new DeletePendingJob(
+					DeletePendingJob::factory(
 						'adyen',
 						$msg->merchantReference,
 						$msg->correlationId

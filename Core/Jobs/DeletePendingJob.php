@@ -10,18 +10,23 @@ use SmashPig\Core\Logging\Logger;
  */
 class DeletePendingJob extends RunnableJob {
 
-	protected $orderId;
+	protected $order_id;
 	protected $gateway;
 
 	/**
 	 * @param string $gateway Gateway identifier
 	 * @param string $orderId Payment order ID
 	 * @param string $correlationId Message correlation ID (deprecated)
+	 * @return DeletePendingJob
 	 */
-	public function __construct( $gateway, $orderId, $correlationId ) {
-		$this->gateway = $gateway;
-		$this->orderId = $orderId;
-		$this->correlationId = $correlationId;
+	public static function factory( $gateway, $orderId, $correlationId ) {
+		$job = new DeletePendingJob();
+
+		$job->gateway = $gateway;
+		$job->order_id = $orderId;
+		$job->correlationId = $correlationId;
+
+		return $job;
 	}
 
 	public function execute() {
@@ -34,12 +39,12 @@ class DeletePendingJob extends RunnableJob {
 
 		$logger->info(
 			"Deleting message from pending db where gateway = '{$this->gateway}' " .
-			"and order ID='{$this->orderId}'"
+			"and order ID='{$this->order_id}'"
 		);
 		$db = PendingDatabase::get();
 		if ( $db ) {
 			$dbMessage = $db->fetchMessageByGatewayOrderId(
-				$this->gateway, $this->orderId
+				$this->gateway, $this->order_id
 			);
 			if ( $dbMessage ) {
 				$db->deleteMessage( $dbMessage );
