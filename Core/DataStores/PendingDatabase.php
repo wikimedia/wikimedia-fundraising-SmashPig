@@ -229,6 +229,14 @@ class PendingDatabase {
 
 		if ( $queueMessage && $dbMessage ) {
 			$queueData = json_decode( $queueMessage->toJson(), true );
+			unset( $queueData['correlationId'] );
+			unset( $queueData['propertiesExportedAsKeys'] );
+			unset( $queueData['propertiesExcludedFromExport'] );
+			foreach ( array_keys( $queueData ) as $key ) {
+				if ( $queueData[$key] === '' && !isset( $dbMessage[$key] ) ) {
+					unset ( $queueData[$key] );
+				}
+			}
 			$differences = array_diff_assoc( $queueData, $dbMessage );
 			if ( $differences ) {
 				$logger->notice(
