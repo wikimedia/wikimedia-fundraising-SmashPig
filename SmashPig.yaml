@@ -326,7 +326,7 @@ amazon:
 
 astropay:
     actions:
-        - SmashPig\PaymentProviders\AstroPay\Actions\IncomingMessage
+        - SmashPig\Core\Actions\IncomingMessage
 
     endpoints:
         listener:
@@ -350,7 +350,7 @@ paypal:
 
 globalcollect:
     actions:
-        - SmashPig\PaymentProviders\GlobalCollect\Actions\IncomingMessage
+        - SmashPig\Core\Actions\IncomingMessage
 
     endpoints:
         listener:
