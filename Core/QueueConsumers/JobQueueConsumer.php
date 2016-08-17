@@ -23,6 +23,9 @@ class JobQueueConsumer extends BaseQueueConsumer {
 		}
 
 		// TODO: encapsulate the reconstitution step elsewhere.
+		// FIXME It seems bad that these objects indiscriminately store
+		// things as properties. The message is mingled with stuff like
+		// php-message-class. Could collide.
 		$className = $jobMessage['php-message-class'];
 		$jsonMessage = json_encode( $jobMessage );
 		$jobObj = KeyedOpaqueStorableObject::fromJsonProxy( $className, $jsonMessage );

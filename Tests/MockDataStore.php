@@ -31,6 +31,7 @@ class MockDataStore extends KeyedOpaqueDataStore {
 	 */
 	public function addObject( KeyedOpaqueStorableObject $obj ) {
 		$keys = $obj->getObjectKeys();
+		// FIXME magic string is magic
 		if ( !array_key_exists( 'correlationId', $keys ) ) {
 			throw new DataStoreException(
 				"Required property correlationId was not exposed."
