@@ -44,12 +44,12 @@ default:
         pending-db:
             class: PDO
             inst-args:
-                - 'mysql:host=127.0.0.1;dbname=pending'
+                - 'mysql:host=127.0.0.1;dbname=smashpig'
 
         damaged-db:
             class: PDO
             inst-args:
-                - 'mysql:host=127.0.0.1;dbname=pending'
+                - 'mysql:host=127.0.0.1;dbname=smashpig'
 
         refund:
             class: SmashPig\Core\DataStores\MultiQueueWriter

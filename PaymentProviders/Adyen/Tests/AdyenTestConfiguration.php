@@ -25,12 +25,7 @@ class AdyenTestConfiguration extends Configuration {
 		);
 		$config->override( $override );
 
-		// Create sqlite schema
-		$sql = file_get_contents( __DIR__ . '/../../../Schema/sqlite/001_CreatePendingTable.sqlite.sql' );
-		$db = PendingDatabase::get();
-		if ( $db ) {
-			$db->getDatabase()->exec( $sql );
-		}
+		PendingDatabase::get()->createTable();
 
 		return $config;
 	}

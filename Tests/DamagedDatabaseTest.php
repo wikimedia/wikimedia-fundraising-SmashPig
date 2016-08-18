@@ -15,12 +15,10 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		Context::initWithLogger( new PendingDatabaseTestConfiguration() );
+		$config = new SmashPigDatabaseTestConfiguration();
+		Context::initWithLogger( $config );
 		$this->db = DamagedDatabase::get();
-
-		// Create sqlite schema
-		$sql = file_get_contents( __DIR__ . '/../Schema/sqlite/002_CreateDamagedTable.sqlite.sql' );
-		$this->db->getDatabase()->exec( $sql );
+		$this->db->createTable();
 	}
 
 	public function tearDown() {

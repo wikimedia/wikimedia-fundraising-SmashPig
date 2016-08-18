@@ -2,39 +2,13 @@
 namespace SmashPig\Core\DataStores;
 
 use PDO;
-use SmashPig\Core\Context;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
 
 /**
  * Data store containing messages which were not successfully processed
  */
-class DamagedDatabase {
-
-	/**
-	 * @var PDO
-	 * We do the silly singleton thing for convenient testing with in-memory
-	 * databases that would otherwise not be shared between components.
-	 */
-	protected static $db;
-
-	protected function __construct() {
-		if ( !self::$db ) {
-			$config = Context::get()->getConfiguration();
-			self::$db = $config->object( 'data-store/damaged-db' );
-		}
-	}
-
-	/**
-	 * @return PDO
-	 */
-	public function getDatabase() {
-		return self::$db;
-	}
-
-	public static function get() {
-		return new DamagedDatabase();
-	}
+class DamagedDatabase extends SmashPigDatabase {
 
 	protected function validateMessage( $message ) {
 		if (
@@ -57,7 +31,10 @@ class DamagedDatabase {
 	 * @throws SmashPigException if insert fails
 	 */
 	public function storeMessage(
-		$message, $originalQueue, $error = '', $retryDate = null
+		$message,
+		$originalQueue,
+		$error = '',
+		$retryDate = null
 	) {
 		$this->validateMessage( $message );
 
@@ -95,6 +72,7 @@ class DamagedDatabase {
 
 		$insert = "INSERT INTO damaged ( $fieldList )
 			VALUES ( $paramList );";
+
 		$prepared = self::$db->prepare( $insert );
 
 		foreach ( $dbRecord as $field => $value ) {
@@ -117,14 +95,17 @@ class DamagedDatabase {
 	 * @return array|null Records with retry_date prior to now
 	 */
 	public function fetchRetryMessages( $limit ) {
-		$prepared = self::$db->prepare( '
+		$prepared = self::$db->prepare(
+			'
 			SELECT * FROM damaged
 			WHERE retry_date < :now
 			ORDER BY retry_date ASC
 			LIMIT ' . $limit
 		);
 		$prepared->bindValue(
-			':now', UtcDate::getUtcDatabaseString(), PDO::PARAM_STR
+			':now',
+			UtcDate::getUtcDatabaseString(),
+			PDO::PARAM_STR
 		);
 		$prepared->execute();
 		$rows = $prepared->fetchAll( PDO::FETCH_ASSOC );
@@ -140,7 +121,8 @@ class DamagedDatabase {
 	 * @param array $message
 	 */
 	public function deleteMessage( $message ) {
-		$prepared = self::$db->prepare( '
+		$prepared = self::$db->prepare(
+			'
 			DELETE FROM damaged
 			WHERE id = :id'
 		);
@@ -181,5 +163,13 @@ class DamagedDatabase {
 		$message['damaged_id'] = $row['id'];
 		$message['original_queue'] = $row['original_queue'];
 		return $message;
+	}
+
+	protected function getConfigKey() {
+		return 'data-store/damaged-db';
+	}
+
+	protected function getTableScriptFile() {
+		return '002_CreateDamagedTable.sql';
 	}
 }

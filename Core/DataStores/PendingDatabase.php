@@ -3,7 +3,6 @@ namespace SmashPig\Core\DataStores;
 
 use PDO;
 use RuntimeException;
-use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
@@ -12,37 +11,7 @@ use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 /**
  * Data store containing messages waiting to be finalized.
  */
-class PendingDatabase {
-
-	/**
-	 * @var PDO
-	 * We do the silly singleton thing for convenient testing with in-memory
-	 * databases that would otherwise not be shared between components.
-	 */
-	protected static $db;
-
-	protected function __construct() {
-		$config = Context::get()->getConfiguration();
-		if ( !self::$db ) {
-			self::$db = $config->object( 'data-store/pending-db' );
-		}
-	}
-
-	/**
-	 * @return PDO
-	 */
-	public function getDatabase() {
-		return self::$db;
-	}
-
-	public static function get() {
-		$config = Context::get()->getConfiguration();
-		if ( $config->nodeExists( 'data-store/pending-db' ) ) {
-			// TODO: remove after transition to new pending queue
-			return new PendingDatabase();
-		}
-		return null;
-	}
+class PendingDatabase extends SmashPigDatabase {
 
 	protected function validateMessage( $message ) {
 		if (
@@ -287,5 +256,13 @@ class PendingDatabase {
 			implode( ',', $sets ) .
 			' WHERE id = :id';
 		return $update;
+	}
+
+	protected function getConfigKey() {
+		return 'data-store/pending-db';
+	}
+
+	protected function getTableScriptFile() {
+		return '001_CreatePendingTable.sql';
 	}
 }
