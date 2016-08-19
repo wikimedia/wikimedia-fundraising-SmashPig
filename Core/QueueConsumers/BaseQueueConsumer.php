@@ -145,7 +145,8 @@ abstract class BaseQueueConsumer {
 		return $this->damagedDb->storeMessage(
 			$message,
 			$this->queueName,
-			$ex->getMessage() . "\n" . $ex->getTraceAsString(),
+			$ex->getMessage(),
+			$ex->getTraceAsString(),
 			$retryDate
 		);
 	}

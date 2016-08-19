@@ -8,6 +8,7 @@ CREATE TABLE damaged (
   `order_id` varchar(255) NULL,
   `gateway_txn_id` varchar(255) NULL,
   `error` text NULL,
+  `trace` text NULL,
   `message` text NOT NULL,
   INDEX `idx_damaged_original_date` (`original_date`),
   INDEX `idx_damaged_original_date_original_queue` (`original_date`, `original_queue`),

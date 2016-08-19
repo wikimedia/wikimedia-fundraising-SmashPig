@@ -25,6 +25,7 @@ class DamagedDatabase extends SmashPigDatabase {
 	 * @param array $message Unprocessable message
 	 * @param string $originalQueue Queue the message was first sent to
 	 * @param string $error Information about why this message is damaged
+	 * @param string $trace Full stack trace
 	 * @param int|null $retryDate When provided, re-process message after
 	 *  this timestamp
 	 * @return int ID of message in damaged database
@@ -34,6 +35,7 @@ class DamagedDatabase extends SmashPigDatabase {
 		$message,
 		$originalQueue,
 		$error = '',
+		$trace = '',
 		$retryDate = null
 	) {
 		$this->validateMessage( $message );
@@ -45,6 +47,7 @@ class DamagedDatabase extends SmashPigDatabase {
 			'damaged_date' => UtcDate::getUtcDatabaseString(),
 			'original_queue' => $originalQueue,
 			'error' => $error,
+			'trace' => $trace,
 			'message' => json_encode( $message ),
 		);
 		if ( $retryDate ) {

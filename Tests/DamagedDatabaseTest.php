@@ -50,7 +50,9 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 		$message = self::getTestMessage();
 		$queue = 'test_queue';
 		$err = 'ERROR MESSAGE';
-		$this->db->storeMessage( $message, $queue, $err );
+		$trace = "Foo.php line 25\nBar.php line 99";
+
+		$this->db->storeMessage( $message, $queue, $err, $trace );
 
 		// Confirm work without using the API.
 		$pdo = $this->db->getDatabase();
@@ -72,6 +74,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 			'message' => json_encode( $message ),
 			'original_queue' => $queue,
 			'error' => $err,
+			'trace' => $trace,
 			'retry_date' => null,
 		);
 		unset( $rows[0]['damaged_date'] );
@@ -81,7 +84,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 
 	public function testFetchRetryMessages() {
 		$message = self::getTestMessage();
-		$this->db->storeMessage( $message, 'test_queue', '', time() - 1 );
+		$this->db->storeMessage( $message, 'test_queue', '', '', time() - 1 );
 
 		$fetched = $this->db->fetchRetryMessages( 10 );
 
