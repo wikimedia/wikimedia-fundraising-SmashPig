@@ -4,7 +4,7 @@ CREATE TABLE damaged (
   `damaged_date` datetime NOT NULL,
   `retry_date` datetime NULL,
   `original_queue` varchar(255) NOT NULL,
-  `gateway` varchar(255) NOT NULL,
+  `gateway` varchar(255) NULL,
   `order_id` varchar(255) NULL,
   `gateway_txn_id` varchar(255) NULL,
   `error` text NULL,

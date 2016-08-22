@@ -10,15 +10,6 @@ use SmashPig\Core\UtcDate;
  */
 class DamagedDatabase extends SmashPigDatabase {
 
-	protected function validateMessage( $message ) {
-		if (
-			empty( $message['date'] ) ||
-			empty( $message['gateway'] )
-		) {
-			throw new SmashPigException( 'Message missing required fields' );
-		}
-	}
-
 	/**
 	 * Build and insert a database record from a queue message
 	 *
@@ -38,12 +29,12 @@ class DamagedDatabase extends SmashPigDatabase {
 		$trace = '',
 		$retryDate = null
 	) {
-		$this->validateMessage( $message );
+		$originalDate = empty( $message['date'] )
+			? UtcDate::getUtcDatabaseString()
+			: UtcDate::getUtcDatabaseString( $message['date'] );
 
 		$dbRecord = array(
-			'original_date' => UtcDate::getUtcDatabaseString(
-				$message['date']
-			),
+			'original_date' => $originalDate,
 			'damaged_date' => UtcDate::getUtcDatabaseString(),
 			'original_queue' => $originalQueue,
 			'error' => $error,
