@@ -89,7 +89,7 @@ class Configuration {
 			$this->options = array();
 			foreach ( $configs as $config ) {
 				if ( isset( $config['default'] ) ) {
-					static::treeMerge( $this->options, $config['default'] );
+					$this->override( $config['default'] );
 				}
 			}
 
@@ -98,7 +98,7 @@ class Configuration {
 			if ( $view && $view !== 'default' ) {
 				foreach ( $configs as $config ) {
 					if ( isset( $config[$view] ) ) {
-						static::treeMerge( $this->options, $config[$view] );
+						$this->override( $config[$view] );
 					}
 				}
 			}
@@ -116,8 +116,9 @@ class Configuration {
 	/**
 	 * Override configuration with an array of data
 	 *
-	 * This should only be used in tests--note that these overrides take
-	 * precedence over every configuration file.
+	 * Note that these overrides take precedence over every configuration file,
+	 * so any usage outside of this class or tests will be subverting the
+	 * expected cascading priority.
 	 *
 	 * @param $data array
 	 */
