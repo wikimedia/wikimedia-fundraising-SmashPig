@@ -6,8 +6,8 @@ use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
 
 abstract class RestListener extends ListenerBase {
-	public function execute( Request $request, Response $response, $pathParts ) {
-		parent::execute( $request, $response, $pathParts );
+	public function execute( Request $request, Response $response ) {
+		parent::execute( $request, $response );
 
 		Logger::info( "Starting processing of listener request from {$this->request->getClientIp()}" );
 

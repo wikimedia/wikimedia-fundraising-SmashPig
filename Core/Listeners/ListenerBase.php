@@ -28,7 +28,7 @@ abstract class ListenerBase implements IHttpActionHandler {
 		$this->inflightStore = $this->c->object( 'data-store/inflight' );
 	}
 
-	public function execute( Request $request, Response $response, $pathParts ) {
+	public function execute( Request $request, Response $response ) {
 		$this->request = $request;
 		$this->response = $response;
 	}
