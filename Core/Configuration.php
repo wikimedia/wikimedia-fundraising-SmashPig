@@ -4,7 +4,7 @@ namespace SmashPig\Core;
 use Symfony\Component\Yaml\Parser;
 
 /**
- * Represents actions onto a configuration view.
+ * Cascading configuration using YAML files
  */
 class Configuration {
 
@@ -28,7 +28,7 @@ class Configuration {
 	 *
 	 * @return Configuration
 	 */
-	public static function &getDefaultConfig() {
+	public static function getDefaultConfig() {
 		return Configuration::$defaultObj;
 	}
 
@@ -37,80 +37,122 @@ class Configuration {
 	 *
 	 * @param Configuration $obj
 	 */
-	protected static function setDefaultConfig( Configuration &$obj ) {
+	protected static function setDefaultConfig( Configuration $obj ) {
 		Configuration::$defaultObj = $obj;
 	}
 
 	/**
 	 * Creates a configuration object for a specific configuration node.
 	 *
+	 * TODO: deprecate use of the direct constructor, in favor of
+	 * loadDefaultConfig on your project's subclass of Configuration.
+
 	 * @param string $view          Configuration view to load
-	 * @param string $overridePath  Extra configuration path to search
+	 * @param string|null $overridePath  Extra configuration path to search
 	 */
 	public function __construct( $view = 'default', $overridePath = null ) {
-		// Check to make sure APC is installed :) Yay caching for expensive operations!
-		$useApc = false;
-		if ( extension_loaded( 'apc' ) ) {
-			$useApc = true;
-		}
-
-		$searchPath = array(
-			__DIR__ . '/../SmashPig.yaml',
-			'/etc/fundraising/SmashPig.yaml',
-		);
-		if ( isset( $_SERVER['HOME'] ) ) {
-			// FIXME: But I don't understand why this key is missing during testing.
-			$searchPath[] =  $_SERVER['HOME'] . '/.fundraising/SmashPig.yaml';
-		}
-		if ( $overridePath ) {
-			$searchPath[] = $overridePath;
-		}
-
-		if ( $useApc && $this->loadConfigFromCache( $searchPath, $view ) ) {
-			// Config file loaded, nothing else to do
-		} else {
-			// Attempt to load the configuration files from disk
-			$configs = array();
-			$yaml = new Parser();
-			foreach ( $searchPath as $path ) {
-				if ( file_exists( $path ) ) {
-					$config = $yaml->parse( file_get_contents( $path ) );
-					if ( !is_array( $config ) ) {
-						throw new \RuntimeException( "Bad config file format: '$path'" );
-					}
-					$configs[] = $config;
-				}
-			}
-
-			// Pull in all default sections first, using the following precedence:
-			// 1. ~/.fundraising/SmashPig.yaml
-			// 2. /etc/fundraising/SmashPig.yaml
-			// 3. <source dir>/SmashPig.yaml
-			$this->options = array();
-			foreach ( $configs as $config ) {
-				if ( isset( $config['default'] ) ) {
-					$this->override( $config['default'] );
-				}
-			}
-
-			// Now, go through in the same order and let all $view sections override
-			// defaults.
-			if ( $view && $view !== 'default' ) {
-				foreach ( $configs as $config ) {
-					if ( isset( $config[$view] ) ) {
-						$this->override( $config[$view] );
-					}
-				}
-			}
-
-			// Store the configuration to cache if possible
-			if ( $useApc ) {
-				$this->saveConfigToCache( $searchPath, $view );
-			}
-		}
-
+		// FIXME: There's still something fishy about view.  Can we replace
+		// this with a search path of higher-priority files?
 		$this->viewName = $view;
 		Configuration::setDefaultConfig( $this );
+
+		if ( !$overridePath ) {
+			$this->loadDefaultConfig();
+		} else {
+			$this->loadConfigFromPaths( array_merge(
+				( array ) $overridePath,
+				$this->getDefaultSearchPath()
+			) );
+		}
+	}
+
+	public function loadDefaultConfig() {
+		$this->loadConfigFromPaths( $this->getDefaultSearchPath() );
+	}
+
+	public function getDefaultSearchPath() {
+		$searchPath = array();
+		if ( isset( $_SERVER['HOME'] ) ) {
+			// FIXME: But I don't understand why this key is missing during testing.
+			$searchPath[] =  "{$_SERVER['HOME']}/.fundraising/SmashPig.yaml";
+		}
+		$searchPath[] = '/etc/fundraising/SmashPig.d/*.yaml';
+		$searchPath[] = '/etc/fundraising/SmashPig.yaml';
+		$searchPath[] = __DIR__ . "/../SmashPig.yaml";
+		return $searchPath;
+	}
+
+	/**
+	 * Load a search path consisting of single files or globs
+	 *
+	 * Settings from files earlier in the list take precedence.  The funky
+	 * "view" override happens here in a second step, with view data from all
+	 * source files taking precedence over default data from all files.
+	 *
+	 * @param array $searchPath
+	 */
+	public function loadConfigFromPaths( $searchPath ) {
+		$paths = $this->expandSearchPathToActual( $searchPath );
+
+		if ( $this->loadConfigFromCache( $paths ) ) {
+			// Config file loaded, nothing else to do.
+			return;
+		}
+
+		// Reset to empty set.
+		$this->options = array();
+
+		// Attempt to load the configuration files from disk
+		$configs = array();
+		$yamlParser = new Parser();
+		foreach ( $paths as $path ) {
+			$config = $yamlParser->parse( file_get_contents( $path ) );
+			if ( !is_array( $config ) ) {
+				throw new \RuntimeException( "Bad config file format: '$path'" );
+			}
+			$configs[] = $config;
+		}
+
+		// Pull in all `default` sections first.
+		// FIXME: The reverse thing is silly, but it's much simpler to merge
+		// the sources up front than keep them distinct and search through them
+		// at runtime for the first matching key.
+		foreach ( array_reverse( $configs ) as $config ) {
+			if ( isset( $config['default'] ) ) {
+				$this->override( $config['default'] );
+			}
+		}
+
+		// Now, go through in the same order and let all $view sections override
+		// defaults.
+		if ( $this->viewName !== 'default' ) {
+			foreach ( array_reverse( $configs ) as $config ) {
+				if ( isset( $config[$this->viewName] ) ) {
+					$this->override( $config[$this->viewName] );
+				}
+			}
+		}
+
+		// Store the configuration to cache, if possible
+		$this->saveConfigToCache( $paths );
+	}
+
+	/**
+	 * Flatten and unglob the search path.
+	 *
+	 * @param array $searchPath File paths or globs
+	 * @return array Actual files discovered in the path.
+	 */
+	protected function expandSearchPathToActual( $searchPath ) {
+		$paths = array_reduce( $searchPath, function ( $carry, $pattern ) {
+			$matchingPaths = glob( $pattern );
+			if ( $matchingPaths === false ) {
+				throw new \RuntimeException( "Illegal glob while matching {$pattern}" );
+			}
+			return array_merge( $carry, $matchingPaths );
+		}, array() );
+
+		return $paths;
 	}
 
 	/**
@@ -130,32 +172,32 @@ class Configuration {
 	 * Loads a configuration file from the cache if it is still valid (ie: source files have not
 	 * changed)
 	 *
-	 * @param array  $searchPath    Paths we read from
-	 * @param string $view          The configuration view to load
+	 * TODO: Generalize to any caching backend.
+	 *
+	 * @param array  $paths    Paths we read from
 	 *
 	 * @return bool True if the config was loaded successfully.
 	 */
-	protected function loadConfigFromCache( $searchPath, $view ) {
-		$fileModifiedTimes = array();
-		foreach ( $searchPath as $path ) {
-			if ( file_exists( $path ) ) {
-				$fileModifiedTimes[] = filemtime( $path );
-			} else {
-				$fileModifiedTimes[] = 0;
-			}
+	protected function loadConfigFromCache( $paths ) {
+		if ( !$this->hasApc() ) {
+			return false;
 		}
 
-		// TODO: Cache the config for each installation's searchPath.
-		$cacheObj = apc_fetch( "smashpig-settings-{$view}", $success );
+		$fileModifiedTimes = array_map( function ( $path ) {
+			$fileModifiedTimes[] = filemtime( $path );
+		}, $paths );
+
+		// TODO: Cache the config for each installation's paths.
+		$cacheObj = apc_fetch( "smashpig-settings-{$this->viewName}", $success );
 
 		if ( !$success
 			|| empty( $cacheObj['configTimes'] )
-			|| empty( $cacheObj['searchPath'] )
+			|| empty( $cacheObj['paths'] )
 		) {
 			return false;
 		}
 
-		if ( implode( ':', $searchPath ) === $cacheObj['searchPath']
+		if ( implode( ':', $paths ) === $cacheObj['paths']
 			&& implode( ':', $fileModifiedTimes ) === $cacheObj['configTimes']
 		) {
 			// The cached values are valid
@@ -167,26 +209,33 @@ class Configuration {
 		return false;
 	}
 
+	protected function hasApc() {
+		static $useApc = null;
+		if ( $useApc === null ) {
+			$useApc = extension_loaded( 'apc' );
+		}
+		return $useApc;
+	}
+
 	/**
 	 * Saves the loaded configuration to the cache.
 	 *
-	 * @param array $searchPath Paths we read from
+	 * @param array $paths Paths we read from
 	 * @param string $node Node name that we're saving to cache
 	 */
-	protected function saveConfigToCache( $searchPath, $node ) {
-		$fileModifiedTimes = array();
-		foreach ( $searchPath as $path ) {
-			if ( file_exists( $path ) ) {
-				$fileModifiedTimes[] = filemtime( $path );
-			} else {
-				$fileModifiedTimes[] = 0;
-			}
+	protected function saveConfigToCache( $paths ) {
+		if ( !$this->hasApc() ) {
+			return;
 		}
 
+		$fileModifiedTimes = array_map( function ( $path ) {
+			$fileModifiedTimes[] = filemtime( $path );
+		}, $paths );
+
 		apc_store(
-			"smashpig-settings-{$node}",
+			"smashpig-settings-{$this->viewName}",
 			array(
-				 'searchPath' => implode( ':', $searchPath ),
+				 'paths' => implode( ':', $paths ),
 				 'configTimes' => implode( ':', $fileModifiedTimes ),
 				 'values' => $this->options,
 			)
