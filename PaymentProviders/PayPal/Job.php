@@ -14,27 +14,14 @@ class Job extends RunnableJob {
 
 		// Verify message with paypal.
 
-		$url = $this->config->val( 'endpoints/listener/postback-url' );
-
 		// XXX Why does everything get made into objects?
 		$request = (array)$this->payload;
 		$request['cmd'] = '_notify-validate';
 
-		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL,
-			$this->config->val( 'endpoints/listener/postback-url' ) );
-		curl_setopt( $ch, CURLOPT_HEADER, 0 );
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 0 );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt( $ch, CURLOPT_POST, 1 );
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $request );
-
-		$data = curl_exec( $ch );
-
-		// FIXME test server keeps returning INVALID
-		// if ( $data !== 'VERIFIED' ) {
-		// 	throw new \Exception( 'PayPal message verify fail: ' . $data );
-		// }
+		$valid = $this->config->object( 'api' )->validate( $request );
+		if ( ! $valid ) {
+			throw new \Exception( 'PayPal message verification failed' );
+		}
 
 		// Determine message type.
 

@@ -1,4 +1,7 @@
 paypal:
+    api:
+        class: SmashPig\PaymentProviders\PayPal\Tests\MockPayPalPaymentsAPI
+
     data-store:
         verified:
             class: PHPQueue\Backend\PDO

@@ -352,6 +352,9 @@ astropay:
     charset: iso-8859-1
 
 paypal:
+    api:
+        class: SmashPig\PaymentProviders\PayPal\PayPalPaymentsAPI
+
     endpoints:
         listener:
             class: SmashPig\PaymentProviders\PayPal\Listener
