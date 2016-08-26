@@ -22,7 +22,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		Context::initWithLogger( new QueueTestConfiguration() );
+		Context::initWithLogger( QueueTestConfiguration::instance() );
 		$this->queue = BaseQueueConsumer::getQueue( 'test' );
 		$this->queue->createTable( 'test' );
 		$damagedDb = DamagedDatabase::get();

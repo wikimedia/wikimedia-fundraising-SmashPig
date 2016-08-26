@@ -44,7 +44,7 @@ class RequestHandler {
 		$action = array_shift( $parts );
 
 		// --- Initialize core services ---
-		$config = new Configuration( $view );
+		$config = Configuration::createForView( $view );
 		Context::init( $config );
 		Logger::init(
 			$config->val( 'logging/root-context' ),

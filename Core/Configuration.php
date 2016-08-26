@@ -17,12 +17,17 @@ class Configuration {
 	/** @var array keyed on class name that stores persistent objects */
 	protected $objects = array();
 
-	/** @var string Name of the view that generated this configuration object */
+	/**
+	 * @var string Name of the view that generated this configuration object
+	 *
+	 * FIXME: There's still something fishy about view.
+	 */
 	protected $viewName = 'default';
 
 	/**
 	 * Obtains the current default configuration object. You should probably be
 	 * using a context call instead of this. See Context->getConfiguration()
+	 * FIXME: Resolve ambiguity, only provide one entry point.
 	 *
 	 * Typically the object created by index.php
 	 *
@@ -38,32 +43,54 @@ class Configuration {
 	 * @param Configuration $obj
 	 */
 	protected static function setDefaultConfig( Configuration $obj ) {
+		// TODO: And in fact, freak out if there's already a default config.
 		Configuration::$defaultObj = $obj;
 	}
 
 	/**
 	 * Creates a configuration object for a specific configuration node.
 	 *
-	 * TODO: deprecate use of the direct constructor, in favor of
-	 * loadDefaultConfig on your project's subclass of Configuration.
-
-	 * @param string $view          Configuration view to load
-	 * @param array|string|null $overridePath  Extra configuration path(s) to search
+	 * @param string $view Configuration view to load
+	 * FIXME: No reason to provide a default.
+	 *
+	 * @return Configuration or subclass
 	 */
-	public function __construct( $view = 'default', $overridePath = null ) {
-		// FIXME: There's still something fishy about view.  Can we replace
-		// this with a search path of higher-priority files?
-		$this->viewName = $view;
-		Configuration::setDefaultConfig( $this );
+	public static function createForView( $view = 'default' ) {
+		$config = new static();
+		$config->viewName = $view;
+		$config->loadDefaultConfig();
+
+		return $config;
+	}
+
+	/**
+	 * Creates a configuration object for a specific configuration node.
+	 *
+	 * FIXME: Don't provide defaults once usages are cleaned up.
+	 *
+	 * @param string $view Configuration view to load
+	 * @param array|string|null $overridePath  Extra configuration path(s) to search
+	 *
+	 * @return Configuration or subclass
+	 */
+	public static function createForViewWithOverrideFile( $view = 'default', $overridePath = null ) {
+		$config = new static();
+		$config->viewName = $view;
 
 		if ( !$overridePath ) {
-			$this->loadDefaultConfig();
+			$config->loadDefaultConfig();
 		} else {
-			$this->loadConfigFromPaths( array_merge(
+			$searchPath = array_merge(
 				( array ) $overridePath,
-				$this->getDefaultSearchPath()
-			) );
+				$config->getDefaultSearchPath()
+			);
+			$config->loadConfigFromPaths( $searchPath );
 		}
+		return $config;
+	}
+
+	protected function __construct() {
+		Configuration::setDefaultConfig( $this );
 	}
 
 	public function loadDefaultConfig() {

@@ -6,8 +6,8 @@ use SmashPig\Core\Configuration;
 
 class AmazonTestConfiguration extends Configuration{
 
-	public function __construct() {
-		return parent::__construct(
+	public static function instance() {
+		return self::createForViewWithOverrideFile(
 			'amazon',
 			__DIR__ . '/config_test.yaml'
 		);
