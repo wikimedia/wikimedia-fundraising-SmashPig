@@ -6,7 +6,6 @@ use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\CrmLink\Messages\DonationInterfaceAntifraud;
-use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 use SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 
@@ -32,7 +31,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	 */
 	protected $logger;
 	protected $propertiesExcludedFromExport = array( 'logger' );
-	// Actions to take after examining capture request and queue message
+	// Actions to take after examining capture request and pending db message
 	const ACTION_PROCESS = 'process'; // all clear to capture payment
 	const ACTION_REJECT = 'reject'; // very likely fraud - cancel the authorization
 	const ACTION_REVIEW = 'review'; // potential fraud or duplicate - do not capture now
@@ -61,30 +60,20 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			"and correlation id '{$this->correlationId}'."
 		);
 
-		// Determine if a message exists in the pending queue; if it does not then
+		// Determine if a message exists in the pending database; if it does not then
 		// this payment has already been sent to the verified queue, or there is a
-		// problem with the queue. If it does exist, we need to check
+		// problem with the database. If it does exist, we need to check
 		// $capture_requested in case we have requested a capture but have not yet
 		// received notification of capture success. Either case can occur when a
 		// donor submits their credit card details multiple times against a single
 		// order ID. We should cancel duplicate authorizations, but leave payments
 		// with missing donor details open for potential manual capture.
-		$this->logger->debug( 'Attempting to locate associated message in pending queue.' );
-		/**
-		 * @var \SmashPig\Core\DataStores\KeyedOpaqueDataStore
-		 */
-		$pendingQueue = Configuration::getDefaultConfig()->object( 'data-store/pending' );
-		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
+		$this->logger->debug( 'Attempting to locate associated message in pending database.' );
+		$db = PendingDatabase::get();
+		$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
 		$success = true;
 
-		$db = PendingDatabase::get();
-		$dbMessage = null;
-		if ( $db ) {
-			$this->logger->debug( 'Attempting to locate associated message in pending database.' );
-			$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
-			PendingDatabase::comparePending( $queueMessage, $dbMessage );
-		}
-		$action = $this->determineAction( $queueMessage );
+		$action = $this->determineAction( $dbMessage );
 		switch ( $action ) {
 			case self::ACTION_PROCESS:
 				// Attempt to capture the payment
@@ -102,49 +91,37 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					// Success!
 					$this->logger->info(
 						"Successfully captured payment! Returned reference: '{$captureResult}'. " .
-							'Marking pending queue message as captured.'
+							'Marking pending database message as captured.'
 					);
-					$pendingQueue->queueAckObject();
-					$queueMessage->captured = true;
-					$pendingQueue->addObject( $queueMessage );
-					if ( $dbMessage ) {
-						$dbMessage['captured'] = true;
-						$db->storeMessage( $dbMessage );
-					}
+
+					$dbMessage['captured'] = true;
+					$db->storeMessage( $dbMessage );
 				} else {
 					// Some kind of error in the request. We should keep the pending
 					// message, complain loudly, and move this capture job to the
 					// damaged queue.
 					$this->logger->error(
 						"Failed to capture payment on account '{$this->account}' with reference " .
-							"'{$this->pspReference}' and correlation id '{$this->correlationId}'.",
-						$queueMessage
+							"'{$this->pspReference}' and order id '{$this->merchantReference}'.",
+						$dbMessage
 					);
-					$pendingQueue->queueIgnoreObject();
 					$success = false;
 				}
 				break;
 			case self::ACTION_REJECT:
 				$this->cancelAuthorization();
 				// Delete the fraudy donor details
-				$pendingQueue->queueAckObject();
-				if ( $dbMessage ) {
-					$db->deleteMessage( $dbMessage );
-				}
+				$db->deleteMessage( $dbMessage );
 				break;
 			case self::ACTION_DUPLICATE:
 				// We have already captured one payment for this donation attempt, so
 				// cancel the duplicate authorization. If there is a pending message,
 				// leave it intact for the legitimate RecordCaptureJob.
 				$this->cancelAuthorization();
-				if ( $queueMessage ) {
-					$pendingQueue->queueIgnoreObject();
-				}
 				break;
 			case self::ACTION_REVIEW:
 				// Don't capture the payment right now, but leave the donor details in
-				// the pending queue in case the authorization is captured via the console.
-				$pendingQueue->queueIgnoreObject();
+				// the pending database in case the authorization is captured via the console.
 				break;
 			case self::ACTION_MISSING:
 				// Missing donor details - nothing to do but return failure
@@ -155,32 +132,32 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		return $success;
 	}
 
-	protected function determineAction( $queueMessage ) {
-		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
-			$this->logger->debug( 'A valid message was obtained from the pending queue.' );
+	protected function determineAction( $dbMessage ) {
+		if ( $dbMessage && isset( $dbMessage['order_id'] ) ) {
+			$this->logger->debug( 'A valid message was obtained from the pending database.' );
 		} else {
 			$errMessage =  "Could not find a processable message for " .
 				"PSP Reference '{$this->pspReference}' and ".
-				"correlation ID '{$this->correlationId}'.";
+				"order ID '{$this->merchantReference}'.";
 			$this->logger->warning(
 				$errMessage,
-				$queueMessage
+				$dbMessage
 			);
 			return self::ACTION_MISSING;
 		}
-		if ( $queueMessage->captured ) {
+		if ( !empty( $dbMessage['captured'] ) ) {
 			$this->logger->info(
-				"Duplicate PSP Reference '{$this->pspReference}' for correlation ID '{$this->correlationId}'.",
-				$queueMessage
+				"Duplicate PSP Reference '{$this->pspReference}' for order ID '{$this->merchantReference}'.",
+				$dbMessage
 			);
 			return self::ACTION_DUPLICATE;
 		}
-		return $this->getRiskAction( $queueMessage );
+		return $this->getRiskAction( $dbMessage );
 	}
 
-	protected function getRiskAction( DonationInterfaceMessage $queueMessage ) {
+	protected function getRiskAction( $dbMessage ) {
 		$config = Configuration::getDefaultConfig();
-		$riskScore = $queueMessage->risk_score ? $queueMessage->risk_score : 0;
+		$riskScore = isset( $dbMessage['risk_score'] ) ? $dbMessage['risk_score'] : 0;
 		$this->logger->debug( "Base risk score from payments site is $riskScore, " .
 			"raw CVV result is '{$this->cvvResult}' and raw AVS result is '{$this->avsResult}'." );
 		$cvvMap = $config->val( 'fraud-filters/cvv-map' );
@@ -207,13 +184,13 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		if ( $riskScore >= $config->val( 'fraud-filters/reject-threshold' ) ) {
 			$action = self::ACTION_REJECT;
 		}
-		$this->sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $action );
+		$this->sendAntifraudMessage( $dbMessage, $riskScore, $scoreBreakdown, $action );
 		return $action;
 	}
 
-	protected function sendAntifraudMessage( $queueMessage, $riskScore, $scoreBreakdown, $action ) {
+	protected function sendAntifraudMessage( $dbMessage, $riskScore, $scoreBreakdown, $action ) {
 		$antifraudMessage = DonationInterfaceAntifraud::factory(
-			$queueMessage, $this->merchantReference, $riskScore, $scoreBreakdown, $action
+			$dbMessage, $riskScore, $scoreBreakdown, $action
 		);
 		$this->logger->debug( "Sending antifraud message with risk score $riskScore and action $action." );
 		Configuration::getDefaultConfig()->object( 'data-store/antifraud' )->push( $antifraudMessage );
