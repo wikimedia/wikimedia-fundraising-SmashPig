@@ -3,6 +3,7 @@
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -16,11 +17,26 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * @var Configuration
 	 */
 	public $config;
+	/**
+	 * @var PendingDatabase
+	 */
+	protected $pendingDatabase;
+	protected $pendingMessage;
 
 	public function setUp() {
 		parent::setUp();
 		$this->config = AdyenTestConfiguration::get( true );
 		Context::initWithLogger( $this->config );
+		$this->pendingDatabase = PendingDatabase::get();
+		$this->pendingMessage = json_decode(
+			file_get_contents( __DIR__ . '/../Data/pending.json' ) , true
+		);
+		$this->pendingDatabase->storeMessage( $this->pendingMessage );
+	}
+
+	public function tearDown() {
+		$this->pendingDatabase->deleteMessage( $this->pendingMessage );
+		parent::tearDown();
 	}
 
 	/**
@@ -29,15 +45,8 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 */
 	public function testSuccessfulCapture() {
 		$antifraudQueue = $this->config->object( 'data-store/antifraud-stomp', true );
-		$pendingQueue = $this->config->object( 'data-store/pending', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
-		$pendingQueue->addObject(
-			KeyedOpaqueStorableObject::fromJsonProxy(
-				'SmashPig\CrmLink\Messages\DonationInterfaceMessage',
-				file_get_contents( __DIR__ . '/../Data/pending.json' )
-			)
-		);
 		$auth = KeyedOpaqueStorableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
@@ -46,13 +55,16 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 		$job = ProcessCaptureRequestJob::factory( $auth );
 		$this->assertTrue( $job->execute() );
 
-		$donorData = $pendingQueue->queueGetObject( null, $auth->correlationId );
+		$donorData = $this->pendingDatabase->fetchMessageByGatewayOrderId(
+			'adyen', $auth->merchantReference
+		);
+
 		$this->assertNotNull(
 			$donorData,
 			'RequestCaptureJob did not leave donor data on pending queue'
 		);
 		$this->assertTrue(
-			$donorData->captured,
+			$donorData['captured'],
 			'RequestCaptureJob did not mark donor data as captured'
 		);
 
@@ -85,15 +97,8 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 */
 	public function testReviewThreshold() {
 		$antifraudQueue = $this->config->object( 'data-store/antifraud-stomp', true );
-		$pendingQueue = $this->config->object( 'data-store/pending', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
-		$pendingQueue->addObject(
-			KeyedOpaqueStorableObject::fromJsonProxy(
-				'SmashPig\CrmLink\Messages\DonationInterfaceMessage',
-				file_get_contents( __DIR__ . '/../Data/pending.json' )
-			)
-		);
 		$auth = KeyedOpaqueStorableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
@@ -104,14 +109,15 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 		$job = ProcessCaptureRequestJob::factory( $auth );
 		$this->assertTrue( $job->execute() );
 
-		$donorData = $pendingQueue->queueGetObject( null, $auth->correlationId );
+		$donorData = $this->pendingDatabase->fetchMessageByGatewayOrderId(
+			'adyen', $auth->merchantReference
+		);
 		$this->assertNotNull(
 			$donorData,
 			'RequestCaptureJob did not leave donor data for review'
 		);
-		$this->assertNotEquals(
-			true,
-			$donorData->captured,
+		$this->assertTrue(
+			empty( $donorData['captured'] ),
 			'RequestCaptureJob marked donor data above review threshold as captured'
 		);
 
@@ -138,15 +144,8 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 */
 	public function testRejectThreshold() {
 		$antifraudQueue = $this->config->object( 'data-store/antifraud-stomp', true );
-		$pendingQueue = $this->config->object( 'data-store/pending', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
-		$pendingQueue->addObject(
-			KeyedOpaqueStorableObject::fromJsonProxy(
-				'SmashPig\CrmLink\Messages\DonationInterfaceMessage',
-				file_get_contents( __DIR__ . '/../Data/pending.json' )
-			)
-		);
 		$auth = KeyedOpaqueStorableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
@@ -158,7 +157,9 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 		$job = ProcessCaptureRequestJob::factory( $auth );
 		$this->assertTrue( $job->execute() );
 
-		$donorData = $pendingQueue->queueGetObject( null, $auth->correlationId );
+		$donorData = $this->pendingDatabase->fetchMessageByGatewayOrderId(
+			'adyen', $auth->merchantReference
+		);
 		$this->assertNull(
 			$donorData,
 			'RequestCaptureJob should delete fraudy donor data'
@@ -191,15 +192,8 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * should cancel the second one and leave the donor details in pending.
 	 */
 	public function testDuplicateAuthorisation() {
-		$pendingQueue = $this->config->object( 'data-store/pending', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
-		$pendingQueue->addObject(
-			KeyedOpaqueStorableObject::fromJsonProxy(
-				'SmashPig\CrmLink\Messages\DonationInterfaceMessage',
-				file_get_contents( __DIR__ . '/../Data/pending.json' )
-			)
-		);
 		$auth1 = KeyedOpaqueStorableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
@@ -228,7 +222,9 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 		);
 
 		$this->assertNotNull(
-			$pendingQueue->queueGetObject( null, $auth1->correlationId ),
+			$this->pendingDatabase->fetchMessageByGatewayOrderId(
+				'adyen', $auth1->merchantReference
+			),
 			'Capture job should leave donor details on queue'
 		);
 	}
