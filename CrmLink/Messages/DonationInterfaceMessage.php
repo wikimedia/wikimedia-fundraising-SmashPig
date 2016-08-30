@@ -3,7 +3,7 @@
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 
 /**
- * Message sent to the 'cc-limbo' queue when a payment has been initiated and sent off to the gateway.
+ * Message sent to the pending queue when a payment has been initiated and sent off to the gateway.
  */
 class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
 	public $captured = '';
@@ -38,13 +38,20 @@ class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
 	public $utm_medium = '';
 	public $utm_source = '';
 
+	/**
+	 * @param array $values
+	 * @return DonationInterfaceMessage
+	 */
 	public static function fromValues( $values = array() ) {
 		$message = new DonationInterfaceMessage();
 		foreach ( $values as $key => $value ) {
+			// If we're creating this from a database row with some extra
+			// info such as the pending_id, only include the real properties
 			if( property_exists( 'DonationInterfaceMessage', $key ) ) {
 				$message->$key = $value;
 			}
 		}
 		$message->correlationId = "{$message->gateway}-{$message->order_id}";
+		return $message;
 	}
 }
