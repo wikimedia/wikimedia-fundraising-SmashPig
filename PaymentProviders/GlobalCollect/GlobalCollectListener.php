@@ -2,9 +2,7 @@
 
 use SmashPig\Core\Http\Request;
 use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\Core\Listeners\ListenerSecurityException;
 use SmashPig\Core\Listeners\RestListener;
-use SmashPig\Core\Logging\Logger;
 
 use SmashPig\PaymentProviders\GlobalCollect\ExpatriatedMessages\PaymentMessage;
 

@@ -4,7 +4,6 @@ use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\RefundWithData;
-use SmashPig\Core\Logging\Logger;
 
 /**
  * Action for a refund! whoo!

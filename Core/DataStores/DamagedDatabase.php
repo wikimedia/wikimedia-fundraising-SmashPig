@@ -2,48 +2,13 @@
 namespace SmashPig\Core\DataStores;
 
 use PDO;
-use SmashPig\Core\Context;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
 
 /**
  * Data store containing messages which were not successfully processed
  */
-class DamagedDatabase {
-
-	/**
-	 * @var PDO
-	 * We do the silly singleton thing for convenient testing with in-memory
-	 * databases that would otherwise not be shared between components.
-	 */
-	protected static $db;
-
-	protected function __construct() {
-		if ( !self::$db ) {
-			$config = Context::get()->getConfiguration();
-			self::$db = $config->object( 'data-store/damaged-db' );
-		}
-	}
-
-	/**
-	 * @return PDO
-	 */
-	public function getDatabase() {
-		return self::$db;
-	}
-
-	public static function get() {
-		return new DamagedDatabase();
-	}
-
-	protected function validateMessage( $message ) {
-		if (
-			empty( $message['date'] ) ||
-			empty( $message['gateway'] )
-		) {
-			throw new SmashPigException( 'Message missing required fields' );
-		}
-	}
+class DamagedDatabase extends SmashPigDatabase {
 
 	/**
 	 * Build and insert a database record from a queue message
@@ -51,23 +16,29 @@ class DamagedDatabase {
 	 * @param array $message Unprocessable message
 	 * @param string $originalQueue Queue the message was first sent to
 	 * @param string $error Information about why this message is damaged
+	 * @param string $trace Full stack trace
 	 * @param int|null $retryDate When provided, re-process message after
 	 *  this timestamp
 	 * @return int ID of message in damaged database
 	 * @throws SmashPigException if insert fails
 	 */
 	public function storeMessage(
-		$message, $originalQueue, $error = '', $retryDate = null
+		$message,
+		$originalQueue,
+		$error = '',
+		$trace = '',
+		$retryDate = null
 	) {
-		$this->validateMessage( $message );
+		$originalDate = empty( $message['date'] )
+			? UtcDate::getUtcDatabaseString()
+			: UtcDate::getUtcDatabaseString( $message['date'] );
 
 		$dbRecord = array(
-			'original_date' => UtcDate::getUtcDatabaseString(
-				$message['date']
-			),
+			'original_date' => $originalDate,
 			'damaged_date' => UtcDate::getUtcDatabaseString(),
 			'original_queue' => $originalQueue,
 			'error' => $error,
+			'trace' => $trace,
 			'message' => json_encode( $message ),
 		);
 		if ( $retryDate ) {
@@ -95,6 +66,7 @@ class DamagedDatabase {
 
 		$insert = "INSERT INTO damaged ( $fieldList )
 			VALUES ( $paramList );";
+
 		$prepared = self::$db->prepare( $insert );
 
 		foreach ( $dbRecord as $field => $value ) {
@@ -117,14 +89,17 @@ class DamagedDatabase {
 	 * @return array|null Records with retry_date prior to now
 	 */
 	public function fetchRetryMessages( $limit ) {
-		$prepared = self::$db->prepare( '
+		$prepared = self::$db->prepare(
+			'
 			SELECT * FROM damaged
 			WHERE retry_date < :now
 			ORDER BY retry_date ASC
 			LIMIT ' . $limit
 		);
 		$prepared->bindValue(
-			':now', UtcDate::getUtcDatabaseString(), PDO::PARAM_STR
+			':now',
+			UtcDate::getUtcDatabaseString(),
+			PDO::PARAM_STR
 		);
 		$prepared->execute();
 		$rows = $prepared->fetchAll( PDO::FETCH_ASSOC );
@@ -140,7 +115,8 @@ class DamagedDatabase {
 	 * @param array $message
 	 */
 	public function deleteMessage( $message ) {
-		$prepared = self::$db->prepare( '
+		$prepared = self::$db->prepare(
+			'
 			DELETE FROM damaged
 			WHERE id = :id'
 		);
@@ -181,5 +157,13 @@ class DamagedDatabase {
 		$message['damaged_id'] = $row['id'];
 		$message['original_queue'] = $row['original_queue'];
 		return $message;
+	}
+
+	protected function getConfigKey() {
+		return 'data-store/damaged-db';
+	}
+
+	protected function getTableScriptFile() {
+		return '002_CreateDamagedTable.sql';
 	}
 }

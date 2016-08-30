@@ -3,7 +3,6 @@
 require ( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\DataStores\StompDataStore;
 use SmashPig\Core\SmashPigException;
 
 $maintClass = '\SmashPig\Maintenance\TestFailMail';

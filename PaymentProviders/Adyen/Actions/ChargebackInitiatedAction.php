@@ -6,7 +6,6 @@ use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Chargeback;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\NotificationOfChargeback;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\RequestForInformation;
-use SmashPig\Core\Logging\Logger;
 
 /**
  * When any kind of chargeback initiated (or completion) message arrives, this will

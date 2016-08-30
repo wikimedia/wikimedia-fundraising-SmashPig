@@ -3,7 +3,6 @@
 require ( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\DataStores\QueueConsumer;
 use SmashPig\Core\QueueConsumers\JobQueueConsumer;
 
 $maintClass = '\SmashPig\Maintenance\QueueJobRunner';

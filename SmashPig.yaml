@@ -44,12 +44,12 @@ default:
         pending-db:
             class: PDO
             inst-args:
-                - 'mysql:host=127.0.0.1;dbname=pending'
+                - 'mysql:host=127.0.0.1;dbname=smashpig'
 
         damaged-db:
             class: PDO
             inst-args:
-                - 'mysql:host=127.0.0.1;dbname=pending'
+                - 'mysql:host=127.0.0.1;dbname=smashpig'
 
         refund:
             class: SmashPig\Core\DataStores\MultiQueueWriter
@@ -326,7 +326,7 @@ amazon:
 
 astropay:
     actions:
-        - SmashPig\PaymentProviders\AstroPay\Actions\IncomingMessage
+        - SmashPig\Core\Actions\IncomingMessage
 
     endpoints:
         listener:
@@ -350,7 +350,7 @@ paypal:
 
 globalcollect:
     actions:
-        - SmashPig\PaymentProviders\GlobalCollect\Actions\IncomingMessage
+        - SmashPig\Core\Actions\IncomingMessage
 
     endpoints:
         listener:

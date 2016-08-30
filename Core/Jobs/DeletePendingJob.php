@@ -1,6 +1,5 @@
 <?php namespace SmashPig\Core\Jobs;
 
-use SmashPig\Core\Configuration;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Logging\Logger;
 
@@ -30,12 +29,9 @@ class DeletePendingJob extends RunnableJob {
 	}
 
 	public function execute() {
-		$logger = Logger::getTaggedLogger( "corr_id-{$this->correlationId}" );
-		$logger->info(
-			"Deleting from pending queue where correlation ID='{$this->correlationId}'"
+		$logger = Logger::getTaggedLogger(
+			"corr_id-{$this->gateway}-{$this->order_id}"
 		);
-		$pendingQueueObj = Configuration::getDefaultConfig()->object( 'data-store/pending' );
-		$pendingQueueObj->removeObjectsById( $this->correlationId );
 
 		$logger->info(
 			"Deleting message from pending db where gateway = '{$this->gateway}' " .

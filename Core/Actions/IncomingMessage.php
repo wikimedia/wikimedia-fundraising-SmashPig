@@ -1,6 +1,5 @@
-<?php namespace SmashPig\PaymentProviders\AstroPay\Actions;
+<?php namespace SmashPig\Core\Actions;
 
-use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;

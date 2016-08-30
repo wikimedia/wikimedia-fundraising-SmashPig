@@ -37,45 +37,36 @@ class RecordCaptureJob extends RunnableJob {
 	}
 
 	public function execute() {
-		$logger = Logger::getTaggedLogger( "corr_id-{$this->correlationId}" );
+		$logger = Logger::getTaggedLogger( "corr_id-adyen-{$this->merchantReference}" );
 		$logger->info(
 			"Recording successful capture on account '{$this->account}' with authorization reference " .
-				"'{$this->originalReference}' and correlation id '{$this->correlationId}'."
+				"'{$this->originalReference}' and order ID '{$this->merchantReference}'."
 		);
 
 		$config = Configuration::getDefaultConfig();
 		// Find the details from the payment site in the pending queue.
-		$logger->debug( 'Attempting to locate associated message in pending queue' );
-		$pendingQueue = $config->object( 'data-store/pending' );
-		$queueMessage = $pendingQueue->queueGetObject( null, $this->correlationId );
+		$logger->debug( 'Attempting to locate associated message in pending database' );
 
 		$db = PendingDatabase::get();
-		$dbMessage = null;
-		if ( $db ) {
-			$logger->debug( 'Attempting to locate associated message in pending database.' );
-			$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
-			PendingDatabase::comparePending( $queueMessage, $dbMessage );
-		}
+		$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
 
-		if ( $queueMessage && ( $queueMessage instanceof DonationInterfaceMessage ) ) {
+		if ( $dbMessage && ( isset( $dbMessage['order_id'] ) ) ) {
 			$logger->debug( 'A valid message was obtained from the pending queue' );
 
 			// Add the gateway transaction ID and send it to the completed queue
-			$queueMessage->gateway_txn_id = $this->originalReference;
+			$dbMessage['gateway_txn_id'] = $this->originalReference;
+			$queueMessage = DonationInterfaceMessage::fromValues( $dbMessage );
 			$config->object( 'data-store/verified' )->push( $queueMessage );
 
-			// Remove it from the pending queue
-			$logger->debug( "Acking donor details message in pending queue" );
-			$pendingQueue->queueAckObject();
-			if ( $dbMessage ) {
-				$db->deleteMessage( $dbMessage );
-			}
+			// Remove it from the pending database
+			$logger->debug( 'Removing donor details message from pending database' );
+			$db->deleteMessage( $dbMessage );
 
 		} else {
 			$logger->error(
 				"Could not find a processable message for authorization Reference '{$this->originalReference}' " .
-					"and correlation ID '{$this->correlationId}'.",
-				$queueMessage
+					"and order ID '{$this->merchantReference}'.",
+				$dbMessage
 			);
 		}
 

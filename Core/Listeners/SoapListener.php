@@ -27,10 +27,10 @@ abstract class SoapListener extends ListenerBase {
 		);
 	}
 
-	public function execute( Request $request, Response $response, $pathParts ) {
-		parent::execute( $request, $response, $pathParts );
+	public function execute( Request $request, Response $response ) {
+		parent::execute( $request, $response );
 
-		Logger::info( "Starting processing of listener request from {$this->request->getClientIP()}" );
+		Logger::info( "Starting processing of listener request from {$this->request->getClientIp()}" );
 
 		try {
 			$this->doIngressSecurity();

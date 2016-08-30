@@ -3,8 +3,8 @@
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 
-use \DateTime;
-use \DateTimeZone;
+use DateTime;
+use DateTimeZone;
 use PayWithAmazon\ReportsClient;
 
 /**

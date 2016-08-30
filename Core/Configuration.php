@@ -89,7 +89,7 @@ class Configuration {
 			$this->options = array();
 			foreach ( $configs as $config ) {
 				if ( isset( $config['default'] ) ) {
-					static::treeMerge( $this->options, $config['default'] );
+					$this->override( $config['default'] );
 				}
 			}
 
@@ -98,7 +98,7 @@ class Configuration {
 			if ( $view && $view !== 'default' ) {
 				foreach ( $configs as $config ) {
 					if ( isset( $config[$view] ) ) {
-						static::treeMerge( $this->options, $config[$view] );
+						$this->override( $config[$view] );
 					}
 				}
 			}
@@ -116,8 +116,9 @@ class Configuration {
 	/**
 	 * Override configuration with an array of data
 	 *
-	 * This should only be used in tests--note that these overrides take
-	 * precedence over every configuration file.
+	 * Note that these overrides take precedence over every configuration file,
+	 * so any usage outside of this class or tests will be subverting the
+	 * expected cascading priority.
 	 *
 	 * @param $data array
 	 */
@@ -198,9 +199,11 @@ class Configuration {
 	 *
 	 * @param string $node        Parameter node to obtain. If this contains '/' it is assumed that the
 	 *                            value is contained under additional keys.
-	 * @param bool   $returnRef   If true will return a reference to the configuration node. This will
+	 * @param bool $returnRef     If true will return a reference to the configuration node. This will
 	 *                            mean that any modifications to the node will be stored in RAM for the
 	 *                            duration of the session.
+	 * @return mixed
+	 * @throws ConfigurationKeyException
 	 */
 	public function &val( $node, $returnRef = false ) {
 		/*
@@ -260,7 +263,9 @@ class Configuration {
 	 * @param string $node       Parameter node to obtain. If this contains '/'
 	 *                           it is assumed that the value is contained
 	 *                           under additional keys.
-	 * @param bool   $persistent If true the object is saved for future calls.
+	 * @param bool $persistent   If true the object is saved for future calls.
+	 * @return mixed|object
+	 * @throws ConfigurationKeyException
 	 */
 	public function &object( $node, $persistent = true ) {
 		// First look and see if we already have a $persistent object.
@@ -291,7 +296,7 @@ class Configuration {
 	/**
 	 * Determine if a given configuration node exists in the loaded configuration.
 	 *
-	 * @param $node Node path; ie: logging/logstreams/syslog/class
+	 * @param string $node Node path; ie: logging/logstreams/syslog/class
 	 *
 	 * @return bool True if the node exists
 	 */
@@ -321,6 +326,7 @@ class Configuration {
 	 *
 	 * @param string $myRoot Internal recursion state: parent node path so far,
 	 * or empty string to begin.
+	 * @throws SmashPigException
 	 */
 	private static function treeMerge( &$base, $graft, $myRoot = '' ) {
 		foreach ( $graft as $graftNodeName => $graftNodeValue ) {
@@ -386,6 +392,8 @@ class ConfigurationException extends SmashPigException {
  * Exception thrown when a configuration key is not valid or has some other problem.
  */
 class ConfigurationKeyException extends ConfigurationException {
+	public $key;
+
 	public function __construct( $message = null, $key = null, $previous = null ) {
 		parent::__construct( $message, 0, $previous );
 		$this->key = $key;

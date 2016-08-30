@@ -17,11 +17,9 @@ use Symfony\Component\HttpFoundation\ParameterBag;
  */
 class RequestHandler {
 	/**
-	 * @param null $configPath
-	 *
 	 * @return Response
 	 */
-	public static function process( $configPath = null ) {
+	public static function process() {
 		// Can go away once we require PHP 5.6
 		ini_set( 'default_charset', 'UTF-8' );
 
@@ -97,7 +95,7 @@ class RequestHandler {
 		// --- Actually get the endpoint object and start the request ---
 		$endpointObj = $config->object( "endpoints/$action" );
 		if ( $endpointObj instanceof IHttpActionHandler ) {
-			$endpointObj->execute( $request, $response, $parts );
+			$endpointObj->execute( $request, $response );
 		} else {
 			$str = "Requested action '$action' does not implement a known handler. Cannot continue.";
 			Logger::debug( $str );

@@ -4,7 +4,7 @@ require ( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\StompDataStore;
-use \Exception;
+use Exception;
 
 $maintClass = '\SmashPig\Maintenance\StompJobRunner';
 
