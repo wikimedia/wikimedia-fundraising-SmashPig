@@ -8,6 +8,12 @@ adyen:
             class: SmashPig\Tests\MockDataStore
             inst-args: []
 
+        verified:
+            class: PHPQueue\Backend\PDO
+            inst-args:
+                -
+                    connection_string: 'sqlite::memory:'
+
         pending-db:
             class: PDO
             inst-args:
