@@ -385,13 +385,10 @@ class Configuration {
 				$baseNodeRef = &$base[$graftNodeName];
 				// Nodes that are present in the base and in the graft
 
-				if (!self::isMergable($baseNodeRef, $graftNodeValue)) {
-					// Stop if types don't match.
-					throw new SmashPigException(
-						"Dissimilar types cannot be merged at configuration node {$node}." );
-				}
-
-				if ( is_array( $graftNodeValue ) ) {
+				if (
+					is_array( $graftNodeValue ) &&
+					self::isMergable( $baseNodeRef, $graftNodeValue )
+				) {
 					// Recursively merge arrays.
 					static::treeMerge( $baseNodeRef, $graftNodeValue, $node );
 				} else {
