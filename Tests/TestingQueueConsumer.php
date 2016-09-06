@@ -7,7 +7,7 @@ class TestingQueueConsumer extends BaseQueueConsumer {
 	public $exception;
 	public $processed = array();
 
-	function processMessage( $message ) {
+	public function processMessage( $message ) {
 		$this->processed[] = $message;
 		if ( $this->exception ) {
 			throw $this->exception;

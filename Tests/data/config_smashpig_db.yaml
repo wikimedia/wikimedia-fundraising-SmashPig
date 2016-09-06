@@ -9,3 +9,8 @@ default:
             class: PDO
             inst-args:
                 - 'sqlite::memory:'
+
+        fredge-db:
+            class: PDO
+            inst-args:
+                - 'sqlite::memory:'

@@ -239,7 +239,7 @@ class PendingDatabase extends SmashPigDatabase {
 		// Same as the field list, but each parameter is prefixed with a colon
 		$paramList = ':' . implode( ', :', $fields );
 
-		$insert = "INSERT INTO pending ( $fieldList ) VALUES ( $paramList );";
+		$insert = "INSERT INTO pending ( $fieldList ) VALUES ( $paramList )";
 		return $insert;
 	}
 
