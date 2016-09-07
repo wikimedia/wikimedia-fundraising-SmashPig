@@ -22,11 +22,11 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$config = new QueueTestConfiguration();
-		$config2 = new SmashPigDatabaseTestConfiguration();
-		// Merge configs.
-		$config->override( $config2->val( '/' ) );
-
+		// Merge db and queue test configs.
+		$config = TestingConfiguration::loadConfigWithFileOverrides( array(
+			__DIR__ . '/data/config_smashpig_db.yaml',
+			__DIR__ . '/data/config_queue.yaml',
+		) );
 		Context::initWithLogger( $config );
 
 		$this->pendingDb = PendingDatabase::get();

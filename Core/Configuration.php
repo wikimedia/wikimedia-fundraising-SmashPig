@@ -48,7 +48,7 @@ class Configuration {
 	 * loadDefaultConfig on your project's subclass of Configuration.
 
 	 * @param string $view          Configuration view to load
-	 * @param string|null $overridePath  Extra configuration path to search
+	 * @param array|string|null $overridePath  Extra configuration path(s) to search
 	 */
 	public function __construct( $view = 'default', $overridePath = null ) {
 		// FIXME: There's still something fishy about view.  Can we replace
