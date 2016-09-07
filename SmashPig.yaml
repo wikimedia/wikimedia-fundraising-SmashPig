@@ -29,6 +29,13 @@ default:
             constructor-parameters:
                 - antifraud
 
+        payments-antifraud:
+            class: PHPQueue\Backend\Predis
+            constructor-parameters:
+                -
+                    <<: *REDIS
+                    queue: payments-antifraud
+
         pending:
             class: SmashPig\Core\DataStores\StompDataStore
             constructor-parameters:
@@ -41,6 +48,7 @@ default:
                     <<: *REDIS
                     queue: pending
 
+        # FIXME: Consolidate these two backends
         pending-db:
             class: PDO
             constructor-parameters:
@@ -56,6 +64,24 @@ default:
             constructor-parameters:
                 - 'mysql:host=127.0.0.1;dbname=fredge'
 
+        recurring:
+            class: SmashPig\Core\DataStores\MultiQueueWriter
+            constructor-parameters:
+                -
+                    - recurring-stomp
+
+        recurring-stomp:
+            class: SmashPig\Core\DataStores\StompDataStore
+            constructor-parameters:
+                - recurring
+
+        recurring-new:
+            class: PHPQueue\Backend\Predis
+            constructor-parameters:
+                -
+                    <<: *REDIS
+                    queue: recurring
+
         refund:
             class: SmashPig\Core\DataStores\MultiQueueWriter
             constructor-parameters:
@@ -66,6 +92,13 @@ default:
             class: SmashPig\Core\DataStores\StompDataStore
             constructor-parameters:
                 - refund
+
+        refund-new:
+            class: PHPQueue\Backend\Predis
+            constructor-parameters:
+                -
+                    <<: *REDIS
+                    queue: refund
 
         limbo:
             class: SmashPig\Core\DataStores\StompDataStore
@@ -93,6 +126,12 @@ default:
             constructor-parameters:
                 - verified
 
+        donations:
+            class: PHPQueue\Backend\Predis
+            constructor-parameters:
+                -
+                    <<: *REDIS
+
         # Library definitions
         stomp:
             uri: tcp://localhost:61613
@@ -107,6 +146,7 @@ default:
                 failed: /queue/failed
                 pending: /queue/pending
                 pending-damaged: /queue/pending-damaged
+                recurring: /queue/donations_recurring
                 refund: /queue/refund
                 jobs: /queue/job-requests
                 jobs-damaged: /queue/jobs-requests-damaged
