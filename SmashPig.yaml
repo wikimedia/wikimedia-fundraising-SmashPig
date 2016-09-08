@@ -51,6 +51,11 @@ default:
             inst-args:
                 - 'mysql:host=127.0.0.1;dbname=smashpig'
 
+        fredge-db:
+            class: PDO
+            inst-args:
+                - 'mysql:host=127.0.0.1;dbname=fredge'
+
         refund:
             class: SmashPig\Core\DataStores\MultiQueueWriter
             inst-args:
