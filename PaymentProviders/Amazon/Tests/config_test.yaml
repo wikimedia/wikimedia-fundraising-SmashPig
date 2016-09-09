@@ -1,10 +1,10 @@
 amazon:
     payments-client:
         class: PayWithAmazon\Mocks\MockPaymentsClient
-        inst-args:
+        constructor-parameters:
             - response-directory: ./Data/responses
 
     reports-client:
         class: PayWithAmazon\Mocks\MockReportsClient
-        inst-args:
+        constructor-parameters:
             - response-directory: ./Data/responses

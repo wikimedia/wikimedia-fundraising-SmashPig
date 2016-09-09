@@ -15,82 +15,82 @@ default:
         # Store definitions
         inflight:
             class: SmashPig\Core\DataStores\DiskFileDataStore
-            inst-args:
+            constructor-parameters:
                 - /tmp/
 
         antifraud:
             class: SmashPig\Core\DataStores\MultiQueueWriter
-            inst-args:
+            constructor-parameters:
                 -
                     - antifraud-stomp
 
         antifraud-stomp:
             class: SmashPig\Core\DataStores\StompDataStore
-            inst-args:
+            constructor-parameters:
                 - antifraud
 
         pending:
             class: SmashPig\Core\DataStores\StompDataStore
-            inst-args:
+            constructor-parameters:
                 - pending
 
         pending-new:
             class: PHPQueue\Backend\Predis
-            inst-args:
+            constructor-parameters:
                 -
                     <<: *REDIS
                     queue: pending
 
         pending-db:
             class: PDO
-            inst-args:
+            constructor-parameters:
                 - 'mysql:host=127.0.0.1;dbname=smashpig'
 
         damaged-db:
             class: PDO
-            inst-args:
+            constructor-parameters:
                 - 'mysql:host=127.0.0.1;dbname=smashpig'
 
         fredge-db:
             class: PDO
-            inst-args:
+            constructor-parameters:
                 - 'mysql:host=127.0.0.1;dbname=fredge'
 
         refund:
             class: SmashPig\Core\DataStores\MultiQueueWriter
-            inst-args:
+            constructor-parameters:
                 -
                     - refund-stomp
 
         refund-stomp:
             class: SmashPig\Core\DataStores\StompDataStore
-            inst-args:
+            constructor-parameters:
                 - refund
 
         limbo:
             class: SmashPig\Core\DataStores\StompDataStore
-            inst-args:
+            constructor-parameters:
                 - limbo
 
         jobs-damaged:
             class: SmashPig\Core\DataStores\StompDataStore
-            inst-args:
+            constructor-parameters:
                 - jobs-damaged
 
         jobs:
             class: SmashPig\Core\DataStores\StompDataStore
-            inst-args:
+            constructor-parameters:
                 - jobs
 
         verified:
             class: SmashPig\Core\DataStores\MultiQueueWriter
-            inst-args:
+            constructor-parameters:
                 -
                     - verified-stomp
 
         verified-stomp:
             class: SmashPig\Core\DataStores\StompDataStore
-            inst-args:
+            constructor-parameters:
                 - verified
 
         # Library definitions
@@ -122,7 +122,7 @@ default:
         log-streams:
             syslog:
                 class: SmashPig\Core\Logging\LogStreams\SyslogLogStream
-                inst-args:
+                constructor-parameters:
                     # LOG_LOCAL0
                     - 128
                     # LOG_NDELAY
@@ -169,13 +169,11 @@ adyen:
     endpoints:
         listener:
             class: SmashPig\PaymentProviders\Adyen\AdyenListener
-            inst-args: []
 
     payment-provider:
         adyen:
             api:
                 class: SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI
-                inst-args: []
 
             payments-wsdl: https://pal-live.adyen.com/pal/Payment.wsdl
             #payments-wsdl: https://pal-test.adyen.com/pal/Payment.wsdl
@@ -294,7 +292,6 @@ amazon:
     endpoints:
         listener:
             class: SmashPig\PaymentProviders\Amazon\AmazonListener
-            inst-args: []
 
     credentials: &CREDENTIALS
         # 13 or so uppercase letters
@@ -312,12 +309,12 @@ amazon:
     # Override these to mock the Amazon SDK classes
     payments-client:
         class: PayWithAmazon\PaymentsClient
-        inst-args:
+        constructor-parameters:
             - <<: *CREDENTIALS
 
     reports-client:
         class: PayWithAmazon\ReportsClient
-        inst-args:
+        constructor-parameters:
             - <<: *CREDENTIALS
 
     ipn-handler-class: PayWithAmazon\IpnHandler
@@ -336,7 +333,6 @@ astropay:
     endpoints:
         listener:
             class: SmashPig\PaymentProviders\AstroPay\AstroPayListener
-            inst-args: []
 
     login: createlogin
     secret: "secretkey"
@@ -360,7 +356,6 @@ globalcollect:
     endpoints:
         listener:
             class: SmashPig\PaymentProviders\GlobalCollect\GlobalCollectListener
-            inst-args: []
 
     data-store:
         stomp:

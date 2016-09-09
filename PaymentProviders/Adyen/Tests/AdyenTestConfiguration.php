@@ -17,7 +17,7 @@ class AdyenTestConfiguration extends Configuration {
 		$override = array( 'payment-provider' =>
 			array( 'adyen' =>
 				array( 'api' =>
-					array( 'inst-args' =>
+					array( 'constructor-parameters' =>
 						array( $success ? 'Success!' : 'false' )
 					)
 				)

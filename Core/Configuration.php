@@ -296,7 +296,7 @@ class Configuration {
 	/**
 	 * Creates an object from the configuration file. This works by looking up the configuration
 	 * key name which will be an array with at least a subkey of 'class'. The class will then be
-	 * instantiated with any arguments as given in the subkey 'inst-args'.
+	 * instantiated with any arguments as given in the subkey 'constructor-parameters'.
 	 *
 	 * NOTE: This will return a reference to the object!
 	 *
@@ -305,7 +305,7 @@ class Configuration {
 	 * Example:
 	 * data_source:
 	 *      class: DataSourceClass
-	 *      inst-args:
+	 *      constructor-parameters:
 	 *          - argument1
 	 *          - foo/bar/baz
 	 *
@@ -319,25 +319,22 @@ class Configuration {
 	public function &object( $node, $persistent = true ) {
 		// First look and see if we already have a $persistent object.
 		if ( array_key_exists( $node, $this->objects ) ) {
-			return $this->objects[ $node ];
+			return $this->objects[$node];
 		}
 
-		try {
-			$className = $this->val( $node . '/class' );
-			$arguments = $this->val( $node . '/inst-args' );
-		} catch ( ConfigurationKeyException $ex ) {
-			throw new ConfigurationKeyException(
-				"Could not instantiate class from key '{$node}'. Missing required key '{$ex->key}'",
-				$node,
-				$ex
-			);
+		$className = $this->val( $node . '/class' );
+
+		// Optional keys
+		$arguments = array();
+		if ( $this->nodeExists( $node . '/constructor-parameters' ) ) {
+			$arguments = $this->val( $node . '/constructor-parameters' );
 		}
 
 		$reflectedObj = new \ReflectionClass( $className );
 		$obj = $reflectedObj->newInstanceArgs( $arguments );
 
 		if ( $persistent ) {
-			$this->objects[ $node ] = $obj;
+			$this->objects[$node] = $obj;
 		}
 		return $obj;
 	}

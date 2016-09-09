@@ -2,11 +2,11 @@ default:
     data-store:
         test:
             class: PHPQueue\Backend\PDO
-            inst-args:
+            constructor-parameters:
                 -
                     connection_string: 'sqlite::memory:'
 
         damaged-db:
             class: PDO
-            inst-args:
+            constructor-parameters:
                 - 'sqlite::memory:'

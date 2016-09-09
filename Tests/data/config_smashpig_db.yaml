@@ -2,15 +2,15 @@ default:
     data-store:
         pending-db:
             class: PDO
-            inst-args:
+            constructor-parameters:
                 - 'sqlite::memory:'
 
         damaged-db:
             class: PDO
-            inst-args:
+            constructor-parameters:
                 - 'sqlite::memory:'
 
         fredge-db:
             class: PDO
-            inst-args:
+            constructor-parameters:
                 - 'sqlite::memory:'

@@ -158,10 +158,10 @@ abstract class BaseQueueConsumer {
 		// Get a reference to the config node so we can mess with it
 		$node =& $config->val( $key, true );
 		if (
-			empty( $node['inst-args'] ) ||
-			empty( $node['inst-args'][0]['queue'] )
+			empty( $node['constructor-parameters'] ) ||
+			empty( $node['constructor-parameters'][0]['queue'] )
 		) {
-			$node['inst-args'][0]['queue'] = $queueName;
+			$node['constructor-parameters'][0]['queue'] = $queueName;
 		}
 
 		return $config->object( $key, true );
