@@ -22,21 +22,23 @@ class JobQueueConsumer extends BaseQueueConsumer {
 			);
 		}
 
+		// TODO: encapsulate the reconstitution step elsewhere.
 		$className = $jobMessage['php-message-class'];
 		$jsonMessage = json_encode( $jobMessage );
 		$jobObj = KeyedOpaqueStorableObject::fromJsonProxy( $className, $jsonMessage );
 
-		if ( !( $jobObj instanceof RunnableJob ) ) {
+		if ( $jobObj instanceof Runnable ) {
+			if ( !$jobObj->execute() ) {
+				throw new RuntimeException(
+					'Job tells us that it did not successfully execute. '
+					. 'Sending to damaged message store.'
+				);
+			}
+		} else {
+			// We don't know how to run this job type.
 			throw new RuntimeException(
-				get_class( $jobObj ) . ' is not an instance of RunnableJob. '
+				get_class( $jobObj ) . ' is not an instance of Runnable. '
 				. 'Could not execute and sending to damaged message store.'
-			);
-		}
-
-		if ( !$jobObj->execute() ) {
-			throw new RuntimeException(
-				'Job tells us that it did not successfully execute. '
-				. 'Sending to damaged message store.'
 			);
 		}
 
