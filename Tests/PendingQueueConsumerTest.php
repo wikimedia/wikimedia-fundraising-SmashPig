@@ -94,11 +94,11 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 
 	/**
 	 * We refuse to consume a message and drop it if the corresponding
-	 * payments_initial row is completed.
+	 * payments_initial row is complete.
 	 */
-	public function testPendingMessageInitialCompleted() {
+	public function testPendingMessageInitialComplete() {
 		$initRow = PaymentsInitialDatabaseTest::generateTestMessage();
-		$initRow['payments_final_status'] = 'completed';
+		$initRow['payments_final_status'] = 'complete';
 
 		$this->paymentsInitialDb->storeMessage( $initRow );
 

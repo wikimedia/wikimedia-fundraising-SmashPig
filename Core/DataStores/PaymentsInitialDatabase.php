@@ -24,7 +24,7 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 		if ( $message === null ) {
 			return false;
 		}
-		if ( in_array( $message['payments_final_status'], array( 'failed', 'completed' ) ) ) {
+		if ( in_array( $message['payments_final_status'], array( 'failed', 'complete' ) ) ) {
 			return true;
 		}
 		return false;
