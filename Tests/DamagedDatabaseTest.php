@@ -15,7 +15,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$config = new SmashPigDatabaseTestConfiguration();
+		$config = SmashPigDatabaseTestConfiguration::instance();
 		Context::initWithLogger( $config );
 		$this->db = DamagedDatabase::get();
 		$this->db->createTable();

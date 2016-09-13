@@ -21,19 +21,19 @@ class TestingConfiguration extends Configuration {
 	}
 
 	public static function installTestConfiguration( $pathOverrides = array() ) {
-		// Late static binding so you can extend this class if needed.
-		$singleton = new static( 'default', $pathOverrides );
+		// Late static binding so that a subclass creates one of itself
+		$singleton = static::createForViewWithOverrideFile( 'default', $pathOverrides );
 		Configuration::setDefaultConfig( $singleton );
 		return $singleton;
 	}
 
 	public static function loadConfigWithFileOverrides( $paths ) {
-		$config = self::installTestConfiguration( $paths );
+		$config = static::installTestConfiguration( $paths );
 		return $config;
 	}
 
 	public static function loadConfigWithLiteralOverrides( $data ) {
-		$config = self::installTestConfiguration();
+		$config = static::installTestConfiguration();
 		$config->override( $data );
 		return $config;
 	}

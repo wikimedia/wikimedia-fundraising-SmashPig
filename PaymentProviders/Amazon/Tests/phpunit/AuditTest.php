@@ -12,7 +12,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		Context::initWithLogger( new AmazonTestConfiguration() );
+		Context::initWithLogger( AmazonTestConfiguration::instance() );
 	}
 
 	/**

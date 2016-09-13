@@ -15,7 +15,7 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$config = new SmashPigDatabaseTestConfiguration();
+		$config = SmashPigDatabaseTestConfiguration::instance();
 		Context::initWithLogger( $config );
 		$this->db = PendingDatabase::get();
 		$this->db->createTable();

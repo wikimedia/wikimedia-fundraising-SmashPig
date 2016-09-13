@@ -5,15 +5,16 @@ use SmashPig\Core\DataStores\PendingDatabase;
 
 class AdyenTestConfiguration extends Configuration {
 
-	public function __construct() {
-		parent::__construct(
+	public static function instance() {
+		return self::createForViewWithOverrideFile(
 			'adyen',
 			__DIR__ . '/config_test.yaml'
 		);
 	}
 
+	// TODO: rename
 	public static function get( $success ) {
-		$config = new AdyenTestConfiguration();
+		$config = self::instance();
 		$override = array( 'payment-provider' =>
 			array( 'adyen' =>
 				array( 'api' =>

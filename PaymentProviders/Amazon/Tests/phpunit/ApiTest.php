@@ -12,7 +12,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		chdir( __DIR__ . '/..' ); // So the mock client can find its response files
-		$config = new AmazonTestConfiguration();
+		$config = AmazonTestConfiguration::instance();
 		Context::initWithLogger( $config );
 		$this->mockClient = $config->object( 'payments-client', true );
 		$this->mockClient->calls = array();
