@@ -4,7 +4,7 @@ use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Logging\Logger;
 
 /**
- * Job that deletes donor information from the pending data stores.
+ * Job that deletes donor information from the pending database.
  * Used when we get a notification of payment failure.
  */
 class DeletePendingJob extends RunnableJob {
@@ -37,15 +37,14 @@ class DeletePendingJob extends RunnableJob {
 			"Deleting message from pending db where gateway = '{$this->gateway}' " .
 			"and order ID='{$this->order_id}'"
 		);
-		$db = PendingDatabase::get();
-		if ( $db ) {
-			$dbMessage = $db->fetchMessageByGatewayOrderId(
-				$this->gateway, $this->order_id
-			);
-			if ( $dbMessage ) {
-				$db->deleteMessage( $dbMessage );
-			}
-		}
+
+		$deleteParams = array(
+			'gateway' => $this->gateway,
+			'order_id' => $this->order_id,
+		);
+		PendingDatabase::get()
+			->deleteMessage( $deleteParams );
+
 		return true;
 	}
 }

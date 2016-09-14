@@ -10,7 +10,7 @@ use SmashPig\Core\DataStores\PendingDatabase;
 $maintClass = '\SmashPig\Maintenance\CreateIpnMessagesFromPendingDb';
 
 /**
- * Reads messages out of the pending queue and inserts them into a db table
+ * Reads messages from the pending db and creates test IPN message files
  * Adyen:
  *  php Maintenance/CreateIpnMessagesFromPendingDb.php adyen
  *  Tests/SoapInjector/soapinject.py payments-listener.local.wmftest.net '/smashpig_http_handler.php?p=adyen/listener' auth_success.10.1.xml

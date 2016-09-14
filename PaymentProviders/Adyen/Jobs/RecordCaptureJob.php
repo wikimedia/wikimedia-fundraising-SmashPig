@@ -9,7 +9,7 @@ use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
 
 /**
  * Job that merges a capture IPN message from Adyen with donor info from the
- * pending queue, then places that into the verified queue.
+ * pending database, then places that into the verified queue.
  *
  * Class RecordCaptureJob
  *
@@ -44,9 +44,9 @@ class RecordCaptureJob extends RunnableJob {
 		);
 
 		$config = Configuration::getDefaultConfig();
-		// Find the details from the payment site in the pending queue.
-		$logger->debug( 'Attempting to locate associated message in pending database' );
 
+		// Find the details from the payment site in the pending database.
+		$logger->debug( 'Attempting to locate associated message in pending database' );
 		$db = PendingDatabase::get();
 		$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
 

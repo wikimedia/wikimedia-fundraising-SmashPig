@@ -37,16 +37,10 @@ default:
                     queue: payments-antifraud
 
         pending:
-            class: SmashPig\Core\DataStores\StompDataStore
-            constructor-parameters:
-                - pending
-
-        pending-new:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
                 -
                     <<: *REDIS
-                    queue: pending
 
         # FIXME: Consolidate these two backends
         pending-db:
@@ -100,11 +94,6 @@ default:
                     <<: *REDIS
                     queue: refund
 
-        limbo:
-            class: SmashPig\Core\DataStores\StompDataStore
-            constructor-parameters:
-                - limbo
-
         jobs-damaged:
             class: SmashPig\Core\DataStores\StompDataStore
             constructor-parameters:
@@ -141,11 +130,8 @@ default:
 
             queues:
                 antifraud: /queue/payments-antifraud
-                limbo: /queue/limbo
                 verified: /queue/donations
                 failed: /queue/failed
-                pending: /queue/pending
-                pending-damaged: /queue/pending-damaged
                 recurring: /queue/donations_recurring
                 refund: /queue/refund
                 jobs: /queue/job-requests
@@ -384,11 +370,6 @@ paypal:
         # postback-url: https://www.sandbox.paypal.com/cgi-bin/webscr
         postback-url: https://www.paypal.com/cgi-bin/webscr
 
-    data-store:
-        stomp:
-            queues:
-                pending: /queue/pending_paypal
-
 globalcollect:
     actions:
         - SmashPig\Core\Actions\IncomingMessage
@@ -396,8 +377,3 @@ globalcollect:
     endpoints:
         listener:
             class: SmashPig\PaymentProviders\GlobalCollect\GlobalCollectListener
-
-    data-store:
-        stomp:
-            queues:
-                pending: /queue/pending_globalcollect

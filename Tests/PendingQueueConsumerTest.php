@@ -6,7 +6,6 @@ use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\PaymentsInitialDatabase;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\QueueConsumers\PendingQueueConsumer;
-use SmashPig\Tests\PaymentsInitialDatabaseTest;
 
 class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 
@@ -50,7 +49,7 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 	 * table.
 	 */
 	public function testPendingMessageNotInInitial() {
-		$consumer = new PendingQueueConsumer( 'pending-new', 1000, 1000 );
+		$consumer = new PendingQueueConsumer( 'pending', 1000, 1000 );
 		$message = self::generateRandomPendingMessage();
 
 		$consumer->processMessage( $message );
@@ -77,7 +76,7 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$this->paymentsInitialDb->storeMessage( $initRow );
 
 		$message = self::generatePendingMessageFromInitial( $initRow );
-		$consumer = new PendingQueueConsumer( 'pending-new', 1000, 1000 );
+		$consumer = new PendingQueueConsumer( 'pending', 1000, 1000 );
 
 		$consumer->processMessage( $message );
 
@@ -103,7 +102,7 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$this->paymentsInitialDb->storeMessage( $initRow );
 
 		$message = self::generatePendingMessageFromInitial( $initRow );
-		$consumer = new PendingQueueConsumer( 'pending-new', 1000, 1000 );
+		$consumer = new PendingQueueConsumer( 'pending', 1000, 1000 );
 
 		$consumer->processMessage( $message );
 
@@ -125,7 +124,7 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$this->paymentsInitialDb->storeMessage( $initRow );
 
 		$message = self::generatePendingMessageFromInitial( $initRow );
-		$consumer = new PendingQueueConsumer( 'pending-new', 1000, 1000 );
+		$consumer = new PendingQueueConsumer( 'pending', 1000, 1000 );
 
 		$consumer->processMessage( $message );
 

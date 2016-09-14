@@ -71,7 +71,7 @@ class AdyenListener extends SoapListener {
 				Logger::info( "Notification received from test server." );
 			}
 
-			// Create Messages and save them to the pending store
+			// Create Messages from the hideous SOAPy mess
 			if ( is_array( $var->notification->notificationItems->NotificationRequestItem ) ) {
 				foreach ( $var->notification->notificationItems->NotificationRequestItem as $item ) {
 					$obj = $this->createAdyenMsgObjFromItem( $item );

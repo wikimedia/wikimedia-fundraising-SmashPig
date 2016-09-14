@@ -1,7 +1,5 @@
 adyen:
     data-store:
-        pending:
-            class: SmashPig\Tests\MockDataStore
 
         antifraud-stomp:
             class: SmashPig\Tests\MockDataStore
