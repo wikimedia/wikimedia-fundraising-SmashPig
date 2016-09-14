@@ -1,9 +1,11 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Test;
 
+use PHPQueue\Backend\PDO;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\Core\DataStores\PendingDatabase;
+use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -22,6 +24,10 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $pendingDatabase;
 	protected $pendingMessage;
+	/**
+	 * @var PDO
+	 */
+	protected $antifraudQueue;
 
 	public function setUp() {
 		parent::setUp();
@@ -32,6 +38,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 			file_get_contents( __DIR__ . '/../Data/pending.json' ) , true
 		);
 		$this->pendingDatabase->storeMessage( $this->pendingMessage );
+		$this->antifraudQueue = BaseQueueConsumer::getQueue( 'payments-antifraud' );
 	}
 
 	public function tearDown() {
@@ -41,10 +48,9 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 
 	/**
 	 * For a legit donation, ProcessCaptureJob should leave donor data
-	 * on the pending queue, add an antifraud message, and return true.
+	 * in the pending database, add an antifraud message, and return true.
 	 */
 	public function testSuccessfulCapture() {
-		$antifraudQueue = $this->config->object( 'data-store/antifraud-stomp', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
 		$auth = KeyedOpaqueStorableObject::fromJsonProxy(
@@ -78,15 +84,14 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 			'RequestCaptureJob did not make the right capture call'
 		);
 
-		// Blank correlation ID on antifraud messages
-		$antifraudMessage = $antifraudQueue->queueGetObject( null, '' );
+		$antifraudMessage = $this->antifraudQueue->pop();
 		$this->assertNotNull(
 			$antifraudMessage,
 			'RequestCaptureJob did not send antifraud message'
 		);
 		$this->assertEquals(
 			'process',
-			$antifraudMessage->validation_action,
+			$antifraudMessage['validation_action'],
 			'Successful capture should get "process" validation action'
 		);
 	}
@@ -96,7 +101,6 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * we should not capture the payment, but leave the donor details.
 	 */
 	public function testReviewThreshold() {
-		$antifraudQueue = $this->config->object( 'data-store/antifraud-stomp', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
 		$auth = KeyedOpaqueStorableObject::fromJsonProxy(
@@ -126,14 +130,14 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 			'RequestCaptureJob tried to capture above review threshold'
 		);
 
-		$antifraudMessage = $antifraudQueue->queueGetObject( null, '' );
+		$antifraudMessage = $this->antifraudQueue->pop();
 		$this->assertNotNull(
 			$antifraudMessage,
 			'RequestCaptureJob did not send antifraud message'
 		);
 		$this->assertEquals(
 			'review',
-			$antifraudMessage->validation_action,
+			$antifraudMessage['validation_action'],
 			'Suspicious auth should get "review" validation action'
 		);
 	}
@@ -143,7 +147,6 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * we should cancel the authorization and delete the donor details.
 	 */
 	public function testRejectThreshold() {
-		$antifraudQueue = $this->config->object( 'data-store/antifraud-stomp', true );
 		$api = $this->config->object( 'payment-provider/adyen/api', true );
 
 		$auth = KeyedOpaqueStorableObject::fromJsonProxy(
@@ -175,14 +178,14 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 			'Did not cancel the fraudulent authorization'
 		);
 
-		$antifraudMessage = $antifraudQueue->queueGetObject( null, '' );
+		$antifraudMessage = $this->antifraudQueue->pop();
 		$this->assertNotNull(
 			$antifraudMessage,
 			'RequestCaptureJob did not send antifraud message'
 		);
 		$this->assertEquals(
 			'reject',
-			$antifraudMessage->validation_action,
+			$antifraudMessage['validation_action'],
 			'Obvious fraud should get "reject" validation action'
 		);
 	}
@@ -225,7 +228,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 			$this->pendingDatabase->fetchMessageByGatewayOrderId(
 				'adyen', $auth1->merchantReference
 			),
-			'Capture job should leave donor details on queue'
+			'Capture job should leave donor details in database'
 		);
 	}
 

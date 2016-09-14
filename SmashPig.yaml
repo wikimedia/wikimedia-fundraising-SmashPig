@@ -18,23 +18,11 @@ default:
             constructor-parameters:
                 - /tmp/
 
-        antifraud:
-            class: SmashPig\Core\DataStores\MultiQueueWriter
-            constructor-parameters:
-                -
-                    - antifraud-stomp
-
-        antifraud-stomp:
-            class: SmashPig\Core\DataStores\StompDataStore
-            constructor-parameters:
-                - antifraud
-
         payments-antifraud:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
                 -
                     <<: *REDIS
-                    queue: payments-antifraud
 
         pending:
             class: PHPQueue\Backend\Predis
@@ -129,7 +117,6 @@ default:
             convert-string-expressions: false
 
             queues:
-                antifraud: /queue/payments-antifraud
                 verified: /queue/donations
                 failed: /queue/failed
                 recurring: /queue/donations_recurring
