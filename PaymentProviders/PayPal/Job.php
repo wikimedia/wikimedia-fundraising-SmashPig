@@ -5,6 +5,8 @@ use SmashPig\Core\Jobs\RunnableJob;
 
 class Job extends RunnableJob {
 
+	static $verifyFailedMsg = 'PayPal message verification failed';
+
 	public $payload;
 
 	public function execute() {
@@ -16,11 +18,10 @@ class Job extends RunnableJob {
 
 		// XXX Why does everything get made into objects?
 		$request = (array)$this->payload;
-		$request['cmd'] = '_notify-validate';
 
 		$valid = $this->config->object( 'api' )->validate( $request );
 		if ( ! $valid ) {
-			throw new \Exception( 'PayPal message verification failed' );
+			throw new \Exception( self::$verifyFailedMsg );
 		}
 
 		// Determine message type.

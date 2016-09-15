@@ -21,13 +21,13 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	 * @var Configuration
 	 */
 	public $config;
-	private $verified_msg;
+	static $verified_msg;
 
 	public function setUp() {
 		parent::setUp();
 		$this->config = PayPalTestConfiguration::get();
 		Context::initWithLogger( $this->config );
-		$this->verified_msg = json_decode(
+		self::$verified_msg = json_decode(
 			file_get_contents( __DIR__ . '/../Data/web_accept.json' ),
 			true
 		);
@@ -42,7 +42,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 	public function testCapture() {
 
-		$this->capture( $this->verified_msg );
+		$this->capture( self::$verified_msg );
 
 		// TODO why get it from BaseQueueConsumer instead of config?
 		$jobQueue = BaseQueueConsumer::getQueue( 'jobs-paypal' );
@@ -51,13 +51,13 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $jobMessage['php-message-class'],
 			'SmashPig\PaymentProviders\PayPal\Job' );
 
-		$this->assertEquals( $jobMessage['payload'], $this->verified_msg );
+		$this->assertEquals( $jobMessage['payload'], self::$verified_msg );
 
 	}
 
 	public function testConsume () {
 
-		$this->capture( $this->verified_msg );
+		$this->capture( self::$verified_msg );
 
 		// TODO DRY?
 		$jobQueue = BaseQueueConsumer::getQueue( 'jobs-paypal' );
@@ -73,9 +73,28 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$verifiedQueue = $this->config->object( 'data-store/verified' );
 		$verifiedMessage = $verifiedQueue->pop();
 
-		// TODO can we verify that it looks right after transmogrification? might be
-		// a job for the crm consumer
-		$this->assertTrue( ! empty( $verifiedMessage ) );
+		$this->assertNotEmpty( $verifiedMessage );
+
+	}
+
+	public function testFailedConsume () {
+		$jobMessage = array('just' => 'some', 'old' => 'message' );
+		$jobClass = 'SmashPig\PaymentProviders\PayPal\Job';
+		$job = KeyedOpaqueStorableObject::fromJsonProxy(
+			$jobClass,
+			json_encode( $jobMessage )
+		);
+
+		try {
+			$job->execute();
+		} catch ( \Exception $e ) {
+			// TODO I think this can throw a special exception to move to
+			// damaged queue or some other stuff
+			$this->assertEquals(
+				\SmashPig\PaymentProviders\PayPal\Job::$verifyFailedMsg,
+				$e->getMessage()
+			);
+		}
 
 	}
 }
