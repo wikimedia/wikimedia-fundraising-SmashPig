@@ -5,7 +5,7 @@ use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
-use SmashPig\CrmLink\Messages\DonationInterfaceAntifraud;
+use SmashPig\CrmLink\Messages\DonationInterfaceAntifraudFactory;
 use SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 
@@ -98,7 +98,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					$db->storeMessage( $dbMessage );
 				} else {
 					// Some kind of error in the request. We should keep the pending
-					// message, complain loudly, and move this capture job to the
+					// db entry, complain loudly, and move this capture job to the
 					// damaged queue.
 					$this->logger->error(
 						"Failed to capture payment on account '{$this->account}' with reference " .
@@ -115,7 +115,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				break;
 			case self::ACTION_DUPLICATE:
 				// We have already captured one payment for this donation attempt, so
-				// cancel the duplicate authorization. If there is a pending message,
+				// cancel the duplicate authorization. If there is a pending db entry,
 				// leave it intact for the legitimate RecordCaptureJob.
 				$this->cancelAuthorization();
 				break;
@@ -189,11 +189,13 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	protected function sendAntifraudMessage( $dbMessage, $riskScore, $scoreBreakdown, $action ) {
-		$antifraudMessage = DonationInterfaceAntifraud::factory(
+		$antifraudMessage = DonationInterfaceAntifraudFactory::create(
 			$dbMessage, $riskScore, $scoreBreakdown, $action
 		);
 		$this->logger->debug( "Sending antifraud message with risk score $riskScore and action $action." );
-		Configuration::getDefaultConfig()->object( 'data-store/antifraud' )->push( $antifraudMessage );
+		Configuration::getDefaultConfig()
+			->object( 'data-store/payments-antifraud' )
+			->push( $antifraudMessage );
 	}
 
 	/**

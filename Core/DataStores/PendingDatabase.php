@@ -85,11 +85,7 @@ class PendingDatabase extends SmashPigDatabase {
 			where gateway = :gateway
 				and order_id = :order_id
 			limit 1' );
-		if ( !$prepared ) {
-			// TODO: remove after transition to new pending queue
-			// database exists but table is not yet set up
-			return null;
-		}
+
 		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
 		$prepared->bindValue( ':order_id', $orderId, PDO::PARAM_STR );
 		$prepared->execute();
@@ -175,57 +171,6 @@ class PendingDatabase extends SmashPigDatabase {
 		$message = json_decode( $row['message'], true );
 		$message['pending_id'] = $row['id'];
 		return $message;
-	}
-
-	/**
-	 * Ensure a smooth transition of pending message from ActiveMQ to database.
-	 * Log notices if entries differ between queue and db.
-	 * TODO: remove when ActiveMQ is gone
-	 *
-	 * @param DonationInterfaceMessage|null $queueMessage Message from ActiveMQ
-	 * @param array|null $dbMessage Normalized message from pending DB
-	 */
-	public static function comparePending( $queueMessage, $dbMessage ) {
-		if ( $dbMessage ) {
-			$id = $dbMessage['gateway'] . '-' . $dbMessage['order_id'];
-		} else if ( $queueMessage ) {
-			$id = $queueMessage->gateway . '-' . $queueMessage->order_id;
-		} else {
-			// neither exists, nothing to log
-			return;
-		}
-		$logger = Logger::getTaggedLogger( 'PendingComparison' );
-
-		if ( $queueMessage && $dbMessage ) {
-			$queueData = json_decode( $queueMessage->toJson(), true );
-			unset( $queueData['correlationId'] );
-			unset( $queueData['propertiesExportedAsKeys'] );
-			unset( $queueData['propertiesExcludedFromExport'] );
-			foreach ( array_keys( $queueData ) as $key ) {
-				if ( $queueData[$key] === '' && !isset( $dbMessage[$key] ) ) {
-					unset ( $queueData[$key] );
-				}
-			}
-			$differences = array_diff_assoc( $queueData, $dbMessage );
-			if ( $differences ) {
-				$logger->notice(
-					"Pending message for $id " .
-					'differs between ActiveMQ and pending database: ' .
-					json_encode( $differences, true )
-				);
-			}
-		} else if ( $queueMessage && !$dbMessage ) {
-			$logger->notice(
-				"Found pending message for $id " .
-				'in ActiveMQ but not in pending database.'
-			);
-		} else if ( $dbMessage && !$queueMessage ) {
-			$logger->notice(
-				"Found pending message for $id " .
-				'in pending database but not in ActiveMQ: ' .
-				json_encode( $dbMessage )
-			);
-		}
 	}
 
 	/**

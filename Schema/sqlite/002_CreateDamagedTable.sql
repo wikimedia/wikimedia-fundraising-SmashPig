@@ -1,4 +1,4 @@
-CREATE TABLE damaged (
+CREATE TABLE IF NOT EXISTS damaged (
   `id` integer primary key,
   `original_date` datetime NOT NULL,
   `damaged_date` datetime NOT NULL,

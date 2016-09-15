@@ -115,7 +115,7 @@ abstract class ListenerBase implements IHttpActionHandler {
 	 * @param ListenerMessage $msg Message object to operate on
 	 *
 	 * @return bool True if the message was successfully processed. Returning false will keep the
-	 * message in the pending queue.
+	 * message in the bogus inflight queue.
 	 */
 	protected function processMessage( ListenerMessage $msg ) {
 		try {

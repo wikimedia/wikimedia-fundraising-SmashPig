@@ -5,9 +5,8 @@ use SmashPig\Core\UtcDate;
 abstract class PaymentCapture extends AmazonMessage {
 
 	// The completion message ID associates the details in this message with
-	// a message in the pending queue that has donor and tracking details
-	// TODO: when we've switched over to the pending DB instead of queue,
-	// either change this to a boolean flag, or act like the Adyen
+	// a message in the pending database that has donor and tracking details
+	// TODO: either change this to a boolean flag, or act like the Adyen
 	// RecordCaptureJob and combine the pending info before sending to Civi
 	protected $completion_message_id;
 	protected $order_id;
