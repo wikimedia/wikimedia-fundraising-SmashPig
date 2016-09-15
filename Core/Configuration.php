@@ -237,6 +237,8 @@ class Configuration {
 	}
 
 	protected function hasApc() {
+// livehack: no.
+return false;
 		static $useApc = null;
 		if ( $useApc === null ) {
 			$useApc = extension_loaded( 'apc' );
