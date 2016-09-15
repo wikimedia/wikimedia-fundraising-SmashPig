@@ -1,4 +1,4 @@
-CREATE TABLE pending (
+CREATE TABLE IF NOT EXISTS pending (
   `id` integer primary key,
   `date` datetime NOT NULL,
   `gateway` varchar(255) NOT NULL,

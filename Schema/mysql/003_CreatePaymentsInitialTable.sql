@@ -1,4 +1,4 @@
-CREATE TABLE payments_initial (
+CREATE TABLE IF NOT EXISTS payments_initial (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `contribution_tracking_id` int(11) DEFAULT NULL,
   `gateway` varchar(255) DEFAULT NULL,
