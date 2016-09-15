@@ -25,8 +25,6 @@ abstract class ListenerBase implements IHttpActionHandler {
 
 	public function __construct() {
 		$this->c = Context::get()->getConfiguration();
-// Livehack: Dump configuration
-Logger::info( json_encode( $this->c->val( 'data-store/verified' ) ) );
 		$this->inflightStore = $this->c->object( 'data-store/inflight' );
 	}
 
