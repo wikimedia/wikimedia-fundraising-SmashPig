@@ -16,5 +16,8 @@
       <testsuite name="AstroPay tests">
         <directory>PaymentProviders/AstroPay/Tests/phpunit</directory>
       </testsuite>
+      <testsuite name="PayPal tests">
+        <directory>PaymentProviders/PayPal/Tests/phpunit</directory>
+      </testsuite>
     </testsuites>
 </phpunit>

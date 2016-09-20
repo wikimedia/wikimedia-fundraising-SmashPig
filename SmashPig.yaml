@@ -352,10 +352,77 @@ astropay:
     charset: iso-8859-1
 
 paypal:
-    listener:
-        # For testing purposes override this entry with
-        # postback-url: https://www.sandbox.paypal.com/cgi-bin/webscr
-        postback-url: https://www.paypal.com/cgi-bin/webscr
+    api:
+        class: SmashPig\PaymentProviders\PayPal\PayPalPaymentsAPI
+
+    endpoints:
+        listener:
+            class: SmashPig\PaymentProviders\PayPal\Listener
+            # For testing purposes override this entry with
+            # postback-url: https://www.sandbox.paypal.com/cgi-bin/webscr
+            postback-url: https://www.sandbox.paypal.com/cgi-bin/webscr
+
+    data-store:
+        jobs-paypal:
+            class: PHPQueue\Backend\Predis
+            constructor-parameters:
+                -
+                    <<: *REDIS
+
+    var_map:
+        payment_date: date # needs strtotime(payment_date)
+        txn_type: txn_type
+        payment_status: payment_status
+        parent_txn_id: gateway_parent_id
+        txn_id: gateway_refund_id
+        mc_currency: gross_currency
+        reason_code: type
+        test_ipn:  # signals test mode
+        custom: contribution_tracking_id
+        payer_email: email
+        first_name: first_name
+        last_name: last_name
+        # FIXME this used to get split up
+        address_street: supplemental_address_1
+        address_city: city_2
+        address_state: state_province_2
+        address_country_code: country_2
+        address_zip: postal_code_2
+        # FIXME this too
+        address_name: supplemental_address_2
+        gateway: gateway
+        mc_gross: gross
+        mc_fee: fee
+
+    messages:
+        verified:
+            valid_statuses: # TODO is this message type agnostic?
+                - Completed
+                - Reversed
+            txn_types:
+                - adjustment
+                - cart
+                - new_case
+                - send_money
+                - web_accept
+                - merch_pmt
+                - express_checkout
+                - masspay
+                - virtual_terminal
+        recurring:
+            txn_types:
+                - recurring_payment_profile_created
+                - subscr_cancel
+                - subscr_eot
+                - subscr_failed
+                - subscr_modify
+                - subscr_signup
+                # the following mean we got money \o/
+                - recurring_payment
+                - subscr_payment
+        refund:
+            txn_types:
+                - refund
 
 globalcollect:
     actions:
