@@ -44,8 +44,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 		$this->capture( self::$verified_msg );
 
-		// TODO why get it from BaseQueueConsumer instead of config?
-		$jobQueue = BaseQueueConsumer::getQueue( 'jobs-paypal' );
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
 		$jobMessage = $jobQueue->pop();
 
 		$this->assertEquals( $jobMessage['php-message-class'],
@@ -59,8 +58,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 		$this->capture( self::$verified_msg );
 
-		// TODO DRY?
-		$jobQueue = BaseQueueConsumer::getQueue( 'jobs-paypal' );
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
 		$jobMessage = $jobQueue->pop();
 
 		$job = KeyedOpaqueStorableObject::fromJsonProxy(
