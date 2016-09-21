@@ -68,5 +68,8 @@ class Job extends RunnableJob {
 		$this->config->object( 'data-store/' . $msg_type )
 			->push( $new_msg );
 
+		// TODO It would be nice if push() returned something useful so we
+		// could return something here too
+		return true;
 	}
 }
