@@ -2,7 +2,7 @@
 
 use RuntimeException;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
-use SmashPig\Core\Jobs\RunnableJob;
+use SmashPig\Core\Runnable;
 
 class JobQueueConsumer extends BaseQueueConsumer {
 
