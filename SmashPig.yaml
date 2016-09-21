@@ -358,9 +358,9 @@ paypal:
     endpoints:
         listener:
             class: SmashPig\PaymentProviders\PayPal\Listener
-            # For testing purposes override this entry with
-            # postback-url: https://www.sandbox.paypal.com/cgi-bin/webscr
-            postback-url: https://www.sandbox.paypal.com/cgi-bin/webscr
+            # In production, override this entry with
+            # postback-url: https://ipnpb.paypal.com/cgi-bin/webscr
+            postback-url: https://ipnpb.sandbox.paypal.com/cgi-bin/webscr
 
     data-store:
         jobs-paypal:
