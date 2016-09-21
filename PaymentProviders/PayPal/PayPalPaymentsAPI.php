@@ -23,6 +23,14 @@ class PayPalPaymentsAPI {
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
 		curl_setopt( $ch, CURLOPT_POST, 1 );
 		// TODO we can put VERIFIED in config and generalize this
-		return $this->curl( $ch, $post_fields ) === 'VERIFIED';
+		$response = $this->curl( $ch, $post_fields );
+
+		if ( $response === 'VERIFIED' ) {
+			return true;
+		} elseif ( $response === 'INVALID' ) {
+			return false;
+		} else {
+			throw new \RuntimeException( "Unknown response from PayPal IPN PB: [{$response}]" );
+		}
 	}
 }
