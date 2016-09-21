@@ -375,27 +375,28 @@ paypal:
 
     var_map:
         payment_date: date # needs strtotime(payment_date)
+        # FIXME Recurring messages use non-normalized field names, for example:
         txn_type: txn_type
-        payment_status: payment_status
         parent_txn_id: gateway_parent_id
         txn_id: gateway_txn_id
-        # FIXME: This is only true for refund messages.  How to represent?
+        # FIXME This is only true for refund messages.  Where to represent?
         #txn_id: gateway_refund_id
         mc_currency: currency
+        # FIXME rename refund_type
         reason_code: type
-        test_ipn:  # signals test mode
+        #test_ipn:  # signals test mode
         custom: contribution_tracking_id
         payer_email: email
         first_name: first_name
         last_name: last_name
         # FIXME this used to get split up
-        address_street: supplemental_address_1
-        address_city: city_2
-        address_state: state_province_2
-        address_country_code: country_2
-        address_zip: postal_code_2
+        address_street: street_address
+        address_city: city
+        address_state: state_province
+        address_country_code: country
+        address_zip: postal_code
         # FIXME this too
-        address_name: supplemental_address_2
+        address_name: supplemental_address_1
         gateway: gateway
         mc_gross: gross
         mc_fee: fee
