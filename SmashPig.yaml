@@ -378,8 +378,10 @@ paypal:
         txn_type: txn_type
         payment_status: payment_status
         parent_txn_id: gateway_parent_id
-        txn_id: gateway_refund_id
-        mc_currency: gross_currency
+        txn_id: gateway_txn_id
+        # FIXME: This is only true for refund messages.  How to represent?
+        #txn_id: gateway_refund_id
+        mc_currency: currency
         reason_code: type
         test_ipn:  # signals test mode
         custom: contribution_tracking_id
@@ -427,6 +429,8 @@ paypal:
         refund:
             txn_types:
                 - refund
+                # FIXME: if case_type=chargeback, then txn_type might be blank
+                # and the message should go to the refund queue.
 
 globalcollect:
     actions:

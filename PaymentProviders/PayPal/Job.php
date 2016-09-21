@@ -57,6 +57,11 @@ class Job extends RunnableJob {
 					$new_msg->$tx = $request[$rx];
 				}
 			}
+
+			// FIXME represent special case as var_map config override?
+			if ( $msg_type === 'refund' ) {
+				$new_msg->gateway_refund_id = $request['txn_id'];
+			}
 		}
 
 		// hax
