@@ -368,6 +368,9 @@ paypal:
             constructor-parameters:
                 -
                     <<: *REDIS
+                    # FIXME: This queue thing is introspected at times, and at
+                    # others not.  Make it consistent (and invisible).
+                    queue: jobs-paypal
 
     var_map:
         payment_date: date # needs strtotime(payment_date)
