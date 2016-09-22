@@ -44,7 +44,7 @@ class Job extends RunnableJob {
 		// FIXME this could just be an array, but we need compat with
 		// keyedopaque* until activemq goes away
 		$new_msg = new Message;
-		// FIXME hack because the recurring consumer doesn't want
+		// FIXME hacks because the recurring consumer doesn't want
 		// a normalized message
 		if ( $msg_type === 'recurring' ) {
 			foreach ( $request as $key => $val ) {

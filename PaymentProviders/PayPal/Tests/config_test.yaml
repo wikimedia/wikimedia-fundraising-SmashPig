@@ -8,18 +8,21 @@ paypal:
             constructor-parameters:
                 -
                     connection_string: 'sqlite::memory:'
-                    queue: 'verified'
+                    queue: verified
 
         jobs-paypal:
             class: PHPQueue\Backend\PDO
             constructor-parameters:
                 -
                     connection_string: 'sqlite::memory:'
-                    queue: 'jobs-paypal'
+                    queue: jobs-paypal
 
         recurring:
-            class: SmashPig\Tests\MockDataStore
-            constructor-parameters: []
+            class: PHPQueue\Backend\PDO
+            constructor-parameters:
+                -
+                    connection_string: 'sqlite::memory:'
+                    queue: recurring
 
         refund:
             class: SmashPig\Tests\MockDataStore

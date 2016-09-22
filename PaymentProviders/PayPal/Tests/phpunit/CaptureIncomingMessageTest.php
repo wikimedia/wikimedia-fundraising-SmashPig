@@ -21,16 +21,27 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	 * @var Configuration
 	 */
 	public $config;
-	static $verified_msg;
+
+	static $fail_verification = false;
+
+	static $message_locations = array(
+		'verified' => 'web_accept.json',
+		'recurring' => 'subscr_signup.json',
+		'recurring' => 'subscr_payment.json'
+	);
+
+	static $messages = array();
 
 	public function setUp() {
 		parent::setUp();
 		$this->config = PayPalTestConfiguration::get();
 		Context::initWithLogger( $this->config );
-		self::$verified_msg = json_decode(
-			file_get_contents( __DIR__ . '/../Data/web_accept.json' ),
-			true
-		);
+		foreach ( self::$message_locations as $type => $file ) {
+			self::$messages[$type] = json_decode(
+				file_get_contents( __DIR__ . '/../Data/' . $file ),
+				true
+			);
+		}
 	}
 
 	private function capture ( $msg ) {
@@ -41,42 +52,46 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testCapture() {
+		foreach ( self::$messages as $type => $msg ) {
 
-		$this->capture( self::$verified_msg );
+			$this->capture( $msg );
 
-		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
-		$jobMessage = $jobQueue->pop();
+			$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
+			$jobMessage = $jobQueue->pop();
 
-		$this->assertEquals( $jobMessage['php-message-class'],
-			'SmashPig\PaymentProviders\PayPal\Job' );
+			$this->assertEquals( $jobMessage['php-message-class'],
+				'SmashPig\PaymentProviders\PayPal\Job' );
 
-		$this->assertEquals( $jobMessage['payload'], self::$verified_msg );
+			$this->assertEquals( $jobMessage['payload'], $msg );
 
+		}
 	}
 
 	public function testConsume () {
+		foreach ( self::$messages as $type => $msg ) {
+			$this->capture( $msg );
 
-		$this->capture( self::$verified_msg );
+			$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
+			$jobMessage = $jobQueue->pop();
 
-		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
-		$jobMessage = $jobQueue->pop();
+			$job = KeyedOpaqueStorableObject::fromJsonProxy(
+				$jobMessage['php-message-class'],
+				json_encode( $jobMessage )
+			);
 
-		$job = KeyedOpaqueStorableObject::fromJsonProxy(
-			$jobMessage['php-message-class'],
-			json_encode( $jobMessage )
-		);
+			$job->execute();
 
-		$job->execute();
+			$queue = $this->config->object( 'data-store/' . $type );
+			$message = $queue->pop();
 
-		$verifiedQueue = $this->config->object( 'data-store/verified' );
-		$verifiedMessage = $verifiedQueue->pop();
+			$this->assertNotEmpty( $message );
 
-		$this->assertNotEmpty( $verifiedMessage );
-
+		}
 	}
 
 	public function testFailedConsume () {
-		$jobMessage = array('just' => 'some', 'old' => 'message' );
+		self::$fail_verification = true;
+		$jobMessage = array( 'txn_type' => 'fail' );
 		$jobClass = 'SmashPig\PaymentProviders\PayPal\Job';
 		$job = KeyedOpaqueStorableObject::fromJsonProxy(
 			$jobClass,
