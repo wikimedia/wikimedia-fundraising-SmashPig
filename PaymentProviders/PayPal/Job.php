@@ -62,10 +62,11 @@ class Job extends RunnableJob {
 			if ( $msg_type === 'refund' ) {
 				$new_msg->gateway_refund_id = $request['txn_id'];
 			}
+
+			// FIXME once recurring uses normalized msg it needs this too
+			$new_msg->date = strtotime( $new_msg->date );
 		}
 
-		// hax
-		$new_msg->date = strtotime( $new_msg->date );
 		$new_msg->gateway = 'paypal';
 
 		// Save to appropriate queue.
