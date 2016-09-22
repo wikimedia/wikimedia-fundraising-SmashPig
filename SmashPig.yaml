@@ -92,6 +92,15 @@ default:
             constructor-parameters:
                 - jobs
 
+        jobs-paypal:
+            class: PHPQueue\Backend\Predis
+            constructor-parameters:
+                -
+                    <<: *REDIS
+                    # FIXME: This queue thing is introspected at times, and at
+                    # others not.  Make it consistent (and invisible).
+                    queue: jobs-paypal
+
         verified:
             class: SmashPig\Core\DataStores\MultiQueueWriter
             constructor-parameters:
@@ -362,16 +371,6 @@ paypal:
     # For testing, override with
     # postback-url: https://ipnpb.sandbox.paypal.com/cgi-bin/webscr
     postback-url: https://ipnpb.paypal.com/cgi-bin/webscr
-
-    data-store:
-        jobs-paypal:
-            class: PHPQueue\Backend\Predis
-            constructor-parameters:
-                -
-                    <<: *REDIS
-                    # FIXME: This queue thing is introspected at times, and at
-                    # others not.  Make it consistent (and invisible).
-                    queue: jobs-paypal
 
     var_map:
         payment_date: date # needs strtotime(payment_date)
