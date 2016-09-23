@@ -44,7 +44,7 @@ class Job extends RunnableJob {
 		// FIXME this could just be an array, but we need compat with
 		// keyedopaque* until activemq goes away
 		$new_msg = new Message;
-		// FIXME hack because the recurring consumer doesn't want
+		// FIXME hacks because the recurring consumer doesn't want
 		// a normalized message
 		if ( $msg_type === 'recurring' ) {
 			foreach ( $request as $key => $val ) {
@@ -62,10 +62,11 @@ class Job extends RunnableJob {
 			if ( $msg_type === 'refund' ) {
 				$new_msg->gateway_refund_id = $request['txn_id'];
 			}
+
+			// FIXME once recurring uses normalized msg it needs this too
+			$new_msg->date = strtotime( $new_msg->date );
 		}
 
-		// hax
-		$new_msg->date = strtotime( $new_msg->date );
 		$new_msg->gateway = 'paypal';
 
 		// Save to appropriate queue.
