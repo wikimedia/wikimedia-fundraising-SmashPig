@@ -14,8 +14,8 @@ abstract class SmashPigDatabase {
 
 	protected function __construct() {
 		$config = Context::get()->getConfiguration();
-		if ( !self::$db ) {
-			self::$db = $config->object( $this->getConfigKey() );
+		if ( !static::$db ) {
+			static::$db = $config->object( $this->getConfigKey() );
 		}
 	}
 
@@ -27,7 +27,7 @@ abstract class SmashPigDatabase {
 	 * @return PDO
 	 */
 	public function getDatabase() {
-		return self::$db;
+		return static::$db;
 	}
 
 	public function createTable() {
