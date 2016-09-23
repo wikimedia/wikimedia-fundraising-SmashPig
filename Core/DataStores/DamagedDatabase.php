@@ -58,26 +58,16 @@ class DamagedDatabase extends SmashPigDatabase {
 				$dbRecord[$fieldName] = $message[$fieldName];
 			}
 		}
-		$fieldList = implode( ',', array_keys( $dbRecord ) );
 
-		// Build a list of parameter names for safe db insert. Same as
-		// the field list, but each parameter is prefixed with a colon.
-		$paramList = ':' . implode( ', :', array_keys( $dbRecord ) );
+		list( $fieldList, $paramList ) = self::formatInsertParameters(
+			$dbRecord
+		);
 
 		$insert = "INSERT INTO damaged ( $fieldList )
 			VALUES ( $paramList );";
 
-		$prepared = self::$db->prepare( $insert );
-
-		foreach ( $dbRecord as $field => $value ) {
-			$prepared->bindValue(
-				':' . $field,
-				$value,
-				PDO::PARAM_STR
-			);
-		}
-		if ( $prepared->execute() ) {
-			return self::$db->lastInsertId();
+		if ( $this->prepareAndExecute( $insert, $dbRecord ) ) {
+			return $this->getDatabase()->lastInsertId();
 		}
 		throw new SmashPigException( 'Unable to insert into damaged db' );
 	}

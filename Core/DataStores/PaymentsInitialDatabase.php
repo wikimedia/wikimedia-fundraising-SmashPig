@@ -53,24 +53,13 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 		return $row;
 	}
 
-	/**
-	 * TODO: reuse vs PendingDatabase::storeMessage
-	 */
 	public function storeMessage( $message ) {
-        $fieldList = implode( ',', array_keys( $message ) );
-        $paramList = ':' . implode( ', :', array_keys( $message ) );
+        list( $fieldList, $paramList ) = self::formatInsertParameters(
+			$message
+		);
 
         $sql = "INSERT INTO payments_initial ( $fieldList ) VALUES ( $paramList )";
-		$prepared = self::$db->prepare( $sql );
-
-		foreach ( $message as $field => $value ) {
-			$prepared->bindValue(
-				':' . $field,
-				$value,
-				PDO::PARAM_STR
-			);
-		}
-		$prepared->execute();
+		$this->prepareAndExecute( $sql, $message );
 	}
 
 	protected function getConfigKey() {

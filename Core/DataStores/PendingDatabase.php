@@ -3,10 +3,8 @@ namespace SmashPig\Core\DataStores;
 
 use PDO;
 use RuntimeException;
-use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
-use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 
 /**
  * Data store containing messages waiting to be finalized.
@@ -53,23 +51,13 @@ class PendingDatabase extends SmashPigDatabase {
 		// Dump the whole message into a text column
 		$dbRecord['message'] = json_encode( $message );
 
-		$fields = array_keys( $dbRecord );
 		if ( isset( $message['pending_id'] ) ) {
-			$sql = $this->getUpdateStatement( $fields );
+			$sql = $this->getUpdateStatement( $dbRecord );
 			$dbRecord['id'] = $message['pending_id'];
 		} else {
-			$sql = $this->getInsertStatement( $fields );
+			$sql = $this->getInsertStatement( $dbRecord );
 		}
-		$prepared = self::$db->prepare( $sql );
-
-		foreach ( $dbRecord as $field => $value ) {
-			$prepared->bindValue(
-				':' . $field,
-				$value,
-				PDO::PARAM_STR
-			);
-		}
-		$prepared->execute();
+		$this->prepareAndExecute( $sql, $dbRecord );
 	}
 
 	/**
@@ -174,27 +162,25 @@ class PendingDatabase extends SmashPigDatabase {
 	}
 
 	/**
-	 * @param array $fields
+	 * @param array $record
 	 * @return string SQL to insert a pending record, with parameters
 	 */
-	protected function getInsertStatement( $fields ) {
-		$fieldList = implode( ',', $fields );
-
-		// Build a list of parameter names for safe db insert
-		// Same as the field list, but each parameter is prefixed with a colon
-		$paramList = ':' . implode( ', :', $fields );
+	protected function getInsertStatement( $record ) {
+		list( $fieldList, $paramList ) = self::formatInsertParameters(
+			$record
+		);
 
 		$insert = "INSERT INTO pending ( $fieldList ) VALUES ( $paramList )";
 		return $insert;
 	}
 
 	/**
-	 * @param array $fields
+	 * @param array $record
 	 * @return string SQL to update a pending record, with parameters
 	 */
-	protected function getUpdateStatement( $fields ) {
+	protected function getUpdateStatement( $record ) {
 		$sets = array();
-		foreach( $fields as $field ) {
+		foreach( array_keys( $record ) as $field ) {
 			$sets[] = "$field = :$field";
 		}
 		$update = 'UPDATE pending SET ' .
