@@ -44,7 +44,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		}
 	}
 
-	private function capture ( $msg ) {
+	private function capture( $msg ) {
 		$request = new Request( $msg );
 		$response = new Response;
 		$listener = new Listener;
@@ -67,7 +67,13 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		}
 	}
 
-	public function testConsume () {
+	public function testBlankMessage() {
+		$this->capture( array() );
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
+		$this->assertNull( $jobQueue->pop() );
+	}
+
+	public function testConsume() {
 		foreach ( self::$messages as $type => $msg ) {
 			$this->capture( $msg );
 
@@ -89,7 +95,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		}
 	}
 
-	public function testFailedConsume () {
+	public function testFailedConsume() {
 		self::$fail_verification = true;
 		$jobMessage = array( 'txn_type' => 'fail' );
 		$jobClass = 'SmashPig\PaymentProviders\PayPal\Job';
