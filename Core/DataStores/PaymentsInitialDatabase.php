@@ -38,15 +38,16 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 	 * @return array|null Record related to a transaction, or null if nothing matches
 	 */
 	public function fetchMessageByGatewayOrderId( $gatewayName, $orderId ) {
-		$prepared = self::$db->prepare( '
-			select * from payments_initial
+		$sql = 'select * from payments_initial
 			where gateway = :gateway
 				and order_id = :order_id
-			limit 1' );
-		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
-		$prepared->bindValue( ':order_id', $orderId, PDO::PARAM_STR );
-		$prepared->execute();
-		$row = $prepared->fetch( PDO::FETCH_ASSOC );
+			limit 1';
+		$params = array(
+			'gateway' => $gatewayName,
+			'order_id' => $orderId,
+		);
+		$executed = $this->prepareAndExecute( $sql, $params );
+		$row = $executed->fetch( PDO::FETCH_ASSOC );
 		if ( !$row ) {
 			return null;
 		}

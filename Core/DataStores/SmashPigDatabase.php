@@ -1,7 +1,7 @@
 <?php namespace SmashPig\Core\DataStores;
 
 use PDO;
-use PHPQueue\Exception\Exception;
+use PDOStatement;
 use SmashPig\Core\Context;
 
 abstract class SmashPigDatabase {
@@ -70,7 +70,8 @@ abstract class SmashPigDatabase {
 	 *
 	 * @param string $sql parameterized SQL command
 	 * @param array $dbRecord associative array of values to bind
-	 * @return bool true if execution succeeded
+	 * @return PDOStatement the executed statement for any fetching
+	 * @throws DataStoreException
 	 */
 	protected function prepareAndExecute( $sql, $dbRecord ) {
 		$prepared = $this->getDatabase()->prepare( $sql );
@@ -87,6 +88,11 @@ abstract class SmashPigDatabase {
 				$paramType
 			);
 		}
-		return $prepared->execute();
+
+		if ( !$prepared->execute() ) {
+			$info = print_r( $this->getDatabase()->errorInfo() );
+			throw new DataStoreException( "Failed to execute $sql: $info" );
+		}
+		return $prepared;
 	}
 }

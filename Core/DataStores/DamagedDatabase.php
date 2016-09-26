@@ -2,7 +2,6 @@
 namespace SmashPig\Core\DataStores;
 
 use PDO;
-use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
 
 /**
@@ -20,7 +19,6 @@ class DamagedDatabase extends SmashPigDatabase {
 	 * @param int|null $retryDate When provided, re-process message after
 	 *  this timestamp
 	 * @return int ID of message in damaged database
-	 * @throws SmashPigException if insert fails
 	 */
 	public function storeMessage(
 		$message,
@@ -66,10 +64,7 @@ class DamagedDatabase extends SmashPigDatabase {
 		$insert = "INSERT INTO damaged ( $fieldList )
 			VALUES ( $paramList );";
 
-		if ( $this->prepareAndExecute( $insert, $dbRecord ) ) {
-			return $this->getDatabase()->lastInsertId();
-		}
-		throw new SmashPigException( 'Unable to insert into damaged db' );
+		$this->prepareAndExecute( $insert, $dbRecord );
 	}
 
 	/**
@@ -79,20 +74,18 @@ class DamagedDatabase extends SmashPigDatabase {
 	 * @return array|null Records with retry_date prior to now
 	 */
 	public function fetchRetryMessages( $limit ) {
-		$prepared = self::$db->prepare(
-			'
-			SELECT * FROM damaged
+		$sql = 'SELECT * FROM damaged
 			WHERE retry_date < :now
 			ORDER BY retry_date ASC
-			LIMIT ' . $limit
+			LIMIT ' . $limit;
+
+		$params = array(
+			'now' => UtcDate::getUtcDatabaseString()
 		);
-		$prepared->bindValue(
-			':now',
-			UtcDate::getUtcDatabaseString(),
-			PDO::PARAM_STR
-		);
-		$prepared->execute();
-		$rows = $prepared->fetchAll( PDO::FETCH_ASSOC );
+
+		$executed = $this->prepareAndExecute( $sql, $params);
+
+		$rows = $executed->fetchAll( PDO::FETCH_ASSOC );
 		return array_map(
 			array( $this, 'messageFromDbRow' ),
 			$rows
@@ -105,13 +98,12 @@ class DamagedDatabase extends SmashPigDatabase {
 	 * @param array $message
 	 */
 	public function deleteMessage( $message ) {
-		$prepared = self::$db->prepare(
-			'
-			DELETE FROM damaged
-			WHERE id = :id'
+		$sql = 'DELETE FROM damaged
+			WHERE id = :id';
+		$params = array(
+			'id' => $message['damaged_id']
 		);
-		$prepared->bindValue( ':id', $message['damaged_id'], PDO::PARAM_STR );
-		$prepared->execute();
+		$this->prepareAndExecute( $sql, $params );
 	}
 
 	/**
@@ -125,16 +117,13 @@ class DamagedDatabase extends SmashPigDatabase {
 		if ( $queue ) {
 			$sql .= ' AND original_queue = :queue';
 		}
-		$prepared = self::$db->prepare( $sql );
-		$prepared->bindValue(
-			':date',
-			UtcDate::getUtcDatabaseString( $originalDate ),
-			PDO::PARAM_STR
+		$params = array(
+			'date' => UtcDate::getUtcDatabaseString( $originalDate ),
 		);
 		if ( $queue ) {
-			$prepared->bindValue( ':queue', $queue, PDO::PARAM_STR );
+			$params['queue'] = $queue;
 		}
-		$prepared->execute();
+		$this->prepareAndExecute( $sql, $params );
 	}
 
 	/**
