@@ -13,6 +13,12 @@ adyen:
                 -
                     connection_string: 'sqlite::memory:'
 
+        jobs-adyen:
+            class: PHPQueue\Backend\PDO
+            constructor-parameters:
+                -
+                    connection_string: 'sqlite::memory:'
+
         pending-db:
             class: PDO
             constructor-parameters:

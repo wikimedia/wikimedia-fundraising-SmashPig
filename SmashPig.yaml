@@ -101,6 +101,13 @@ default:
                     # others not.  Make it consistent (and invisible).
                     queue: jobs-paypal
 
+        jobs-adyen:
+            class: PHPQueue\Backend\Predis
+            constructor-parameters:
+                -
+                    <<: *REDIS
+                    queue: jobs-adyen
+
         verified:
             class: SmashPig\Core\DataStores\MultiQueueWriter
             constructor-parameters:

@@ -10,5 +10,10 @@ abstract class RunnableJob
 	extends KeyedOpaqueStorableObject
 	implements Runnable
 {
+	public function __construct() {
+		parent::__construct();
+		$this->{'php-message-class'} = get_called_class();
+	}
+
 	abstract public function execute();
 }

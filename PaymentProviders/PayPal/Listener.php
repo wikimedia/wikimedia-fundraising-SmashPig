@@ -20,7 +20,6 @@ class Listener implements IHttpActionHandler {
 		// Dump the request right into the queue with no validation.
 		$job = new Job;
 		$job->payload = $requestValues;
-		$job->{'php-message-class'} = 'SmashPig\PaymentProviders\PayPal\Job';
 		$this->config->object( 'data-store/jobs-paypal' )->push( $job );
 	}
 
