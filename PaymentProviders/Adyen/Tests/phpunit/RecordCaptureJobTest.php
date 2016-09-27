@@ -4,7 +4,7 @@ use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\Core\DataStores\PendingDatabase;
-use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
+use SmashPig\Core\DataStores\QueueFactory;
 use SmashPig\PaymentProviders\Adyen\Jobs\RecordCaptureJob;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -42,7 +42,7 @@ class RecordCaptureJobTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testRecordCapture() {
-		$verifiedQueue = BaseQueueConsumer::getQueue( 'verified' );
+		$verifiedQueue = QueueFactory::getQueue( 'verified' );
 		$verifiedQueue->createTable( 'verified' );
 
 		$capture = KeyedOpaqueStorableObject::fromJsonProxy(

@@ -7,7 +7,7 @@ use PDO;
 use PHPQueue\Interfaces\FifoQueueStore;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\DamagedDatabase;
-use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
+use SmashPig\Core\DataStores\QueueFactory;
 
 class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 
@@ -23,7 +23,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		Context::initWithLogger( QueueTestConfiguration::instance() );
-		$this->queue = BaseQueueConsumer::getQueue( 'test' );
+		$this->queue = QueueFactory::getQueue( 'test' );
 		$this->queue->createTable( 'test' );
 		$damagedDb = DamagedDatabase::get();
 		$damagedDb->createTable();
