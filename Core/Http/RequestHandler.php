@@ -32,6 +32,8 @@ class RequestHandler {
 		$uri = $request->query->get( 'p', '' );
 		$parts = explode( '/', $uri );
 
+		$request->query->remove( 'p' );
+
 		if ( count( $parts ) < 2 ) {
 			$response->setStatusCode(
 				403,
