@@ -2,6 +2,7 @@
 
 namespace SmashPig\Tests;
 
+use ReflectionClass;
 use SmashPig\Core\Configuration;
 
 /**
@@ -36,5 +37,12 @@ class TestingConfiguration extends Configuration {
 		$config = static::installTestConfiguration();
 		$config->override( $data );
 		return $config;
+	}
+
+	public static function tearDownConfiguration() {
+		$konfig = new ReflectionClass( 'SmashPig\Core\Configuration' );
+		$defaultConfig = $konfig->getProperty( 'defaultObj' );
+		$defaultConfig->setAccessible( true );
+		$defaultConfig->setValue( null );
 	}
 }

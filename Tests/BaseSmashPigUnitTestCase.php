@@ -19,6 +19,7 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 
 	function tearDown() {
 		Context::set(); // Nullify the context for next run.
+		TestingConfiguration::tearDownConfiguration(); // And the default config
 	}
 
 	function loadJson( $path ) {
