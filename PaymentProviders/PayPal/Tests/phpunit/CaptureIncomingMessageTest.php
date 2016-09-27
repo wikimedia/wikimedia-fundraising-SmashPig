@@ -35,6 +35,11 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->config = PayPalTestConfiguration::get();
+
+		// php-queue\PDO complains about pop() from non-existent table
+		$this->config->object( 'data-store/jobs-paypal' )
+			->createTable( 'jobs-paypal' );
+
 		Context::initWithLogger( $this->config );
 		foreach ( self::$message_locations as $type => $file ) {
 			self::$messages[$type] = json_decode(
@@ -88,6 +93,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 			$job->execute();
 
 			$queue = $this->config->object( 'data-store/' . $type );
+			$queue->createTable( $type );
 			$message = $queue->pop();
 
 			$this->assertNotEmpty( $message );
