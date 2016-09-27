@@ -75,6 +75,25 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 		$this->prepareAndExecute( $sql, $message );
 	}
 
+	public function updatePaymentStatus(
+		$gateway, $contributionTrackingId, $orderId, $status
+	) {
+		$sql = 'UPDATE payments_initial
+			SET payments_final_status = :status
+			WHERE gateway = :gateway
+			AND contribution_tracking_id = :ct_id
+			AND order_id = :order_id';
+
+		$params = array(
+			'gateway' => $gateway,
+			'ct_id' => $contributionTrackingId,
+			'order_id' => $orderId,
+			'status' => $status
+		);
+
+		$this->prepareAndExecute( $sql, $params );
+	}
+
 	protected function getConfigKey() {
 		return 'data-store/fredge-db';
 	}
