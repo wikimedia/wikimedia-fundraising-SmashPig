@@ -95,7 +95,7 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 	 * We refuse to consume a message and drop it if the corresponding
 	 * payments_initial row is complete.
 	 */
-	public function testPendingMessageInitialComplete() {
+	/*public function testPendingMessageInitialComplete() {
 		$initRow = PaymentsInitialDatabaseTest::generateTestMessage();
 		$initRow['payments_final_status'] = 'complete';
 
@@ -111,13 +111,13 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 
 		$this->assertNull( $fetched,
 			'Message consumed and not stored in the pending database.' );
-	}
+	}*/
 
 	/**
 	 * We refuse to consume a message and drop it if the corresponding
 	 * payments_initial row is failed.
 	 */
-	public function testPendingMessageInitialFailed() {
+	/*public function testPendingMessageInitialFailed() {
 		$initRow = PaymentsInitialDatabaseTest::generateTestMessage();
 		$initRow['payments_final_status'] = 'failed';
 
@@ -133,7 +133,7 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 
 		$this->assertNull( $fetched,
 			'Message consumed and not stored in the pending database.' );
-	}
+	}*/
 
 	public static function generateRandomPendingMessage() {
 		$message = array(
