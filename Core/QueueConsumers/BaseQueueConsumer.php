@@ -7,6 +7,7 @@ use PHPQueue\Interfaces\AtomicReadBuffer;
 
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\DamagedDatabase;
+use SmashPig\Core\DataStores\QueueFactory;
 use SmashPig\Core\Logging\Logger;
 
 /**
@@ -70,7 +71,7 @@ abstract class BaseQueueConsumer {
 		$this->timeLimit = intval( $timeLimit );
 		$this->messageLimit = intval( $messageLimit );
 
-		$this->backend = self::getQueue( $queueName );
+		$this->backend = QueueFactory::getQueue( $queueName );
 
 		if ( !$this->backend instanceof AtomicReadBuffer ) {
 			throw new InvalidArgumentException(
@@ -151,19 +152,4 @@ abstract class BaseQueueConsumer {
 		);
 	}
 
-	public static function getQueue( $queueName ) {
-		$config = Context::get()->getConfiguration();
-		$key = "data-store/$queueName";
-
-		// Get a reference to the config node so we can mess with it
-		$node =& $config->val( $key, true );
-		if (
-			empty( $node['constructor-parameters'] ) ||
-			empty( $node['constructor-parameters'][0]['queue'] )
-		) {
-			$node['constructor-parameters'][0]['queue'] = $queueName;
-		}
-
-		return $config->object( $key, true );
-	}
 }

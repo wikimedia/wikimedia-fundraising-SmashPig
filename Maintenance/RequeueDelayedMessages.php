@@ -3,7 +3,7 @@ namespace SmashPig\Maintenance;
 
 require ( 'MaintenanceBase.php' );
 
-use SmashPig\Core\Configuration;
+use SmashPig\Core\DataStores\QueueFactory;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\DamagedDatabase;
 
@@ -37,12 +37,11 @@ class RequeueDelayedMessages extends MaintenanceBase {
 			$this->getOption( 'max-messages' )
 		);
 		$stats = array();
-		$config = Configuration::getDefaultConfig();
 
 		foreach( $messages as $message ) {
 			$queueName = $message['original_queue'];
 			// FIXME: getting it by alias, this will be annoying cos -new
-			$queue = $config->object( "data-store/$queueName", true );
+			$queue = QueueFactory::getQueue( $queueName );
 			unset( $message['original_queue'] );
 			$queue->push( $message );
 			$this->damagedDatabase->deleteMessage( $message );

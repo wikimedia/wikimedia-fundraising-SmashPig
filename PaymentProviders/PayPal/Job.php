@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\PayPal;
 
 use SmashPig\Core\Configuration;
+use SmashPig\Core\DataStores\QueueFactory;
 use SmashPig\Core\Jobs\RunnableJob;
 
 class Job extends RunnableJob {
@@ -71,7 +72,7 @@ class Job extends RunnableJob {
 
 		// Save to appropriate queue.
 
-		$this->config->object( 'data-store/' . $msg_type )
+		QueueFactory::getQueue( $msg_type )
 			->push( $new_msg );
 
 		// TODO It would be nice if push() returned something useful so we
