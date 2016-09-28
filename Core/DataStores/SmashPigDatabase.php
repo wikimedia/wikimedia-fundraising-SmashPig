@@ -1,6 +1,7 @@
 <?php namespace SmashPig\Core\DataStores;
 
 use PDO;
+use PDOStatement;
 use SmashPig\Core\Context;
 
 abstract class SmashPigDatabase {
@@ -14,8 +15,8 @@ abstract class SmashPigDatabase {
 
 	protected function __construct() {
 		$config = Context::get()->getConfiguration();
-		if ( !self::$db ) {
-			self::$db = $config->object( $this->getConfigKey() );
+		if ( !static::$db ) {
+			static::$db = $config->object( $this->getConfigKey() );
 		}
 	}
 
@@ -27,7 +28,7 @@ abstract class SmashPigDatabase {
 	 * @return PDO
 	 */
 	public function getDatabase() {
-		return self::$db;
+		return static::$db;
 	}
 
 	public function createTable() {
@@ -46,4 +47,52 @@ abstract class SmashPigDatabase {
 	 * @return string Name of file (no directory) containing table creation SQL
 	 */
 	abstract protected function getTableScriptFile();
+
+	/**
+	 * Build components of a parameterized insert statement
+	 *
+	 * @param array $record the associative array of values
+	 * @return array with two string members, first a concatenated field list,
+	 *  then a concatenated list of parameters.
+	 */
+	protected static function formatInsertParameters( $record ) {
+		$fields = array_keys( $record );
+		$fieldList = implode( ',', $fields );
+
+		// Build a list of parameter names for safe db insert
+		// Same as the field list, but each parameter is prefixed with a colon
+		$paramList = ':' . implode( ', :', $fields );
+		return array( $fieldList, $paramList );
+	}
+
+	/**
+	 * Prepares and executes a database command
+	 *
+	 * @param string $sql parameterized SQL command
+	 * @param array $dbRecord associative array of values to bind
+	 * @return PDOStatement the executed statement for any fetching
+	 * @throws DataStoreException
+	 */
+	protected function prepareAndExecute( $sql, $dbRecord ) {
+		$prepared = $this->getDatabase()->prepare( $sql );
+
+		foreach ( $dbRecord as $field => $value ) {
+			if( gettype( $value ) === 'integer' ) {
+				$paramType = PDO::PARAM_INT;
+			} else {
+				$paramType = PDO::PARAM_STR;
+			}
+			$prepared->bindValue(
+				':' . $field,
+				$value,
+				$paramType
+			);
+		}
+
+		if ( !$prepared->execute() ) {
+			$info = print_r( $this->getDatabase()->errorInfo() );
+			throw new DataStoreException( "Failed to execute $sql: $info" );
+		}
+		return $prepared;
+	}
 }

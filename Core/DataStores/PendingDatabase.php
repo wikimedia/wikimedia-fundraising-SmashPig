@@ -3,10 +3,8 @@ namespace SmashPig\Core\DataStores;
 
 use PDO;
 use RuntimeException;
-use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
-use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 
 /**
  * Data store containing messages waiting to be finalized.
@@ -30,7 +28,6 @@ class PendingDatabase extends SmashPigDatabase {
 	 * Build and insert a database record from a pending queue message
 	 *
 	 * @param array $message
-	 * @throws SmashPigException
 	 */
 	public function storeMessage( $message ) {
 		$this->validateMessage( $message );
@@ -53,23 +50,13 @@ class PendingDatabase extends SmashPigDatabase {
 		// Dump the whole message into a text column
 		$dbRecord['message'] = json_encode( $message );
 
-		$fields = array_keys( $dbRecord );
 		if ( isset( $message['pending_id'] ) ) {
-			$sql = $this->getUpdateStatement( $fields );
+			$sql = $this->getUpdateStatement( $dbRecord );
 			$dbRecord['id'] = $message['pending_id'];
 		} else {
-			$sql = $this->getInsertStatement( $fields );
+			$sql = $this->getInsertStatement( $dbRecord );
 		}
-		$prepared = self::$db->prepare( $sql );
-
-		foreach ( $dbRecord as $field => $value ) {
-			$prepared->bindValue(
-				':' . $field,
-				$value,
-				PDO::PARAM_STR
-			);
-		}
-		$prepared->execute();
+		$this->prepareAndExecute( $sql, $dbRecord );
 	}
 
 	/**
@@ -80,16 +67,17 @@ class PendingDatabase extends SmashPigDatabase {
 	 * @return array|null Record related to a transaction, or null if nothing matches
 	 */
 	public function fetchMessageByGatewayOrderId( $gatewayName, $orderId ) {
-		$prepared = self::$db->prepare( '
-			select * from pending
+		$sql = 'select * from pending
 			where gateway = :gateway
 				and order_id = :order_id
-			limit 1' );
+			limit 1';
 
-		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
-		$prepared->bindValue( ':order_id', $orderId, PDO::PARAM_STR );
-		$prepared->execute();
-		$row = $prepared->fetch( PDO::FETCH_ASSOC );
+		$params = array(
+			'gateway' => $gatewayName,
+			'order_id' => $orderId,
+		);
+		$executed = $this->prepareAndExecute( $sql, $params );
+		$row = $executed->fetch( PDO::FETCH_ASSOC );
 		if ( !$row ) {
 			return null;
 		}
@@ -103,14 +91,14 @@ class PendingDatabase extends SmashPigDatabase {
 	 * @return array|null Message or null if nothing is found.
 	 */
 	public function fetchMessageByGatewayOldest( $gatewayName ) {
-		$prepared = self::$db->prepare( '
-			select * from pending
+		$sql = 'select * from pending
 			where gateway = :gateway
 			order by date asc
-			limit 1' );
-		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
-		$prepared->execute();
-		$row = $prepared->fetch( PDO::FETCH_ASSOC );
+			limit 1';
+
+		$params = array( 'gateway' => $gatewayName );
+		$executed = $this->prepareAndExecute( $sql, $params );
+		$row = $executed->fetch( PDO::FETCH_ASSOC );
 		if ( !$row ) {
 			return null;
 		}
@@ -125,14 +113,14 @@ class PendingDatabase extends SmashPigDatabase {
 	 * @return array|null Messages or null if nothing is found.
 	 */
 	public function fetchMessagesByGatewayNewest( $gatewayName, $limit = 1 ) {
-		$prepared = self::$db->prepare( "
+		$sql = "
 			select * from pending
 			where gateway = :gateway
 			order by date desc
-			limit $limit" );
-		$prepared->bindValue( ':gateway', $gatewayName, PDO::PARAM_STR );
-		$prepared->execute();
-		$rows = $prepared->fetchAll( PDO::FETCH_ASSOC );
+			limit $limit";
+		$params = array( 'gateway' => $gatewayName );
+		$executed = $this->prepareAndExecute( $sql, $params );
+		$rows = $executed->fetchAll( PDO::FETCH_ASSOC );
 		if ( !$rows ) {
 			return null;
 		}
@@ -155,13 +143,16 @@ class PendingDatabase extends SmashPigDatabase {
 			throw new RuntimeException( 'Message doesn\'t have an order_id!' );
 		}
 
-		$prepared = self::$db->prepare( '
+		$sql = '
 			delete from pending
 			where gateway = :gateway
-				and order_id = :order_id' );
-		$prepared->bindValue( ':gateway', $message['gateway'], PDO::PARAM_STR );
-		$prepared->bindValue( ':order_id', $message['order_id'], PDO::PARAM_STR );
-		$prepared->execute();
+				and order_id = :order_id';
+		$params = array(
+			'gateway' => $message['gateway'],
+			'order_id' => $message['order_id'],
+		);
+
+		$this->prepareAndExecute( $sql, $params );
 	}
 
 	/**
@@ -174,27 +165,25 @@ class PendingDatabase extends SmashPigDatabase {
 	}
 
 	/**
-	 * @param array $fields
+	 * @param array $record
 	 * @return string SQL to insert a pending record, with parameters
 	 */
-	protected function getInsertStatement( $fields ) {
-		$fieldList = implode( ',', $fields );
-
-		// Build a list of parameter names for safe db insert
-		// Same as the field list, but each parameter is prefixed with a colon
-		$paramList = ':' . implode( ', :', $fields );
+	protected function getInsertStatement( $record ) {
+		list( $fieldList, $paramList ) = self::formatInsertParameters(
+			$record
+		);
 
 		$insert = "INSERT INTO pending ( $fieldList ) VALUES ( $paramList )";
 		return $insert;
 	}
 
 	/**
-	 * @param array $fields
+	 * @param array $record
 	 * @return string SQL to update a pending record, with parameters
 	 */
-	protected function getUpdateStatement( $fields ) {
+	protected function getUpdateStatement( $record ) {
 		$sets = array();
-		foreach( $fields as $field ) {
+		foreach( array_keys( $record ) as $field ) {
 			$sets[] = "$field = :$field";
 		}
 		$update = 'UPDATE pending SET ' .
