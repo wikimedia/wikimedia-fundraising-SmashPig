@@ -2,6 +2,7 @@
 
 use RuntimeException;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Runnable;
 
 class JobQueueConsumer extends BaseQueueConsumer {
@@ -27,10 +28,15 @@ class JobQueueConsumer extends BaseQueueConsumer {
 		// things as properties. The message is mingled with stuff like
 		// php-message-class. Could collide.
 		$className = $jobMessage['php-message-class'];
+		Logger::info( "Hydrating a message with class $className" );
+
 		$jsonMessage = json_encode( $jobMessage );
+
+		Logger::debug( "Job payload: $jsonMessage" );
 		$jobObj = KeyedOpaqueStorableObject::fromJsonProxy( $className, $jsonMessage );
 
 		if ( $jobObj instanceof Runnable ) {
+			Logger::info( 'Running job' );
 			if ( !$jobObj->execute() ) {
 				throw new RuntimeException(
 					'Job tells us that it did not successfully execute. '
