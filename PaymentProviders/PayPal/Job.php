@@ -3,6 +3,7 @@
 use Exception;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Jobs\RunnableJob;
+use SmashPig\CrmLink\Messages\SourceFields;
 
 class Job extends RunnableJob {
 
@@ -86,7 +87,7 @@ class Job extends RunnableJob {
 		$new_msg->gateway = 'paypal';
 
 		// Save to appropriate queue.
-
+		SourceFields::addToMessage( $new_msg );
 		$this->config->object( 'data-store/' . $msg_type )
 			->push( $new_msg );
 

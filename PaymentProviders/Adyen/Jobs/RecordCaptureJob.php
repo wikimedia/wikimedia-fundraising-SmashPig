@@ -5,6 +5,7 @@ use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
+use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
 
 /**
@@ -56,6 +57,7 @@ class RecordCaptureJob extends RunnableJob {
 			// Add the gateway transaction ID and send it to the completed queue
 			$dbMessage['gateway_txn_id'] = $this->originalReference;
 			$queueMessage = DonationInterfaceMessage::fromValues( $dbMessage );
+			SourceFields::addToMessage( $queueMessage );
 			$config->object( 'data-store/verified' )->push( $queueMessage );
 
 			// Remove it from the pending database
