@@ -1,6 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
-use SmashPig\Core\DataStores\QueueFactory;
+use SmashPig\Core\Configuration;
 use SmashPig\Core\Jobs\DeletePendingJob;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
@@ -18,7 +18,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 		$tl = new TaggedLogger( 'PaymentCaptureAction' );
 
 		if ( $msg instanceof Authorisation ) {
-			$jobQueueObj = QueueFactory::getQueue( 'jobs' );
+			$jobQueueObj = Configuration::getDefaultConfig()->object( 'data-store/jobs' );
 			if ( $msg->success ) {
 				// Here we need to capture the payment, the job runner will collect the
 				// orphan message

@@ -5,7 +5,7 @@ use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 use SmashPig\Core\DataStores\PendingDatabase;
-use SmashPig\Core\DataStores\QueueFactory;
+use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -38,7 +38,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 			file_get_contents( __DIR__ . '/../Data/pending.json' ) , true
 		);
 		$this->pendingDatabase->storeMessage( $this->pendingMessage );
-		$this->antifraudQueue = QueueFactory::getQueue( 'payments-antifraud' );
+		$this->antifraudQueue = BaseQueueConsumer::getQueue( 'payments-antifraud' );
 	}
 
 	public function tearDown() {

@@ -3,8 +3,10 @@ namespace SmashPig\PaymentProviders\PayPal\Tests;
 
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
-use SmashPig\Core\DataStores\QueueFactory;
+use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
 use SmashPig\PaymentProviders\PayPal\Listener;
+use SmashPig\PaymentProviders\PayPal\Job;
+use SmashPig\PaymentProviders\PayPal\Tests\PayPalTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
@@ -35,7 +37,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$this->config = PayPalTestConfiguration::get();
 
 		// php-queue\PDO complains about pop() from non-existent table
-		QueueFactory::getQueue( 'jobs-paypal' )
+		$this->config->object( 'data-store/jobs-paypal' )
 			->createTable( 'jobs-paypal' );
 
 		Context::initWithLogger( $this->config );
@@ -59,7 +61,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 			$this->capture( $msg );
 
-			$jobQueue = QueueFactory::getQueue( 'jobs-paypal' );
+			$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
 			$jobMessage = $jobQueue->pop();
 
 			$this->assertEquals( $jobMessage['php-message-class'],
@@ -72,7 +74,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 	public function testBlankMessage() {
 		$this->capture( array() );
-		$jobQueue = QueueFactory::getQueue( 'jobs-paypal' );
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
 		$this->assertNull( $jobQueue->pop() );
 	}
 
@@ -80,7 +82,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		foreach ( self::$messages as $type => $msg ) {
 			$this->capture( $msg );
 
-			$jobQueue = QueueFactory::getQueue( 'jobs-paypal' );
+			$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
 			$jobMessage = $jobQueue->pop();
 
 			$job = KeyedOpaqueStorableObject::fromJsonProxy(
@@ -90,7 +92,8 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 			$job->execute();
 
-			$queue = QueueFactory::getQueue( $type );
+			$queue = $this->config->object( 'data-store/' . $type );
+			$queue->createTable( $type );
 			$message = $queue->pop();
 
 			$this->assertNotEmpty( $message );

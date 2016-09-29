@@ -2,7 +2,6 @@
 
 use SmashPig\Core\Configuration;
 use SmashPig\Core\DataStores\PendingDatabase;
-use SmashPig\Core\DataStores\QueueFactory;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
@@ -194,7 +193,8 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			$dbMessage, $riskScore, $scoreBreakdown, $action
 		);
 		$this->logger->debug( "Sending antifraud message with risk score $riskScore and action $action." );
-		QueueFactory::getQueue( 'payments-antifraud' )
+		Configuration::getDefaultConfig()
+			->object( 'data-store/payments-antifraud' )
 			->push( $antifraudMessage );
 	}
 
