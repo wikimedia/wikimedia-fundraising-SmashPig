@@ -12,7 +12,7 @@ class QueueFactory {
 	 * @param string $queueName The subkey under data-store
 	 * @return mixed
 	 */
-	public static function &getQueue( $queueName ) {
+	public static function getQueue( $queueName ) {
 		$config = Context::get()->getConfiguration();
 		$key = "data-store/$queueName";
 
