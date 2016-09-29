@@ -25,12 +25,11 @@ paypal:
                     queue: recurring
 
         refund:
-            class: SmashPig\Tests\MockDataStore
-            constructor-parameters: []
-
-        verified:
-            class: SmashPig\Tests\MockDataStore
-            constructor-parameters: []
+            class: PHPQueue\Backend\PDO
+            constructor-parameters:
+                -
+                    connection_string: 'sqlite::memory:'
+                    queue: refund
 
         pending-db:
             class: PDO

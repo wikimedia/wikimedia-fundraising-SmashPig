@@ -1,5 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\PayPal;
 
+use Exception;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Jobs\RunnableJob;
 
@@ -8,6 +9,11 @@ class Job extends RunnableJob {
 	static $verifyFailedMsg = 'PayPal message verification failed';
 
 	public $payload;
+
+	/**
+	 * @var Configuration
+	 */
+	protected $config;
 
 	public function execute() {
 		$this->config = Configuration::getDefaultConfig();
@@ -21,12 +27,22 @@ class Job extends RunnableJob {
 
 		$valid = $this->config->object( 'api' )->validate( $request );
 		if ( ! $valid ) {
-			throw new \Exception( self::$verifyFailedMsg );
+			throw new Exception( self::$verifyFailedMsg );
 		}
 
 		// Determine message type.
 
-		$txn_type = $request['txn_type'];
+		if ( isset( $request['txn_type'] ) ) {
+			$txn_type = $request['txn_type'];
+		} elseif (
+			isset( $request['payment_status'] ) &&
+			in_array( $request['payment_status'], array( 'Reversed', 'Refunded' ) )
+		) {
+			// refund, chargeback, or reversal
+			$txn_type = 'refund';
+		} else {
+			throw new Exception( 'Invalid PayPal message: ' . json_encode( $request ) );
+		}
 
 		$msg_type = null;
 		foreach ( $this->config->val( 'messages' ) as $type => $conf ) {
@@ -36,7 +52,7 @@ class Job extends RunnableJob {
 		}
 
 		if ( ! $msg_type ) {
-			throw new \Exception( 'Invalid PayPal message type: ' . $txn_type );
+			throw new Exception( 'Invalid PayPal message type: ' . $txn_type );
 		}
 
 		// Transform into new message.

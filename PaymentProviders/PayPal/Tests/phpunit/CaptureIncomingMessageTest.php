@@ -27,7 +27,8 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	static $message_locations = array(
 		'verified' => 'web_accept.json',
 		'recurring' => 'subscr_signup.json',
-		'recurring' => 'subscr_payment.json'
+		'recurring' => 'subscr_payment.json',
+		'refund' => 'refund.json',
 	);
 
 	static $messages = array();
