@@ -97,6 +97,9 @@ default:
             constructor-parameters:
                 -
                     <<: *REDIS
+                    # FIXME: This queue thing is introspected at times, and at
+                    # others not.  Make it consistent (and invisible).
+                    queue: jobs-paypal
 
         verified:
             class: SmashPig\Core\DataStores\MultiQueueWriter

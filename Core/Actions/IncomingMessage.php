@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Core\Actions;
 
-use SmashPig\Core\DataStores\QueueFactory;
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
 
@@ -10,7 +10,7 @@ class IncomingMessage implements IListenerMessageAction {
 		$destinationQueue = $msg->getDestinationQueue();
 
 		if ( $destinationQueue ) {
-			$queue = QueueFactory::getQueue( $destinationQueue );
+			$queue = Context::get()->getConfiguration()->object( "data-store/{$destinationQueue}" );
 			$queueMsg = $msg->normalizeForQueue();
 
 			$queue->push( $queueMsg );

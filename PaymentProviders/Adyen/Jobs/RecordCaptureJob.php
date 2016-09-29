@@ -2,7 +2,6 @@
 
 use SmashPig\Core\Configuration;
 use SmashPig\Core\DataStores\PendingDatabase;
-use SmashPig\Core\DataStores\QueueFactory;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
@@ -57,7 +56,7 @@ class RecordCaptureJob extends RunnableJob {
 			// Add the gateway transaction ID and send it to the completed queue
 			$dbMessage['gateway_txn_id'] = $this->originalReference;
 			$queueMessage = DonationInterfaceMessage::fromValues( $dbMessage );
-			QueueFactory::getQueue( 'verified' )->push( $queueMessage );
+			$config->object( 'data-store/verified' )->push( $queueMessage );
 
 			// Remove it from the pending database
 			$logger->debug( 'Removing donor details message from pending database' );

@@ -1,6 +1,7 @@
 <?php namespace SmashPig\Core\DataStores;
 
 use PHPQueue\Interfaces\FifoQueueStore;
+use SmashPig\Core\Configuration;
 use SmashPig\Core\ConfigurationException;
 
 /**
@@ -16,8 +17,10 @@ class MultiQueueWriter {
 	 * @param array $backends list of config keys under data-store
 	 */
 	public function __construct( $backends ) {
+		$config = Configuration::getDefaultConfig();
 		foreach ( $backends as $configKey ) {
-			$this->queues[] = QueueFactory::getQueue( $configKey );
+			$path = 'data-store/' . $configKey;
+			$this->queues[] = $config->object( $path );
 		}
 	}
 
