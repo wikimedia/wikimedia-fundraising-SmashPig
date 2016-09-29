@@ -30,7 +30,7 @@ class JobQueueConsumer extends BaseQueueConsumer {
 		$className = $jobMessage['php-message-class'];
 		Logger::info( "Hydrating a message with class $className" );
 
-		$jsonMessage = json_encode( $jobMessage );
+		$jsonMessage = json_encode( $jobMessage, JSON_UNESCAPED_UNICODE );
 
 		Logger::debug( "Job payload: $jsonMessage" );
 		$jobObj = KeyedOpaqueStorableObject::fromJsonProxy( $className, $jsonMessage );
