@@ -24,7 +24,7 @@ class TestingConfiguration extends Configuration {
 	public static function installTestConfiguration( $pathOverrides = array() ) {
 		// Late static binding so that a subclass creates one of itself
 		$singleton = static::createForViewWithOverrideFile( 'default', $pathOverrides );
-		Configuration::setDefaultConfig( $singleton );
+		Configuration::$defaultObj = $singleton;
 		return $singleton;
 	}
 

@@ -38,16 +38,6 @@ class Configuration {
 	}
 
 	/**
-	 * Set the default configuration object that will be returned by get_default_config()
-	 *
-	 * @param Configuration $obj
-	 */
-	protected static function setDefaultConfig( Configuration $obj ) {
-		// TODO: And in fact, freak out if there's already a default config.
-		Configuration::$defaultObj = $obj;
-	}
-
-	/**
 	 * Creates a configuration object for a specific configuration node.
 	 *
 	 * @param string $view Configuration view to load
@@ -90,7 +80,9 @@ class Configuration {
 	}
 
 	protected function __construct() {
-		Configuration::setDefaultConfig( $this );
+		// Memoize configuration.
+		// TODO It could be confusing for the ctor to nuke the stored config.
+		self::$defaultObj = $this;
 	}
 
 	public function loadDefaultConfig() {
