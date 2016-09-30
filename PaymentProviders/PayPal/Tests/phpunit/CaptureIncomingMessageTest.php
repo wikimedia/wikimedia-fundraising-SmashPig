@@ -98,6 +98,9 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 			$message = $queue->pop();
 
 			$this->assertNotEmpty( $message );
+			if ( isset( $message['contribution_tracking_id'] ) ) {
+				$this->assertEquals( $message['contribution_tracking_id'], $message['order_id'] );
+			}
 
 		}
 	}

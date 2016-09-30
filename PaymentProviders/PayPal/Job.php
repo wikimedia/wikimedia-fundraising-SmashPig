@@ -75,6 +75,11 @@ class Job extends RunnableJob {
 				}
 			}
 
+			// FIXME: var map can't put one thing in two places
+			if ( isset( $new_msg->contribution_tracking_id ) ) {
+				$new_msg->order_id = $new_msg->contribution_tracking_id;
+			}
+
 			// FIXME represent special case as var_map config override?
 			if ( $msg_type === 'refund' ) {
 				$new_msg->gateway_refund_id = $request['txn_id'];
