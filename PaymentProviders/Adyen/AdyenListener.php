@@ -94,10 +94,9 @@ class AdyenListener extends SoapListener {
 			// Now process each message to the best of our ability
 			foreach ( $messages as $msg ) {
 				if ( $this->processMessage( $msg ) ) {
-					Logger::debug( "Message successfully processed, removing from inflight store." );
-					$this->inflightStore->removeObjects( $msg );
+					Logger::debug( "Message successfully processed. Moving along..." );
 				} else {
-					Logger::error( "Message was not successfully processed. Leaving in inflight store!", $msg );
+					Logger::error( "Message was not successfully processed!", $msg );
 				}
 			}
 
@@ -124,8 +123,7 @@ class AdyenListener extends SoapListener {
 			return false;
 		} else {
 			$className = get_class( $msg );
-			Logger::info( "Listener message of type $className created - adding to inflight store." );
-			$this->inflightStore->addObject( $msg );
+			Logger::info( "Listener message of type $className created." );
 		}
 		return $msg;
 	}

@@ -20,12 +20,8 @@ abstract class ListenerBase implements IHttpActionHandler {
 	/** @var Configuration object - stores all listener configuration */
 	protected $c;
 
-	/** @var KeyedOpaqueDataStore for placing messages that are in flight */
-	protected $inflightStore;
-
 	public function __construct() {
 		$this->c = Context::get()->getConfiguration();
-		$this->inflightStore = $this->c->object( 'data-store/inflight' );
 	}
 
 	public function execute( Request $request, Response $response ) {
@@ -114,8 +110,7 @@ abstract class ListenerBase implements IHttpActionHandler {
 	 *
 	 * @param ListenerMessage $msg Message object to operate on
 	 *
-	 * @return bool True if the message was successfully processed. Returning false will keep the
-	 * message in the bogus inflight queue.
+	 * @return bool True if the message was successfully processed.
 	 */
 	protected function processMessage( ListenerMessage $msg ) {
 		try {

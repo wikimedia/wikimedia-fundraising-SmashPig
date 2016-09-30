@@ -12,12 +12,6 @@ default:
                 host: 127.0.0.1
                 port: 6379
 
-        # Store definitions
-        inflight:
-            class: SmashPig\Core\DataStores\DiskFileDataStore
-            constructor-parameters:
-                - /tmp/
-
         payments-antifraud:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
