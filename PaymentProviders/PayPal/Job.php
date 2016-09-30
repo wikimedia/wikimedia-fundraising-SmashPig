@@ -83,6 +83,7 @@ class Job extends RunnableJob {
 			// FIXME represent special case as var_map config override?
 			if ( $msg_type === 'refund' ) {
 				$new_msg->gateway_refund_id = $request['txn_id'];
+				$new_msg->gross_currency = $request['mc_gross'];
 			}
 
 			// FIXME once recurring uses normalized msg it needs this too
