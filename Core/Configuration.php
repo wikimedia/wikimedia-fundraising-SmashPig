@@ -211,6 +211,7 @@ class Configuration {
 		 */
 		if ( $node === '/' ) {
 			if ( $returnRef ) {
+				// TODO: Don't offer a return-by-reference.
 				$options = &$this->options;
 			} else {
 				$options = $this->options;
@@ -243,8 +244,6 @@ class Configuration {
 	 * key name which will be an array with at least a subkey of 'class'. The class will then be
 	 * instantiated with any arguments as given in the subkey 'constructor-parameters'.
 	 *
-	 * NOTE: This will return a reference to the object!
-	 *
 	 * When arguments are given it should be a simple list with arguments in the expected order.
 	 *
 	 * Example:
@@ -261,7 +260,7 @@ class Configuration {
 	 * @return mixed|object
 	 * @throws ConfigurationKeyException
 	 */
-	public function &object( $node, $persistent = true ) {
+	public function object( $node, $persistent = true ) {
 		// First look and see if we already have a $persistent object.
 		if ( array_key_exists( $node, $this->objects ) ) {
 			return $this->objects[$node];
