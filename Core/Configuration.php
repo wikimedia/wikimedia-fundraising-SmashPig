@@ -38,16 +38,6 @@ class Configuration {
 	}
 
 	/**
-	 * Set the default configuration object that will be returned by get_default_config()
-	 *
-	 * @param Configuration $obj
-	 */
-	protected static function setDefaultConfig( Configuration $obj ) {
-		// TODO: And in fact, freak out if there's already a default config.
-		Configuration::$defaultObj = $obj;
-	}
-
-	/**
 	 * Creates a configuration object for a specific configuration node.
 	 *
 	 * @param string $view Configuration view to load
@@ -90,7 +80,9 @@ class Configuration {
 	}
 
 	protected function __construct() {
-		Configuration::setDefaultConfig( $this );
+		// Memoize configuration.
+		// TODO It could be confusing for the ctor to nuke the stored config.
+		self::$defaultObj = $this;
 	}
 
 	public function loadDefaultConfig() {
@@ -211,6 +203,7 @@ class Configuration {
 		 */
 		if ( $node === '/' ) {
 			if ( $returnRef ) {
+				// TODO: Don't offer a return-by-reference.
 				$options = &$this->options;
 			} else {
 				$options = $this->options;
@@ -243,8 +236,6 @@ class Configuration {
 	 * key name which will be an array with at least a subkey of 'class'. The class will then be
 	 * instantiated with any arguments as given in the subkey 'constructor-parameters'.
 	 *
-	 * NOTE: This will return a reference to the object!
-	 *
 	 * When arguments are given it should be a simple list with arguments in the expected order.
 	 *
 	 * Example:
@@ -261,7 +252,7 @@ class Configuration {
 	 * @return mixed|object
 	 * @throws ConfigurationKeyException
 	 */
-	public function &object( $node, $persistent = true ) {
+	public function object( $node, $persistent = true ) {
 		// First look and see if we already have a $persistent object.
 		if ( array_key_exists( $node, $this->objects ) ) {
 			return $this->objects[$node];
