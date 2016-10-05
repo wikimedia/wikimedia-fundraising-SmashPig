@@ -92,8 +92,13 @@ class Job extends RunnableJob {
 
 		$new_msg->gateway = 'paypal';
 
-		// Save to appropriate queue.
 		SourceFields::addToMessage( $new_msg );
+
+		// FIXME once all messages can be arrays, just make this an array
+		// at the top
+		$new_msg = (array)$new_msg;
+
+		// Save to appropriate queue.
 		$this->config->object( 'data-store/' . $msg_type )
 			->push( $new_msg );
 

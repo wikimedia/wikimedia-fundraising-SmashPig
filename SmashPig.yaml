@@ -104,10 +104,10 @@ default:
                     queue: jobs-paypal
 
         verified:
-            class: SmashPig\Core\DataStores\MultiQueueWriter
+            class: PHPQueue\Backend\Predis
             constructor-parameters:
                 -
-                    - verified-stomp
+                    <<: *REDIS
 
         verified-stomp:
             class: SmashPig\Core\DataStores\StompDataStore
