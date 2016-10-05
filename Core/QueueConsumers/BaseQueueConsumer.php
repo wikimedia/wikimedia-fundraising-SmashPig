@@ -137,11 +137,19 @@ abstract class BaseQueueConsumer {
 	protected function sendToDamagedStore(
 		$message, Exception $ex, $retryDate = null
 	) {
-		Logger::error(
-			'Error processing message, moving to damaged store.',
-			$message,
-			$ex
-		);
+		if ( $retryDate ) {
+			Logger::notice(
+				'Message not fully baked. Sticking it back in the oven, to ' .
+				"retry at $retryDate",
+				$message
+			);
+		} else {
+			Logger::error(
+				'Error processing message, moving to damaged store.',
+				$message,
+				$ex
+			);
+		}
 		return $this->damagedDb->storeMessage(
 			$message,
 			$this->queueName,
