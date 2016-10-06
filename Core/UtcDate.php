@@ -8,7 +8,7 @@ use SmashPig\Core\Logging\Logger;
 class UtcDate {
 	// FIXME: Should probably let the exception bubble up instead of setting
 	// dates to null.
-	public static function getUtcTimestamp( $dateString, $timeZone = 'UTC' ) {
+	public static function getUtcTimestamp( $dateString = 'now', $timeZone = 'UTC' ) {
 		try {
 			$obj = new DateTime( $dateString, new DateTimeZone( $timeZone ) );
 			return $obj->getTimestamp();

@@ -3,6 +3,7 @@ namespace SmashPig\Core\DataStores;
 
 use PDO;
 use SmashPig\Core\UtcDate;
+use SmashPig\CrmLink\Messages\DateFields;
 
 /**
  * Data store containing messages which were not successfully processed
@@ -27,9 +28,9 @@ class DamagedDatabase extends SmashPigDatabase {
 		$trace = '',
 		$retryDate = null
 	) {
-		$originalDate = empty( $message['date'] )
-			? UtcDate::getUtcDatabaseString()
-			: UtcDate::getUtcDatabaseString( $message['date'] );
+		$originalDate = UtcDate::getUtcDatabaseString(
+			DateFields::getOriginalDateOrNow( $message )
+		);
 
 		$dbRecord = array(
 			'original_date' => $originalDate,
