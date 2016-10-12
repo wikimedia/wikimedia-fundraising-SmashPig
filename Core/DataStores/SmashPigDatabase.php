@@ -90,7 +90,7 @@ abstract class SmashPigDatabase {
 		}
 
 		if ( !$prepared->execute() ) {
-			$info = print_r( $this->getDatabase()->errorInfo() );
+			$info = print_r( $prepared->errorInfo(), true );
 			throw new DataStoreException( "Failed to execute $sql: $info" );
 		}
 		return $prepared;
