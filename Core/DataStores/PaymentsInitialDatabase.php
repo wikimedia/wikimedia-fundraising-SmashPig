@@ -10,20 +10,21 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 
 	/**
 	 * Return true if the message already exists in the payments-init table,
-	 * and is marked as having failed.
+	 * and has a very final status indicating we don't expect to do any more
+	 * processing.
 	 *
 	 * @param array $message Payments initial message
 	 *	FIXME: Or pass ID parameters explicitly and call this
 	 *	isTransactionFinalizedByGatewayOrderId??
 	 * @return boolean
 	 */
-	public function isTransactionFailed( $message ) {
+	public function isTransactionFinalized( $message ) {
 		$message = $this->fetchMessageByGatewayOrderId(
 			$message['gateway'], $message['order_id'] );
 		if ( $message === null ) {
 			return false;
 		}
-		if ( $message['payments_final_status'] === 'failed' ) {
+		if ( in_array( $message['payments_final_status'], array( 'failed', 'complete' ) ) ) {
 			return true;
 		}
 		return false;
