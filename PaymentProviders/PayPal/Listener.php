@@ -4,6 +4,7 @@ use SmashPig\Core\Configuration;
 use SmashPig\Core\Http\IHttpActionHandler;
 use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
+use SmashPig\Core\Logging\Logger;
 
 class Listener implements IHttpActionHandler {
 
@@ -20,8 +21,9 @@ class Listener implements IHttpActionHandler {
 		// Dump the request right into the queue with no validation.
 		$job = new Job;
 		$job->payload = $requestValues;
-		$job->{'php-message-class'} = 'SmashPig\PaymentProviders\PayPal\Job';
 		$this->config->object( 'data-store/jobs-paypal' )->push( $job );
+		Logger::info( 'Pushed new message to jobs-paypal: ' .
+			print_r( $requestValues, true ) );
 	}
 
 }

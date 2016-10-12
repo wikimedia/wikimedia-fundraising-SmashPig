@@ -18,7 +18,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 		$tl = new TaggedLogger( 'PaymentCaptureAction' );
 
 		if ( $msg instanceof Authorisation ) {
-			$jobQueueObj = Configuration::getDefaultConfig()->object( 'data-store/jobs' );
+			$jobQueueObj = Configuration::getDefaultConfig()->object( 'data-store/jobs-adyen' );
 			if ( $msg->success ) {
 				// Here we need to capture the payment, the job runner will collect the
 				// orphan message
@@ -26,9 +26,8 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					"Adding Adyen capture job for {$msg->currency} {$msg->amount} " .
 					"with id {$msg->correlationId} and psp reference {$msg->pspReference}."
 				);
-				$jobQueueObj->addObject(
-					ProcessCaptureRequestJob::factory( $msg )
-				);
+				$job = ProcessCaptureRequestJob::factory( $msg );
+				$jobQueueObj->push( json_decode( $job->toJson(), true ) );
 
 			} else {
 				// And here we just need to destroy the orphan
@@ -37,13 +36,12 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					"reported status failed: '{$msg->reason}'. " .
 					'Queueing job to delete pending records.'
 				);
-				$jobQueueObj->addObject(
-					DeletePendingJob::factory(
-						'adyen',
-						$msg->merchantReference,
-						$msg->correlationId
-					)
+				$job = DeletePendingJob::factory(
+					'adyen',
+					$msg->merchantReference,
+					$msg->correlationId
 				);
+				$jobQueueObj->push( json_decode( $job->toJson(), true ) );
 			}
 		}
 

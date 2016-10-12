@@ -3,6 +3,7 @@
 use Exception;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Jobs\RunnableJob;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\CrmLink\Messages\SourceFields;
 
 class Job extends RunnableJob {
@@ -92,10 +93,20 @@ class Job extends RunnableJob {
 
 		$new_msg->gateway = 'paypal';
 
-		// Save to appropriate queue.
 		SourceFields::addToMessage( $new_msg );
+
+		// Save to appropriate queue.
 		$this->config->object( 'data-store/' . $msg_type )
 			->push( $new_msg );
+
+		// FIXME random document formats
+		if ( $txn_type === 'subscr_signup' ) {
+			$log_id = "subscr_id:{$request['subscr_id']}";
+		} else {
+			$log_id = "txn_id:{$request['txn_id']}";
+		}
+
+		Logger::info( "Message {$log_id} pushed to {$msg_type} queue." );
 
 		// TODO It would be nice if push() returned something useful so we
 		// could return something here too

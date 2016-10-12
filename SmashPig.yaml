@@ -50,7 +50,6 @@ default:
             class: SmashPig\Core\DataStores\MultiQueueWriter
             constructor-parameters:
                 -
-                    - recurring-stomp
                     - recurring-new
 
         recurring-stomp:
@@ -69,7 +68,6 @@ default:
             class: SmashPig\Core\DataStores\MultiQueueWriter
             constructor-parameters:
                 -
-                    - refund-stomp
                     - refund-new
 
         refund-stomp:
@@ -103,11 +101,18 @@ default:
                     # others not.  Make it consistent (and invisible).
                     queue: jobs-paypal
 
+        jobs-adyen:
+            class: PHPQueue\Backend\Predis
+            constructor-parameters:
+                -
+                    <<: *REDIS
+                    queue: jobs-adyen
+
         verified:
             class: SmashPig\Core\DataStores\MultiQueueWriter
             constructor-parameters:
                 -
-                    - verified-stomp
+                    - donations
 
         verified-stomp:
             class: SmashPig\Core\DataStores\StompDataStore
