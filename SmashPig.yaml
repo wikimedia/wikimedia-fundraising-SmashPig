@@ -191,6 +191,11 @@ default:
             time-limit: 60
             max-messages: 0
 
+    # in seconds
+    requeue-delay: 600
+
+    requeue-max-age: 36000
+
 adyen:
     logging:
         root-context: SmashPig-Adyen
