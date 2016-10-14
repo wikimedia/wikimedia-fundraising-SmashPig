@@ -12,6 +12,8 @@ use SmashPig\Core\Jobs\RunnableJob;
  * @package SmashPig\PaymentProviders\Adyen\Jobs
  */
 class DownloadReportJob extends RunnableJob {
+	// Helps locate these in e.g. damaged message db
+	public $gateway = 'adyen';
 
 	/** @var TaggedLogger */
 	protected $logger;
@@ -20,7 +22,9 @@ class DownloadReportJob extends RunnableJob {
 	protected $reportUrl;
 
 	protected $downloadLoc;
-	protected $propertiesExcludedFromExport = array( 'logger' );
+	protected $propertiesExcludedFromExport = array(
+		'logger', 'downloadLoc'
+	);
 
 	public static function factory( $account, $url ) {
 		$obj = new DownloadReportJob();
