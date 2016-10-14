@@ -5,9 +5,12 @@ use Exception;
 use InvalidArgumentException;
 use PHPQueue\Interfaces\AtomicReadBuffer;
 
+use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\DamagedDatabase;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\RetryableException;
+use SmashPig\Core\UtcDate;
 
 /**
  * Facilitates guaranteed message processing using PHPQueue's AtomicReadBuffer
@@ -125,6 +128,21 @@ abstract class BaseQueueConsumer {
 	 * @param Exception $ex
 	 */
 	protected function handleError( $message, Exception $ex ) {
+		if ( $ex instanceof RetryableException ) {
+			$now = UtcDate::getUtcTimestamp();
+
+			if ( !isset( $message['source_enqueued_time'] ) ) {
+				$message['source_enqueued_time'] = UtcDate::getUtcTimestamp();
+			}
+			$expirationDate = $message['source_enqueued_time'] +
+				Configuration::getDefaultConfig()->val( 'requeue-max-age' );
+
+			if ( $now < $expirationDate ) {
+				$retryDate = $now + Configuration::getDefaultConfig()->val( 'requeue-delay' );
+				$this->sendToDamagedStore( $message, $ex, $retryDate );
+				return;
+			}
+		}
 		$this->sendToDamagedStore( $message, $ex );
 	}
 

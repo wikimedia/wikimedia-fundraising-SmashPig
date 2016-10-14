@@ -5,6 +5,7 @@ use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
+use SmashPig\Core\RetryableException;
 use SmashPig\CrmLink\Messages\DonationInterfaceAntifraudFactory;
 use SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
@@ -124,9 +125,8 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				// the pending database in case the authorization is captured via the console.
 				break;
 			case self::ACTION_MISSING:
-				// Missing donor details - nothing to do but return failure
-				$success = false;
-				break;
+				// Missing donor details - retry later
+				throw new RetryableException( 'Missing donor details' );
 		}
 
 		return $success;
