@@ -7,10 +7,11 @@ class DateFields {
 
 	/**
 	 * @param array $message A message from donation queues
+	 * @param int $default Value to return when message has no dates
 	 * @return int The unix timestamp at which the message was originally
-	 *  enqueued, or the current timestamp if no date information exists
+	 *  enqueued, or $default if no date information exists
 	 */
-	public static function getOriginalDateOrNow( $message ) {
+	public static function getOriginalDateOrDefault( $message, $default = 0 ) {
 		// This is the actual queued time
 		if ( isset( $message['source_enqueued_time'] ) ) {
 			// This is only ever set to the numeric timestamp
@@ -31,6 +32,6 @@ class DateFields {
 				return $parsedTimestamp;
 			}
 		}
-		return UtcDate::getUtcTimestamp();
+		return $default;
 	}
 }
