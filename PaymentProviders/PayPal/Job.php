@@ -8,8 +8,6 @@ use SmashPig\CrmLink\Messages\SourceFields;
 
 class Job extends RunnableJob {
 
-	static $verifyFailedMsg = 'PayPal message verification failed';
-
 	public $payload;
 
 	/**
@@ -36,16 +34,8 @@ class Job extends RunnableJob {
 			return true;
 		}
 
-		// TODO some pending-merge stuff?
-
 		// XXX Why does everything get made into objects?
 		$request = (array)$this->payload;
-
-		// Verify message with paypal.
-		$valid = $this->config->object( 'api' )->validate( $request );
-		if ( ! $valid ) {
-			throw new Exception( self::$verifyFailedMsg );
-		}
 
 		// Determine message type.
 		if ( isset( $request['txn_type'] ) ) {

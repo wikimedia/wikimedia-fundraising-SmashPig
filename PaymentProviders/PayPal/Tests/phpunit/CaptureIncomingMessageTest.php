@@ -114,25 +114,13 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		}
 	}
 
-	public function testFailedConsume() {
+	/**
+	 * @expectedException \SmashPig\Core\Listeners\ListenerSecurityException
+	 */
+	public function testFailedVerification() {
 		self::$fail_verification = true;
 		$jobMessage = array( 'txn_type' => 'fail' );
-		$jobClass = 'SmashPig\PaymentProviders\PayPal\Job';
-		$job = KeyedOpaqueStorableObject::fromJsonProxy(
-			$jobClass,
-			json_encode( $jobMessage )
-		);
-
-		try {
-			$job->execute();
-		} catch ( \Exception $e ) {
-			// TODO I think this can throw a special exception to move to
-			// damaged queue or some other stuff
-			$this->assertEquals(
-				\SmashPig\PaymentProviders\PayPal\Job::$verifyFailedMsg,
-				$e->getMessage()
-			);
-		}
-
+		$this->capture( $jobMessage );
 	}
+
 }
