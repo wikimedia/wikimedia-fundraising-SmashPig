@@ -412,6 +412,10 @@ paypal:
         mc_gross: gross
         mc_fee: fee
 
+    rejects:
+        txn_type: new_case
+        type: chargeback_settlement
+
     messages:
         verified:
             valid_statuses: # TODO is this message type agnostic?
@@ -420,7 +424,6 @@ paypal:
             txn_types:
                 - adjustment
                 - cart
-                - new_case
                 - send_money
                 - web_accept
                 - merch_pmt

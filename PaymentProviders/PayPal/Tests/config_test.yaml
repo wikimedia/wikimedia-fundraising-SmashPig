@@ -31,6 +31,12 @@ paypal:
                     connection_string: 'sqlite::memory:'
                     queue: refund
 
+        no-op:
+            class: PHPQueue\Backend\PDO
+            constructor-parameters:
+                -
+                    connection_string: 'sqlite::memory:'
+                    queue: no-op
         pending-db:
             class: PDO
             constructor-parameters:

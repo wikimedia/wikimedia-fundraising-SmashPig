@@ -29,7 +29,9 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		'web_accept.json' => 'verified',
 		'subscr_signup.json' => 'recurring',
 		'subscr_payment.json' => 'recurring',
-		'refund.json' => 'refund'
+		'refund.json' => 'refund',
+		// this should not actually get written to
+		'chargeback_settlement.json' => 'no-op'
 	);
 
 	static $messages = array();
@@ -100,9 +102,13 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 			$queue->createTable( $msg['type'] );
 			$message = $queue->pop();
 
-			$this->assertNotEmpty( $message );
-			if ( isset( $message['contribution_tracking_id'] ) ) {
-				$this->assertEquals( $message['contribution_tracking_id'], $message['order_id'] );
+			if ( $job->is_reject() ) {
+				$this->assertEmpty( $message );
+			} else {
+				$this->assertNotEmpty( $message );
+				if ( isset( $message['contribution_tracking_id'] ) ) {
+					$this->assertEquals( $message['contribution_tracking_id'], $message['order_id'] );
+				}
 			}
 
 		}
