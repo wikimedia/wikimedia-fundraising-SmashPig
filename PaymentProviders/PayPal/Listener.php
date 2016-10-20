@@ -1,6 +1,5 @@
 <?php namespace SmashPig\PaymentProviders\PayPal;
 
-use Exception;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Http\IHttpActionHandler;
 use SmashPig\Core\Http\Request;
@@ -9,6 +8,8 @@ use SmashPig\Core\Listeners\ListenerSecurityException;
 use SmashPig\Core\Logging\Logger;
 
 class Listener implements IHttpActionHandler {
+
+	protected $config;
 
 	public function execute( Request $request, Response $response ) {
 		$this->config = Configuration::getDefaultConfig();
@@ -21,8 +22,8 @@ class Listener implements IHttpActionHandler {
 		}
 
 		// Don't store invalid messages.
-		$valid = $this->config->object( 'api' )->validate( $request );
-		if ( ! $valid ) {
+		$valid = $this->config->object( 'api' )->validate( $requestValues );
+		if ( !$valid ) {
 			throw new ListenerSecurityException( 'Failed verification' );
 		}
 
