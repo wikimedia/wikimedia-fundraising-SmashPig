@@ -37,6 +37,7 @@ paypal:
                 -
                     connection_string: 'sqlite::memory:'
                     queue: no-op
+
         pending-db:
             class: PDO
             constructor-parameters:

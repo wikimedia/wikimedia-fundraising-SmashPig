@@ -3,10 +3,7 @@ namespace SmashPig\PaymentProviders\PayPal\Tests;
 
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
-use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
 use SmashPig\PaymentProviders\PayPal\Listener;
-use SmashPig\PaymentProviders\PayPal\Job;
-use SmashPig\PaymentProviders\PayPal\Tests\PayPalTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
