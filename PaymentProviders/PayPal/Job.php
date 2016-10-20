@@ -8,8 +8,6 @@ use SmashPig\CrmLink\Messages\SourceFields;
 
 class Job extends RunnableJob {
 
-	static $verifyFailedMsg = 'PayPal message verification failed';
-
 	public $payload;
 
 	/**
@@ -17,27 +15,34 @@ class Job extends RunnableJob {
 	 */
 	protected $config;
 
+	public function is_reject() {
+		foreach ( $this->config->val( 'rejects' ) as $key => $val ) {
+			if ( isset( $this->payload->{$key} )
+				&& $this->payload->{$key} === $val ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public function execute() {
 		$this->config = Configuration::getDefaultConfig();
 
-		// TODO some pending-merge stuff?
-
-		// Verify message with paypal.
+		if ( $this->is_reject() ) {
+			// Returning false would cause it to go to the damaged queue, we
+			// just want to forget about these.
+			return true;
+		}
 
 		// XXX Why does everything get made into objects?
 		$request = (array)$this->payload;
 
-		$valid = $this->config->object( 'api' )->validate( $request );
-		if ( ! $valid ) {
-			throw new Exception( self::$verifyFailedMsg );
-		}
-
 		// Determine message type.
-
 		if ( isset( $request['txn_type'] ) ) {
 			$txn_type = $request['txn_type'];
 		} elseif (
 			isset( $request['payment_status'] ) &&
+			// TODO can these go in config? --------------v-----------v
 			in_array( $request['payment_status'], array( 'Reversed', 'Refunded' ) )
 		) {
 			// refund, chargeback, or reversal
