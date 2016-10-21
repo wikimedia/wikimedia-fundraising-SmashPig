@@ -66,6 +66,8 @@ class DamagedDatabase extends SmashPigDatabase {
 			VALUES ( $paramList );";
 
 		$this->prepareAndExecute( $insert, $dbRecord );
+
+		return $this->getDatabase()->lastInsertId();
 	}
 
 	/**
