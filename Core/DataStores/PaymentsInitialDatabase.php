@@ -10,7 +10,7 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 
 	/**
 	 * Return true if the message already exists in the payments-init table,
-	 * and is marked as having failed.
+	 * and is marked as having failed and been rejected.
 	 *
 	 * @param array $message Payments initial message
 	 *	FIXME: Or pass ID parameters explicitly and call this
@@ -23,11 +23,24 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 		if ( $message === null ) {
 			return false;
 		}
-		if ( $message['payments_final_status'] === 'failed' ) {
+		return $this->isMessageFailed( $message );
+	}
+
+	/**
+	 * @param array $message a payments-init message
+	 * @return bool true if the message indicates that the payment has been
+	 *  definitively failed and won't come up again
+	 */
+	public function isMessageFailed( $message ) {
+		if (
+			$message['payments_final_status'] === 'failed' &&
+			$message['validation_action'] === 'reject'
+		) {
 			return true;
 		}
 		return false;
 	}
+
 
 	/**
 	 * Return record matching a (gateway, order_id), or null if none is found

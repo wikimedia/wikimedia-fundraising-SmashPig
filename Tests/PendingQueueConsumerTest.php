@@ -95,9 +95,10 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 	 * We refuse to consume a message and drop it if the corresponding
 	 * payments_initial row is failed.
 	 */
-	 public function testPendingMessageInitialFailed() {
+	public function testPendingMessageInitialFailed() {
 		$initRow = PaymentsInitialDatabaseTest::generateTestMessage();
 		$initRow['payments_final_status'] = 'failed';
+		$initRow['validation_action'] = 'reject';
 
 		$this->paymentsInitialDb->storeMessage( $initRow );
 
