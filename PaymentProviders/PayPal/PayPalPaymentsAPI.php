@@ -2,6 +2,7 @@
 
 use RuntimeException;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Logging\Logger;
 
 class PayPalPaymentsAPI {
 
@@ -25,14 +26,28 @@ class PayPalPaymentsAPI {
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
 		curl_setopt( $ch, CURLOPT_POST, 1 );
 		// TODO we can put VERIFIED in config and generalize this
+
+		// Always capture the cURL output
+		$curlDebugLog = fopen( 'php://temp', 'r+' );
+		curl_setopt( $ch, CURLOPT_STDERR, $curlDebugLog );
+
 		$response = $this->curl( $ch, $post_fields );
+
+		// Read the logging output
+		rewind( $curlDebugLog );
+		$logged = fread( $curlDebugLog, 4096 );
+		fclose( $curlDebugLog );
+		Logger::debug( "cURL verbose logging: $logged" );
 
 		if ( $response === 'VERIFIED' ) {
 			return true;
 		} elseif ( $response === 'INVALID' ) {
 			return false;
 		} else {
-			throw new RuntimeException( "Unknown response from PayPal IPN PB: [{$response}]" );
+			throw new RuntimeException(
+				"Unknown response from PayPal IPN PB: [{$response}].\n" .
+				"Verbose logging: $logged"
+			);
 		}
 	}
 }
