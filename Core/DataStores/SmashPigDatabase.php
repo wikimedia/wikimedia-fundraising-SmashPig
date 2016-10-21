@@ -7,16 +7,23 @@ use SmashPig\Core\Context;
 abstract class SmashPigDatabase {
 
 	/**
-	 * @var PDO
+	 * @var array
+	 * key is concrete class name, value is a backing PDO object
 	 * We do the silly singleton thing for convenient testing with in-memory
 	 * databases that would otherwise not be shared between components.
+	 *
+	 * Ideally, this would be a scalar variable holding a single PDO object
+	 * for each concrete subclass. Unfortunately, in PHP the static member
+	 * variable is shared between all subclasses of the class that declares
+	 * it, even in an abstract class like this one. See
+	 * http://stackoverflow.com/questions/11417681/static-properties-on-base-class-and-inheritance#11418607
 	 */
-	protected static $db;
+	protected static $dbs = array();
 
 	protected function __construct() {
 		$config = Context::get()->getConfiguration();
-		if ( !static::$db ) {
-			static::$db = $config->object( $this->getConfigKey() );
+		if ( !$this->getDatabase() ) {
+			$this->setDatabase( $config->object( $this->getConfigKey() ) );
 		}
 	}
 
@@ -25,10 +32,19 @@ abstract class SmashPigDatabase {
 	}
 
 	/**
-	 * @return PDO
+	 * @return PDO|null
 	 */
 	public function getDatabase() {
-		return static::$db;
+		$className = get_called_class();
+		if ( isset ( self::$dbs[$className] ) ) {
+			return self::$dbs[$className];
+		}
+		return null;
+	}
+
+	protected function setDatabase( PDO $db ) {
+		$className = get_called_class();
+		self::$dbs[$className] = $db;
 	}
 
 	public function createTable() {

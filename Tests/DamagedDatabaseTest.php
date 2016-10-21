@@ -22,12 +22,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function tearDown() {
-		// Reset PDO static member
-		$klass = new \ReflectionClass( 'SmashPig\Core\DataStores\DamagedDatabase' );
-		$dbProperty = $klass->getProperty( 'db' );
-		$dbProperty->setAccessible( true );
-		$dbProperty->setValue( null );
-
+		TestingDatabase::clearStatics( $this->db );
 		parent::tearDown();
 	}
 

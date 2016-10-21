@@ -10,8 +10,8 @@ class TestingDatabase {
 	 */
 	public static function clearStatics( $classish ) {
 		$klass = new \ReflectionClass( $classish );
-		$dbProperty = $klass->getProperty( 'db' );
+		$dbProperty = $klass->getProperty( 'dbs' );
 		$dbProperty->setAccessible( true );
-		$dbProperty->setValue( null );
+		$dbProperty->setValue( array() );
 	}
 }
