@@ -34,7 +34,7 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 	public function isMessageFailed( $message ) {
 		if (
 			$message['payments_final_status'] === 'failed' &&
-			$message['validation_action'] === 'reject'
+			$message['validation_action'] !== 'review'
 		) {
 			return true;
 		}
