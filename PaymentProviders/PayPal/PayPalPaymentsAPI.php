@@ -29,6 +29,7 @@ class PayPalPaymentsAPI {
 
 		// Always capture the cURL output
 		$curlDebugLog = fopen( 'php://temp', 'r+' );
+		curl_setopt( $ch, CURLOPT_VERBOSE, true );
 		curl_setopt( $ch, CURLOPT_STDERR, $curlDebugLog );
 
 		$response = $this->curl( $ch, $post_fields );
