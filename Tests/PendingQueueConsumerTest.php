@@ -5,6 +5,8 @@ namespace SmashPig\Tests;
 use SmashPig\Core\DataStores\PaymentsInitialDatabase;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\QueueConsumers\PendingQueueConsumer;
+use SmashPig\CrmLink\FinalStatus;
+use SmashPig\CrmLink\ValidationAction;
 
 class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 
@@ -77,8 +79,8 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 	 */
 	public function testPendingMessageInitialFailed() {
 		$initRow = PaymentsInitialDatabaseTest::generateTestMessage();
-		$initRow['payments_final_status'] = 'failed';
-		$initRow['validation_action'] = 'reject';
+		$initRow['payments_final_status'] = FinalStatus::FAILED;
+		$initRow['validation_action'] = ValidationAction::REJECT;
 
 		$this->paymentsInitialDb->storeMessage( $initRow );
 
