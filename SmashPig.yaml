@@ -192,9 +192,9 @@ default:
             max-messages: 0
 
     # in seconds
-    requeue-delay: 600
+    requeue-delay: 1200
 
-    requeue-max-age: 36000
+    requeue-max-age: 12000
 
 adyen:
     logging:
