@@ -23,7 +23,7 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 		if ( $message === null ) {
 			return false;
 		}
-		return $this->isMessageFailed( $message );
+		return self::isMessageFailed( $message );
 	}
 
 	/**
@@ -31,10 +31,10 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 	 * @return bool true if the message indicates that the payment has been
 	 *  definitively failed and won't come up again
 	 */
-	public function isMessageFailed( $message ) {
+	public static function isMessageFailed( $message ) {
 		if (
 			$message['payments_final_status'] === 'failed' &&
-			$message['validation_action'] === 'reject'
+			$message['validation_action'] !== 'review'
 		) {
 			return true;
 		}

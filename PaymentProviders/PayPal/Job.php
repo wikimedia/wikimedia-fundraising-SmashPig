@@ -90,6 +90,9 @@ class Job extends RunnableJob {
 			if ( $msg_type === 'refund' ) {
 				$new_msg->gateway_refund_id = $request['txn_id'];
 				$new_msg->gross_currency = $request['mc_currency'];
+				if ( $new_msg->type === 'chargeback_settlement' ) {
+					$new_msg->type = 'chargeback';
+				}
 			}
 
 			// FIXME once recurring uses normalized msg it needs this too
