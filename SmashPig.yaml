@@ -414,7 +414,6 @@ paypal:
 
     rejects:
         txn_type: new_case
-        type: chargeback_settlement
 
     messages:
         verified:
@@ -422,7 +421,6 @@ paypal:
                 - Completed
                 - Reversed
             txn_types:
-                - adjustment
                 - cart
                 - send_money
                 - web_accept
@@ -443,6 +441,7 @@ paypal:
                 - subscr_payment
         refund:
             txn_types:
+                - adjustment
                 - refund
                 # FIXME: if case_type=chargeback, then txn_type might be blank
                 # and the message should go to the refund queue.

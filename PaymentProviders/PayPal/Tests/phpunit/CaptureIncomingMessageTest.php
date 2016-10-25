@@ -11,6 +11,7 @@ use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 
 /**
  * Test the IPN listener which receives messages, stores and processes them.
+ * @group PayPal
  */
 class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
@@ -27,8 +28,9 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		'subscr_signup.json' => 'recurring',
 		'subscr_payment.json' => 'recurring',
 		'refund.json' => 'refund',
+		'chargeback_settlement.json' => 'refund',
 		// this should not actually get written to
-		'chargeback_settlement.json' => 'no-op'
+		// TODO 'new_case.json' => 'no-op',
 	);
 
 	static $messages = array();
