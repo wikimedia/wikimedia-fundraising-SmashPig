@@ -47,7 +47,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 		$err = 'ERROR MESSAGE';
 		$trace = "Foo.php line 25\nBar.php line 99";
 
-		$this->db->storeMessage( $message, $queue, $err, $trace );
+		$damagedId = $this->db->storeMessage( $message, $queue, $err, $trace );
 
 		// Confirm work without using the API.
 		$pdo = $this->db->getDatabase();
@@ -59,7 +59,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( 1, count( $rows ),
 			'One row stored and retrieved.' );
 		$expected = array(
-			'id' => '1',
+			'id' => $damagedId,
 			# NOTE: This is a db-specific string, sqlite3 in this case, and
 			# you'll have different formatting if using any other database.
 			'original_date' => '20160720001408',
