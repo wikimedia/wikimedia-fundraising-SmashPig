@@ -36,7 +36,7 @@ class PayPalPaymentsAPI {
 
 		// Read the logging output
 		rewind( $curlDebugLog );
-		$logged = fread( $curlDebugLog, 4096 );
+		$logged = fread( $curlDebugLog, 8192 );
 		fclose( $curlDebugLog );
 		Logger::debug( "cURL verbose logging: $logged" );
 
