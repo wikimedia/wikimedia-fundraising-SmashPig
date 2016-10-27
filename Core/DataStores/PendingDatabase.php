@@ -3,6 +3,7 @@ namespace SmashPig\Core\DataStores;
 
 use PDO;
 use RuntimeException;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
 
@@ -140,7 +141,9 @@ class PendingDatabase extends SmashPigDatabase {
 	 */
 	public function deleteMessage( $message ) {
 		if ( !isset( $message['order_id'] ) ) {
-			throw new RuntimeException( 'Message doesn\'t have an order_id!' );
+			$json = json_encode( $message );
+			Logger::warning( "Trying to delete pending message with no order id: $json" );
+			return;
 		}
 
 		$sql = '
