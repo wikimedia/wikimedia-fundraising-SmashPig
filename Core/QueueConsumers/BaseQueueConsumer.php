@@ -101,6 +101,10 @@ abstract class BaseQueueConsumer {
 			}
 			$timeOk = $this->timeLimit === 0 || time() <= $startTime + $this->timeLimit;
 			$countOk = $this->messageLimit === 0 || $processed < $this->messageLimit;
+			$debugMessage = 'Data is ' . ( $data === null ? '' : 'not ' ) . 'null, ' .
+				"time limit ($this->timeLimit) is " . ( $timeOk ? 'not ' : '' ) . 'elapsed, ' .
+				"message limit ($this->messageLimit) is " . ( $countOk ? 'not ' : '' ) . 'reached.';
+			Logger::debug( $debugMessage );
 		}
 		while( $timeOk && $countOk && $data !== null );
 		return $processed;
@@ -180,6 +184,7 @@ abstract class BaseQueueConsumer {
 	public static function getQueue( $queueName ) {
 		$config = Context::get()->getConfiguration();
 		$key = "data-store/$queueName";
+		Logger::debug( "Getting queue $queueName from key $key" );
 
 		// Get a reference to the config node so we can mess with it
 		$node =& $config->val( $key, true );
@@ -187,6 +192,7 @@ abstract class BaseQueueConsumer {
 			empty( $node['constructor-parameters'] ) ||
 			empty( $node['constructor-parameters'][0]['queue'] )
 		) {
+			Logger::debug( "'queue' not set, defaulting to $queueName" );
 			$node['constructor-parameters'][0]['queue'] = $queueName;
 		}
 
