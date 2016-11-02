@@ -3,6 +3,7 @@
 use PHPQueue\Backend\PDO;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\JsonSerializableObject;
+use SmashPig\Core\DataStores\PaymentsFraudDatabase;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\ProviderConfiguration;
@@ -21,26 +22,26 @@ class CaptureJobTest extends BaseAdyenTestCase {
 	 * @var PendingDatabase
 	 */
 	protected $pendingDatabase;
-	protected $pendingMessage;
+
 	/**
 	 * @var PDO
 	 */
 	protected $antifraudQueue;
+	/**
+	 * @var PaymentsFraudDatabase
+	 */
+	protected $fraudDatabase;
 
 	public function setUp() {
 		parent::setUp();
 
 		$this->pendingDatabase = PendingDatabase::get();
-		$this->pendingMessage = json_decode(
+		$pendingMessage = json_decode(
 			file_get_contents( __DIR__ . '/../Data/pending.json' ), true
 		);
-		$this->pendingDatabase->storeMessage( $this->pendingMessage );
+		$this->pendingDatabase->storeMessage( $pendingMessage );
 		$this->antifraudQueue = QueueWrapper::getQueue( 'payments-antifraud' );
-	}
-
-	public function tearDown() {
-		$this->pendingDatabase->deleteMessage( $this->pendingMessage );
-		parent::tearDown();
+		$this->fraudDatabase = PaymentsFraudDatabase::get();
 	}
 
 	/**
@@ -226,6 +227,60 @@ class CaptureJobTest extends BaseAdyenTestCase {
 				'adyen', $auth1->merchantReference
 			),
 			'Capture job should leave donor details in database'
+		);
+	}
+
+	/**
+	 * When we can't find donor details in pending, use the fraud score from
+	 * fredge to decide whether to capture.
+	 */
+	public function testFredgeFallback() {
+		$api = $this->config->object( 'api', true );
+
+		$auth = JsonSerializableObject::fromJsonProxy(
+			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
+			file_get_contents( __DIR__ . '/../Data/auth.json' )
+		);
+
+		$this->pendingDatabase->deleteMessage( [
+			'gateway' => 'adyen',
+			'order_id' => $auth->merchantReference
+		] );
+
+		$this->fraudDatabase->storeMessage( [
+			'contribution_tracking_id' => 119223,
+			'gateway' => 'adyen',
+			'order_id' => $auth->merchantReference,
+			'validation_action' => 'process',
+			'user_ip' => '127.0.0.1',
+			'payment_method' => 'cc',
+			'risk_score' => 15,
+			'server' => 'localhost',
+			'date' => 1458060070,
+		] );
+
+		$job = ProcessCaptureRequestJob::factory( $auth );
+		$this->assertTrue( $job->execute() );
+
+		$this->assertEquals(
+			[
+				'currency' => 'USD',
+				'amount' => 10,
+				'pspReference' => '762895314225',
+			],
+			$api->captured[0],
+			'RequestCaptureJob did not make the right capture call'
+		);
+
+		$antifraudMessage = $this->antifraudQueue->pop();
+		$this->assertNotNull(
+			$antifraudMessage,
+			'RequestCaptureJob did not send antifraud message'
+		);
+		$this->assertEquals(
+			'process',
+			$antifraudMessage['validation_action'],
+			'Successful capture should get "process" validation action'
 		);
 	}
 

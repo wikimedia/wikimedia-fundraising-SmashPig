@@ -5,6 +5,7 @@ namespace SmashPig\Tests;
 class TestingDatabase {
 	public static $classes = [
 		'SmashPig\Core\DataStores\DamagedDatabase',
+		'SmashPig\Core\DataStores\PaymentsFraudDatabase',
 		'SmashPig\Core\DataStores\PaymentsInitialDatabase',
 		'SmashPig\Core\DataStores\PendingDatabase',
 	];
