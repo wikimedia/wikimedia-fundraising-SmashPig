@@ -5,22 +5,23 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\SmashPigException;
 use SmashPig\PaymentProviders\Amazon\AmazonApi;
+use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted;
 
 /**
  * Associate refunds with their parent contribution
  */
 class AssociateRefundParent implements IListenerMessageAction {
-	const MESSAGE_CLASS = 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted';
 
 	public function execute( ListenerMessage $msg ) {
 		// Bail out if not a refund
-		if ( get_class( $msg ) !== self::MESSAGE_CLASS ) {
+		if ( !( $msg instanceof RefundCompleted ) ) {
 			return true;
 		}
-		$refundId = $msg->getGatewayTransactionId();
-		Logger::info( "Looking up ID of original transaction for refund $refundId" );
+
+		$orderReferenceId = $msg->getOrderReferenceId();
+		Logger::info( "Looking up capture ID for order reference $orderReferenceId" );
 		try {
-			$parentId = AmazonApi::findRefundParentId( $refundId );
+			$parentId = AmazonApi::get()->findCaptureId( $orderReferenceId );
 			$msg->setParentId( $parentId );
 			return true;
 		} catch ( SmashPigException $ex ) {

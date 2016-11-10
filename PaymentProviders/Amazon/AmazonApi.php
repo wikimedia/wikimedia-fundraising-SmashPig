@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Amazon;
 
 use PayWithAmazon\IpnHandlerInterface;
+use PayWithAmazon\PaymentsClientInterface;
 use SmashPig\Core\Context;
 use SmashPig\Core\SmashPigException;
 
@@ -10,8 +11,30 @@ use SmashPig\Core\SmashPigException;
 class AmazonApi {
 
 	/**
-	 * @param $headers
-	 * @param $body
+	 * @var PaymentsClientInterface
+	 */
+	protected $client;
+
+	/**
+	 * @var AmazonApi
+	 */
+	protected static $instance;
+
+	private function __construct() {
+		$config = Context::get()->getConfiguration();
+		$this->client = $config->object( 'payments-client', true );
+	}
+
+	public static function get() {
+		if ( !self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * @param array $headers Associative array of HTTP headers
+	 * @param string $body HTTP request body (should be JSON-encoded)
 	 * @return IpnHandlerInterface
 	 */
 	public static function createIpnHandler( $headers, $body ) {
@@ -20,24 +43,18 @@ class AmazonApi {
 		return new $klass( $headers, $body );
 	}
 
-	public static function findRefundParentId( $refundId ) {
-		$config = Context::get()->getConfiguration();
-		$client = $config->object( 'payments-client', true );
-
-		// The order reference ID is the first 19 characters of the refund ID
-		$orderReferenceId = substr( $refundId, 0, 19 );
-
-		$getDetailsResult = $client->getOrderReferenceDetails( array(
-			'amazon_order_reference_id' => $orderReferenceId,
-		) )->toArray();
-		if ( !empty( $getDetailsResult['Error'] ) ) {
-			throw new SmashPigException( $getDetailsResult['Error']['Message'] );
-		}
-
+	/**
+	 * @param string $orderReferenceId
+	 * @return string Amazon's ID for the first successful capture associated
+	 *  with this order reference
+	 * @throws SmashPigException
+	 */
+	public function findCaptureId( $orderReferenceId ) {
 		// The order reference details should contain an IdList with all of the
 		// authorizations that have been made against the order reference.  We
 		// should only ever have one authorization per order reference.
-		$details = $getDetailsResult['GetOrderReferenceDetailsResult']['OrderReferenceDetails'];
+		$details = $this->getOrderReferenceDetails( $orderReferenceId );
+
 		if ( !isset( $details['IdList'] ) || !isset( $details['IdList']['member'] ) ) {
 			throw new SmashPigException(
 				"No authorizations found for order reference $orderReferenceId!"
@@ -46,7 +63,7 @@ class AmazonApi {
 		$authorizationIds = (array) $details['IdList']['member'];
 		// Check the status of each authorization against the order reference
 		foreach ( $authorizationIds as $id ) {
-			$authResult = $client->getAuthorizationDetails( array(
+			$authResult = $this->client->getAuthorizationDetails( array(
 				'amazon_authorization_id' => $id,
 			) )->toArray();
 			if ( !empty( $authResult['Error'] ) ) {
@@ -67,5 +84,23 @@ class AmazonApi {
 		throw new SmashPigException(
 			"No successful authorizations found for order reference $orderReferenceId!"
 		);
+	}
+
+	/**
+	 * @param string $orderReferenceId 19 character Amazon order ID
+	 * @return array OrderReferenceDetails as an associative array
+	 *  @see https://payments.amazon.com/documentation/apireference/201752660
+	 * @throws SmashPigException
+	 */
+	protected function getOrderReferenceDetails( $orderReferenceId ) {
+		$getDetailsResult = $this->client->getOrderReferenceDetails(
+			array(
+				'amazon_order_reference_id' => $orderReferenceId,
+			)
+		)->toArray();
+		if ( !empty( $getDetailsResult['Error'] ) ) {
+			throw new SmashPigException( $getDetailsResult['Error']['Message'] );
+		}
+		return $getDetailsResult['GetOrderReferenceDetailsResult']['OrderReferenceDetails'];
 	}
 }

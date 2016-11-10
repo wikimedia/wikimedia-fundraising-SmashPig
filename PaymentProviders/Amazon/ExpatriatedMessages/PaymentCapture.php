@@ -21,11 +21,8 @@ abstract class PaymentCapture extends AmazonMessage {
 		$this->setGatewayIds( $details['AmazonCaptureId'] );
 
 		$captureReferenceId = $details['CaptureReferenceId'];
-		$this->completion_message_id = "amazon-$captureReferenceId";
-		$this->order_id = $captureReferenceId;
 
-		$parts = explode( '-', $captureReferenceId );
-		$this->contribution_tracking_id = $parts[0];
+		$this->setOrderId( $captureReferenceId );
 
 		$this->date = UtcDate::getUtcTimestamp( $details['CreationTimestamp'] );
 
@@ -50,5 +47,25 @@ abstract class PaymentCapture extends AmazonMessage {
 		$queueMsg->fee = $this->fee;
 
 		return $queueMsg;
+	}
+
+	/**
+	 * Set fields derived from the order ID
+	 *
+	 * @param string $orderId
+	 */
+	public function setOrderId( $orderId ) {
+		$this->order_id = $orderId;
+		$this->completion_message_id = "amazon-$orderId";
+
+		$parts = explode( '-', $orderId );
+		$this->contribution_tracking_id = $parts[0];
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getOrderId() {
+		return $this->order_id;
 	}
 }

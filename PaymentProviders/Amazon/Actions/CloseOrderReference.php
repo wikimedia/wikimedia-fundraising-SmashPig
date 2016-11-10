@@ -4,21 +4,20 @@ use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
+use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;
 
 class CloseOrderReference implements IListenerMessageAction {
-	const MESSAGE_CLASS = 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted';
 
 	public function execute( ListenerMessage $msg ) {
 		// only close after successful capture
-		if ( get_class( $msg ) !== self::MESSAGE_CLASS ) {
+		if ( !( $msg instanceof CaptureCompleted ) ) {
 			return true;
 		}
 
 		$config = Context::get()->getConfiguration();
 		$client = $config->object( 'payments-client', true );
 
-		$captureId = $msg->getGatewayTransactionId();
-		$orderReferenceId = substr( $captureId, 0, 19 );
+		$orderReferenceId = $msg->getOrderReferenceId();
 
 		Logger::info( "Closing order reference $orderReferenceId" );
 		$response = $client->closeOrderReference( array(
@@ -27,7 +26,7 @@ class CloseOrderReference implements IListenerMessageAction {
 
 		if ( !empty( $response['Error'] ) ) {
 			Logger::info(
-				"Error losing order reference $orderReferenceId: " .
+				"Error closing order reference $orderReferenceId: " .
 				$response['Error']['Code'] . ': ' .
 				$response['Error']['Message']
 			);
