@@ -13,7 +13,9 @@
                     "P01-0133129-0199515-A019658"
                 ]
             },
-            "SellerOrderAttributes": [],
+            "SellerOrderAttributes": {
+                "SellerOrderId": "123456789-0"
+            },
             "OrderTotal": {
                 "CurrencyCode": "USD",
                 "Amount": "10.00"

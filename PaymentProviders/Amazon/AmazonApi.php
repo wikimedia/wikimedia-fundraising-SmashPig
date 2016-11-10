@@ -87,6 +87,20 @@ class AmazonApi {
 	}
 
 	/**
+	 * @param string $orderReferenceId
+	 * @return string|null Merchant reference for the order ID, or null if
+	 *  not set
+	 */
+	public function findMerchantReference( $orderReferenceId ) {
+		$details = $this->getOrderReferenceDetails( $orderReferenceId );
+
+		if ( isset( $details['SellerOrderAttributes']['SellerOrderId'] ) ) {
+			return $details['SellerOrderAttributes']['SellerOrderId'];
+		}
+		return null;
+	}
+
+	/**
 	 * @param string $orderReferenceId 19 character Amazon order ID
 	 * @return array OrderReferenceDetails as an associative array
 	 *  @see https://payments.amazon.com/documentation/apireference/201752660
