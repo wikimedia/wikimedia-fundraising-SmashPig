@@ -24,7 +24,9 @@ class Listener implements IHttpActionHandler {
 		// Don't store invalid messages.
 		$valid = $this->config->object( 'api' )->validate( $requestValues );
 		if ( !$valid ) {
-			throw new ListenerSecurityException( 'Failed verification' );
+			// This will tell them to resend later.
+			$response->setStatusCode( 403, 'Failed verification' );
+			return false;
 		}
 
 		// Dump the request right into the queue with no validation.

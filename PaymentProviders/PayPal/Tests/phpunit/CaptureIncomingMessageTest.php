@@ -59,7 +59,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$request = new Request( $msg );
 		$response = new Response;
 		$listener = new Listener;
-		$listener->execute( $request, $response );
+		return $listener->execute( $request, $response );
 	}
 
 	public function testCapture() {
@@ -113,13 +113,10 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		}
 	}
 
-	/**
-	 * @expectedException \SmashPig\Core\Listeners\ListenerSecurityException
-	 */
 	public function testFailedVerification() {
 		self::$fail_verification = true;
 		$jobMessage = array( 'txn_type' => 'fail' );
-		$this->capture( $jobMessage );
+		$this->assertFalse( $this->capture( $jobMessage ) );
 	}
 
 }

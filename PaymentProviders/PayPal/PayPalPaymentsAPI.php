@@ -45,10 +45,14 @@ class PayPalPaymentsAPI {
 		} elseif ( $response === 'INVALID' ) {
 			return false;
 		} else {
-			throw new RuntimeException(
+			// TODO: Log txn_id. This is annoying because of the random document formats.
+			Logger::debug(
 				"Unknown response from PayPal IPN PB: [{$response}].\n" .
 				"Verbose logging: $logged"
 			);
+			// FIXME: The same thing happens for "INVALID" and totally broken
+			// responses. Differentiate.
+			return false;
 		}
 	}
 }
