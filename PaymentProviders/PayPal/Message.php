@@ -3,9 +3,9 @@
 use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
 
 class Message extends KeyedOpaqueStorableObject {
-#  _ __   ___         ___  _ __
-# | '_ \ / _ \ _____ / _ \| '_ \
-# | | | | (_) |_____| (_) | |_) |
-# |_| |_|\___/       \___/| .__/
-#                         |_|
+//  _ __   ___         ___  _ __
+// | '_ \ / _ \ _____ / _ \| '_ \
+// | | | | (_) |_____| (_) | |_) |
+// |_| |_|\___/       \___/| .__/
+//                         |_|
 }

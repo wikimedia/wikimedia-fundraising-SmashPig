@@ -47,8 +47,6 @@ abstract class AstroPayMessage extends ListenerMessage {
 		foreach ( $this->fields as $key ) {
 			$this->$key = ( array_key_exists( $key, $values ) ? $values[$key] : '' );
 		}
-		// Need to set the correlationId during construction
-		// or inflight message store will get confused
 		$this->correlationId = "astropay-{$this->x_document}";
 	}
 
