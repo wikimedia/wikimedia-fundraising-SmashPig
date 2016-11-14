@@ -20,7 +20,7 @@ class UtcDate {
 
 	/**
 	 * Format a UTC timestamp for database insertion
-	 * @param int|null $timestamp, defaults to time()
+	 * @param string|int|null $timestamp, defaults to time()
 	 * @param string $format optional time format
 	 * @return string
 	 * @throws Exception
@@ -31,7 +31,11 @@ class UtcDate {
 		if ( $timestamp === null ) {
 			$timestamp = time();
 		}
-		$obj = new DateTime( '@' . $timestamp, new DateTimeZone( 'UTC' ) );
+		if ( is_numeric( $timestamp ) ) {
+			// http://php.net/manual/en/datetime.formats.compound.php
+			$timestamp = '@' . $timestamp;
+		}
+		$obj = new DateTime( $timestamp, new DateTimeZone( 'UTC' ) );
 		return $obj->format( $format );
 	}
 }

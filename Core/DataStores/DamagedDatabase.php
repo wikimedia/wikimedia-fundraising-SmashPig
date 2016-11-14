@@ -28,8 +28,9 @@ class DamagedDatabase extends SmashPigDatabase {
 		$trace = '',
 		$retryDate = null
 	) {
+		$now = UtcDate::getUtcTimestamp();
 		$originalDate = UtcDate::getUtcDatabaseString(
-			DateFields::getOriginalDateOrNow( $message )
+			DateFields::getOriginalDateOrDefault( $message, $now )
 		);
 
 		$dbRecord = array(

@@ -12,12 +12,6 @@ default:
                 host: 127.0.0.1
                 port: 6379
 
-        # Store definitions
-        inflight:
-            class: SmashPig\Core\DataStores\DiskFileDataStore
-            constructor-parameters:
-                - /tmp/
-
         payments-antifraud:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
@@ -192,9 +186,9 @@ default:
             max-messages: 0
 
     # in seconds
-    requeue-delay: 600
+    requeue-delay: 1200
 
-    requeue-max-age: 36000
+    requeue-max-age: 12000
 
 adyen:
     logging:

@@ -6,8 +6,7 @@ namespace SmashPig\Core\DataStores;
  * Class NullDataStore
  *
  * Stub datastore to use when a datastore is not desirable to
- * be used. E.g. this can be subbed into the inflight data
- * store if that redundancy is not desired.
+ * be used.
  *
  * @package SmashPig\Core\DataStores
  */
