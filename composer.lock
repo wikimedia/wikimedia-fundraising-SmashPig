@@ -130,8 +130,7 @@
             },
             "scripts": {
                 "test": [
-                    "parallel-lint . --exclude vendor",
-                    "phpunit"
+                    "parallel-lint . --exclude vendor"
                 ]
             },
             "license": [
