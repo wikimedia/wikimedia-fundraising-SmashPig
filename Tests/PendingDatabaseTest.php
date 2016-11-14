@@ -57,8 +57,8 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 			'One row stored and retrieved.' );
 		$expected = array(
 			'id' => '1',
-			# NOTE: This is a db-specific string, sqlite3 in this case, and
-			# you'll have different formatting if using any other database.
+			// NOTE: This is a db-specific string, sqlite3 in this case, and
+			// you'll have different formatting if using any other database.
 			'date' => '20160720001408',
 			'gateway' => 'test',
 			'gateway_account' => 'default',

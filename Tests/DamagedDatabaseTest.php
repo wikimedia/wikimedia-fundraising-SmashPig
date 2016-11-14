@@ -60,8 +60,8 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 			'One row stored and retrieved.' );
 		$expected = array(
 			'id' => $damagedId,
-			# NOTE: This is a db-specific string, sqlite3 in this case, and
-			# you'll have different formatting if using any other database.
+			// NOTE: This is a db-specific string, sqlite3 in this case, and
+			// you'll have different formatting if using any other database.
 			'original_date' => '20160720001408',
 			'gateway' => 'test',
 			'order_id' => $message['order_id'],
