@@ -22,7 +22,6 @@ class DonationInterfaceAntifraudFactory {
 			'contribution_tracking_id',
 			'date',
 			'gateway',
-			'gateway_txn_id',
 			'order_id',
 			'payment_method',
 			'user_ip'

@@ -31,7 +31,6 @@ class MessageTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $diMessage['contribution_tracking_id'], $afMessage['contribution_tracking_id'] );
 		$this->assertEquals( 1455128736, $afMessage['date'] );
 		$this->assertEquals( 'adyen', $afMessage['gateway'] );
-		$this->assertEquals( $diMessage['gateway_txn_id'], $afMessage['gateway_txn_id'] );
 		$this->assertEquals( $diMessage['order_id'], $afMessage['order_id'] );
 		$this->assertEquals( 'cc', $afMessage['payment_method'] );
 		$this->assertEquals( 12.5, $afMessage['risk_score'] );
