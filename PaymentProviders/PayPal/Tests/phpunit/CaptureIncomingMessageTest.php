@@ -21,6 +21,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	public $config;
 
 	static $fail_verification = false;
+	static $paypal_is_broken = false;
 
 	// filename and the queue it should get dropped in
 	static $message_data = array(
@@ -53,6 +54,12 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 				)
 			);
 		}
+	}
+
+	public function tearDown() {
+		self::$fail_verification = false;
+		self::$paypal_is_broken = false;
+		parent::tearDown();
 	}
 
 	private function capture( $msg ) {
@@ -115,6 +122,14 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 	public function testFailedVerification() {
 		self::$fail_verification = true;
+		$jobMessage = array( 'txn_type' => 'fail' );
+		$this->assertFalse( $this->capture( $jobMessage ) );
+	}
+
+	// FIXME: not really testing anything. Would like to verify that it tried
+	// N times. Bubble that information up somehow.
+	public function testPayPalIsBroken() {
+		self::$paypal_is_broken = true;
 		$jobMessage = array( 'txn_type' => 'fail' );
 		$this->assertFalse( $this->capture( $jobMessage ) );
 	}

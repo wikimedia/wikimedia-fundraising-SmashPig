@@ -7,6 +7,9 @@ class MockPayPalPaymentsAPI extends PayPalPaymentsAPI {
 		if ( CaptureIncomingMessageTest::$fail_verification ) {
 			return 'INVALID';
 		}
+		if ( CaptureIncomingMessageTest::$paypal_is_broken ) {
+			return 'lkjasjdhfiuasdgjgbasdd';
+		}
 		return 'VERIFIED';
 	}
 }

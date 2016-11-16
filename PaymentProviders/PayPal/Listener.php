@@ -1,5 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\PayPal;
 
+use RuntimeException;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Http\IHttpActionHandler;
 use SmashPig\Core\Http\Request;
@@ -18,23 +19,32 @@ class Listener implements IHttpActionHandler {
 
 		// Don't store blank messages.
 		if ( empty( $requestValues ) ) {
-			return;
+			return false;
 		}
 
-		// Don't store invalid messages.
-		$valid = $this->config->object( 'api' )->validate( $requestValues );
-		if ( !$valid ) {
-			// This will tell them to resend later.
+		$valid = false;
+		try {
+			$valid = $this->config->object( 'api' )->validate( $requestValues );
+		} catch ( RuntimeException $e ) {
+			// Tried to validate a bunch of times and got nonsense responses.
+			Logger::error( $e->getMessage() );
+			// 403 should tell them to send it again later.
 			$response->setStatusCode( 403, 'Failed verification' );
 			return false;
 		}
 
-		// Dump the request right into the queue with no validation.
-		$job = new Job;
-		$job->payload = $requestValues;
-		$this->config->object( 'data-store/jobs-paypal' )->push( $job );
-		Logger::info( 'Pushed new message to jobs-paypal: ' .
-			print_r( $requestValues, true ) );
+		if ( $valid ) {
+			$job = new Job;
+			$job->payload = $requestValues;
+			$this->config->object( 'data-store/jobs-paypal' )->push( $job );
+			Logger::info( 'Pushed new message to jobs-paypal: ' .
+				print_r( $requestValues, true ) );
+			return true;
+		}
+
+		Logger::info( 'INVALID IPN message: ' .  print_r( $requestValues, true ) );
+		return false;
+
 	}
 
 }
