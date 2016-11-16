@@ -18,41 +18,44 @@ class PayPalPaymentsAPI {
 	 * @return bool
 	 */
 	function validate( $post_fields = array() ) {
-		$url = Configuration::getDefaultConfig()->val( 'postback-url' );
-		$ch = curl_init();
-		curl_setopt( $ch, CURLOPT_URL, $url );
-		curl_setopt( $ch, CURLOPT_HEADER, 0 );
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 0 );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt( $ch, CURLOPT_POST, 1 );
-		// TODO we can put VERIFIED in config and generalize this
 
-		// Always capture the cURL output
-		$curlDebugLog = fopen( 'php://temp', 'r+' );
-		curl_setopt( $ch, CURLOPT_VERBOSE, true );
-		curl_setopt( $ch, CURLOPT_STDERR, $curlDebugLog );
+		// https://www.paypal-knowledge.com/infocenter/index?page=content&id=FAQ1336&actp=LIST
+		// PayPal randomly fails to validate messages, so try a few times.
+		$max_attempts = 7;
 
-		$response = $this->curl( $ch, $post_fields );
+		for ( $i = 0; $i < $max_attempts; $i++ ) {
+			$url = Configuration::getDefaultConfig()->val( 'postback-url' );
+			$ch = curl_init();
+			curl_setopt( $ch, CURLOPT_URL, $url );
+			curl_setopt( $ch, CURLOPT_HEADER, 0 );
+			curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 0 );
+			curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+			curl_setopt( $ch, CURLOPT_POST, 1 );
+			// TODO we can put VERIFIED in config and generalize this
 
-		// Read the logging output
-		rewind( $curlDebugLog );
-		$logged = fread( $curlDebugLog, 8192 );
-		fclose( $curlDebugLog );
-		Logger::debug( "cURL verbose logging: $logged" );
+			// Always capture the cURL output
+			$curlDebugLog = fopen( 'php://temp', 'r+' );
+			curl_setopt( $ch, CURLOPT_VERBOSE, true );
+			curl_setopt( $ch, CURLOPT_STDERR, $curlDebugLog );
 
-		if ( $response === 'VERIFIED' ) {
-			return true;
-		} elseif ( $response === 'INVALID' ) {
-			return false;
-		} else {
-			// TODO: Log txn_id. This is annoying because of the random document formats.
-			Logger::debug(
-				"Unknown response from PayPal IPN PB: [{$response}].\n" .
-				"Verbose logging: $logged"
-			);
-			// FIXME: The same thing happens for "INVALID" and totally broken
-			// responses. Differentiate.
-			return false;
+			$response = $this->curl( $ch, $post_fields );
+
+			// Read the logging output
+			rewind( $curlDebugLog );
+			$logged = fread( $curlDebugLog, 8192 );
+			fclose( $curlDebugLog );
+			Logger::debug( "cURL verbose logging: $logged" );
+
+			if ( $response === 'VERIFIED' ) {
+				return true;
+			} elseif ( $response === 'INVALID' ) {
+				return false;
+			}
+			// Must be an HTML page, keep trying.
 		}
+
+		throw new RuntimeException( 'Failed to validate message after ' .
+			$max_attempts . ' attempts: ' . print_r( $post_fields, true ) );
 	}
+
 }

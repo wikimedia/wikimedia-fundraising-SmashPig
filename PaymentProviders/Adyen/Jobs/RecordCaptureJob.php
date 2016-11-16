@@ -65,8 +65,13 @@ class RecordCaptureJob extends RunnableJob {
 			$db->deleteMessage( $dbMessage );
 
 		} else {
-			$logger->error(
-				"Could not find a processable message for authorization Reference '{$this->originalReference}' " .
+			// Sometimes we don't have a pending db row because the donor made
+			// multiple attempts with the same order ID. It would be nice if
+			// Adyen could prevent that, but let's not send a failmail since
+			// we'll eventually get the donor details from the payments log
+			// when we parse the audit.
+			$logger->warning(
+				"Could not find donor details for authorization Reference '{$this->originalReference}' " .
 					"and order ID '{$this->merchantReference}'.",
 				$dbMessage
 			);
