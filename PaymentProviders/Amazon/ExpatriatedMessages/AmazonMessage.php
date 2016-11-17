@@ -41,7 +41,7 @@ abstract class AmazonMessage extends ListenerMessage {
 		$this->correlationId = 'amazon-' . $this->gateway_txn_id;
 	}
 
-	public function getGatewayTransactionId() {
-		return $this->gateway_txn_id;
+	public function getOrderReferenceId() {
+		return substr( $this->gateway_txn_id, 0, 19);
 	}
 }
