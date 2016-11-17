@@ -1,24 +1,9 @@
 <?php
 namespace SmashPig\PaymentProviders\Amazon\Tests;
 
-use SmashPig\Core\Context;
 use SmashPig\PaymentProviders\Amazon\AmazonApi;
-use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
-class ApiTest extends BaseSmashPigUnitTestCase {
-
-	protected $mockClient;
-
-	public function setUp() {
-		parent::setUp();
-		chdir( __DIR__ . '/..' ); // So the mock client can find its response files
-		$config = AmazonTestConfiguration::instance();
-		Context::initWithLogger( $config );
-		$this->mockClient = $config->object( 'payments-client', true );
-		$this->mockClient->calls = array();
-		$this->mockClient->returns = array();
-		$this->mockClient->exceptions = array();
-	}
+class ApiTest extends AmazonTestCase {
 
 	public function testFindParent() {
 		$this->mockClient->returns['getAuthorizationDetails'][] = 'Declined';
