@@ -1,5 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\Actions;
 
+use Exception;
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
@@ -20,15 +21,28 @@ class CloseOrderReference implements IListenerMessageAction {
 		$orderReferenceId = $msg->getOrderReferenceId();
 
 		Logger::info( "Closing order reference $orderReferenceId" );
-		$response = $client->closeOrderReference( array(
-			'amazon_order_reference_id' => $orderReferenceId,
-		) )->toArray();
 
-		if ( !empty( $response['Error'] ) ) {
-			Logger::info(
+		// Failure is unexpected, but shouldn't stop us recording
+		// the successful capture
+		try {
+			$response = $client->closeOrderReference(
+				array(
+					'amazon_order_reference_id' => $orderReferenceId,
+				)
+			)->toArray();
+
+			if ( !empty( $response['Error'] ) ) {
+				Logger::warning(
+					"Error closing order reference $orderReferenceId: " .
+					$response['Error']['Code'] . ': ' .
+					$response['Error']['Message']
+				);
+				return false;
+			}
+		} catch( Exception $ex ) {
+			Logger::warning(
 				"Error closing order reference $orderReferenceId: " .
-				$response['Error']['Code'] . ': ' .
-				$response['Error']['Message']
+				$ex->getMessage()
 			);
 			return false;
 		}
