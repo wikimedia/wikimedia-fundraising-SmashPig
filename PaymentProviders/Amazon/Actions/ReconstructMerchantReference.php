@@ -19,7 +19,7 @@ class ReconstructMerchantReference implements IListenerMessageAction {
 			return true;
 		}
 		$captureReference = $msg->getOrderId();
-		if ( !substr( $captureReference, 0, 10 ) === 'AUTHORIZE_' ) {
+		if ( substr( $captureReference, 0, 10 ) !== 'AUTHORIZE_' ) {
 			// We only have to fix Amazon-generated IDs with that prefix
 			return true;
 		}
