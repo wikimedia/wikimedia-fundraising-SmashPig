@@ -4,7 +4,6 @@ namespace SmashPig\Maintenance;
 require ( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\QueueConsumers\PendingQueueConsumer;
 
 $maintClass = '\SmashPig\Maintenance\ConsumePendingQueue';
@@ -13,11 +12,6 @@ $maintClass = '\SmashPig\Maintenance\ConsumePendingQueue';
  * Reads messages out of the pending queue and inserts them into a db table
  */
 class ConsumePendingQueue extends MaintenanceBase {
-
-	/**
-	 * @var PendingDatabase
-	 */
-	protected $pendingDatabase;
 
 	public function __construct() {
 		parent::__construct();

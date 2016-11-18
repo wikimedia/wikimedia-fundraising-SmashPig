@@ -5,7 +5,6 @@ use SmashPig\Core\Configuration;
 use SmashPig\Core\Http\IHttpActionHandler;
 use SmashPig\Core\Http\Request;
 use SmashPig\Core\Http\Response;
-use SmashPig\Core\Listeners\ListenerSecurityException;
 use SmashPig\Core\Logging\Logger;
 
 class Listener implements IHttpActionHandler {
