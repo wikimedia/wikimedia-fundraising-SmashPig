@@ -159,6 +159,26 @@ class PendingDatabase extends SmashPigDatabase {
 	}
 
 	/**
+	 * Delete expired messages, optionally by gateway
+	 *
+	 * @param int $originalDate Oldest date to keep
+	 * @param string|null $gateway
+	 * @return int Number of rows deleted
+	 */
+	public function deleteOldMessages( $originalDate, $gateway = null ) {
+		$sql = 'DELETE FROM pending WHERE date < :date';
+		$params = array(
+			'date' => UtcDate::getUtcDatabaseString( $originalDate ),
+		);
+		if ( $gateway ) {
+			$sql .= ' AND gateway = :gateway';
+			$params['gateway'] = $gateway;
+		}
+		$executed = $this->prepareAndExecute( $sql, $params );
+		return $executed->rowCount();
+	}
+
+	/**
 	 * Parse a database row and return the normalized message.
 	 */
 	protected function messageFromDbRow( $row ) {
