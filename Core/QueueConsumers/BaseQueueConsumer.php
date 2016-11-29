@@ -101,10 +101,18 @@ abstract class BaseQueueConsumer {
 			}
 			$timeOk = $this->timeLimit === 0 || time() <= $startTime + $this->timeLimit;
 			$countOk = $this->messageLimit === 0 || $processed < $this->messageLimit;
-			$debugMessage = 'Data is ' . ( $data === null ? '' : 'not ' ) . 'null, ' .
-				"time limit ($this->timeLimit) is " . ( $timeOk ? 'not ' : '' ) . 'elapsed, ' .
-				"message limit ($this->messageLimit) is " . ( $countOk ? 'not ' : '' ) . 'reached.';
-			Logger::debug( $debugMessage );
+
+			$debugMessages = array();
+			if ( $data === null ) {
+				$debugMessages[] = 'Queue is empty.';
+			} else if ( !$timeOk ) {
+				$debugMessages[] = "Time limit ($this->timeLimit) is elapsed.";
+			} else if ( !$countOk ) {
+				$debugMessages[] = "Message limit ($this->messageLimit) is reached.";
+			}
+			if ( !empty( $debugMessages ) ) {
+				Logger::debug( implode( ' ', $debugMessages ) );
+			}
 		}
 		while( $timeOk && $countOk && $data !== null );
 		return $processed;
