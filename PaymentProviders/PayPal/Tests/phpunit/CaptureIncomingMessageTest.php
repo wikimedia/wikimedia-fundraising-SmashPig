@@ -115,6 +115,13 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 				if ( isset( $message['contribution_tracking_id'] ) ) {
 					$this->assertEquals( $message['contribution_tracking_id'], $message['order_id'] );
 				}
+
+				if ( isset( $message['supplemental_address_1'] ) ) {
+					$this->assertNotEquals(
+						$message['supplemental_address_1'],
+						"{$message['first_name']} {$message['last_name']}"
+					);
+				}
 			}
 
 		}

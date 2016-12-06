@@ -98,6 +98,15 @@ class Job extends RunnableJob {
 				}
 			}
 
+			// If someone's PayPal account is set to their name we don't want
+			// it to go in the address box. They should put in a business name
+			// or something.
+			if ( isset( $new_msg->supplemental_address_1 )
+				&& $new_msg->supplemental_address_1 ===
+				"{$new_msg->first_name} {$new_msg->last_name}" ) {
+				unset( $new_msg->supplemental_address_1 );
+			}
+
 			// FIXME once recurring uses normalized msg it needs this too
 			$new_msg->date = strtotime( $new_msg->date );
 		}
