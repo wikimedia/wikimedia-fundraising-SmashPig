@@ -26,6 +26,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	// filename and the queue it should get dropped in
 	static $message_data = array(
 		'web_accept.json' => 'verified',
+		'express_checkout.json' => 'verified',
 		'subscr_signup.json' => 'recurring',
 		'subscr_payment.json' => 'recurring',
 		'refund.json' => 'refund',
@@ -141,4 +142,53 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$this->assertFalse( $this->capture( $jobMessage ) );
 	}
 
+	public function testConsumeExpressCheckout() {
+		$message = json_decode( file_get_contents( __DIR__ . '/../Data/express_checkout.json' ), true );
+
+		$this->capture( $message );
+
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
+		$jobMessage = $jobQueue->pop();
+
+		$job = KeyedOpaqueStorableObject::fromJsonProxy(
+			$jobMessage['php-message-class'],
+			json_encode( $jobMessage )
+		);
+
+		$job->execute();
+
+		$queue = $this->config->object( 'data-store/verified' );
+		$queue->createTable( 'verified' );
+		$message = $queue->pop();
+
+		$this->assertNotEmpty( $message );
+
+		$expected = array(
+		  'correlationId' => '',
+		  'date' => 1481144318,
+		  'txn_type' => 'express_checkout',
+		  'gateway_txn_id' => '3N2616476S0123456',
+		  'currency' => 'JPY',
+		  'contribution_tracking_id' => '123456',
+		  'email' => 'nobody@wikimedia.org',
+		  'first_name' => 'Fowl',
+		  'last_name' => 'Pond',
+		  'gross' => '150',
+		  'fee' => '43',
+		  'order_id' => '123456',
+		  'gateway' => 'paypal_ec',
+		  'source_name' => 'SmashPig',
+		  'source_type' => 'listener',
+		  #'source_host' => 'rust',
+		  #'source_run_id' => 26345,
+		  'source_version' => 'unknown',
+		  #'source_enqueued_time' => 1481145747,
+		);
+
+		unset( $message['source_host'] );
+		unset( $message['source_run_id'] );
+		unset( $message['source_enqueued_time'] );
+
+		$this->assertEquals( $expected, $message );
+	}
 }

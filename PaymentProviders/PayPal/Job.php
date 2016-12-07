@@ -111,7 +111,11 @@ class Job extends RunnableJob {
 			$new_msg->date = strtotime( $new_msg->date );
 		}
 
-		$new_msg->gateway = 'paypal';
+		if ( $txn_type == 'express_checkout' ) {
+			$new_msg->gateway = 'paypal_ec';
+		} else {
+			$new_msg->gateway = 'paypal';
+		}
 
 		SourceFields::addToMessage( $new_msg );
 
