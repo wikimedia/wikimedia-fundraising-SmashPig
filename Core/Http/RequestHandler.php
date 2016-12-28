@@ -28,10 +28,6 @@ class RequestHandler {
 		$response = new Response();
 		$response->setPrivate();
 
-// FIXME: Remove once https://phabricator.wikimedia.org/T154209 is resolved.
-$response->setStatusCode( 403, "Cannot continue." );
-return $response;
-
 		// --- Break the request into parts ---
 		$uri = $request->query->get( 'p', '' );
 		$parts = explode( '/', $uri );
