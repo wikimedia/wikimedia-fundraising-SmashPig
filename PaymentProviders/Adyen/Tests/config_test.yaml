@@ -24,11 +24,6 @@ adyen:
             constructor-parameters:
                 - 'sqlite::memory:'
 
-        fredge-db:
-            class: PDO
-            constructor-parameters:
-                - 'sqlite::memory:'
-
     payment-provider:
         adyen:
             api:

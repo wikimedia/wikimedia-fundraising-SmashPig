@@ -1,7 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
 use SmashPig\Core\Configuration;
-use SmashPig\Core\DataStores\PaymentsInitialDatabase;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
@@ -60,14 +59,6 @@ class RecordCaptureJob extends RunnableJob {
 			$queueMessage = DonationInterfaceMessage::fromValues( $dbMessage );
 			SourceFields::addToMessage( $queueMessage );
 			$config->object( 'data-store/verified' )->push( $queueMessage );
-
-			PaymentsInitialDatabase::get()
-				->updatePaymentStatus(
-					'adyen',
-					$dbMessage['contribution_tracking_id'],
-					$dbMessage['order_id'],
-					'complete'
-				);
 
 			// Remove it from the pending database
 			$logger->debug( 'Removing donor details message from pending database' );
