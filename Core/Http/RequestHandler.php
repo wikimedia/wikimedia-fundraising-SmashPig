@@ -23,6 +23,10 @@ class RequestHandler {
 		// Can go away once we require PHP 5.6
 		ini_set( 'default_charset', 'UTF-8' );
 
+// FIXME: Remove once https://phabricator.wikimedia.org/T154209 is resolved.
+$response->setStatusCode( 403, "Cannot continue." );
+return $response;
+
 		// --- Get the request and response objects
 		$request = Request::createFromGlobals();
 		$response = new Response();
