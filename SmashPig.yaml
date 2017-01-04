@@ -17,12 +17,14 @@ default:
             constructor-parameters:
                 -
                     <<: *REDIS
+                    queue: payments-antifraud
 
         pending:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
                 -
                     <<: *REDIS
+                    queue: pending
 
         # FIXME: Consolidate these two backends
         pending-db:
@@ -46,11 +48,6 @@ default:
                 -
                     - recurring-new
 
-        recurring-stomp:
-            class: SmashPig\Core\DataStores\StompDataStore
-            constructor-parameters:
-                - recurring
-
         recurring-new:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
@@ -64,27 +61,12 @@ default:
                 -
                     - refund-new
 
-        refund-stomp:
-            class: SmashPig\Core\DataStores\StompDataStore
-            constructor-parameters:
-                - refund
-
         refund-new:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
                 -
                     <<: *REDIS
                     queue: refund
-
-        jobs-damaged:
-            class: SmashPig\Core\DataStores\StompDataStore
-            constructor-parameters:
-                - jobs-damaged
-
-        jobs:
-            class: SmashPig\Core\DataStores\StompDataStore
-            constructor-parameters:
-                - jobs
 
         jobs-paypal:
             class: PHPQueue\Backend\Predis
@@ -108,31 +90,12 @@ default:
                 -
                     - donations
 
-        verified-stomp:
-            class: SmashPig\Core\DataStores\StompDataStore
-            constructor-parameters:
-                - verified
-
         donations:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
                 -
                     <<: *REDIS
-
-        # Library definitions
-        stomp:
-            uri: tcp://localhost:61613
-            timeout: 1
-            refresh-connection: false
-            convert-string-expressions: false
-
-            queues:
-                verified: /queue/donations
-                failed: /queue/failed
-                recurring: /queue/donations_recurring
-                refund: /queue/refund
-                jobs: /queue/job-requests
-                jobs-damaged: /queue/jobs-requests-damaged
+                    queue: donations
 
     logging:
         root-context: SmashPig

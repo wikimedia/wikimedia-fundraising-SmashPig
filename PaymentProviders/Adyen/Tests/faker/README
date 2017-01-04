@@ -20,7 +20,7 @@ Then use the soap injector to simulate some IPN messages for the authorizations:
 
 This should queue up some capture request jobs. Run them like this:
 
-~/src/SmashPig$ php Maintenance/StompJobRunner.php --config-node adyen
+~/src/SmashPig$ php Maintenance/QueueJobRunner.php --queue jobs-adyen --config-node adyen
 TODO: fake API endpoint
 
 Then inject some capture success messages

@@ -24,7 +24,6 @@
     ],
     "require": {
         "coderkungfu/php-queue": "dev-master",
-        "fusesource/stomp-php": "^2.1.1",
         "php": ">=5.3.3",
         "phpmailer/phpmailer": "^5.2",
         "predis/predis": "^1.1",

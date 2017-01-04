@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "dff59f168d145674604d93452ae96038",
-    "content-hash": "72818ec1b403ee3282de2647c26d1686",
+    "hash": "b9fb8f640ad664864e5c9ea93dbc8b1a",
+    "content-hash": "6f0c1657143a0d54fdac09cb749ba44b",
     "packages": [
         {
             "name": "amzn/login-and-pay-with-amazon-sdk-php",
@@ -150,56 +150,6 @@
                 "transaction"
             ],
             "time": "2016-08-05 19:16:32"
-        },
-        {
-            "name": "fusesource/stomp-php",
-            "version": "2.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/dejanb/stomp-php.git",
-                "reference": "4ac51c0abee05078e198faf13f48c056a72f8f8c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/dejanb/stomp-php/zipball/4ac51c0abee05078e198faf13f48c056a72f8f8c",
-                "reference": "4ac51c0abee05078e198faf13f48c056a72f8f8c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "FuseSource": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Dejan Bosnanac",
-                    "email": "dejan@nighttale.net",
-                    "homepage": "http://www.nighttale.net"
-                },
-                {
-                    "name": "Sören Rohweder",
-                    "email": "s.rohweder@blage.net",
-                    "homepage": "http://www.monofone.de"
-                }
-            ],
-            "description": "stomp support for PHP",
-            "homepage": "http://github.com/dejanb/stomp-php",
-            "keywords": [
-                "activeMQ",
-                "jms",
-                "messaging",
-                "stomp"
-            ],
-            "abandoned": "stomp-php/stomp-php",
-            "time": "2013-02-23 17:34:44"
         },
         {
             "name": "ircmaxell/password-compat",
