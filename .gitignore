@@ -7,3 +7,6 @@ PublicHttp/.htaccess
 
 # IDE Tools
 .idea
+
+# Composer deps only on deployment branch
+vendor
