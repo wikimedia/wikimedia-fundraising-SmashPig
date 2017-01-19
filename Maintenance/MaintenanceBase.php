@@ -597,16 +597,12 @@ abstract class MaintenanceBase {
 	}
 
 	/**
-	 * Hook from set_exception_handler(). Will clear output data, set the HTTP
-	 * status to 500: Internal Error and then die.
+	 * Hook from set_exception_handler().
 	 *
 	 * @param \Exception $ex The uncaught exception
 	 */
 	public static function lastChanceExceptionHandler( $ex ) {
-		MaintenanceBase::error(
-			"{$ex->getMessage()} @ {$ex->getFile()}:{$ex->getLine()}.\n{$ex->getTraceAsString()}",
-			true
-		);
 		Logger::alert( "Last chance exception handler fired.", null, $ex );
+		exit( 1 );
 	}
 }
