@@ -55,7 +55,7 @@ class LogEvent {
 					$jdata = $data->toJson();
 				}
 				catch ( DataSerializationException $ex ) {
-	   }
+				}
 			} else {
 				$jdata = json_encode( $data );
 			}
@@ -69,6 +69,13 @@ class LogEvent {
 			$this->data = null;
 		}
 
+		if ( $exception ) {
+			if ( $this->data === null ) {
+				$this->data = $exception->getTraceAsString();
+			} else {
+				$this->data .= $exception->getTraceAsString();
+			}
+		}
 		if ( !$timestamp ) {
 			$this->timestamp = time();
 			$this->datestring = date( 'c' );
@@ -82,10 +89,12 @@ class LogEvent {
 	}
 
 	/**
-	 * Format the exception to be human readable
+	 * Format the exception chain to be human readable
 	 *
-	 * @return array The first element is the header, e.g. the type, location, line, and message. Following
-	 * elements contain each individual stack trace line.
+	 * @return array Each element is the type, location, line, and message
+	 * of an exception in the causal chain, with the root cause listed first.
+	 * We do not include the stack trace here, as it could include sensitive
+	 * data.
 	 */
 	public function getExceptionBlob() {
 		$cex = $this->exception;
@@ -98,13 +107,12 @@ class LogEvent {
 		do {
 			$descStr[] = get_class( $cex ) . "@{$cex->getFile()}:{$cex->getLine()} ({$cex->getMessage()})";
 			$cex = $cex->getPrevious();
+			if ( $cex ) {
+				$descStr[] = ' -> ';
+			}
 		} while ( $cex );
-		$descStr = implode( ' -> ', array_reverse( $descStr ) );
+		$descStr = array_reverse( $descStr );
 
-		// Get the stack trace
-		$stack = explode( "\n", $this->exception->getTraceAsString() );
-
-		array_unshift( $stack, $descStr );
-		return $stack;
+		return $descStr;
 	}
 }
