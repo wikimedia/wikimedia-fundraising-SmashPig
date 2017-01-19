@@ -1,0 +1,54 @@
+<?php
+
+namespace SmashPig\PaymentProviders\Ingenico\Tests;
+
+use SmashPig\Core\Http\OutboundRequest;
+use SmashPig\PaymentProviders\Ingenico\Authenticator;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
+
+/**
+ * See examples at
+ * https://developer.globalcollect.com/documentation/api/server/#api-authentication
+ *
+ * @group Ingenico
+ */
+class AuthenticatorTest extends BaseSmashPigUnitTestCase {
+
+	public function setUp() {
+		$config = $this->setConfig( 'ingenico' );
+		$config->override( array(
+			'credentials' => array(
+				'api-key-id' => '5e45c937b9db33ae',
+				'api-secret' => 'I42Zf4pVnRdroHfuHnRiJjJ2B6+22h0yQt/R3nZR8Xg='
+			)
+		) );
+		parent::setUp();
+	}
+
+	/**
+	 * Data taken from the 'minimal' example at the documentation URL in class comment
+	 */
+	public function testBasicSignature() {
+		$request = new OutboundRequest( 'https://api.globalcollect.com/v1/9991/tokens/123456789' );
+		$request->setHeader( 'Date', 'Fri, 06 Jun 2014 13:39:43 GMT' );
+		$authenticator = new Authenticator();
+		$authenticator->signRequest( $request );
+		$headers = $request->getHeaders();
+		$this->assertEquals(
+			'GCS v1HMAC:5e45c937b9db33ae:J5LjfSBvrQNhu7gG0gvifZt+IWNDReGCmHmBmth6ueI=',
+			$headers['Authorization']
+		);
+	}
+
+	public function testEncodedQuery() {
+		$request = new OutboundRequest( 'https://api.globalcollect.com/v1/consumer/ANDR%C3%89E/?q=na%20me' );
+		$request->setHeader( 'Date', 'Fri, 06 Jun 2014 13:39:43 GMT' );
+		$authenticator = new Authenticator();
+		$authenticator->signRequest( $request );
+		$headers = $request->getHeaders();
+		$this->assertEquals(
+			'GCS v1HMAC:5e45c937b9db33ae:x9S2hQmLhLTbpK0YdTuYCD8TB4D+Kf60tNW0Xw5Xls0=',
+			$headers['Authorization']
+		);
+	}
+}

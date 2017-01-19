@@ -435,3 +435,15 @@ globalcollect:
     endpoints:
         listener:
             class: SmashPig\PaymentProviders\GlobalCollect\GlobalCollectListener
+
+ingenico:
+    base-url: 'https://api-sandbox.globalcollect.com/'
+
+    credentials:
+        merchant-id: 1234
+        api-key-id: 'apiKey'
+        api-secret: 'apiSecret'
+
+    authenticator:
+        class: SmashPig\PaymentProviders\Ingenico\Authenticator
+        constructor-parameters: []
