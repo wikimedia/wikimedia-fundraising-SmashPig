@@ -180,6 +180,18 @@ class Configuration {
 	}
 
 	/**
+	 * For testing: provide a specific instance of an object to fulfil requests
+	 * for a specific node. Helpful when using test library mocks that you can't
+	 * declaratively configure with constructor parameters.
+	 *
+	 * @param $node string
+	 * @param $object object
+	 */
+	public function overrideObjectInstance( $node, $object ) {
+		$this->objects[$node] = $object;
+	}
+
+	/**
 	 * Obtain a value from the configuration. If the key does not exist this will throw an
 	 * exception.
 	 *

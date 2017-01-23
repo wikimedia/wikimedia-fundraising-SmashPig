@@ -1,6 +1,8 @@
 <?php
 namespace SmashPig\Tests;
 
+use SmashPig\Core\Logging\LogStreams\ConsoleLogStream;
+
 /**
  */
 class ConfigurationTest extends BaseSmashPigUnitTestCase {
@@ -52,4 +54,26 @@ class ConfigurationTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $expected, $config->val( 'endpoints/listener' ),
 			'Deep merge went as hoped' );
 	}
+
+	public function testOverrideObjectInstance() {
+		$config = $this->setConfig();
+
+		$this->assertInstanceOf(
+			'SmashPig\Core\Logging\LogStreams\SyslogLogStream',
+			$config->object( 'logging/log-streams/syslog' ),
+			'Default config was not as expected.'
+		);
+
+		$overrideInstance = new ConsoleLogStream();
+		$config->overrideObjectInstance(
+			'logging/log-streams/syslog',
+			$overrideInstance
+		);
+		$this->assertEquals(
+			spl_object_hash( $overrideInstance ),
+			spl_object_hash( $config->object( 'logging/log-streams/syslog' ) ),
+			'Sorcery fizzled out. Do you have enough mana?'
+		);
+	}
+
 }
