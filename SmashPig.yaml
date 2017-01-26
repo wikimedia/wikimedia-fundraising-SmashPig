@@ -147,6 +147,15 @@ default:
 
     requeue-max-age: 12000
 
+    curl:
+        wrapper:
+            class: SmashPig\Core\Http\CurlWrapper
+        validator:
+            class: SmashPig\Core\Http\HttpStatusValidator
+        timeout: 7
+        retries: 3
+        user-agent: SmashPig
+
 adyen:
     logging:
         root-context: SmashPig-Adyen
