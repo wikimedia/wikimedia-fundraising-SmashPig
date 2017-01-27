@@ -1,2 +1,0 @@
-api:
-    class: SmashPig\PaymentProviders\PayPal\Tests\MockPayPalPaymentsAPI

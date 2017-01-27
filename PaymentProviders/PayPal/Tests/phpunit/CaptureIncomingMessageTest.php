@@ -2,6 +2,7 @@
 namespace SmashPig\PaymentProviders\PayPal\Tests;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\GlobalConfiguration;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\PayPal\Listener;
@@ -9,6 +10,7 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
 use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
 use SmashPig\Core\DataStores\JsonSerializableObject;
+use SmashPig\Tests\TestingProviderConfiguration;
 
 /**
  * Test the IPN listener which receives messages, stores and processes them.
@@ -17,13 +19,18 @@ use SmashPig\Core\DataStores\JsonSerializableObject;
 class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 	/**
-	 * @var ProviderConfiguration
+	 * @var GlobalConfiguration
 	 */
 	public $config;
 
-	static $fail_verification = false;
-	static $paypal_is_broken = false;
+	/**
+	 * @var ProviderConfiguration
+	 */
+	public $providerConfig;
 
+	/**
+	 * @var array
+	 */
 	// filename and the queue it should get dropped in
 	static $message_data = array(
 		'web_accept.json' => 'donations',
@@ -43,14 +50,11 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->config = Context::get()->getGlobalConfiguration();
-		Context::get()->setProviderConfiguration(
-			PayPalTestConfiguration::get( $this->config )
-		);
+		$this->providerConfig = $this->setProviderConfiguration( 'paypal' );
 	}
 
 	public function tearDown() {
-		self::$fail_verification = false;
-		self::$paypal_is_broken = false;
+		$this->providerConfig->overrideObjectInstance( 'curl/wrapper', null );
 		parent::tearDown();
 	}
 
@@ -84,10 +88,21 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		return $listener->execute( $request, $response );
 	}
 
+	protected function getCurlMock( $returnString ) {
+		$wrapper = $this->getMock( 'SmashPig\Core\Http\CurlWrapper' );
+		$wrapper->method( 'execute' )
+			->willReturn( array(
+				'body' => $returnString
+			) );
+		$this->providerConfig->overrideObjectInstance( 'curl/wrapper', $wrapper );
+		return $wrapper;
+	}
+
 	/**
 	 * @dataProvider messageProvider
 	 */
 	public function testCapture( $msg ) {
+		$this->getCurlMock( 'VERIFIED' );
 		$this->capture( $msg['payload'] );
 
 		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
@@ -109,6 +124,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	 * @dataProvider messageProvider
 	 */
 	public function testConsume( $msg ) {
+		$this->getCurlMock( 'VERIFIED' );
 		$this->capture( $msg['payload'] );
 
 		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
@@ -146,16 +162,23 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testFailedVerification() {
-		self::$fail_verification = true;
+		$this->getCurlMock( 'INVALID' );
 		$jobMessage = array( 'txn_type' => 'fail' );
 		$this->assertFalse( $this->capture( $jobMessage ) );
 	}
 
-	// FIXME: not really testing anything. Would like to verify that it tried
-	// N times. Bubble that information up somehow.
-	public function testPayPalIsBroken() {
-		self::$paypal_is_broken = true;
-		$jobMessage = array( 'txn_type' => 'fail' );
-		$this->assertFalse( $this->capture( $jobMessage ) );
+	public function testRetryValidator() {
+		$validator = $this->providerConfig->object( 'curl/validator' );
+		$response = array(
+			'status' => 200,
+			'headers' => array(),
+			'body' => '<html><head><title>Fail</title></head><body>Oops</body></html>'
+		);
+		$this->assertTrue( $validator->shouldRetry( $response ) );
+		$response['body'] = 'INVALID';
+		$this->assertFalse( $validator->shouldRetry( $response ) );
+		$response['body'] = 'VERIFIED';
+		$this->assertFalse( $validator->shouldRetry( $response ) );
 	}
+
 }
