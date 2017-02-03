@@ -3,7 +3,7 @@ paypal:
         class: SmashPig\PaymentProviders\PayPal\Tests\MockPayPalPaymentsAPI
 
     data-store:
-        verified:
+        donations:
             class: PHPQueue\Backend\PDO
             constructor-parameters:
                 -
@@ -24,7 +24,7 @@ paypal:
                     connection_string: 'sqlite::memory:'
                     queue: recurring
 
-        refund:
+        refund-new:
             class: PHPQueue\Backend\PDO
             constructor-parameters:
                 -

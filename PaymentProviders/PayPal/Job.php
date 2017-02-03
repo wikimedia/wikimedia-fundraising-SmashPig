@@ -51,77 +51,34 @@ class Job extends RunnableJob {
 			throw new Exception( 'Invalid PayPal message: ' . json_encode( $request ) );
 		}
 
-		$msg_type = null;
+		$msgClass = null;
+		$queue = '';
 		foreach ( $this->config->val( 'messages' ) as $type => $conf ) {
 			if ( in_array( $txn_type, $conf['txn_types'] ) ) {
-				$msg_type = $type;
+				$msgClass = $conf['class'];
+				$queue = $conf['queue'];
 			}
 		}
 
-		if ( ! $msg_type ) {
+		if ( !$msgClass ) {
 			throw new Exception( 'Invalid PayPal message type: ' . $txn_type );
 		}
 
 		// Transform into new message.
 
-		// FIXME this could just be an array, but we need compat with
-		// keyedopaque* until activemq goes away
-		$new_msg = new Message;
-		// FIXME hacks because the recurring consumer doesn't want
-		// a normalized message
-		if ( $msg_type === 'recurring' ) {
-			foreach ( $request as $key => $val ) {
-				$new_msg->$key = $val;
-			}
-		} else {
-			$map = $this->config->val( 'var_map' );
-			foreach ( $map as $rx => $tx ) {
-				if ( array_key_exists( $rx, $request ) ) {
-					$new_msg->$tx = $request[$rx];
-				}
-			}
-
-			// FIXME: var map can't put one thing in two places
-			if ( isset( $new_msg->contribution_tracking_id ) ) {
-				$new_msg->order_id = $new_msg->contribution_tracking_id;
-			}
-
-			// FIXME represent special case as var_map config override?
-			if ( $msg_type === 'refund' ) {
-				$new_msg->gateway_refund_id = $request['txn_id'];
-				$new_msg->gross_currency = $request['mc_currency'];
-				if ( isset( $new_msg->type ) &&
-					$new_msg->type === 'chargeback_settlement' ) {
-					$new_msg->type = 'chargeback';
-				} else {
-					$new_msg->type = $msg_type;
-				}
-			}
-
-			// If someone's PayPal account is set to their name we don't want
-			// it to go in the address box. They should put in a business name
-			// or something.
-			if ( isset( $new_msg->supplemental_address_1 )
-				&& $new_msg->supplemental_address_1 ===
-				"{$new_msg->first_name} {$new_msg->last_name}" ) {
-				unset( $new_msg->supplemental_address_1 );
-			}
-
-			// FIXME once recurring uses normalized msg it needs this too
-			$new_msg->date = strtotime( $new_msg->date );
-		}
+		$creator = array( $msgClass, 'fromIpnMessage' );
+		$normalized = call_user_func( $creator, $request );
 
 		if ( $txn_type == 'express_checkout' ) {
-			$new_msg->gateway = 'paypal_ec';
+			$normalized['gateway'] = 'paypal_ec';
 		} else {
-			$new_msg->gateway = 'paypal';
+			$normalized['gateway'] = 'paypal';
 		}
-
-		SourceFields::addToMessage( $new_msg );
+		SourceFields::addToMessage( $normalized );
 
 		// Save to appropriate queue.
-		$this->config->object( 'data-store/' . $msg_type )
-			->push( $new_msg );
+		$this->config->object( 'data-store/' . $queue )
+			->push( $normalized );
 
 		// FIXME random document formats
 		if ( substr( $txn_type, 0, 7 ) === 'subscr_' ) {
@@ -130,7 +87,7 @@ class Job extends RunnableJob {
 			$log_id = "txn_id:{$request['txn_id']}";
 		}
 
-		Logger::info( "Message {$log_id} pushed to {$msg_type} queue." );
+		Logger::info( "Message {$log_id} pushed to {$queue} queue." );
 
 		// TODO It would be nice if push() returned something useful so we
 		// could return something here too

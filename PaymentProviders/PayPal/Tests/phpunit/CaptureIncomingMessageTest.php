@@ -25,12 +25,12 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 	// filename and the queue it should get dropped in
 	static $message_data = array(
-		'web_accept.json' => 'verified',
-		'express_checkout.json' => 'verified',
+		'web_accept.json' => 'donations',
+		'express_checkout.json' => 'donations',
 		'subscr_signup.json' => 'recurring',
 		'subscr_payment.json' => 'recurring',
-		'refund.json' => 'refund',
-		'chargeback_settlement.json' => 'refund',
+		'refund.json' => 'refund-new',
+		'chargeback_settlement.json' => 'refund-new',
 		// this should not actually get written to
 		// TODO 'new_case.json' => 'no-op',
 	);
