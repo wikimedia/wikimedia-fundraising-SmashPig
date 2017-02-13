@@ -20,6 +20,7 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$config = $this->setConfig( 'ingenico' );
 		$this->curlWrapper = $this->getMock( '\SmashPig\Core\Http\CurlWrapper' );
 		$config->overrideObjectInstance( 'curl/wrapper', $this->curlWrapper );
+		$config->object( 'cache' )->clear();
 		parent::setUp();
 	}
 
@@ -33,6 +34,22 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			),
 			$results
 		);
+	}
+
+	public function testCacheBankList() {
+		$this->setUpResponse( 'productDirectory', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' );
+		$provider = new BankPaymentProvider();
+		$results = $provider->getBankList( 'NL', 'EUR' );
+		$this->assertEquals(
+			array(
+				'INGBNL2A' => 'Issuer Simulation V3 - ING'
+			),
+			$results
+		);
+		$cachedResults = $provider->getBankList( 'NL', 'EUR' );
+		$this->assertEquals( $results, $cachedResults );
 	}
 
 	protected function setUpResponse( $filename, $statusCode ) {

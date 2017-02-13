@@ -156,6 +156,12 @@ default:
         retries: 3
         user-agent: SmashPig
 
+    # Must implement Psr\Cache\CacheItemPoolInterface
+    # See PSR-6: http://www.php-fig.org/psr/psr-6/
+    cache:
+        class: SmashPig\Core\Cache\HashCache
+
+
 adyen:
     logging:
         root-context: SmashPig-Adyen
@@ -447,3 +453,7 @@ ingenico:
     authenticator:
         class: SmashPig\PaymentProviders\Ingenico\Authenticator
         constructor-parameters: []
+
+    bank-cache:
+        key: SMASHPIG_INGENICO_IDEAL_BANK_LIST
+        duration: 300
