@@ -434,7 +434,7 @@ paypal:
                 # FIXME: if case_type=chargeback, then txn_type might be blank
                 # and the message should go to the refund queue.
 
-globalcollect:
+ingenico: &INGENICO
     actions:
         - SmashPig\Core\Actions\IncomingMessage
 
@@ -442,7 +442,6 @@ globalcollect:
         listener:
             class: SmashPig\PaymentProviders\GlobalCollect\GlobalCollectListener
 
-ingenico:
     base-url: 'https://api-sandbox.globalcollect.com/'
 
     credentials:
@@ -457,3 +456,7 @@ ingenico:
     bank-cache:
         key: SMASHPIG_INGENICO_IDEAL_BANK_LIST
         duration: 300
+
+# deprecated, delete when projects using SmashPig rename adaptors
+globalcollect:
+    <<: *INGENICO
