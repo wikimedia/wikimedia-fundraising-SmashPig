@@ -4,7 +4,7 @@
  * Message indicating a payment has expired
  */
 class ExpirationMessage extends AstroPayMessage {
-	function getDestinationQueue() {
+	public function getDestinationQueue() {
 		return null;
 	}
 }

@@ -6,7 +6,7 @@ use SmashPig\Core\Context;
  * abstract static inheritance? Whatamidoing?
  */
 abstract class Message {
-	static function fromIpnMessage( $ipnArray ) {
+	public static function fromIpnMessage( $ipnArray ) {
 		$config = Context::get()->getConfiguration();
 
 		$message = array();

@@ -8,7 +8,7 @@ use PHPUnit_Framework_TestCase;
 
 class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 
 		require_once __DIR__ . '/../vendor/autoload.php';
@@ -17,12 +17,12 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 		TestingConfiguration::installTestConfiguration();
 	}
 
-	function tearDown() {
+	public function tearDown() {
 		Context::set(); // Nullify the context for next run.
 		TestingConfiguration::tearDownConfiguration(); // And the default config
 	}
 
-	function loadJson( $path ) {
+	protected function loadJson( $path ) {
 		return json_decode( file_get_contents( $path ), true );
 	}
 
@@ -33,7 +33,7 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 	 * @param string $configPath path to configuration override file
 	 * @return Configuration
 	 */
-	function setConfig( $configNode = 'default', $configPath = null ) {
+	protected function setConfig( $configNode = 'default', $configPath = null ) {
 		$config = Configuration::createForViewWithOverrideFile( $configNode, $configPath );
 		Context::initWithLogger( $config );
 		return $config;

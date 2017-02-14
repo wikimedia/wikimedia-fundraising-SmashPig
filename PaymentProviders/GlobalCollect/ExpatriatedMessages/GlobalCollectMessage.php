@@ -56,5 +56,5 @@ abstract class GlobalCollectMessage extends ListenerMessage {
 		return !empty( $this->order_id );
 	}
 
-	abstract function getDestinationQueue();
+	abstract public function getDestinationQueue();
 }

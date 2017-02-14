@@ -17,7 +17,7 @@ class PayPalPaymentsAPI {
 	 * @param array $post_fields Associative array of fields posted to listener
 	 * @return bool
 	 */
-	function validate( $post_fields = array() ) {
+	public function validate( $post_fields = array() ) {
 
 		// https://www.paypal-knowledge.com/infocenter/index?page=content&id=FAQ1336&actp=LIST
 		// PayPal randomly fails to validate messages, so try a few times.

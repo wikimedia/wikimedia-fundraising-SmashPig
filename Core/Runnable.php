@@ -11,6 +11,6 @@ interface Runnable {
 	/**
 	 * Do whatever it is that you do.
 	 */
-	function execute();
+	public function execute();
 }
 

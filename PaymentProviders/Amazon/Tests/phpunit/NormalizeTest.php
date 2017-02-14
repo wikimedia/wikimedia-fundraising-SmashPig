@@ -6,7 +6,7 @@ use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 class NormalizeTest extends BaseSmashPigUnitTestCase {
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 		$this->captureCompleted = $this->loadJson( __DIR__ . "/../Data/IPN/CaptureCompleted.json" );
 		$this->captureDeclined = $this->loadJson( __DIR__ . "/../Data/IPN/CaptureDeclined.json" );
@@ -14,11 +14,11 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 		$this->refundDeclined = $this->loadJson( __DIR__ . "/../Data/IPN/RefundDeclined.json" );
 	}
 
-	function normalizedToArray( $message ) {
+	protected function normalizedToArray( $message ) {
 		return json_decode( $message->toJson(), true );
 	}
 
-	function testNormalizeCaptureCompleted() {
+	public function testNormalizeCaptureCompleted() {
 		$expected = array(
 			'completion_message_id' => 'amazon-98765432-1',
 			'contribution_tracking_id' => '98765432',
@@ -45,7 +45,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $expected, $normalized );
 	}
 
-	function testNormalizeRefundCompleted() {
+	public function testNormalizeRefundCompleted() {
 		$id = 'P01-0000000-0000000-C' . mt_rand( 10000, 99999 );
 		$expected = array(
 			'correlationId' => 'amazon-P01-0000000-0000000-R00000',

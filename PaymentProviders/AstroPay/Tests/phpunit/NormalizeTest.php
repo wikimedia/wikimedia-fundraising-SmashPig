@@ -5,19 +5,19 @@ use SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages\PaymentMessage;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 class NormalizeTest extends BaseSmashPigUnitTestCase {
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 		$this->paymentSuccess = $this->loadJson( __DIR__ . "/../Data/paid.json" );
 	}
 
-	function normalizedToArray( $message ) {
+	protected function normalizedToArray( $message ) {
 		return json_decode( $message->toJson(), true );
 	}
 
 	/**
 	 * Check that we produce the right message, including the completion id
 	 */
-	function testNormalizePaymentSuccess() {
+	public function testNormalizePaymentSuccess() {
 		$expected = array(
 			'completion_message_id' => 'astropay-32303.1',
 			'contribution_tracking_id' => '32303',
