@@ -35,8 +35,6 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		// TODO 'new_case.json' => 'no-op',
 	);
 
-	static $messages = array();
-
 	public function setUp() {
 		parent::setUp();
 		$this->config = PayPalTestConfiguration::get();
@@ -46,21 +44,35 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 			->createTable( 'jobs-paypal' );
 
 		Context::initWithLogger( $this->config );
-		foreach ( self::$message_data as $file => $type ) {
-			self::$messages[] = array(
-				'type' => $type,
-				'payload' => json_decode(
-					file_get_contents( __DIR__ . '/../Data/' . $file ),
-					true
-				)
-			);
-		}
 	}
 
 	public function tearDown() {
 		self::$fail_verification = false;
 		self::$paypal_is_broken = false;
 		parent::tearDown();
+	}
+
+	public function messageProvider() {
+		$messages = array();
+		foreach ( self::$message_data as $file => $type ) {
+			$payloadFile = __DIR__ . '/../Data/' . $file;
+			$messageData = array(
+				'type' => $type,
+				'payload' => json_decode(
+					file_get_contents( $payloadFile ),
+					true
+				)
+			);
+			$transformedFile = str_replace( '.json', '_transformed.json', $payloadFile );
+			if ( file_exists( $transformedFile ) ) {
+				$messageData['transformed'] = json_decode(
+					file_get_contents( $transformedFile ),
+					true
+				);
+			}
+			$messages[] = array( $messageData );
+		}
+		return $messages;
 	}
 
 	private function capture( $msg ) {
@@ -70,19 +82,28 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		return $listener->execute( $request, $response );
 	}
 
-	public function testCapture() {
-		foreach ( self::$messages as $msg ) {
+	private function scrubIgnoredFields( &$message ) {
+		unset( $message['source_host'] );
+		unset( $message['source_run_id'] );
+		unset( $message['source_enqueued_time'] );
+		unset( $message['correlationId'] );
+		unset( $message['propertiesExportedAsKeys'] );
+		unset( $message['propertiesExcludedFromExport'] );
+	}
 
-			$this->capture( $msg['payload'] );
+	/**
+	 * @dataProvider messageProvider
+	 */
+	public function testCapture( $msg ) {
+		$this->capture( $msg['payload'] );
 
-			$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
-			$jobMessage = $jobQueue->pop();
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
+		$jobMessage = $jobQueue->pop();
 
-			$this->assertEquals( $jobMessage['php-message-class'],
-				'SmashPig\PaymentProviders\PayPal\Job' );
+		$this->assertEquals( $jobMessage['php-message-class'],
+			'SmashPig\PaymentProviders\PayPal\Job' );
 
-			$this->assertEquals( $jobMessage['payload'], $msg['payload'] );
-		}
+		$this->assertEquals( $jobMessage['payload'], $msg['payload'] );
 	}
 
 	public function testBlankMessage() {
@@ -91,40 +112,44 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$this->assertNull( $jobQueue->pop() );
 	}
 
-	public function testConsume() {
-		foreach ( self::$messages as $msg ) {
-			$this->capture( $msg['payload'] );
+	/**
+	 * @dataProvider messageProvider
+	 */
+	public function testConsume( $msg ) {
+		$this->capture( $msg['payload'] );
 
-			$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
-			$jobMessage = $jobQueue->pop();
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
+		$jobMessage = $jobQueue->pop();
 
-			$job = KeyedOpaqueStorableObject::fromJsonProxy(
-				$jobMessage['php-message-class'],
-				json_encode( $jobMessage )
-			);
+		$job = KeyedOpaqueStorableObject::fromJsonProxy(
+			$jobMessage['php-message-class'],
+			json_encode( $jobMessage )
+		);
 
-			$job->execute();
+		$job->execute();
 
-			$queue = $this->config->object( 'data-store/' . $msg['type'] );
-			$queue->createTable( $msg['type'] );
-			$message = $queue->pop();
+		$queue = $this->config->object( 'data-store/' . $msg['type'] );
+		$queue->createTable( $msg['type'] );
+		$message = $queue->pop();
 
-			if ( $job->is_reject() ) {
-				$this->assertEmpty( $message );
-			} else {
-				$this->assertNotEmpty( $message );
-				if ( isset( $message['contribution_tracking_id'] ) ) {
-					$this->assertEquals( $message['contribution_tracking_id'], $message['order_id'] );
-				}
-
-				if ( isset( $message['supplemental_address_1'] ) ) {
-					$this->assertNotEquals(
-						$message['supplemental_address_1'],
-						"{$message['first_name']} {$message['last_name']}"
-					);
-				}
+		if ( $job->is_reject() ) {
+			$this->assertEmpty( $message );
+		} else {
+			$this->assertNotEmpty( $message );
+			if ( isset( $message['contribution_tracking_id'] ) ) {
+				$this->assertEquals( $message['contribution_tracking_id'], $message['order_id'] );
 			}
 
+			if ( isset( $message['supplemental_address_1'] ) ) {
+				$this->assertNotEquals(
+					$message['supplemental_address_1'],
+					"{$message['first_name']} {$message['last_name']}"
+				);
+			}
+			if ( isset( $msg['transformed'] ) ) {
+				$this->scrubIgnoredFields( $message );
+				$this->assertEquals( $msg['transformed'], $message );
+			}
 		}
 	}
 
@@ -140,55 +165,5 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		self::$paypal_is_broken = true;
 		$jobMessage = array( 'txn_type' => 'fail' );
 		$this->assertFalse( $this->capture( $jobMessage ) );
-	}
-
-	public function testConsumeExpressCheckout() {
-		$message = json_decode( file_get_contents( __DIR__ . '/../Data/express_checkout.json' ), true );
-
-		$this->capture( $message );
-
-		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
-		$jobMessage = $jobQueue->pop();
-
-		$job = KeyedOpaqueStorableObject::fromJsonProxy(
-			$jobMessage['php-message-class'],
-			json_encode( $jobMessage )
-		);
-
-		$job->execute();
-
-		$queue = $this->config->object( 'data-store/verified' );
-		$queue->createTable( 'verified' );
-		$message = $queue->pop();
-
-		$this->assertNotEmpty( $message );
-
-		$expected = array(
-		  'correlationId' => '',
-		  'date' => 1481144318,
-		  'txn_type' => 'express_checkout',
-		  'gateway_txn_id' => '3N2616476S0123456',
-		  'currency' => 'JPY',
-		  'contribution_tracking_id' => '123456',
-		  'email' => 'nobody@wikimedia.org',
-		  'first_name' => 'Fowl',
-		  'last_name' => 'Pond',
-		  'gross' => '150',
-		  'fee' => '43',
-		  'order_id' => '123456',
-		  'gateway' => 'paypal_ec',
-		  'source_name' => 'SmashPig',
-		  'source_type' => 'listener',
-		  #'source_host' => 'rust',
-		  #'source_run_id' => 26345,
-		  'source_version' => 'unknown',
-		  #'source_enqueued_time' => 1481145747,
-		);
-
-		unset( $message['source_host'] );
-		unset( $message['source_run_id'] );
-		unset( $message['source_enqueued_time'] );
-
-		$this->assertEquals( $expected, $message );
 	}
 }
