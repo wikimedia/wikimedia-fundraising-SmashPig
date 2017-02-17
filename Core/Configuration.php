@@ -274,6 +274,9 @@ class Configuration {
 
 		// Optional keys
 		$arguments = array();
+		// It would be nice to be able to provide other objects defined
+		// in config as arguments. We might have had that pre-simplification
+		// with nodes that referred to other nodes.
 		if ( $this->nodeExists( $node . '/constructor-parameters' ) ) {
 			$arguments = $this->val( $node . '/constructor-parameters' );
 		}

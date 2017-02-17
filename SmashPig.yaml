@@ -170,6 +170,8 @@ adyen:
         listener:
             class: SmashPig\PaymentProviders\Adyen\AdyenListener
 
+    # FIXME: let's use this node to map payment methods to classes that
+    # implement doPayment (aka gateway adapters). See ingenico below.
     payment-provider:
         adyen:
             api:
@@ -456,6 +458,10 @@ ingenico: &INGENICO
     bank-cache:
         key: SMASHPIG_INGENICO_IDEAL_BANK_LIST
         duration: 300
+
+    payment-provider:
+        rtbt:
+            class: SmashPig\PaymentProviders\Ingenico\BankPaymentProvider
 
 # deprecated, delete when projects using SmashPig rename adaptors
 globalcollect:
