@@ -446,12 +446,12 @@ ingenico: &INGENICO
 
     credentials:
         merchant-id: 1234
-        api-key-id: 'apiKey'
-        api-secret: 'apiSecret'
 
     authenticator:
         class: SmashPig\PaymentProviders\Ingenico\Authenticator
-        constructor-parameters: []
+        constructor-parameters:
+            - 'apiKey'
+            - 'apiSecret'
 
     bank-cache:
         key: SMASHPIG_INGENICO_IDEAL_BANK_LIST
