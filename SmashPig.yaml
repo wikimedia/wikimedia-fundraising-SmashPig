@@ -444,10 +444,11 @@ ingenico: &INGENICO
         listener:
             class: SmashPig\PaymentProviders\GlobalCollect\GlobalCollectListener
 
-    base-url: 'https://api-sandbox.globalcollect.com/'
-
-    credentials:
-        merchant-id: 1234
+    api:
+        class: SmashPig\PaymentProviders\Ingenico\Api
+        constructor-parameters:
+            - 'https://api-sandbox.globalcollect.com/'
+            - 1234 # numeric merchant ID
 
     authenticator:
         class: SmashPig\PaymentProviders\Ingenico\Authenticator

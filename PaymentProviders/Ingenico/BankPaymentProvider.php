@@ -50,7 +50,7 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 				'currencyCode' => $currency
 			);
 			$path = "products/$productId/directory";
-			$response = $this->makeApiCall( $path, 'GET', $query );
+			$response = $this->api->makeApiCall( $path, 'GET', $query );
 
 			// TODO: api class should probably decode
 			$decoded = json_decode( $response['body'] );
