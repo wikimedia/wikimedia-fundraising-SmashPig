@@ -11,24 +11,28 @@ use SmashPig\Core\Http\OutboundRequest;
  */
 class Authenticator {
 
+	protected $keyId;
+	protected $secret;
+
+	public function __construct( $keyId, $secret ) {
+		$this->keyId = $keyId;
+		$this->secret = $secret;
+	}
+
 	public function signRequest( OutboundRequest $request ) {
-		$config = Context::get()->getConfiguration();
 
 		$toSign = $this->getStringToSign( $request );
-		$secretApiKey = $config->val( 'credentials/api-secret' );
 
 		$signature = base64_encode(
 			hash_hmac(
 				'sha256',
 				$toSign,
-				$secretApiKey,
+				$this->secret,
 				true
 			)
 		);
 
-		$apiKeyId = $config->val( 'credentials/api-key-id' );
-
-		$authHeader = "GCS v1HMAC:$apiKeyId:$signature";
+		$authHeader = "GCS v1HMAC:{$this->keyId}:$signature";
 		$request->setHeader( 'Authorization', $authHeader );
 	}
 
