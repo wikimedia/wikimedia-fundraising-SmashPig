@@ -2,6 +2,9 @@
 
 namespace SmashPig\PaymentProviders\Ingenico;
 
+use SmashPig\Core\Context;
+use Psr\Cache\CacheItemPoolInterface;
+
 /**
  * Handle bank payments via Ingenico
  * Will eventually implement PaymentProvider, but right now just looks
@@ -9,6 +12,24 @@ namespace SmashPig\PaymentProviders\Ingenico;
  * config key 'cache'.
  */
 class BankPaymentProvider extends IngenicoPaymentProvider {
+
+	/**
+	 * @var array()
+	 */
+	protected $cacheParameters;
+
+	/**
+	 * @var CacheItemPoolInterface
+	 */
+	protected $cache;
+
+	public function __construct( array $options = array() ) {
+		parent::__construct( $options );
+		$this->cacheParameters = $options['cache-parameters'];
+		// FIXME: provide objects in constructor
+		$config = Context::get()->getConfiguration();
+		$this->cache = $config->object( 'cache' );
+	}
 
 	/**
 	 * Look up banks
@@ -21,8 +42,7 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 	 */
 	public function getBankList( $country, $currency, $productId = 809 ) {
 		$cacheKey = $this->makeCacheKey( $country, $currency, $productId );
-		$cache = $this->config->object( 'cache' );
-		$cacheItem = $cache->getItem( $cacheKey );
+		$cacheItem = $this->cache->getItem( $cacheKey );
 
 		if ( !$cacheItem->isHit() ) {
 			$query = array(
@@ -32,7 +52,7 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 			$path = "products/$productId/directory";
 			$response = $this->makeApiCall( $path, 'GET', $query );
 
-			// TODO: base class should probably decode
+			// TODO: api class should probably decode
 			$decoded = json_decode( $response['body'] );
 
 			$banks = array();
@@ -41,15 +61,15 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 				$banks[$entry->issuerId] = $entry->issuerName;
 			}
 			$cacheItem->set( $banks );
-			$duration = $this->config->val( 'bank-cache/duration' );
+			$duration = $this->cacheParameters['duration'];
 			$cacheItem->expiresAfter( $duration );
-			$cache->save( $cacheItem );
+			$this->cache->save( $cacheItem );
 		}
 		return $cacheItem->get();
 	}
 
 	protected function makeCacheKey( $country, $currency, $productId ) {
-		$base = $this->config->val( 'bank-cache/key' );
+		$base = $this->cacheParameters['key-base'];
 		return "{$base}_{$country}_{$currency}_{$productId}";
 	}
 }

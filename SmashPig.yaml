@@ -455,13 +455,14 @@ ingenico: &INGENICO
         class: SmashPig\PaymentProviders\Ingenico\Authenticator
         constructor-parameters: []
 
-    bank-cache:
-        key: SMASHPIG_INGENICO_IDEAL_BANK_LIST
-        duration: 300
-
     payment-provider:
         rtbt:
             class: SmashPig\PaymentProviders\Ingenico\BankPaymentProvider
+            constructor-parameters:
+                -
+                    cache-parameters:
+                        duration: 300
+                        key-base: SMASHPIG_INGENICO_IDEAL_BANK_LIST
 
 # deprecated, delete when projects using SmashPig rename adaptors
 globalcollect:

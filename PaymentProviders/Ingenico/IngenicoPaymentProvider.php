@@ -21,7 +21,7 @@ abstract class IngenicoPaymentProvider {
 	 */
 	protected $config;
 
-	public function __construct() {
+	public function __construct( $options = array() ) {
 		$this->config = Context::get()->getConfiguration();
 	}
 
