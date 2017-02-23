@@ -52,13 +52,10 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 			$path = "products/$productId/directory";
 			$response = $this->api->makeApiCall( $path, 'GET', $query );
 
-			// TODO: api class should probably decode
-			$decoded = json_decode( $response['body'] );
-
 			$banks = array();
 
-			foreach ( $decoded->entries as $entry ) {
-				$banks[$entry->issuerId] = $entry->issuerName;
+			foreach ( $response['entries'] as $entry ) {
+				$banks[$entry['issuerId']] = $entry['issuerName'];
 			}
 			$cacheItem->set( $banks );
 			$duration = $this->cacheParameters['duration'];

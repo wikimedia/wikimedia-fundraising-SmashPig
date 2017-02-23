@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeZone;
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\OutboundRequest;
+use SmashPig\Core\SmashPigException;
 
 /**
  * Prepares and sends requests to the Ingenico Connect API.
@@ -58,7 +59,23 @@ class Api {
 		$this->authenticator->signRequest( $request );
 
 		$response = $request->execute();
-		// TODO error handling
-		return $response;
+
+		$decoded = json_decode( $response['body'], true );
+		if ( $decoded === null ) {
+			throw new ApiException( "Response body is not valid JSON: '{$response['body']}'" );
+		}
+		if ( !empty( $decoded['errors'] ) ) {
+			$messages = array();
+			if ( !empty( $decoded['errorId'] ) ) {
+				$messages[] = "Ingenico error id {$decoded['errorId']}.";
+			}
+			foreach( $decoded['errors'] as $error ) {
+				$messages[] = "Error code {$error['code']}: {$error['message']}.";
+			}
+			$concatenated = implode( ' ', $messages );
+			throw new ApiException( $concatenated );
+		}
+
+		return $decoded;
 	}
 }

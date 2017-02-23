@@ -4,7 +4,6 @@ namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
 use DateTime;
 use PHPUnit_Framework_MockObject_MockObject;
-use SmashPig\Core\Http\OutboundRequest;
 use SmashPig\PaymentProviders\Ingenico\Api;
 use SmashPig\PaymentProviders\Ingenico\Authenticator;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -58,8 +57,24 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				$this->equalTo( 'POST' ),
 				$this->callback( $headerVerification ),
 				$this->equalTo( '{"foo":"bar"}' )
-			);
+			)->willReturn( array(
+				'body' => '{"baz":"quux"}'
+			) );
 
+		$this->api->makeApiCall( 'testPath', 'POST', array( 'foo' => 'bar' ) );
+	}
+
+	/**
+	 * @expectedException SmashPig\PaymentProviders\Ingenico\ApiException
+	 * @expectedExceptionMessage Ingenico error id 460d9c9c-098c-4d84-b1e5-ee27ec601757. Error code 9002: MISSING_OR_INVALID_AUTHORIZATION
+	 */
+	public function testError() {
+		$this->curlWrapper->method( 'execute' )
+			->willReturn( array(
+				'body' => '{"errorId" : "460d9c9c-098c-4d84-b1e5-ee27ec601757","errors" : [ {   "code" : "9002",   "message" : "MISSING_OR_INVALID_AUTHORIZATION",   "httpStatusCode" : 403} ] }',
+				'headers' => array(),
+				'status' => 403
+			) );
 		$this->api->makeApiCall( 'testPath', 'POST', array( 'foo' => 'bar' ) );
 	}
 }
