@@ -2,7 +2,6 @@
 
 namespace SmashPig\Core\Http;
 
-use HttpRuntimeException;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
@@ -85,7 +84,7 @@ class CurlWrapper {
 
 		if ( $response === false ) {
 			// no valid response after multiple tries
-			throw new HttpRuntimeException(
+			throw new HttpException(
 				"{$method} request to {$url} failed $loopCount times."
 			);
 		}
