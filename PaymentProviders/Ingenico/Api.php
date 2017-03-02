@@ -61,6 +61,17 @@ class Api {
 		$response = $request->execute();
 
 		$decoded = json_decode( $response['body'], true );
+		$this->checkErrors( $response, $decoded );
+
+		return $decoded;
+	}
+
+	/**
+	 * @param array $response The CurlWrapper-formatteed response from Ingenico
+	 * @param array $decoded The decoded JSON response body. Null if bad JSON
+	 * @throws ApiException
+	 */
+	protected function checkErrors( $response, $decoded ) {
 		if ( $decoded === null ) {
 			throw new ApiException( "Response body is not valid JSON: '{$response['body']}'" );
 		}
@@ -69,13 +80,11 @@ class Api {
 			if ( !empty( $decoded['errorId'] ) ) {
 				$messages[] = "Ingenico error id {$decoded['errorId']}.";
 			}
-			foreach( $decoded['errors'] as $error ) {
+			foreach ( $decoded['errors'] as $error ) {
 				$messages[] = "Error code {$error['code']}: {$error['message']}.";
 			}
 			$concatenated = implode( ' ', $messages );
 			throw new ApiException( $concatenated );
 		}
-
-		return $decoded;
 	}
 }
