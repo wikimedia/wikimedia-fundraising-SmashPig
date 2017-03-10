@@ -44,7 +44,7 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 		$cacheKey = $this->makeCacheKey( $country, $currency, $productId );
 		$cacheItem = $this->cache->getItem( $cacheKey );
 
-		if ( !$cacheItem->isHit() ) {
+		if ( !$cacheItem->isHit() || $this->shouldBeExpired( $cacheItem ) ) {
 			$query = array(
 				'countryCode' => $country,
 				'currencyCode' => $currency
@@ -57,16 +57,38 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 			foreach ( $response['entries'] as $entry ) {
 				$banks[$entry['issuerId']] = $entry['issuerName'];
 			}
-			$cacheItem->set( $banks );
 			$duration = $this->cacheParameters['duration'];
+			$cacheItem->set( array(
+				'value' => $banks,
+				'expiration' => time() + $duration
+			) );
 			$cacheItem->expiresAfter( $duration );
 			$this->cache->save( $cacheItem );
 		}
-		return $cacheItem->get();
+		$cached = $cacheItem->get();
+		return $cached['value'];
 	}
 
 	protected function makeCacheKey( $country, $currency, $productId ) {
 		$base = $this->cacheParameters['key-base'];
 		return "{$base}_{$country}_{$currency}_{$productId}";
+	}
+
+	/**
+	 * Lame workaround to mysterious Memcache non-expiry bug. Memcache
+	 * seems to hold things for too long in certain circumstances.
+	 * TODO: move to Core if we need to use this elsewhere. Though another
+	 * layer of cache wrapping seems unfun.
+	 *
+	 * @param \Psr\Cache\CacheItemInterface $cacheItem
+	 * @return bool True if the item should have been dropped by Memcache
+	 */
+	protected function shouldBeExpired( $cacheItem ) {
+		$value = $cacheItem->get();
+		if ( !isset( $value['expiration'] ) ) {
+			return true;
+		}
+		$expiration = $value['expiration'];
+		return $expiration < time();
 	}
 }

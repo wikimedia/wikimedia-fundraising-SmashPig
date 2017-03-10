@@ -2,6 +2,8 @@
 namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
 use PHPUnit_Framework_MockObject_MockObject;
+use Psr\Cache\CacheItemPoolInterface;
+use SmashPig\Core\Cache\HashCacheItem;
 use SmashPig\Core\Http\CurlWrapper;
 use SmashPig\PaymentProviders\Ingenico\BankPaymentProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -21,9 +23,15 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $provider;
 
+	/**
+	 * @var CacheItemPoolInterface
+	 */
+	protected $cache;
+
 	public function setUp() {
 		$config = $this->setConfig( 'ingenico' );
 		$this->curlWrapper = $this->getMock( '\SmashPig\Core\Http\CurlWrapper' );
+		$this->cache = $config->object( 'cache', true );
 		$config->overrideObjectInstance( 'curl/wrapper', $this->curlWrapper );
 		$config->object( 'cache' )->clear();
 		$this->provider = new BankPaymentProvider( array(
@@ -59,6 +67,28 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		);
 		$cachedResults = $this->provider->getBankList( 'NL', 'EUR' );
 		$this->assertEquals( $results, $cachedResults );
+	}
+
+	public function testBustedCacheExpiration() {
+		$cacheItem = new HashCacheItem(
+			'BLAH_BLAH_NL_EUR_809',
+			array(
+				'value' => array( 'STALE' => 'NotValid' ),
+				'expiration' => time() - 100
+			),
+			true
+		);
+		$this->cache->save( $cacheItem );
+		$this->setUpResponse( 'productDirectory', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' );
+		$results = $this->provider->getBankList( 'NL', 'EUR' );
+		$this->assertEquals(
+			array(
+				'INGBNL2A' => 'Issuer Simulation V3 - ING'
+			),
+			$results
+		);
 	}
 
 	protected function setUpResponse( $filename, $statusCode ) {
