@@ -69,11 +69,6 @@ class Job extends RunnableJob {
 		$creator = array( $msgClass, 'fromIpnMessage' );
 		$normalized = call_user_func( $creator, $request );
 
-		if ( $txn_type == 'express_checkout' ) {
-			$normalized['gateway'] = 'paypal_ec';
-		} else {
-			$normalized['gateway'] = 'paypal';
-		}
 		SourceFields::addToMessage( $normalized );
 
 		// Save to appropriate queue.

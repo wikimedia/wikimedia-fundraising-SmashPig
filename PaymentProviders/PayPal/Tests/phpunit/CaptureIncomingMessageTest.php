@@ -29,6 +29,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		'express_checkout.json' => 'donations',
 		'subscr_signup.json' => 'recurring',
 		'subscr_payment.json' => 'recurring',
+		'recurring_payment.json' => 'recurring',
 		'refund.json' => 'refund-new',
 		'chargeback_settlement.json' => 'refund-new',
 		// this should not actually get written to

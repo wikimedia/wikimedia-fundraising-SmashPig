@@ -13,5 +13,6 @@ class RefundMessage extends Message {
 		} else {
 			$message['type'] = 'refund';
 		}
+		$message['gateway'] = 'paypal';
 	}
 }

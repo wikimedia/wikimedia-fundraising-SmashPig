@@ -359,6 +359,7 @@ paypal:
         txn_type: txn_type
         parent_txn_id: gateway_parent_id
         txn_id: gateway_txn_id
+        recurring_payment_id: subscr_id
         # FIXME This is only true for refund messages.  Where to represent?
         #txn_id: gateway_refund_id
         mc_currency: currency
@@ -366,6 +367,7 @@ paypal:
         reason_code: type
         #test_ipn:  # signals test mode
         custom: contribution_tracking_id
+        rp_invoice_id: contribution_tracking_id
         payer_email: email
         first_name: first_name
         last_name: last_name
@@ -375,6 +377,7 @@ paypal:
         address_state: state_province
         address_country_code: country
         address_zip: postal_code
+        redidence_country: country
         # FIXME this too
         address_name: supplemental_address_1
         gateway: gateway
