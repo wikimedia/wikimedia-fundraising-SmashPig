@@ -465,8 +465,12 @@ ingenico: &INGENICO
             constructor-parameters:
                 -
                     cache-parameters:
-                        duration: 300
+                        duration: 900
                         key-base: SMASHPIG_INGENICO_IDEAL_BANK_LIST
+                    availability-parameters:
+                        url: http://availability.ideal.nl/api/api/GetIssuers
+                        # percentage availability below which issuers are omitted
+                        threshold: 50
 
 # deprecated, delete when projects using SmashPig rename adaptors
 globalcollect:

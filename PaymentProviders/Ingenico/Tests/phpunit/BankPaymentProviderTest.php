@@ -38,13 +38,18 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			'cache-parameters' => array(
 				'duration' => 10,
 				'key-base' => 'BLAH_BLAH'
+			),
+			'availability-parameters' => array(
+				'url' => 'http://example.org/undocumented/api/GetIssuers',
+				'threshold' => 60
 			)
 		) );
 		parent::setUp();
 	}
 
 	public function testGetBankList() {
-		$this->setUpResponse( 'productDirectory', 200 );
+		//$this->setUpResponse( 'productDirectory', 200 );
+		$this->setUpResponse( 'availability', 200 );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );
 		$this->assertEquals(
 			array(
@@ -55,7 +60,8 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testCacheBankList() {
-		$this->setUpResponse( 'productDirectory', 200 );
+		//$this->setUpResponse( 'productDirectory', 200 );
+		$this->setUpResponse( 'availability', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );
@@ -79,7 +85,8 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			true
 		);
 		$this->cache->save( $cacheItem );
-		$this->setUpResponse( 'productDirectory', 200 );
+		//$this->setUpResponse( 'productDirectory', 200 );
+		$this->setUpResponse( 'availability', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );
