@@ -12,15 +12,18 @@ class OutboundRequest {
 	/**
 	 * @var array
 	 */
-	protected $headers;
+	protected $headers = array();
+
 	/**
 	 * @var Configuration
 	 */
 	protected $config;
+
 	/**
 	 * @var string HTTP method
 	 */
 	protected $method;
+
 	/**
 	 * @var string Request body
 	 */
