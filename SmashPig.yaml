@@ -468,7 +468,7 @@ ingenico: &INGENICO
                         duration: 900
                         key-base: SMASHPIG_INGENICO_IDEAL_BANK_LIST
                     availability-parameters:
-                        url: http://availability.ideal.nl/api/api/GetIssuers
+                        url: https://availability.ideal.nl/api/api/GetIssuers
                         # percentage availability below which issuers are omitted
                         threshold: 50
 
