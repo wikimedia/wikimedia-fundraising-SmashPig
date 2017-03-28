@@ -13,6 +13,14 @@ class RefundMessage extends Message {
 		} else {
 			$message['type'] = 'refund';
 		}
-		$message['gateway'] = 'paypal';
+
+		// Express checkout puts a description in transaction_subject, Legacy puts a contribution
+		// tracking ID there. Chargebacks don't set the field at all.
+		if ( isset( $ipnMessage['transaction_subject'] ) && !is_numeric( $ipnMessage['transaction_subject'] ) ) {
+			$message['gateway'] = 'paypal_ec';
+		} else {
+			$message['gateway'] = 'paypal';
+		}
+
 	}
 }
