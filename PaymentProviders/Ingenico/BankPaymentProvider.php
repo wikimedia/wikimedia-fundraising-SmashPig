@@ -4,7 +4,6 @@ namespace SmashPig\PaymentProviders\Ingenico;
 
 use SmashPig\Core\Context;
 use Psr\Cache\CacheItemPoolInterface;
-use SmashPig\Core\Http\OutboundRequest;
 
 /**
  * Handle bank payments via Ingenico
@@ -24,15 +23,9 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 	 */
 	protected $cache;
 
-	/**
-	 * @var array()
-	 */
-	protected $availabilityParameters;
-
 	public function __construct( array $options = array() ) {
 		parent::__construct( $options );
 		$this->cacheParameters = $options['cache-parameters'];
-		$this->availabilityParameters = $options['availability-parameters'];
 		// FIXME: provide objects in constructor
 		$config = Context::get()->getConfiguration();
 		$this->cache = $config->object( 'cache' );
@@ -52,7 +45,7 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 		$cacheItem = $this->cache->getItem( $cacheKey );
 
 		if ( !$cacheItem->isHit() || $this->shouldBeExpired( $cacheItem ) ) {
-			/*$query = array(
+			$query = array(
 				'countryCode' => $country,
 				'currencyCode' => $currency
 			);
@@ -63,28 +56,7 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 
 			foreach ( $response['entries'] as $entry ) {
 				$banks[$entry['issuerId']] = $entry['issuerName'];
-			}*/
-
-			$banks = array();
-
-			// HAAACK!
-			// Use undocumented API to get availability straight from iDEAL,
-			// until Ingenico can incorporate this into their directory
-			if ( $country === 'NL' && $currency === 'EUR' ) {
-				$url = $this->availabilityParameters['url'];
-				$threshold = $this->availabilityParameters['threshold'];
-
-				$request = new OutboundRequest( $url );
-				$rawResponse = $request->execute();
-				$response = json_decode( $rawResponse['body'], true );
-
-				foreach ( $response['Issuers'] as $issuer ) {
-					if ( $issuer['Percent'] >= $threshold ) {
-						$banks[$issuer['BankId']] = $issuer['BankName'];
-					}
-				}
 			}
-
 			$duration = $this->cacheParameters['duration'];
 			$cacheItem->set( array(
 				'value' => $banks,
