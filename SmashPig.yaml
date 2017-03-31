@@ -477,6 +477,9 @@ ingenico: &INGENICO
                     key: SMASHPIG_IDEAL_BANK_STATUS
                 availability-url: https://availability.ideal.nl/api/api/GetIssuers
 
+    curl:
+        validator:
+            class: SmashPig\PaymentProviders\Ingenico\RestResponseValidator
 
 # deprecated, delete when projects using SmashPig rename adaptors
 globalcollect:

@@ -84,7 +84,9 @@ class Api {
 				$messages[] = "Error code {$error['code']}: {$error['message']}.";
 			}
 			$concatenated = implode( ' ', $messages );
-			throw new ApiException( $concatenated );
+			$ex = new ApiException( $concatenated );
+			$ex->setRawErrors( $decoded['errors'] );
+			throw $ex;
 		}
 	}
 }

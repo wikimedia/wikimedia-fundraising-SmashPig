@@ -69,6 +69,21 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $results, $cachedResults );
 	}
 
+	/**
+	 * When the lookup returns 404 we should cache the emptiness
+	 */
+	public function testCacheEmptyBankList() {
+		$this->setUpResponse( 'emptyDirectory', 404 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' );
+		$results = $this->provider->getBankList( 'NL', 'COP' );
+		$this->assertEquals( array(), $results );
+		$cached = $this->cache->getItem( 'BLAH_BLAH_NL_COP_809' );
+		$this->assertTrue( $cached->isHit() );
+		$again = $this->provider->getBankList( 'NL', 'COP' );
+		$this->assertEquals( $results, $again );
+	}
+
 	public function testBustedCacheExpiration() {
 		$cacheItem = new HashCacheItem(
 			'BLAH_BLAH_NL_EUR_809',
@@ -91,6 +106,12 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		);
 	}
 
+	/**
+	 * @param string $filename Name of a file in ../Data representing a
+	 *  response (headers, blank line, body), which must use dos-style
+	 *  \r\n line endings.
+	 * @param integer $statusCode
+	 */
 	protected function setUpResponse( $filename, $statusCode ) {
 		$contents = file_get_contents( __DIR__ . "/../Data/$filename.response" );
 		$parsed = CurlWrapper::parseResponse(

@@ -2,8 +2,9 @@
 
 namespace SmashPig\PaymentProviders\Ingenico;
 
-use SmashPig\Core\Context;
 use Psr\Cache\CacheItemPoolInterface;
+use SmashPig\Core\Context;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Handle bank payments via Ingenico
@@ -50,12 +51,21 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 				'currencyCode' => $currency
 			);
 			$path = "products/$productId/directory";
-			$response = $this->api->makeApiCall( $path, 'GET', $query );
-
 			$banks = array();
 
-			foreach ( $response['entries'] as $entry ) {
-				$banks[$entry['issuerId']] = $entry['issuerName'];
+			try {
+				$response = $this->api->makeApiCall( $path, 'GET', $query );
+
+				foreach ( $response['entries'] as $entry ) {
+					$banks[$entry['issuerId']] = $entry['issuerName'];
+				}
+			} catch ( ApiException $ex ) {
+				$errors = $ex->getRawErrors();
+				if ( empty( $errors ) || $errors[0]['httpStatusCode'] !== Response::HTTP_NOT_FOUND ) {
+					throw $ex;
+				}
+				// If there is a single 404 error, that means there is no directory info for
+				// the country/currency/product. That's legitimate, so cache the empty array
 			}
 			$duration = $this->cacheParameters['duration'];
 			$cacheItem->set( array(
