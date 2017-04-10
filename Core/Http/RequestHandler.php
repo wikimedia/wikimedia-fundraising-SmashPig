@@ -36,7 +36,7 @@ class RequestHandler {
 
 		if ( count( $parts ) < 2 ) {
 			$response->setStatusCode(
-				403,
+				Response::HTTP_FORBIDDEN,
 				'Cannot process this request: bad URI format. A configuration node and an action is required'
 			);
 			return $response;
@@ -57,7 +57,7 @@ class RequestHandler {
 
 		if ( $config->nodeExists( 'disabled' ) && $config->val( 'disabled' ) ) {
 			Logger::debug( '403 will be given for disabled view.', $uri );
-			$response->setStatusCode( 403, "View '$view' disabled. Cannot continue." );
+			$response->setStatusCode( Response::HTTP_FORBIDDEN, "View '$view' disabled. Cannot continue." );
 			return $response;
 		}
 
@@ -80,7 +80,7 @@ class RequestHandler {
 		Logger::info( "Starting processing for request, configuration view: '$view', action: '$action'" );
 		if ( !$config->nodeExists( "endpoints/$action" ) ) {
 			Logger::debug( '403 will be given for unknown action on inbound URL.', $uri );
-			$response->setStatusCode( 403, "Action '$action' not configured. Cannot continue." );
+			$response->setStatusCode( Response::HTTP_FORBIDDEN, "Action '$action' not configured. Cannot continue." );
 			return $response;
 		}
 
@@ -101,11 +101,11 @@ class RequestHandler {
 		} else {
 			$str = "Requested action '$action' does not implement a known handler. Cannot continue.";
 			Logger::debug( $str );
-			$response->setStatusCode( 500, $str );
+			$response->setStatusCode( Response::HTTP_INTERNAL_SERVER_ERROR, $str );
 		}
 
 		$code = $response->getStatusCode();
-		if ( ( $code !== 200 ) && ( $code !== 302 ) ) {
+		if ( ( $code !== Response::HTTP_OK ) && ( $code !== Response::HTTP_FOUND ) ) {
 			$response->setContent( '' );
 		}
 		return $response;
@@ -125,7 +125,7 @@ class RequestHandler {
 
 		$response = new Response();
 		$response->setPrivate();
-		$response->setStatusCode( 500, "Unhandled internal server error." );
+		$response->setStatusCode( Response::HTTP_INTERNAL_SERVER_ERROR, "Unhandled internal server error." );
 		$response->send();
 
 		return false;
@@ -142,7 +142,7 @@ class RequestHandler {
 
 		$response = new Response();
 		$response->setPrivate();
-		$response->setStatusCode( 500, "Unhandled internal server exception." );
+		$response->setStatusCode( Response::HTTP_INTERNAL_SERVER_ERROR, "Unhandled internal server exception." );
 		$response->send();
 	}
 }

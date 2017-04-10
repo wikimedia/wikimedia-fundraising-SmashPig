@@ -28,7 +28,7 @@ class Listener implements IHttpActionHandler {
 			// Tried to validate a bunch of times and got nonsense responses.
 			Logger::error( $e->getMessage() );
 			// 403 should tell them to send it again later.
-			$response->setStatusCode( 403, 'Failed verification' );
+			$response->setStatusCode( Response::HTTP_FORBIDDEN, 'Failed verification' );
 			return false;
 		}
 
