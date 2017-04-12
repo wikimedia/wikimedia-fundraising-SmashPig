@@ -16,7 +16,7 @@ class JobQueueConsumer extends BaseQueueConsumer {
 	 * @param array $jobMessage
 	 * @throws \SmashPig\Core\DataStores\DataSerializationException
 	 */
-	function processMessage( $jobMessage ) {
+	public function processMessage( $jobMessage ) {
 		if ( !isset( $jobMessage['php-message-class'] ) ) {
 			throw new RuntimeException(
 				'Job message missing required key \'php-message-class\''

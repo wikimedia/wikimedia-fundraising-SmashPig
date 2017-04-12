@@ -46,7 +46,7 @@ abstract class BaseQueueConsumer {
 	 *
 	 * @param array $message
 	 */
-	abstract function processMessage( $message );
+	abstract public function processMessage( $message );
 
 	/**
 	 * Gets a fresh QueueConsumer

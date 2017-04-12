@@ -30,7 +30,8 @@
         "symfony/event-dispatcher": "^2.1",
         "symfony/http-foundation": "^2.1",
         "symfony/yaml": "^2.8",
-        "amzn/login-and-pay-with-amazon-sdk-php": "dev-master"
+        "amzn/login-and-pay-with-amazon-sdk-php": "dev-master",
+        "psr/cache": "^1.0"
     },
 	"require-dev": {
 		"jakub-onderka/php-parallel-lint": "^0.9",

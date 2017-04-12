@@ -22,7 +22,7 @@ class Logger {
 	 * @param Configuration $config    Configuration object to use
 	 * @param string        $prefix    Base prefix for logger
 	 */
-	static function init( $name, $threshold, Configuration $config, $prefix ) {
+	public static function init( $name, $threshold, Configuration $config, $prefix ) {
 		if ( self::$context ) {
 			// FIXME: is this necessary?
 			throw new SmashPigException( "Attempting to reinitialize the logger is not allowed!" );

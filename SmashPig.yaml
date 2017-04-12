@@ -43,12 +43,6 @@ default:
                 - 'mysql:host=127.0.0.1;dbname=fredge'
 
         recurring:
-            class: SmashPig\Core\DataStores\MultiQueueWriter
-            constructor-parameters:
-                -
-                    - recurring-new
-
-        recurring-new:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
                 -
@@ -153,6 +147,21 @@ default:
 
     requeue-max-age: 12000
 
+    curl:
+        wrapper:
+            class: SmashPig\Core\Http\CurlWrapper
+        validator:
+            class: SmashPig\Core\Http\HttpStatusValidator
+        timeout: 7
+        retries: 3
+        user-agent: SmashPig
+
+    # Must implement Psr\Cache\CacheItemPoolInterface
+    # See PSR-6: http://www.php-fig.org/psr/psr-6/
+    cache:
+        class: SmashPig\Core\Cache\HashCache
+
+
 adyen:
     logging:
         root-context: SmashPig-Adyen
@@ -161,6 +170,8 @@ adyen:
         listener:
             class: SmashPig\PaymentProviders\Adyen\AdyenListener
 
+    # FIXME: let's use this node to map payment methods to classes that
+    # implement doPayment (aka gateway adapters). See ingenico below.
     payment-provider:
         adyen:
             api:
@@ -348,6 +359,7 @@ paypal:
         txn_type: txn_type
         parent_txn_id: gateway_parent_id
         txn_id: gateway_txn_id
+        recurring_payment_id: subscr_id
         # FIXME This is only true for refund messages.  Where to represent?
         #txn_id: gateway_refund_id
         mc_currency: currency
@@ -355,6 +367,7 @@ paypal:
         reason_code: type
         #test_ipn:  # signals test mode
         custom: contribution_tracking_id
+        rp_invoice_id: contribution_tracking_id
         payer_email: email
         first_name: first_name
         last_name: last_name
@@ -364,6 +377,7 @@ paypal:
         address_state: state_province
         address_country_code: country
         address_zip: postal_code
+        redidence_country: country
         # FIXME this too
         address_name: supplemental_address_1
         gateway: gateway
@@ -373,8 +387,12 @@ paypal:
     rejects:
         txn_type: new_case
 
+    # txn types defined here:
+    # https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNandPDTVariables/#id08CTB0S055Z
     messages:
-        verified:
+        payment:
+            class: SmashPig\PaymentProviders\PayPal\PaymentMessage
+            queue: donations
             valid_statuses: # TODO is this message type agnostic?
                 - Completed
                 - Reversed
@@ -386,28 +404,83 @@ paypal:
                 - express_checkout
                 - masspay
                 - virtual_terminal
-        recurring:
+
+        recurring: # new style recurring payments
+            class: SmashPig\PaymentProviders\PayPal\RecurringMessage
+            queue: recurring
             txn_types:
+                - recurring_payment
+                - recurring_payment_expired
+                - recurring_payment_failed
+                - recurring_payment_profile_cancel
                 - recurring_payment_profile_created
+                - recurring_payment_skipped
+                - recurring_payment_suspended
+                - recurring_payment_suspended_due_to_max_failed_payment
+
+        subscription: # old style recurring payments
+            class: SmashPig\PaymentProviders\PayPal\SubscriptionMessage
+            queue: recurring
+            txn_types:
                 - subscr_cancel
                 - subscr_eot
                 - subscr_failed
                 - subscr_modify
                 - subscr_signup
                 # the following mean we got money \o/
-                - recurring_payment
                 - subscr_payment
+
         refund:
+            class: SmashPig\PaymentProviders\PayPal\RefundMessage
+            queue: refund-new # FIXME make the -new go away
             txn_types:
                 - adjustment
                 - refund
                 # FIXME: if case_type=chargeback, then txn_type might be blank
                 # and the message should go to the refund queue.
 
-globalcollect:
+ingenico: &INGENICO
     actions:
         - SmashPig\Core\Actions\IncomingMessage
 
     endpoints:
         listener:
             class: SmashPig\PaymentProviders\GlobalCollect\GlobalCollectListener
+
+    api:
+        class: SmashPig\PaymentProviders\Ingenico\Api
+        constructor-parameters:
+            - 'https://api-sandbox.globalcollect.com/'
+            - 1234 # numeric merchant ID
+
+    authenticator:
+        class: SmashPig\PaymentProviders\Ingenico\Authenticator
+        constructor-parameters:
+            - 'apiKey'
+            - 'apiSecret'
+
+    payment-provider:
+        rtbt:
+            class: SmashPig\PaymentProviders\Ingenico\BankPaymentProvider
+            constructor-parameters:
+                -
+                    cache-parameters:
+                        duration: 900
+                        key-base: SMASHPIG_INGENICO_IDEAL_BANK_LIST
+
+    ideal-status-provider:
+        class: SmashPig\PaymentProviders\Ingenico\BankPaymentProvider
+        constructor-parameters:
+            -
+                cache-parameters:
+                    duration: 900
+                    key: SMASHPIG_IDEAL_BANK_STATUS
+                availability-url: https://availability.ideal.nl/api/api/GetIssuers
+
+    curl:
+        validator:
+            class: SmashPig\PaymentProviders\Ingenico\RestResponseValidator
+
+# deprecated, delete when projects using SmashPig rename adaptors
+globalcollect:
+    <<: *INGENICO
