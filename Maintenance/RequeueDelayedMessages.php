@@ -42,7 +42,7 @@ class RequeueDelayedMessages extends MaintenanceBase {
 
 		foreach( $messages as $message ) {
 			$queueName = $message['original_queue'];
-			// FIXME: getting it by alias, this will be annoying cos -new
+			// FIXME: getting it by alias
 			$queue = BaseQueueConsumer::getQueue( $queueName );
 			unset( $message['original_queue'] );
 			$queue->push( $message );

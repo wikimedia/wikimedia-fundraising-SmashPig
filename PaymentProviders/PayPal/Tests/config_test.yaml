@@ -24,7 +24,7 @@ paypal:
                     connection_string: 'sqlite::memory:'
                     queue: recurring
 
-        refund-new:
+        refund:
             class: PHPQueue\Backend\PDO
             constructor-parameters:
                 -
