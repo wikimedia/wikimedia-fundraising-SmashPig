@@ -24,7 +24,7 @@ class CsvReader implements \Iterator {
 	/**
 	 * @var string Delimiter for the csv file.
 	 */
-	private $delimiter = null;
+	protected $delimiter = null;
 
 	/**
 	 * Create an iterative CSV file reader.

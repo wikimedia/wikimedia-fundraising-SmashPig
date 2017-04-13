@@ -50,12 +50,6 @@ default:
                     queue: recurring
 
         refund:
-            class: SmashPig\Core\DataStores\MultiQueueWriter
-            constructor-parameters:
-                -
-                    - refund-new
-
-        refund-new:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
                 -
@@ -432,7 +426,7 @@ paypal:
 
         refund:
             class: SmashPig\PaymentProviders\PayPal\RefundMessage
-            queue: refund-new # FIXME make the -new go away
+            queue: refund
             txn_types:
                 - adjustment
                 - refund
