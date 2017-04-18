@@ -27,6 +27,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	static $message_data = array(
 		'web_accept.json' => 'donations',
 		'express_checkout.json' => 'donations',
+		'recurring_payment_profile_created.json' => 'recurring',
 		'subscr_signup.json' => 'recurring',
 		'subscr_payment.json' => 'recurring',
 		'recurring_payment.json' => 'recurring',
