@@ -32,22 +32,21 @@ abstract class GlobalCollectMessage extends ListenerMessage {
 	 * @return array associative queue message thing
 	 */
 	public function normalizeForQueue() {
-		$queueMsg = new NormalizedMessage();
+		$queueMsg = array();
 
 		foreach ( $this->getFieldInfo() as $key => $info ) {
 			$destKey = ( array_key_exists( 'map', $info ) ? $info['map'] : $key );
-			$queueMsg->$destKey = $this->$key;
+			$queueMsg[$destKey] = $this->$key;
 		}
 
-		if ( !property_exists( $queueMsg, 'email' ) ) {
-			$queueMsg->email = 'nobody@wikimedia.org';
+		if ( empty( $queueMsg['email'] ) ) {
+			$queueMsg['email'] = 'nobody@wikimedia.org';
 		}
-		if ( property_exists( $queueMsg, 'gross' ) ) {
-			$queueMsg->gross = round( $queueMsg->gross / 100.0, 2 );
+		if ( !empty( $queueMsg['gross'] ) ) {
+			$queueMsg['gross'] = round( $queueMsg['gross'] / 100.0, 2 );
 		}
 
-		$queueMsg->gateway = 'globalcollect';
-		$queueMsg->correlationId = "{$queueMsg->gateway}-{$queueMsg->gateway_txn_id}";
+		$queueMsg['gateway'] = 'globalcollect';
 
 		return $queueMsg;
 	}

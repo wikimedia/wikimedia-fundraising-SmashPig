@@ -7,7 +7,7 @@ adyen:
                 -
                     connection_string: 'sqlite::memory:'
 
-        verified:
+        donations:
             class: PHPQueue\Backend\PDO
             constructor-parameters:
                 -

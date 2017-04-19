@@ -5,6 +5,6 @@
  */
 class PaymentMessage extends AstroPayMessage {
 	public function getDestinationQueue() {
-		return 'verified';
+		return 'donations';
 	}
 }

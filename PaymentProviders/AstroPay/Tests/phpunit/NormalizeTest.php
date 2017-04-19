@@ -5,13 +5,14 @@ use SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages\PaymentMessage;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 class NormalizeTest extends BaseSmashPigUnitTestCase {
+	/**
+	 * @var array
+	 */
+	protected $paymentSuccess;
+
 	public function setUp() {
 		parent::setUp();
 		$this->paymentSuccess = $this->loadJson( __DIR__ . "/../Data/paid.json" );
-	}
-
-	protected function normalizedToArray( $message ) {
-		return json_decode( $message->toJson(), true );
 	}
 
 	/**
@@ -21,7 +22,6 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 		$expected = array(
 			'completion_message_id' => 'astropay-32303.1',
 			'contribution_tracking_id' => '32303',
-			'correlationId' => 'astropay-31912',
 			'currency' => 'BRL',
 			'gateway' => 'astropay',
 			'gateway_status' => '9',
@@ -36,7 +36,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 		);
 		$message = new PaymentMessage();
 		$message->constructFromValues( $this->paymentSuccess );
-		$normalized = $this->normalizedToArray( $message->normalizeForQueue() );
+		$normalized = $message->normalizeForQueue();
 		foreach ( $stripFields as $field ) {
 			unset( $normalized[$field] );
 		}

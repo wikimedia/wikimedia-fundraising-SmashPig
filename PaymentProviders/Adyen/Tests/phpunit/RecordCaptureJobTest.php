@@ -42,8 +42,8 @@ class RecordCaptureJobTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testRecordCapture() {
-		$verifiedQueue = BaseQueueConsumer::getQueue( 'verified' );
-		$verifiedQueue->createTable( 'verified' );
+		$donationsQueue = BaseQueueConsumer::getQueue( 'donations' );
+		$donationsQueue->createTable( 'donations' );
 
 		$capture = KeyedOpaqueStorableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture',
@@ -62,26 +62,26 @@ class RecordCaptureJobTest extends BaseSmashPigUnitTestCase {
 			'RecordCaptureJob left donor data on pending queue'
 		);
 
-		$verifiedMessage = $verifiedQueue->pop();
+		$donationMessage = $donationsQueue->pop();
 		$this->assertNotNull(
-			$verifiedMessage,
-			'RecordCaptureJob did not send verified message'
+			$donationMessage,
+			'RecordCaptureJob did not send donation message'
 		);
 		// can we use arraySubset yet?
 		$sameKeys = array_intersect(
-			array_keys( $verifiedMessage ),
+			array_keys( $donationMessage ),
 			array_keys( $this->pendingMessage )
 		);
 		foreach ( $sameKeys as $key ) {
 			if ( $key === 'gateway_txn_id' ) {
 				$this->assertEquals(
-					$capture->originalReference, $verifiedMessage[$key],
+					$capture->originalReference, $donationMessage[$key],
 					'RecordCaptureJob should have set gateway_txn_id'
 				);
 			} else {
 				$this->assertEquals(
 					$this->pendingMessage[$key],
-					$verifiedMessage[$key],
+					$donationMessage[$key],
 					"Value of key $key mutated"
 				);
 			}
