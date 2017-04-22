@@ -13,6 +13,10 @@ class ReferenceData {
 			'method' => 'cc',
 			'submethod' => 'amex',
 		),
+		'bijcard' => array(
+			'method' => 'cc',
+			'submethod' => 'bij',
+		),
 		// International Bank Transfer (IBAN)
 		'banktransfer_IBAN' => array(
 			'method' => 'bt',
