@@ -4,7 +4,6 @@ namespace SmashPig\PaymentProviders\Adyen\Tests;
 use PHPQueue\Interfaces\FifoQueueStore;
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
-use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
 use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;

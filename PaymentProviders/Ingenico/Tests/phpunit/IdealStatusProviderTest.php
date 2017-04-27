@@ -4,7 +4,6 @@ namespace SmashPig\PaymentProviders\Ingenico\Tests;
 use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Cache\CacheItemPoolInterface;
 use SmashPig\Core\Http\CurlWrapper;
-use SmashPig\PaymentProviders\Ingenico\BankPaymentProvider;
 use SmashPig\PaymentProviders\Ingenico\IdealStatusProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 

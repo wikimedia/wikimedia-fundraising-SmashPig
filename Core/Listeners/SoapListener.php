@@ -1,6 +1,5 @@
 <?php namespace SmashPig\Core\Listeners;
 
-use SmashPig\Core;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;

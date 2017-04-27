@@ -2,7 +2,6 @@
 namespace SmashPig\Core\DataStores;
 
 use PDO;
-use RuntimeException;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
 use SmashPig\Core\UtcDate;
