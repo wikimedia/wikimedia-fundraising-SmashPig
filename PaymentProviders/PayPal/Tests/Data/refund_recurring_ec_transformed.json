@@ -13,6 +13,7 @@
   "order_id": "45931681",
   "gateway_refund_id": "4CX17568KP793000L",
   "gross_currency": "JPY",
+  "country": "US",
   "gateway": "paypal_ec",
   "subscr_id": "I-DD1FNAAAUU22",
   "source_name": "SmashPig",

@@ -5,12 +5,10 @@ namespace SmashPig\PaymentProviders\PayPal;
 class RecurringMessage extends Message {
 
 	public static function normalizeMessage( &$message, $ipnMessage ) {
-		$message['recurring'] = "1";
+		$message['recurring'] = '1';
 
 		// Contact info
 		if ( $ipnMessage['txn_type'] === 'recurring_payment_profile_created' || $ipnMessage['txn_type'] === 'recurring_payment' ) {
-
-
 			$message['middle_name'] = '';
 
 			if ( isset( $ipnMessage['address_street'] ) ) {

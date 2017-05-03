@@ -10,6 +10,7 @@
   "frequency_interval": "1",
   "frequency_unit": "month",
   "installments": 0,
+  "country": "US",
   "create_date": 1492533928,
   "start_date": 1492533928,
   "date": 1492533928,
