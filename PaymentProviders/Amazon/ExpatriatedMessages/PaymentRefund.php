@@ -23,17 +23,22 @@ abstract class PaymentRefund extends AmazonMessage {
 		// TODO: do we need to use FeeRefunded for anything?
 	}
 
+	/**
+	 * Add fields specific to refund messages
+	 *
+	 * @return array
+	 */
 	public function normalizeForQueue() {
 		$queueMsg = parent::normalizeForQueue();
 
-		$queueMsg->gateway_parent_id = $this->gateway_parent_id;
-		$queueMsg->gateway_refund_id = $this->gateway_txn_id;
-
-		$queueMsg->gross_currency = $this->currency;
-
-		// Docs say RefundType is always 'SellerInitiated'
-		// Waiting to hear back about how they inform us of chargebacks.
-		$queueMsg->type = 'refund';
+		$queueMsg = array_merge( $queueMsg, array(
+			'gateway_parent_id' => $this->gateway_parent_id,
+			'gateway_refund_id' => $this->gateway_txn_id,
+			'gross_currency' => $this->currency,
+			// Docs say RefundType is always 'SellerInitiated'
+			// Waiting to hear back about how they inform us of chargebacks.
+			'type' => 'refund',
+		) );
 
 		return $queueMsg;
 	}

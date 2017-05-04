@@ -33,18 +33,25 @@ abstract class PaymentCapture extends AmazonMessage {
 		$this->gateway_status = $details['CaptureStatus']['State'];
 	}
 
+	/**
+	 * Add fields specific to donation messages
+	 *
+	 * @return array
+	 */
 	public function normalizeForQueue() {
 		$queueMsg = parent::normalizeForQueue();
 
-		$queueMsg->completion_message_id = $this->completion_message_id;
-		$queueMsg->contribution_tracking_id = $this->contribution_tracking_id;
-		$queueMsg->currency = $this->currency;
-		$queueMsg->date = $this->date;
-		$queueMsg->gateway_status = $this->gateway_status;
-		$queueMsg->gateway_txn_id = $this->gateway_txn_id;
-		$queueMsg->order_id = $this->order_id;
-		$queueMsg->payment_method = 'amazon';
-		$queueMsg->fee = $this->fee;
+		$queueMsg = array_merge( $queueMsg, array(
+			'completion_message_id' => $this->completion_message_id,
+			'contribution_tracking_id' => $this->contribution_tracking_id,
+			'currency' => $this->currency,
+			'date' => $this->date,
+			'gateway_status' => $this->gateway_status,
+			'gateway_txn_id' => $this->gateway_txn_id,
+			'order_id' => $this->order_id,
+			'payment_method' => 'amazon',
+			'fee' => $this->fee
+		) );
 
 		return $queueMsg;
 	}

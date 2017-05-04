@@ -72,12 +72,6 @@ default:
                     <<: *REDIS
                     queue: jobs-adyen
 
-        verified:
-            class: SmashPig\Core\DataStores\MultiQueueWriter
-            constructor-parameters:
-                -
-                    - donations
-
         donations:
             class: PHPQueue\Backend\Predis
             constructor-parameters:

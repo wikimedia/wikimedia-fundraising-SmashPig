@@ -8,7 +8,7 @@ paypal:
             constructor-parameters:
                 -
                     connection_string: 'sqlite::memory:'
-                    queue: verified
+                    queue: donations
 
         jobs-paypal:
             class: PHPQueue\Backend\PDO
