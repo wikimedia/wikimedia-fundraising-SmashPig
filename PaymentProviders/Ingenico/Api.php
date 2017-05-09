@@ -6,7 +6,6 @@ use DateTime;
 use DateTimeZone;
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\OutboundRequest;
-use SmashPig\Core\SmashPigException;
 
 /**
  * Prepares and sends requests to the Ingenico Connect API.

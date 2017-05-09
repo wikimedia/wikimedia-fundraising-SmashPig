@@ -6,7 +6,6 @@ use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\SmashPigException;
 use SmashPig\PaymentProviders\Amazon\AmazonApi;
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\PaymentCapture;
-use SmashPig\PaymentProviders\Amazon\Tests\AmazonTestConfiguration;
 
 /**
  * Looks up our reference ID for transactions pushed through manually

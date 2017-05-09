@@ -72,12 +72,6 @@ default:
                     <<: *REDIS
                     queue: jobs-adyen
 
-        verified:
-            class: SmashPig\Core\DataStores\MultiQueueWriter
-            constructor-parameters:
-                -
-                    - donations
-
         donations:
             class: PHPQueue\Backend\Predis
             constructor-parameters:
@@ -354,6 +348,8 @@ paypal:
         parent_txn_id: gateway_parent_id
         txn_id: gateway_txn_id
         recurring_payment_id: subscr_id
+        recur_times: installments
+        subscr_id: subscr_id
         # FIXME This is only true for refund messages.  Where to represent?
         #txn_id: gateway_refund_id
         mc_currency: currency
@@ -371,11 +367,13 @@ paypal:
         address_state: state_province
         address_country_code: country
         address_zip: postal_code
-        redidence_country: country
+        residence_country: country
         # FIXME this too
         address_name: supplemental_address_1
         gateway: gateway
         mc_gross: gross
+        mc_amount3: gross
+        amount3: gross
         mc_fee: fee
 
     rejects:

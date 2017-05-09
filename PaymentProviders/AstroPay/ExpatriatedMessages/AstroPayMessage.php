@@ -47,7 +47,6 @@ abstract class AstroPayMessage extends ListenerMessage {
 		foreach ( $this->fields as $key ) {
 			$this->$key = ( array_key_exists( $key, $values ) ? $values[$key] : '' );
 		}
-		$this->correlationId = "astropay-{$this->x_document}";
 	}
 
 	abstract function getDestinationQueue();
@@ -55,31 +54,28 @@ abstract class AstroPayMessage extends ListenerMessage {
 	/**
 	 * Map AstroPay's fields to ours
 	 *
-	 * @return \SmashPig\PaymentProviders\AstroPay\Messages\NormalizedMessage associative queue message thing
+	 * @return array associative queue message thing
 	 */
 	public function normalizeForQueue() {
-		$queueMsg = new NormalizedMessage();
-
-		$queueMsg->gateway = 'astropay';
-
 		// AstroPay invoice format is ct_id.numAttempt
 		$invoiceParts = explode( '.', $this->x_invoice );
-		$queueMsg->contribution_tracking_id = $invoiceParts[0];
 
-		$queueMsg->gateway_txn_id = $this->x_document;
-		$queueMsg->currency = $this->x_currency;
-		$queueMsg->gross = $this->x_amount;
-		$queueMsg->date = time();
-		$queueMsg->gateway_status = $this->result;
-		$queueMsg->correlationId = $this->correlationId;
-
-		// This message has no donor info.  Add a key to indicate that there is
-		// a message in the pending database with the rest of the info we need.
-		// This differs from the correlationId because we don't get the gateway
-		// transaction ID unless the donor makes it back to the thank you page.
-		// TODO: see comment on Amazon\ExpatriatedMessages\PaymentCapture->completion_message_id
-		$queueMsg->completion_message_id = 'astropay-' . $this->x_invoice;
-		$queueMsg->order_id = $this->x_invoice;
+		$queueMsg = array(
+			'gateway' => 'astropay',
+			'contribution_tracking_id' => $invoiceParts[0],
+			'gateway_txn_id' => $this->x_document,
+			'currency' => $this->x_currency,
+			'gross' => $this->x_amount,
+			'date' => time(),
+			'gateway_status' => $this->result,
+			// This message has no donor info.  Add a key to indicate that there is
+			// a message in the pending database with the rest of the info we need.
+			// This differs from the correlationId because we don't get the gateway
+			// transaction ID unless the donor makes it back to the thank you page.
+			// TODO: see comment on Amazon\ExpatriatedMessages\PaymentCapture->completion_message_id
+			'completion_message_id' => 'astropay-' . $this->x_invoice,
+			'order_id' => $this->x_invoice
+		);
 
 		return $queueMsg;
 	}

@@ -6,7 +6,6 @@ use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Configuration;
-use SmashPig\Core\DataStores\KeyedOpaqueDataStore;
 use SmashPig\Core\Messages\ListenerMessage;
 
 abstract class ListenerBase implements IHttpActionHandler {

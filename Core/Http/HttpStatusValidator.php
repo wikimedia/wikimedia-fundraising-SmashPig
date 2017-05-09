@@ -3,7 +3,6 @@
 namespace SmashPig\Core\Http;
 
 use SmashPig\Core\Logging\Logger;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Determines whether to retry HTTP requests based on status code

@@ -4,13 +4,12 @@ use SmashPig\Core\Configuration;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\CrmLink\Messages\DonationInterfaceMessage;
 use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
 
 /**
  * Job that merges a capture IPN message from Adyen with donor info from the
- * pending database, then places that into the verified queue.
+ * pending database, then places that into the donations queue.
  *
  * Class RecordCaptureJob
  *
@@ -56,9 +55,9 @@ class RecordCaptureJob extends RunnableJob {
 
 			// Add the gateway transaction ID and send it to the completed queue
 			$dbMessage['gateway_txn_id'] = $this->originalReference;
-			$queueMessage = DonationInterfaceMessage::fromValues( $dbMessage );
-			SourceFields::addToMessage( $queueMessage );
-			$config->object( 'data-store/verified' )->push( $queueMessage );
+
+			SourceFields::addToMessage( $dbMessage );
+			$config->object( 'data-store/donations' )->push( $dbMessage );
 
 			// Remove it from the pending database
 			$logger->debug( 'Removing donor details message from pending database' );

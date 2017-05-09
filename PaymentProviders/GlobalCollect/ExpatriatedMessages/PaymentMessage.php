@@ -33,6 +33,6 @@ class PaymentMessage extends GlobalCollectMessage {
 
 	public function getDestinationQueue() {
 		// XXX
-		return 'verified';
+		return 'donations';
 	}
 }

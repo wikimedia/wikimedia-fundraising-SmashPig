@@ -2,7 +2,6 @@
 
 namespace SmashPig\PaymentProviders\Ingenico;
 
-use SmashPig\Core\Context;
 use SmashPig\Core\Http\OutboundRequest;
 
 /**

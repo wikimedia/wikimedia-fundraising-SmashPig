@@ -62,7 +62,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		);
 
 		// Determine if a message exists in the pending database; if it does not then
-		// this payment has already been sent to the verified queue, or there is a
+		// this payment has already been sent to the donations queue, or there is a
 		// problem with the database. If it does exist, we need to check
 		// $capture_requested in case we have requested a capture but have not yet
 		// received notification of capture success. Either case can occur when a

@@ -2,6 +2,6 @@
 
 class CaptureCompleted extends PaymentCapture {
 	public function getDestinationQueue() {
-		return 'verified';
+		return 'donations';
 	}
 }
