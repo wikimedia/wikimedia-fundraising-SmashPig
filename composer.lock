@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6c8507e66b7c74d4ba3a5d17be72b11a",
-    "content-hash": "c773f5366be4497f7a4678ac23b526d1",
+    "hash": "aa57bdff89ad79cfd666f9b847a58b70",
+    "content-hash": "8d4e3df1049e2e1dc4c020f1345efd05",
     "packages": [
         {
             "name": "amzn/login-and-pay-with-amazon-sdk-php",
@@ -44,7 +44,7 @@
                 "payment",
                 "payments"
             ],
-            "time": "2016-02-17 00:44:20"
+            "time": "2016-02-17 00:53:20"
         },
         {
             "name": "clio/clio",
@@ -155,6 +155,51 @@
                 "transaction"
             ],
             "time": "2017-04-17 14:11:55"
+        },
+        {
+            "name": "corneltek/getoptionkit",
+            "version": "2.5.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/c9s/GetOptionKit.git",
+                "reference": "9eae6f4fa009655f9d0d0ccd04cdd9c0d39cbe80"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/c9s/GetOptionKit/zipball/9eae6f4fa009655f9d0d0ccd04cdd9c0d39cbe80",
+                "reference": "9eae6f4fa009655f9d0d0ccd04cdd9c0d39cbe80",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "satooshi/php-coveralls": "^1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "GetOptionKit\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Yo-An Lin",
+                    "email": "cornelius.howl@gmail.com"
+                }
+            ],
+            "description": "Powerful command-line option toolkit",
+            "homepage": "http://github.com/c9s/GetOptionKit",
+            "time": "2017-04-30 09:31:04"
         },
         {
             "name": "ircmaxell/password-compat",
