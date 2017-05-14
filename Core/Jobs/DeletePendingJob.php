@@ -15,15 +15,13 @@ class DeletePendingJob extends RunnableJob {
 	/**
 	 * @param string $gateway Gateway identifier
 	 * @param string $orderId Payment order ID
-	 * @param string $correlationId Message correlation ID (deprecated)
 	 * @return DeletePendingJob
 	 */
-	public static function factory( $gateway, $orderId, $correlationId ) {
+	public static function factory( $gateway, $orderId ) {
 		$job = new DeletePendingJob();
 
 		$job->gateway = $gateway;
 		$job->order_id = $orderId;
-		$job->correlationId = $correlationId;
 
 		return $job;
 	}

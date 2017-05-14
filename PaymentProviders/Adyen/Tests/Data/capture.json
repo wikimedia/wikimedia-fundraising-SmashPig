@@ -9,9 +9,5 @@
   "amount": 10,
   "eventDate": "2016-01-25T17:07:36.862+01:00",
   "success": true,
-  "correlationId": "adyen-119223.0",
-  "propertiesExportedAsKeys": [
-    "correlationId"
-  ],
   "propertiesExcludedFromExport": []
 }

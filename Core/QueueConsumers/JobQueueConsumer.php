@@ -1,7 +1,7 @@
 <?php namespace SmashPig\Core\QueueConsumers;
 
 use RuntimeException;
-use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\DataStores\JsonSerializableObject;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Runnable;
 
@@ -33,7 +33,7 @@ class JobQueueConsumer extends BaseQueueConsumer {
 		$jsonMessage = json_encode( $jobMessage );
 
 		Logger::debug( "Job payload: $jsonMessage" );
-		$jobObj = KeyedOpaqueStorableObject::fromJsonProxy( $className, $jsonMessage );
+		$jobObj = JsonSerializableObject::fromJsonProxy( $className, $jsonMessage );
 
 		if ( $jobObj instanceof Runnable ) {
 			Logger::info( 'Running job' );

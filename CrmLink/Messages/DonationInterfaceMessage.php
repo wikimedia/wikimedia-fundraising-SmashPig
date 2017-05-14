@@ -1,11 +1,11 @@
 <?php namespace SmashPig\CrmLink\Messages;
 
-use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\DataStores\JsonSerializableObject;
 
 /**
  * Message sent to the pending queue when a payment has been initiated and sent off to the gateway.
  */
-class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
+class DonationInterfaceMessage extends JsonSerializableObject {
 	public $captured = '';
 	public $city = '';
 	public $contribution_tracking_id = '';
@@ -51,7 +51,6 @@ class DonationInterfaceMessage extends KeyedOpaqueStorableObject {
 				$message->$key = $value;
 			}
 		}
-		$message->correlationId = "{$message->gateway}-{$message->order_id}";
 		return $message;
 	}
 }

@@ -2,7 +2,7 @@
 
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
-use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\DataStores\JsonSerializableObject;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
 use SmashPig\PaymentProviders\Adyen\Jobs\RecordCaptureJob;
@@ -45,7 +45,7 @@ class RecordCaptureJobTest extends BaseSmashPigUnitTestCase {
 		$donationsQueue = BaseQueueConsumer::getQueue( 'donations' );
 		$donationsQueue->createTable( 'donations' );
 
-		$capture = KeyedOpaqueStorableObject::fromJsonProxy(
+		$capture = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture',
 			file_get_contents( __DIR__ . '/../Data/capture.json' )
 		);

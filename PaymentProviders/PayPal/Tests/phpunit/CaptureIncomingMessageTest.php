@@ -7,7 +7,7 @@ use SmashPig\PaymentProviders\PayPal\Listener;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
-use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\DataStores\JsonSerializableObject;
 
 /**
  * Test the IPN listener which receives messages, stores and processes them.
@@ -90,7 +90,6 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		unset( $message['source_host'] );
 		unset( $message['source_run_id'] );
 		unset( $message['source_enqueued_time'] );
-		unset( $message['correlationId'] );
 		unset( $message['propertiesExportedAsKeys'] );
 		unset( $message['propertiesExcludedFromExport'] );
 	}
@@ -125,7 +124,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
 		$jobMessage = $jobQueue->pop();
 
-		$job = KeyedOpaqueStorableObject::fromJsonProxy(
+		$job = JsonSerializableObject::fromJsonProxy(
 			$jobMessage['php-message-class'],
 			json_encode( $jobMessage )
 		);

@@ -34,7 +34,6 @@ class ReportAvailableTest extends BaseSmashPigUnitTestCase {
 		$url = "https://example.com/reports/download/MerchantAccount/$account/$filename";
 		$reportAvailable = new ReportAvailable();
 
-		$reportAvailable->correlationId = 'adyen-' . mt_rand();
 		$reportAvailable->merchantAccountCode = $account;
 		$reportAvailable->merchantReference = mt_rand();
 		$reportAvailable->pspReference = $filename;
@@ -62,7 +61,6 @@ class ReportAvailableTest extends BaseSmashPigUnitTestCase {
 			'account' => $account,
 			'source_name' => 'SmashPig',
 			'source_type' => 'listener',
-			'correlationId' => '',
 			'gateway' => 'adyen',
 		);
 		$this->assertEquals( $expected, $job );

@@ -31,7 +31,6 @@ class CaptureResponseActionTest extends BaseSmashPigUnitTestCase {
 		$capture = new Capture();
 		$capture->success = true;
 
-		$capture->correlationId = 'adyen-' . mt_rand();
 		$capture->merchantAccountCode = 'WikimediaTest';
 		$capture->currency = 'USD';
 		$capture->amount = 10.00;

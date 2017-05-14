@@ -70,8 +70,8 @@ abstract class AstroPayMessage extends ListenerMessage {
 			'gateway_status' => $this->result,
 			// This message has no donor info.  Add a key to indicate that there is
 			// a message in the pending database with the rest of the info we need.
-			// This differs from the correlationId because we don't get the gateway
-			// transaction ID unless the donor makes it back to the thank you page.
+			// We don't get the gateway transaction ID unless the donor makes it
+			// back to the thank you page.
 			// TODO: see comment on Amazon\ExpatriatedMessages\PaymentCapture->completion_message_id
 			'completion_message_id' => 'astropay-' . $this->x_invoice,
 			'order_id' => $this->x_invoice

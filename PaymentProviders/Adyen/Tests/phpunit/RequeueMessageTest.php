@@ -1,6 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Test;
 
-use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\DataStores\JsonSerializableObject;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -15,7 +15,7 @@ class RequeueMessageTest extends BaseSmashPigUnitTestCase {
 	 */
 	public function testRequeueMessage() {
 
-		$auth = KeyedOpaqueStorableObject::fromJsonProxy(
+		$auth = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
 		);

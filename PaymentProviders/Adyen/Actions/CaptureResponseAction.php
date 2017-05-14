@@ -19,14 +19,14 @@ class CaptureResponseAction implements IListenerMessageAction {
 		if ( $msg instanceof Capture ) {
 			if ( $msg->success ) {
 				$tl->info(
-					"Adding record capture job for {$msg->currency} {$msg->amount} with id {$msg->correlationId} and psp reference {$msg->pspReference}."
+					"Adding record capture job for {$msg->currency} {$msg->amount} with psp reference {$msg->pspReference}."
 				);
 				$recordJob = RecordCaptureJob::factory( $msg );
 				$jobQueue = Configuration::getDefaultConfig()->object( 'data-store/jobs-adyen' );
 				$jobQueue->push( json_decode( $recordJob->toJson(), true ) );
 			} else {
 				$tl->warning(
-					"Capture failed for payment with reference {$msg->pspReference} and correlation id {$msg->correlationId}.",
+					"Capture failed for payment with reference {$msg->pspReference}.",
 					$msg
 				);
 			}

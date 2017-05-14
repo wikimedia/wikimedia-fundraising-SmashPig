@@ -28,8 +28,8 @@ class ReportAvailable extends AdyenMessage {
 				$this->reason
 			);
 			// FIXME: write queue wrapper to do these next two steps
-			SourceFields::addToMessage( $jobObject );
 			$jobArray = json_decode( $jobObject->toJson(), true );
+			SourceFields::addToMessage( $jobArray );
 			$jobQueue->push( $jobArray );
 		} else {
 			// We don't know how to handle this report yet

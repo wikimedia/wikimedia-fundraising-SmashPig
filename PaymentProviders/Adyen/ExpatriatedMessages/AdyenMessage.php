@@ -70,10 +70,6 @@ abstract class AdyenMessage extends ListenerMessage {
 		return $obj;
 	}
 
-	protected static function createCorrelationId( $merchantReference ) {
-		return "adyen-$merchantReference";
-	}
-
 	/**
 	 * Called by the getInstanceFromWSDL function to continue message type specific construction
 	 * after generic construction has been completed.
@@ -92,8 +88,6 @@ abstract class AdyenMessage extends ListenerMessage {
 		$this->pspReference = $msgObj->pspReference;
 		$this->success = (bool)$msgObj->success;
 		$this->reason = $msgObj->reason;
-
-		$this->correlationId = static::createCorrelationId( $this->merchantReference );
 	}
 
 	/**

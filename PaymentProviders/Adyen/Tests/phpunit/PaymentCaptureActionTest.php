@@ -30,7 +30,6 @@ class PaymentCaptureActionTest extends BaseSmashPigUnitTestCase  {
 	public function testSuccessfulAuth() {
 		$auth = new Authorisation();
 		$auth->success = true;
-		$auth->correlationId = 'adyen-' . mt_rand();
 		$auth->merchantAccountCode = 'WikimediaTest' ;
 		$auth->currency = 'USD';
 		$auth->amount = '10';
@@ -65,7 +64,6 @@ class PaymentCaptureActionTest extends BaseSmashPigUnitTestCase  {
 	public function testFailedAuth() {
 		$auth = new Authorisation();
 		$auth->success = false;
-		$auth->correlationId = 'adyen-' . mt_rand();
 		$auth->merchantAccountCode = 'WikimediaTest' ;
 		$auth->merchantReference = mt_rand();
 
