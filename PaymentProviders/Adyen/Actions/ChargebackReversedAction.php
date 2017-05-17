@@ -16,8 +16,8 @@ class ChargebackReversedAction implements IListenerMessageAction {
 			// I've never even seen one of these messages so we'll just have to wait
 			// and see
 			$tl->error(
-				"Oh hai! We got a chargeback reversal on pspReference '{$msg->pspReference}' with correlation id '" .
-					"{$msg->correlationId}'! What do we do now?",
+				"Oh hai! We got a chargeback reversal on pspReference " .
+				"'{$msg->pspReference}'! What do we do now?",
 				$msg
 			);
 		}

@@ -14,6 +14,9 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\LogStreams\ConsoleLogStream;
 use SmashPig\Core\SmashPigException;
 
+use GetOptionKit\OptionCollection;
+use GetOptionKit\OptionParser;
+
 /** Help scripts find the postscript required for maintenance scripts */
 define( 'RUN_MAINTENANCE_IF_MAIN', __DIR__ . '/doMaintenance.php' );
 
@@ -325,84 +328,47 @@ abstract class MaintenanceBase {
 		if ( $this->inputLoaded ) {
 			return;
 		}
-
 		global $argv;
-		$argv_local = $argv;
-
-		$this->scriptName = array_shift( $argv_local );
-
-		$startedArgs = false;
-
-		// Iterate through the passed argv and load options/arguments.
-		for ( $arg = reset( $argv_local ); $arg !== false; $arg = next( $argv_local ) ) {
-			if ( !$startedArgs && ( substr( $arg, 0, 1 ) == '-' ) ) {
-				// Option! Get the name of the option
-				if ( substr( $arg, 0, 2 ) == '--' ) {
-					// This is a long option name
-					$option = substr( $arg, 2 );
-				} else {
-					// Short option name; find long name from alias map
-					$option = substr( $arg, 1 );
-					if ( !array_key_exists( $option, $this->aliasParamsMap ) ||
-						 !array_key_exists( $this->aliasParamsMap[$option], $this->desiredOptions )
-					) {
-						print ( "\nERROR: $option parameter was not expected\n" );
-						$this->helpIfRequested( true );
-					} else {
-						$option = $this->aliasParamsMap[$option];
-					}
-				}
-
-				if ( array_key_exists( $option, $this->options ) ) {
-					print ( "\nERROR: $option parameter given twice!\n" );
-					$this->helpIfRequested( true );
-				}
-
-				// Get the key value (if it's supposed to exist, otherwise set it to true)
-				if ( array_key_exists( $option, $this->desiredOptions ) ) {
-					if ( $this->desiredOptions[$option]['default'] !== null ) {
-						// Expecting parameter
-						// FIXME: This is a crappy way to signal flag vs.
-						// freeform parameter.  In fact, just don't reinvent
-						// all the argv parsing and use a standard instead.
-						$param = next( $argv_local );
-						if ( $param === false ) {
-							print ( "\nERROR: $option parameter requires a value\n" );
-							$this->helpIfRequested( true );
-						}
-
-						// Remove quotes around the argument if they were added for shell escaping
-						$param = preg_replace( '/^([\'"])(.*)\\1$/', "\\2", $param );
-					} else {
-						// No parameter expected, so we mark this option as present
-						$param = true;
-					}
-
-					$this->options[$option] = $param;
-
-				} else {
-					print ( "\nERROR: $option parameter was not expected\n" );
-					$this->helpIfRequested( true );
-				}
-			} else {
-				// Argument!
-				$startedArgs = true;
-				$this->args[] = preg_replace( "/^[\"'](.*)[\"']$/", "$1", $arg );
+		$specs = new OptionCollection;
+		foreach ( $this->desiredOptions as $longName => $option ) {
+			$alias = ( $option['alias'] ? $option['alias'] : '' );
+			$type = ( $longName == 'help' ? 'Boolean' : 'String' );
+			$specs->add( "$alias|$longName?", $option['desc'] )->isa( $type );
+			if ( $option['default'] ) {
+				$this->options[$longName] = $option['default'];
 			}
 		}
 
-		// Validate number of required arguments
+		try {
+			$parser = new OptionParser( $specs );
+			$result = $parser->parse( $argv );
+			$parsedOptions = $result->keys;
+			foreach ( $parsedOptions as $parsedOption ) {
+				$this->options[$parsedOption->long] = $parsedOption->value;
+				if ( $parsedOption->long == 'help' ) {
+					$this->helpifRequested( true );
+				}
+			}
+			$this->args = $result->getArguments();
+		} catch ( \Exception $e ) {
+			print "\nERROR: {$e->getMessage()}\n";
+			$this->helpifRequested( true );
+		}
+		//Validate number of arguments
 		$count = 0;
-		array_walk( $this->expectedArguments, function( $el ) use ( &$count ) {
-			$count += $el['required'] ? 1 : 0;
-		} );
+		array_walk(
+			$this->expectedArguments,
+			function ( $el ) use ( &$count ) {
+				$count += $el['required'] ? 1 : 0;
+			}
+		);
 		if ( count( $this->args ) < $count ) {
-			print ( "\nERROR: Script expects $count arguments." );
+			print( "\nERROR: Script expects $count arguments." );
 			$this->helpIfRequested( true );
 		}
 
 		$this->inputLoaded = true;
-	}
+   	}
 
 	/* === Runtime I/O === */
 

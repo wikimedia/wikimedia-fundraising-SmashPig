@@ -24,7 +24,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 				// orphan message
 				$tl->info(
 					"Adding Adyen capture job for {$msg->currency} {$msg->amount} " .
-					"with id {$msg->correlationId} and psp reference {$msg->pspReference}."
+					"with psp reference {$msg->pspReference}."
 				);
 				$job = ProcessCaptureRequestJob::factory( $msg );
 				$jobQueueObj->push( json_decode( $job->toJson(), true ) );
@@ -32,14 +32,13 @@ class PaymentCaptureAction implements IListenerMessageAction {
 			} else {
 				// And here we just need to destroy the orphan
 				$tl->info(
-					"Adyen payment with correlation id {$msg->correlationId} " .
+					"Adyen payment with psp reference {$msg->pspReference} " .
 					"reported status failed: '{$msg->reason}'. " .
 					'Queueing job to delete pending records.'
 				);
 				$job = DeletePendingJob::factory(
 					'adyen',
-					$msg->merchantReference,
-					$msg->correlationId
+					$msg->merchantReference
 				);
 				$jobQueueObj->push( json_decode( $job->toJson(), true ) );
 			}

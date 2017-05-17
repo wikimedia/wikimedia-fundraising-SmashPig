@@ -42,7 +42,6 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	public static function factory( Authorisation $authMessage ) {
 		$obj = new ProcessCaptureRequestJob();
 
-		$obj->correlationId = $authMessage->correlationId;
 		$obj->account = $authMessage->merchantAccountCode;
 		$obj->currency = $authMessage->currency;
 		$obj->amount = $authMessage->amount;
@@ -55,10 +54,10 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	public function execute() {
-		$this->logger = Logger::getTaggedLogger( "corr_id-{$this->correlationId}" );
+		$this->logger = Logger::getTaggedLogger( "psp_ref-{$this->pspReference}" );
 		$this->logger->info(
-			"Running capture request job on account '{$this->account}' with reference '{$this->pspReference}' " .
-			"and correlation id '{$this->correlationId}'."
+			"Running capture request job on account '{$this->account}'" .
+			"with reference '{$this->pspReference}'."
 		);
 
 		// Determine if a message exists in the pending database; if it does not then

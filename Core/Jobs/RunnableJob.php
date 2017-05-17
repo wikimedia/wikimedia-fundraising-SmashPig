@@ -1,13 +1,13 @@
 <?php namespace SmashPig\Core\Jobs;
 
-use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\DataStores\JsonSerializableObject;
 use SmashPig\Core\Runnable;
 
 /**
  * @deprecated New code should implement SmashPig\Core\Runnable instead.
  */
 abstract class RunnableJob
-	extends KeyedOpaqueStorableObject
+	extends JsonSerializableObject
 	implements Runnable
 {
 	public function __construct() {

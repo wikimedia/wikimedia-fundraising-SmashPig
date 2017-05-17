@@ -1,11 +1,11 @@
 <?php namespace SmashPig\CrmLink\Messages;
 
-use SmashPig\Core\DataStores\KeyedOpaqueStorableObject;
+use SmashPig\Core\DataStores\JsonSerializableObject;
 
 /**
  * Message sent once frontend donation processing is completed
  */
-class DonationInterfaceFinalStatus extends KeyedOpaqueStorableObject {
+class DonationInterfaceFinalStatus extends JsonSerializableObject {
 	public $amount;
 	public $contribution_tracking_id;
 	public $country;

@@ -26,7 +26,6 @@ class RecordCaptureJob extends RunnableJob {
 	public static function factory( Capture $captureMessage ) {
 		$obj = new RecordCaptureJob();
 
-		$obj->correlationId = $captureMessage->correlationId;
 		$obj->account = $captureMessage->merchantAccountCode;
 		$obj->currency = $captureMessage->currency;
 		$obj->amount = $captureMessage->amount;

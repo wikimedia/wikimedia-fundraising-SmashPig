@@ -25,7 +25,7 @@ abstract class JsonSerializableObject {
 	 * @param array  $properties Stored properties from the serialized object
 	 * (Keys = property names, Values = property values)
 	 *
-	 * @return KeyedOpaqueStorableObject Object ready for __wakeup().
+	 * @return JsonSerializableObject Object ready for __wakeup().
 	 */
 	protected static function serializedConstructor( $className, $properties = array() ) {
 		$obj = new $className();
