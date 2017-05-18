@@ -1,8 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\ExpatriatedMessages;
 
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
-use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\Adyen\Jobs\DownloadReportJob;
 
 class ReportAvailable extends AdyenMessage {
@@ -21,16 +20,12 @@ class ReportAvailable extends AdyenMessage {
 			$this->reason
 		);
 
-		$jobQueue = BaseQueueConsumer::getQueue( 'jobs-adyen' );
 		if ( strpos( $this->pspReference, 'settlement_detail_report' ) === 0 ) {
 			$jobObject = DownloadReportJob::factory(
 				$this->merchantAccountCode,
 				$this->reason
 			);
-			// FIXME: write queue wrapper to do these next two steps
-			$jobArray = json_decode( $jobObject->toJson(), true );
-			SourceFields::addToMessage( $jobArray );
-			$jobQueue->push( $jobArray );
+			QueueWrapper::push( 'jobs-adyen', $jobObject );
 		} else {
 			// We don't know how to handle this report yet
 			Logger::notice( "Do not know how to handle report with name '{$this->pspReference}'" );

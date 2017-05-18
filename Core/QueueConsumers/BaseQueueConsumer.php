@@ -6,8 +6,8 @@ use InvalidArgumentException;
 use PHPQueue\Interfaces\AtomicReadBuffer;
 
 use SmashPig\Core\Configuration;
-use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\DamagedDatabase;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\RetryableException;
 use SmashPig\Core\UtcDate;
@@ -73,7 +73,7 @@ abstract class BaseQueueConsumer {
 		$this->timeLimit = intval( $timeLimit );
 		$this->messageLimit = intval( $messageLimit );
 
-		$this->backend = self::getQueue( $queueName );
+		$this->backend = QueueWrapper::getQueue( $queueName );
 
 		if ( !$this->backend instanceof AtomicReadBuffer ) {
 			throw new InvalidArgumentException(
@@ -187,23 +187,5 @@ abstract class BaseQueueConsumer {
 			$ex->getTraceAsString(),
 			$retryDate
 		);
-	}
-
-	public static function getQueue( $queueName ) {
-		$config = Context::get()->getConfiguration();
-		$key = "data-store/$queueName";
-		Logger::debug( "Getting queue $queueName from key $key" );
-
-		// Get a reference to the config node so we can mess with it
-		$node =& $config->val( $key, true );
-		if (
-			empty( $node['constructor-parameters'] ) ||
-			empty( $node['constructor-parameters'][0]['queue'] )
-		) {
-			Logger::debug( "'queue' not set, defaulting to $queueName" );
-			$node['constructor-parameters'][0]['queue'] = $queueName;
-		}
-
-		return $config->object( $key, true );
 	}
 }

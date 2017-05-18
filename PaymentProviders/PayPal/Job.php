@@ -2,9 +2,9 @@
 
 use Exception;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\CrmLink\Messages\SourceFields;
 
 class Job extends RunnableJob {
 
@@ -69,11 +69,8 @@ class Job extends RunnableJob {
 		$creator = array( $msgClass, 'fromIpnMessage' );
 		$normalized = call_user_func( $creator, $request );
 
-		SourceFields::addToMessage( $normalized );
-
 		// Save to appropriate queue.
-		$this->config->object( 'data-store/' . $queue )
-			->push( $normalized );
+        QueueWrapper::push( $queue, $normalized );
 
 		// FIXME random document formats
 		if ( substr( $txn_type, 0, 7 ) === 'subscr_' ) {

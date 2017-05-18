@@ -2,6 +2,7 @@
 
 use RuntimeException;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Http\IHttpActionHandler;
 use SmashPig\Core\Http\Request;
 use SmashPig\Core\Http\Response;
@@ -35,7 +36,7 @@ class Listener implements IHttpActionHandler {
 		if ( $valid ) {
 			$job = new Job;
 			$job->payload = $requestValues;
-			$this->config->object( 'data-store/jobs-paypal' )->push( $job );
+			QueueWrapper::push( 'jobs-paypal', $job );
 			Logger::info( 'Pushed new message to jobs-paypal: ' .
 				print_r( $requestValues, true ) );
 			return true;

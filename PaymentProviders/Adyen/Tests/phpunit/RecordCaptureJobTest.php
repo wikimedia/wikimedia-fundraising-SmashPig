@@ -4,7 +4,7 @@ use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\JsonSerializableObject;
 use SmashPig\Core\DataStores\PendingDatabase;
-use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\PaymentProviders\Adyen\Jobs\RecordCaptureJob;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -42,7 +42,7 @@ class RecordCaptureJobTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testRecordCapture() {
-		$donationsQueue = BaseQueueConsumer::getQueue( 'donations' );
+		$donationsQueue = QueueWrapper::getQueue( 'donations' );
 		$donationsQueue->createTable( 'donations' );
 
 		$capture = JsonSerializableObject::fromJsonProxy(
