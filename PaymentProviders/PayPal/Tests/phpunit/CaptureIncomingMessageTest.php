@@ -3,6 +3,7 @@ namespace SmashPig\PaymentProviders\PayPal\Tests;
 
 use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
+use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\PayPal\Listener;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 use SmashPig\Core\Http\Response;
@@ -86,14 +87,6 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		return $listener->execute( $request, $response );
 	}
 
-	private function scrubIgnoredFields( &$message ) {
-		unset( $message['source_host'] );
-		unset( $message['source_run_id'] );
-		unset( $message['source_enqueued_time'] );
-		unset( $message['propertiesExportedAsKeys'] );
-		unset( $message['propertiesExcludedFromExport'] );
-	}
-
 	/**
 	 * @dataProvider messageProvider
 	 */
@@ -150,7 +143,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 				);
 			}
 			if ( isset( $msg['transformed'] ) ) {
-				$this->scrubIgnoredFields( $message );
+				SourceFields::removeFromMessage( $message );
 				$this->assertEquals( $msg['transformed'], $message );
 			}
 		}

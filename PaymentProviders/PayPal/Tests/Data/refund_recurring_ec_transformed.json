@@ -15,8 +15,5 @@
   "gross_currency": "JPY",
   "country": "US",
   "gateway": "paypal_ec",
-  "subscr_id": "I-DD1FNAAAUU22",
-  "source_name": "SmashPig",
-  "source_type": "listener",
-  "source_version": "unknown"
+  "subscr_id": "I-DD1FNAAAUU22"
 }

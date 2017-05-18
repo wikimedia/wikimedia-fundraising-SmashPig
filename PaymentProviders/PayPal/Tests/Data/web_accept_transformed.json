@@ -16,8 +16,5 @@
   "gross": "7.00",
   "fee": "0.44",
   "order_id": "33333333",
-  "gateway": "paypal",
-  "source_name": "SmashPig",
-  "source_type": "listener",
-  "source_version": "unknown"
+  "gateway": "paypal"
 }
