@@ -29,17 +29,10 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 			'gross' => '100.00',
 			'order_id' => '32303.1',
 		);
-		$stripFields = array(
-			'propertiesExportedAsKeys',
-			'propertiesExcludedFromExport',
-			'date',
-		);
 		$message = new PaymentMessage();
 		$message->constructFromValues( $this->paymentSuccess );
 		$normalized = $message->normalizeForQueue();
-		foreach ( $stripFields as $field ) {
-			unset( $normalized[$field] );
-		}
+		unset( $normalized['date'] );
 		$this->assertEquals( $expected, $normalized );
 	}
 }

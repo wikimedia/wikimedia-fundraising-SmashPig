@@ -18,8 +18,5 @@
     "gross": "3.00",
     "fee": "0.27",
     "gateway": "paypal",
-    "recurring": "1",
-    "source_name": "SmashPig",
-    "source_type": "listener",
-    "source_version": "unknown"
+    "recurring": "1"
 }

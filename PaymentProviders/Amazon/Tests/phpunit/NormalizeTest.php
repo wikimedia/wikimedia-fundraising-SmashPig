@@ -36,15 +36,8 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 			'order_id' => '98765432-1',
 			'payment_method' => 'amazon',
 		);
-		$stripFields = array(
-			'propertiesExportedAsKeys',
-			'propertiesExcludedFromExport',
-		);
 		$message = new CaptureCompleted( $this->captureCompleted );
 		$normalized = $message->normalizeForQueue();
-		foreach ( $stripFields as $field ) {
-			unset( $normalized[$field] );
-		}
 		$this->assertEquals( $expected, $normalized );
 	}
 
@@ -59,16 +52,9 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 			'gross' => '10.0',
 			'type' => 'refund',
 		);
-		$stripFields = array(
-			'propertiesExportedAsKeys',
-			'propertiesExcludedFromExport',
-		);
 		$message = new RefundCompleted( $this->refundCompleted );
 		$message->setParentId( $id );
 		$normalized = $message->normalizeForQueue();
-		foreach ( $stripFields as $field ) {
-			unset( $normalized[$field] );
-		}
 		$this->assertEquals( $expected, $normalized );
 	}
 }

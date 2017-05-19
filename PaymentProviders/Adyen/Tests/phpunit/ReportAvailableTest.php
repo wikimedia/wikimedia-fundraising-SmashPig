@@ -6,6 +6,7 @@ use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\UtcDate;
+use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\ReportAvailable;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -47,20 +48,12 @@ class ReportAvailableTest extends BaseSmashPigUnitTestCase {
 		$now = UtcDate::getUtcTimestamp();
 		$diff = abs( $job['source_enqueued_time'] ) - $now;
 		$this->assertTrue( $diff < 60, 'Odd enqueued time' );
-		$unsetFields = array(
-			'source_enqueued_time', 'source_host', 'source_run_id',
-			'source_version', 'propertiesExcludedFromExport',
-			'propertiesExportedAsKeys',
-		);
-		foreach ( $unsetFields as $fieldName ) {
-			unset( $job[$fieldName] );
-		}
+		SourceFields::removeFromMessage( $job );
+		unset( $job['propertiesExcludedFromExport'] );
 		$expected = array(
 			'php-message-class' => 'SmashPig\PaymentProviders\Adyen\Jobs\DownloadReportJob',
 			'reportUrl' => $url,
 			'account' => $account,
-			'source_name' => 'SmashPig',
-			'source_type' => 'listener',
 			'gateway' => 'adyen',
 		);
 		$this->assertEquals( $expected, $job );

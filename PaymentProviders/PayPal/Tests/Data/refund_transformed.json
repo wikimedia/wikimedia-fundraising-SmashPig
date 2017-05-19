@@ -18,8 +18,5 @@
   "order_id": "93731212",
   "gateway_refund_id": "99E56789RR1234222",
   "gross_currency": "USD",
-  "gateway": "paypal",
-  "source_name": "SmashPig",
-  "source_type": "listener",
-  "source_version": "unknown"
+  "gateway": "paypal"
 }

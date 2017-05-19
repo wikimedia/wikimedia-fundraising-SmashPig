@@ -14,8 +14,5 @@
   "gateway_refund_id": "3HD08833MR473623T",
   "gross_currency": "JPY",
   "country": "US",
-  "gateway": "paypal_ec",
-  "source_name": "SmashPig",
-  "source_type": "listener",
-  "source_version": "unknown"
+  "gateway": "paypal_ec"
 }

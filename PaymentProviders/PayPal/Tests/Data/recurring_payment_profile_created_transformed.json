@@ -15,8 +15,5 @@
   "start_date": 1492533928,
   "date": 1492533928,
   "gateway": "paypal_ec",
-  "recurring": "1",
-  "source_name": "SmashPig",
-  "source_type": "listener",
-  "source_version": "unknown"
+  "recurring": "1"
 }
