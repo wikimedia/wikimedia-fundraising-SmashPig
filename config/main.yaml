@@ -1,7 +1,7 @@
 # Default values will be loaded at a lower priority than custom config.
 # To override, create a file in:
-#   /etc/fundraising/SmashPig.yaml
-#   $HOME/.fundraising/SmashPig.yaml
+#   /etc/smashpig/main.yaml
+#   $HOME/.smashpig/main.yaml
 #   or edit this file if you're feeling cheeky, and be careful when upgrading.
 
 default:

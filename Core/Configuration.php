@@ -71,11 +71,10 @@ class Configuration {
 		$searchPath = array();
 		if ( isset( $_SERVER['HOME'] ) ) {
 			// FIXME: But I don't understand why this key is missing during testing.
-			$searchPath[] =  "{$_SERVER['HOME']}/.fundraising/SmashPig.yaml";
+			$searchPath[] =  "{$_SERVER['HOME']}/.smashpig/main.yaml";
 		}
-		$searchPath[] = '/etc/fundraising/SmashPig.d/*.yaml';
-		$searchPath[] = '/etc/fundraising/SmashPig.yaml';
-		$searchPath[] = __DIR__ . "/../SmashPig.yaml";
+		$searchPath[] = '/etc/smashpig/main.yaml';
+		$searchPath[] = __DIR__ . '/../config/main.yaml';
 		return $searchPath;
 	}
 

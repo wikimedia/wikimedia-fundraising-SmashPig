@@ -16,7 +16,7 @@ class TestingConfiguration extends Configuration {
 	 */
 	public function getDefaultSearchPath() {
 		$searchPath = array(
-			__DIR__ . "/../SmashPig.yaml",
+			__DIR__ . "/../config/main.yaml",
 		);
 		return $searchPath;
 	}
