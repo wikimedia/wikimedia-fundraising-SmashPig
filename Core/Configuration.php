@@ -69,6 +69,18 @@ class Configuration {
 
 	public function getDefaultSearchPath() {
 		$searchPath = array();
+
+		// FIXME: The whole 'view' thing is going to go away when we split into
+		// GlobalConfiguration and ProviderConfiguration
+		if ( $this->viewName !== 'default' ) {
+
+			if ( isset( $_SERVER['HOME'] ) ) {
+				$searchPath[] =  "{$_SERVER['HOME']}/.smashpig/{$this->viewName}/main.yaml";
+			}
+			$searchPath[] = "/etc/smashpig/{$this->viewName}/main.yaml";
+			$searchPath[] = __DIR__ . "/../config/{$this->viewName}/main.yaml";
+		}
+
 		if ( isset( $_SERVER['HOME'] ) ) {
 			// FIXME: But I don't understand why this key is missing during testing.
 			$searchPath[] =  "{$_SERVER['HOME']}/.smashpig/main.yaml";
@@ -109,18 +121,8 @@ class Configuration {
 		// the sources up front than keep them distinct and search through them
 		// at runtime for the first matching key.
 		foreach ( array_reverse( $configs ) as $config ) {
-			if ( isset( $config['default'] ) ) {
-				$this->override( $config['default'] );
-			}
-		}
-
-		// Now, go through in the same order and let all $view sections override
-		// defaults.
-		if ( $this->viewName !== 'default' ) {
-			foreach ( array_reverse( $configs ) as $config ) {
-				if ( isset( $config[$this->viewName] ) ) {
-					$this->override( $config[$this->viewName] );
-				}
+			if ( !empty( $config ) ) {
+				$this->override( $config );
 			}
 		}
 	}

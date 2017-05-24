@@ -1,44 +1,43 @@
-paypal:
-    api:
-        class: SmashPig\PaymentProviders\PayPal\Tests\MockPayPalPaymentsAPI
+api:
+    class: SmashPig\PaymentProviders\PayPal\Tests\MockPayPalPaymentsAPI
 
-    data-store:
-        donations:
-            class: PHPQueue\Backend\PDO
-            constructor-parameters:
-                -
-                    connection_string: 'sqlite::memory:'
-                    queue: donations
+data-store:
+    donations:
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: donations
 
-        jobs-paypal:
-            class: PHPQueue\Backend\PDO
-            constructor-parameters:
-                -
-                    connection_string: 'sqlite::memory:'
-                    queue: jobs-paypal
+    jobs-paypal:
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: jobs-paypal
 
-        recurring:
-            class: PHPQueue\Backend\PDO
-            constructor-parameters:
-                -
-                    connection_string: 'sqlite::memory:'
-                    queue: recurring
+    recurring:
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: recurring
 
-        refund:
-            class: PHPQueue\Backend\PDO
-            constructor-parameters:
-                -
-                    connection_string: 'sqlite::memory:'
-                    queue: refund
+    refund:
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: refund
 
-        no-op:
-            class: PHPQueue\Backend\PDO
-            constructor-parameters:
-                -
-                    connection_string: 'sqlite::memory:'
-                    queue: no-op
+    no-op:
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: no-op
 
-        pending-db:
-            class: PDO
-            constructor-parameters:
-                - 'sqlite::memory:'
+    pending-db:
+        class: PDO
+        constructor-parameters:
+            - 'sqlite::memory:'

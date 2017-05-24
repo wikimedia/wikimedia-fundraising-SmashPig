@@ -1,16 +1,15 @@
-default:
-    data-store:
-        pending-db:
-            class: PDO
-            constructor-parameters:
-                - 'sqlite::memory:'
+data-store:
+    pending-db:
+        class: PDO
+        constructor-parameters:
+            - 'sqlite::memory:'
 
-        damaged-db:
-            class: PDO
-            constructor-parameters:
-                - 'sqlite::memory:'
+    damaged-db:
+        class: PDO
+        constructor-parameters:
+            - 'sqlite::memory:'
 
-        fredge-db:
-            class: PDO
-            constructor-parameters:
-                - 'sqlite::memory:'
+    fredge-db:
+        class: PDO
+        constructor-parameters:
+            - 'sqlite::memory:'

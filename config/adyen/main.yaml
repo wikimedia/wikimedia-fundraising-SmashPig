@@ -1,0 +1,125 @@
+# Settings for Adyen
+#
+# To override, create a file in:
+#   /etc/smashpig/adyen/main.yaml
+#   $HOME/.smashpig/adyen/main.yaml
+
+logging:
+    root-context: SmashPig-Adyen
+
+endpoints:
+    listener:
+        class: SmashPig\PaymentProviders\Adyen\AdyenListener
+
+# FIXME: let's use this node to map payment methods to classes that
+# implement doPayment (aka gateway adapters). See ingenico below.
+payment-provider:
+    adyen:
+        api:
+            class: SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI
+
+        payments-wsdl: https://pal-live.adyen.com/pal/Payment.wsdl
+        #payments-wsdl: https://pal-test.adyen.com/pal/Payment.wsdl
+
+        accounts: {}
+            # FIXME: Provide sample account config more consistently.  The
+            # empty map above is easy to overlook.
+
+            # For each Adyen merchant account, add an entry like the
+            # following with the merchant account name as the key.
+            # The ws- credentials should be a user authorized to make
+            # API calls, and the report- credentials should be a user
+            # authorized to download reports. Reports will be
+            # downloaded to the location specified in report-location.
+            #
+            # At least one account and all subkeys are required.
+            #
+            # example-account-name:
+            #   ws-username: ""
+            #   ws-password: ""
+            #   report-username: ""
+            #   report-password: ""
+            #   report-location: "/tmp"
+
+fraud-filters:
+    # Automatically capture authorizations under this score
+    review-threshold: 75
+    # Automatically cancel authorizations with at least this score
+    reject-threshold: 125
+
+    # Authorization notifications include AVS and CVV result codes.
+    # The following maps set a risk score for each result code, which
+    # we combine with any risk score computed on the payment site to
+    # decide whether to capture the payment or leave it for review.
+    # https://docs.adyen.com/manuals/api-manual/payment-responses/additionaldata-payment-responses
+    avs-map:
+        # Unknown. This is often returned in non-AVS countries.
+        0: 50
+        # Address matches, postal code doesn't
+        1: 75
+        # Neither postal code nor address match
+        2: 100
+        # AVS unavailable
+        3: 50
+        # AVS not supported for this card type
+        4: 50
+        # No AVS data provided
+        5: 50
+        # Postal code matches, address doesn't match
+        6: 75
+        # Both postal code and address match
+        7: 0
+        # Address not checked, postal code unknown
+        8: 50
+        # Address matches, postal code unknown
+        9: 25
+        # Address doesn't match, postal code unknown
+        10: 50
+        # Postal code not checked, address unknown
+        11: 75
+        # Address matches, postal code not checked
+        12: 50
+        # Address doesn't match, postal code not checked
+        13: 0
+        # Postal code matches, address unknown
+        14: 50
+        # Postal code matches, address not checked
+        15: 50
+        # Postal code doesn't match, address unknown
+        16: 75
+        # Postal code doesn't match, address not checked
+        17: 100
+        # Neither postal code nor address were checked
+        18: 25
+        # Name and postal code matches
+        19: 0
+        # Name, address and postal code matches
+        20: 0
+        # Name and address matches
+        21: 0
+        # Name matches
+        22: 50
+        # Postal code matches, name doesn't match
+        23: 50
+        # Both postal code and address matches, name doesn't match
+        24: 25
+        # Address matches, name doesn't match
+        25: 50
+        # Neither postal code, address nor name matches
+        26: 100
+
+    cvv-map:
+            # Unknown
+            0: 100
+            # Matches
+            1: 0
+            # Doesn't match
+            2: 100
+            # Not checked
+            3: 50
+            # No CVC/CVV provided, but was required
+            4: 100
+            # Issuer not certified for CVC/CVV
+            5: 50
+            # No CVC/CVV provided
+            6: 50

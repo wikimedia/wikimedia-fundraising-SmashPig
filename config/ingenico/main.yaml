@@ -1,0 +1,46 @@
+# Settings for Ingenico (formerly GlobalCollect)
+#
+# To override, create a file in:
+#   /etc/smashpig/ingenico/main.yaml
+#   $HOME/.smashpig/ingenico/main.yaml
+
+actions:
+    - SmashPig\Core\Actions\IncomingMessage
+
+endpoints:
+    listener:
+        class: SmashPig\PaymentProviders\GlobalCollect\GlobalCollectListener
+
+api:
+    class: SmashPig\PaymentProviders\Ingenico\Api
+    constructor-parameters:
+        - 'https://api-sandbox.globalcollect.com/'
+        - 1234 # numeric merchant ID
+
+authenticator:
+    class: SmashPig\PaymentProviders\Ingenico\Authenticator
+    constructor-parameters:
+        - 'apiKey'
+        - 'apiSecret'
+
+payment-provider:
+    rtbt:
+        class: SmashPig\PaymentProviders\Ingenico\BankPaymentProvider
+        constructor-parameters:
+            -
+                cache-parameters:
+                    duration: 900
+                    key-base: SMASHPIG_INGENICO_IDEAL_BANK_LIST
+
+ideal-status-provider:
+    class: SmashPig\PaymentProviders\Ingenico\BankPaymentProvider
+    constructor-parameters:
+        -
+            cache-parameters:
+                duration: 900
+                key: SMASHPIG_IDEAL_BANK_STATUS
+            availability-url: https://availability.ideal.nl/api/api/GetIssuers
+
+curl:
+    validator:
+        class: SmashPig\PaymentProviders\Ingenico\RestResponseValidator

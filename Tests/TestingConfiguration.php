@@ -15,9 +15,12 @@ class TestingConfiguration extends Configuration {
 	 * @implements Configuration::getDefaultSearchPath
 	 */
 	public function getDefaultSearchPath() {
-		$searchPath = array(
-			__DIR__ . "/../config/main.yaml",
-		);
+		$searchPath = array();
+		// FIXME: this goes away along with all the 'view' stuff
+		if ( $this->viewName !== 'default' ) {
+			$searchPath[] = __DIR__ . "/../config/{$this->viewName}main.yaml";
+		}
+		$searchPath[] = __DIR__ . "/../config/main.yaml";
 		return $searchPath;
 	}
 

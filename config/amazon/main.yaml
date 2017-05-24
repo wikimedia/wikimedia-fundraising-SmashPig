@@ -1,0 +1,48 @@
+# Settings for Amazon Pay
+#
+# To override, create a file in:
+#   /etc/smashpig/amazon/main.yaml
+#   $HOME/.smashpig/amazon/main.yaml
+
+actions:
+    - SmashPig\PaymentProviders\Amazon\Actions\ReconstructMerchantReference
+    - SmashPig\PaymentProviders\Amazon\Actions\CloseOrderReference
+    - SmashPig\PaymentProviders\Amazon\Actions\AssociateRefundParent
+    - SmashPig\PaymentProviders\Amazon\Actions\AddMessageToQueue
+
+endpoints:
+    listener:
+        class: SmashPig\PaymentProviders\Amazon\AmazonListener
+
+credentials: &CREDENTIALS
+    # 13 or so uppercase letters
+    merchant_id: ''
+    # app or site-specific, starts with amznX.application
+    client_id: ''
+    # 20 alphanumeric characters
+    access_key: ''
+    # 40 base-64 encoded chars
+    secret_key: ''
+    # 'de', 'jp', 'uk', or 'us'
+    region: ''
+    sandbox: false
+
+# Override these to mock the Amazon SDK classes
+payments-client:
+    class: PayWithAmazon\PaymentsClient
+    constructor-parameters:
+        - <<: *CREDENTIALS
+
+reports-client:
+    class: PayWithAmazon\ReportsClient
+    constructor-parameters:
+        - <<: *CREDENTIALS
+
+ipn-handler-class: PayWithAmazon\IpnHandler
+
+audit:
+    download-path: ""
+    archive-path: ""
+    file-types:
+        - SmashPig\PaymentProviders\Amazon\Audit\RefundReport
+        - SmashPig\PaymentProviders\Amazon\Audit\SettlementReport
