@@ -2,7 +2,7 @@
 
 namespace SmashPig\Tests;
 
-use SmashPig\Core\Context;
+
 use SmashPig\Core\DataStores\PaymentsInitialDatabase;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\QueueConsumers\PendingQueueConsumer;
@@ -21,13 +21,6 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		// Merge db and queue test configs.
-		$config = TestingConfiguration::loadConfigWithFileOverrides( array(
-			__DIR__ . '/data/config_smashpig_db.yaml',
-			__DIR__ . '/data/config_queue.yaml',
-		) );
-		Context::initWithLogger( $config );
-
 		$this->pendingDb = PendingDatabase::get();
 		$this->pendingDb->createTable();
 		$this->paymentsInitialDb = PaymentsInitialDatabase::get();

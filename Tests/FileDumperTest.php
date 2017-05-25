@@ -2,7 +2,7 @@
 
 namespace SmashPig\Tests;
 
-use SmashPig\Core\Context;
+
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\QueueConsumers\QueueFileDumper;
 
@@ -12,7 +12,6 @@ class FileDumperTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		Context::initWithLogger( QueueTestConfiguration::instance() );
 		$this->filename = tempnam( '/tmp', 'sptest' );
 	}
 

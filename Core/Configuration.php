@@ -6,7 +6,7 @@ use Symfony\Component\Yaml\Parser;
 /**
  * Cascading configuration using YAML files
  */
-class Configuration {
+abstract class Configuration {
 
 	/** @var array K/V array of configuration options for the initialized node */
 	protected $options = array();
@@ -14,81 +14,11 @@ class Configuration {
 	/** @var array keyed on class name that stores persistent objects */
 	protected $objects = array();
 
-	/**
-	 * @var string Name of the view that generated this configuration object
-	 *
-	 * FIXME: There's still something fishy about view.
-	 */
-	protected $viewName = 'default';
-
-	/**
-	 * Creates a configuration object for a specific configuration node.
-	 *
-	 * @param string $view Configuration view to load
-	 * FIXME: No reason to provide a default.
-	 *
-	 * @return Configuration or subclass
-	 */
-	public static function createForView( $view = 'default' ) {
-		$config = new static();
-		$config->viewName = $view;
-		$config->loadDefaultConfig();
-
-		return $config;
-	}
-
-	/**
-	 * Creates a configuration object for a specific configuration node.
-	 *
-	 * FIXME: Don't provide defaults once usages are cleaned up.
-	 *
-	 * @param string $view Configuration view to load
-	 * @param array|string|null $overridePath  Extra configuration path(s) to search
-	 *
-	 * @return Configuration or subclass
-	 */
-	public static function createForViewWithOverrideFile( $view = 'default', $overridePath = null ) {
-		$config = new static();
-		$config->viewName = $view;
-
-		if ( !$overridePath ) {
-			$config->loadDefaultConfig();
-		} else {
-			$searchPath = array_merge(
-				( array ) $overridePath,
-				$config->getDefaultSearchPath()
-			);
-			$config->loadConfigFromPaths( $searchPath );
-		}
-		return $config;
-	}
-
 	public function loadDefaultConfig() {
 		$this->loadConfigFromPaths( $this->getDefaultSearchPath() );
 	}
 
-	public function getDefaultSearchPath() {
-		$searchPath = array();
-
-		// FIXME: The whole 'view' thing is going to go away when we split into
-		// GlobalConfiguration and ProviderConfiguration
-		if ( $this->viewName !== 'default' ) {
-
-			if ( isset( $_SERVER['HOME'] ) ) {
-				$searchPath[] =  "{$_SERVER['HOME']}/.smashpig/{$this->viewName}/main.yaml";
-			}
-			$searchPath[] = "/etc/smashpig/{$this->viewName}/main.yaml";
-			$searchPath[] = __DIR__ . "/../config/{$this->viewName}/main.yaml";
-		}
-
-		if ( isset( $_SERVER['HOME'] ) ) {
-			// FIXME: But I don't understand why this key is missing during testing.
-			$searchPath[] =  "{$_SERVER['HOME']}/.smashpig/main.yaml";
-		}
-		$searchPath[] = '/etc/smashpig/main.yaml';
-		$searchPath[] = __DIR__ . '/../config/main.yaml';
-		return $searchPath;
-	}
+	abstract protected function getDefaultSearchPath();
 
 	/**
 	 * Load a search path consisting of single files or globs
@@ -283,13 +213,6 @@ class Configuration {
 		} catch ( ConfigurationKeyException $ex ) {
 			return false;
 		}
-	}
-
-	/**
-	 * @return string The name of the view used to generate this configuration object
-	 */
-	public function getViewName() {
-		return $this->viewName;
 	}
 
 	/**

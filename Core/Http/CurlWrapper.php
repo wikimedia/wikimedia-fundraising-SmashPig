@@ -2,19 +2,19 @@
 
 namespace SmashPig\Core\Http;
 
-use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\ProviderConfiguration;
 
 class CurlWrapper {
 
 	/**
-	 * @var Configuration
+	 * @var ProviderConfiguration
 	 */
-	protected $configuration;
+	protected $providerConfiguration;
 
 	public function __construct() {
-		$this->configuration = Context::get()->getConfiguration();
+		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 	}
 
 	public function execute( $url, $method, $responseHeaders, $data ) {
@@ -32,7 +32,7 @@ class CurlWrapper {
 		curl_setopt_array( $ch, $curlOptions );
 
 		// TODO: log timing
-		$loopCount = $this->configuration->val( 'curl/retries' );
+		$loopCount = $this->providerConfiguration->val( 'curl/retries' );
 		$tries = 0;
 		$parsed = null;
 		do {
@@ -57,7 +57,7 @@ class CurlWrapper {
 				/**
 				 * @var ResponseValidator
 				 */
-				$validator = $this->configuration->object( 'curl/validator' );
+				$validator = $this->providerConfiguration->object( 'curl/validator' );
 				$continue = $validator->shouldRetry( $parsed );
 
 			} else {
@@ -95,10 +95,10 @@ class CurlWrapper {
 	protected function getCurlOptions( $url, $method, $headers, $data, $logStream ) {
 		$options = array(
 			CURLOPT_URL => $url,
-			CURLOPT_USERAGENT => $this->configuration->val( 'curl/user-agent' ),
+			CURLOPT_USERAGENT => $this->providerConfiguration->val( 'curl/user-agent' ),
 			CURLOPT_HEADER => 1,
 			CURLOPT_RETURNTRANSFER => 1,
-			CURLOPT_TIMEOUT => $this->configuration->val( 'curl/timeout' ),
+			CURLOPT_TIMEOUT => $this->providerConfiguration->val( 'curl/timeout' ),
 			CURLOPT_FOLLOWLOCATION => 0,
 			CURLOPT_SSL_VERIFYPEER => 1,
 			CURLOPT_SSL_VERIFYHOST => 2,

@@ -2,12 +2,12 @@
 
 namespace SmashPig\PaymentProviders\Amazon\Tests;
 
-use SmashPig\Core\Configuration;
+use SmashPig\Tests\TestingProviderConfiguration;
 
-class AmazonTestConfiguration extends Configuration{
+class AmazonTestConfiguration extends TestingProviderConfiguration {
 
 	public static function instance() {
-		return self::createForViewWithOverrideFile(
+		return self::createForProviderWithOverrideFile(
 			'amazon',
 			__DIR__ . '/config_test.yaml'
 		);

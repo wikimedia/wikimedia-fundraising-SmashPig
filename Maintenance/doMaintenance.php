@@ -24,7 +24,7 @@ if ( $maintenance instanceof MaintenanceBase ) {
 	$maintenance->setup();
 
 	// Now that we have a config node, check for disablement
-	$config = Context::get()->getConfiguration();
+	$config = Context::get()->getProviderConfiguration();
 	if ( $config->nodeExists( 'disabled' ) && $config->val( 'disabled' ) ) {
 		print ( 'Processor disabled, will not execute.' );
 		exit( 1 );

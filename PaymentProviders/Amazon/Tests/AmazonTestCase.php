@@ -13,7 +13,7 @@ class AmazonTestCase extends BaseSmashPigUnitTestCase {
 		parent::setUp();
 		chdir( __DIR__ ); // So the mock client can find its response files
 		$config = AmazonTestConfiguration::instance();
-		Context::initWithLogger( $config );
+		Context::get()->setProviderConfiguration( $config );
 		$this->mockClient = $config->object( 'payments-client', true );
 		$this->mockClient->calls = array();
 		$this->mockClient->returns = array();

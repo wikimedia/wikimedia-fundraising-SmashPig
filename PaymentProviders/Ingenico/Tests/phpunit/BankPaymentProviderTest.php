@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\Ingenico\Tests;
 use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Cache\CacheItemPoolInterface;
 use SmashPig\Core\Cache\HashCacheItem;
+use SmashPig\Core\Context;
 use SmashPig\Core\Http\CurlWrapper;
 use SmashPig\PaymentProviders\Ingenico\BankPaymentProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -29,18 +30,22 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	protected $cache;
 
 	public function setUp() {
-		$config = $this->setConfig( 'ingenico' );
+		parent::setUp();
+
+		$providerConfiguration = $this->setProviderConfiguration( 'ingenico' );
 		$this->curlWrapper = $this->getMock( '\SmashPig\Core\Http\CurlWrapper' );
-		$this->cache = $config->object( 'cache', true );
-		$config->overrideObjectInstance( 'curl/wrapper', $this->curlWrapper );
-		$config->object( 'cache' )->clear();
+		$providerConfiguration->overrideObjectInstance( 'curl/wrapper', $this->curlWrapper );
+
+		$globalConfig = Context::get()->getGlobalConfiguration();
+		$this->cache = $globalConfig->object( 'cache', true );
+		$this->cache->clear();
+
 		$this->provider = new BankPaymentProvider( array(
 			'cache-parameters' => array(
 				'duration' => 10,
 				'key-base' => 'BLAH_BLAH'
 			)
 		) );
-		parent::setUp();
 	}
 
 	public function testGetBankList() {

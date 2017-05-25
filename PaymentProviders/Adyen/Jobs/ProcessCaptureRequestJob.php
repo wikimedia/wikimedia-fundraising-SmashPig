@@ -156,12 +156,12 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	protected function getRiskAction( $dbMessage ) {
-		$config = Context::get()->getConfiguration();
+		$providerConfig = Context::get()->getProviderConfiguration();
 		$riskScore = isset( $dbMessage['risk_score'] ) ? $dbMessage['risk_score'] : 0;
 		$this->logger->debug( "Base risk score from payments site is $riskScore, " .
 			"raw CVV result is '{$this->cvvResult}' and raw AVS result is '{$this->avsResult}'." );
-		$cvvMap = $config->val( 'fraud-filters/cvv-map' );
-		$avsMap = $config->val( 'fraud-filters/avs-map' );
+		$cvvMap = $providerConfig->val( 'fraud-filters/cvv-map' );
+		$avsMap = $providerConfig->val( 'fraud-filters/avs-map' );
 		$scoreBreakdown = array();
 		if ( array_key_exists( $this->cvvResult, $cvvMap ) ) {
 			$scoreBreakdown['getCVVResult'] = $cvvScore = $cvvMap[$this->cvvResult];
@@ -178,10 +178,10 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			$this->logger->warning( "AVS result '{$this->avsResult}' not found in avs-map.", $avsMap );
 		}
 		$action = self::ACTION_PROCESS;
-		if ( $riskScore >= $config->val( 'fraud-filters/review-threshold' ) ) {
+		if ( $riskScore >= $providerConfig->val( 'fraud-filters/review-threshold' ) ) {
 			$action = self::ACTION_REVIEW;
 		}
-		if ( $riskScore >= $config->val( 'fraud-filters/reject-threshold' ) ) {
+		if ( $riskScore >= $providerConfig->val( 'fraud-filters/reject-threshold' ) ) {
 			$action = self::ACTION_REJECT;
 		}
 		$this->sendAntifraudMessage( $dbMessage, $riskScore, $scoreBreakdown, $action );
@@ -200,7 +200,8 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	 * @return \SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface
 	 */
 	protected function getApi() {
-		$api = Context::get()->getConfiguration()->object( 'payment-provider/adyen/api' );
+		// FIXME: 'payment-provider/adyen' is redundant
+		$api = Context::get()->getProviderConfiguration()->object( 'payment-provider/adyen/api' );
 		$api->setAccount( $this->account );
 		return $api;
 	}

@@ -18,27 +18,36 @@ class Context {
 	protected $sourceName = 'SmashPig';
 	protected $sourceType = 'listener';
 
-	/** @var Configuration|null Reference to the context configuration object */
-	protected $config = null;
+	/** @var GlobalConfiguration|null Reference to the global configuration object */
+	protected $globalConfiguration = null;
 
-	public static function init( Configuration $config ) {
+	/** @var ProviderConfiguration current provider-specific settings */
+	protected $providerConfiguration = null;
+
+	public static function init( GlobalConfiguration $config, $providerConfig = null ) {
 		if ( !Context::$instance ) {
+			if ( !$providerConfig ) {
+				$providerConfig = ProviderConfiguration::createDefault();
+			}
 			Context::$instance = new Context();
-			Context::$instance->setConfiguration( $config );
+			Context::$instance->setGlobalConfiguration( $config );
+			Context::$instance->setProviderConfiguration( $providerConfig );
 		}
 	}
 
 	public static function initWithLogger(
-		Configuration $config,
+		GlobalConfiguration $config,
+		$providerConfig = null,
 		$loggerPrefix = ''
 	) {
-		self::init( $config );
+		self::init( $config, $providerConfig );
+		$providerConfig = self::$instance->getProviderConfiguration();
 		if ( !self::$loggerInitialized ) {
 			// FIXME: Terminate logger crap with extreme prejudice
 			Logger::init(
-				$config->val( 'logging/root-context' ),
-				$config->val( 'logging/log-level' ),
-				$config,
+				$providerConfig->val( 'logging/root-context' ),
+				$providerConfig->val( 'logging/log-level' ),
+				$providerConfig,
 				$loggerPrefix
 			);
 			self::$loggerInitialized = true;
@@ -107,21 +116,33 @@ class Context {
 	 * based on account; this will somehow require us to support either
 	 * stacked configurations or stacked contexts...
 	 *
-	 * @param Configuration $config
+	 * @param GlobalConfiguration $config
 	 */
-	protected function setConfiguration( Configuration $config ) {
-		$this->config = $config;
+	protected function setGlobalConfiguration( GlobalConfiguration $config ) {
+		$this->globalConfiguration = $config;
 	}
 
 	/**
-	 * Gets the configuration object associated with the current context.
+	 * Gets the global configuration object associated with the current context.
 	 *
-	 * Set the configuration using init()
+	 * Set the global configuration using init()
 	 *
-	 * @return null|Configuration
+	 * @return GlobalConfiguration
 	 */
-	public function getConfiguration() {
-		return $this->config;
+	public function getGlobalConfiguration() {
+		return $this->globalConfiguration;
+	}
+
+	/**
+	 * @return ProviderConfiguration
+	 */
+	public function getProviderConfiguration() {
+		return $this->providerConfiguration;
+	}
+
+	public function setProviderConfiguration( ProviderConfiguration $configuration ) {
+		// FIXME: this should do something to the logger
+		$this->providerConfiguration = $configuration;
 	}
 
     /**

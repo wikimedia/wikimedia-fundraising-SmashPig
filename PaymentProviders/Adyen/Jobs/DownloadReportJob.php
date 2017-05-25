@@ -37,10 +37,11 @@ class DownloadReportJob extends RunnableJob {
 
 	public function execute() {
 		$this->logger = new TaggedLogger( __CLASS__ );
-		$c = Context::get()->getConfiguration();
+		$c = Context::get()->getProviderConfiguration();
 
 		// Construct the temporary file path
 		$fileName = basename( $this->reportUrl );
+		// FIXME: 'payment-provider/adyen' is redundant
 		$this->downloadLoc =
 			$c->val( "payment-provider/adyen/accounts/{$this->account}/report-location" ) . '/' .
 			$fileName;

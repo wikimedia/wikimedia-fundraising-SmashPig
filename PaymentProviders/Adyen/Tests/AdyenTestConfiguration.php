@@ -1,15 +1,11 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Tests;
 
-use SmashPig\Core\Configuration;
-use SmashPig\Core\DataStores\PendingDatabase;
+use SmashPig\Tests\TestingProviderConfiguration;
 
-class AdyenTestConfiguration extends Configuration {
+class AdyenTestConfiguration extends TestingProviderConfiguration {
 
 	public static function instance( $overrides = array() ) {
-		$config = self::createForViewWithOverrideFile(
-			'adyen',
-			__DIR__ . '/config_test.yaml'
-		);
+		$config = static::createForProvider( 'adyen' );
 		$config->override( $overrides );
 
 		return $config;
@@ -19,8 +15,10 @@ class AdyenTestConfiguration extends Configuration {
 		$override = array( 'payment-provider' =>
 			array( 'adyen' =>
 				array( 'api' =>
-					array( 'constructor-parameters' =>
-						array( 'Success!' )
+					array(
+						'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
+						'constructor-parameters' =>
+							array( 'Success!' )
 					)
 				)
 			)
@@ -32,10 +30,12 @@ class AdyenTestConfiguration extends Configuration {
 		$override = array( 'payment-provider' =>
 			array( 'adyen' =>
 				array( 'api' =>
-					array( 'constructor-parameters' =>
-						// FIXME: Really?  or boolean `false` as it would be if
-						// we parsed "false" from yaml?
-						array( 'false' )
+					array(
+						'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
+						'constructor-parameters' =>
+							// FIXME: Really?  or boolean `false` as it would be if
+							// we parsed "false" from yaml?
+							array( 'false' )
 					)
 				)
 			)

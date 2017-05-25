@@ -7,7 +7,7 @@ use SmashPig\Core\Context;
  */
 abstract class Message {
 	public static function fromIpnMessage( $ipnArray ) {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 
 		$message = array();
 		$map = $config->val( 'var_map' );

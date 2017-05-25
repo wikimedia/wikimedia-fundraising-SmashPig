@@ -1,0 +1,44 @@
+data-store:
+    mock-queue: &QUEUE
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+
+    mock-db: &DB
+        class: PDO
+        constructor-parameters:
+            - 'sqlite::memory:'
+
+    test:
+        <<: *QUEUE
+
+    payments-antifraud:
+        <<: *QUEUE
+
+    pending:
+        <<: *QUEUE
+
+    recurring:
+        <<: *QUEUE
+
+    refund:
+        <<: *QUEUE
+
+    jobs-paypal:
+        <<: *QUEUE
+
+    jobs-adyen:
+        <<: *QUEUE
+
+    donations:
+        <<: *QUEUE
+
+    pending-db:
+        <<: *DB
+
+    damaged-db:
+        <<: *DB
+
+    fredge-db:
+        <<: *DB

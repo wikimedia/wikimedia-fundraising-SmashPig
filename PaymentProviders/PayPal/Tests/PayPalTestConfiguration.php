@@ -1,12 +1,12 @@
 <?php
 namespace SmashPig\PaymentProviders\PayPal\Tests;
 
-use SmashPig\Core\Configuration;
+use SmashPig\Tests\TestingProviderConfiguration;
 
-class PayPalTestConfiguration extends Configuration {
+class PayPalTestConfiguration extends TestingProviderConfiguration {
 
 	public static function get () {
-		return self::createForViewWithOverrideFile(
+		return self::createForProviderWithOverrideFile(
 			'paypal',
 			__DIR__ . '/config_test.yaml'
 		);

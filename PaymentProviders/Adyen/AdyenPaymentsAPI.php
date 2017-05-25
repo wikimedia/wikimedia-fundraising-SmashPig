@@ -17,7 +17,7 @@ class AdyenPaymentsAPI implements AdyenPaymentsInterface {
 
 		$this->account = $account;
 
-		$c = Context::get()->getConfiguration();
+		$c = Context::get()->getProviderConfiguration();
 		$this->soapClient = new WSDL\Payment(
 			$c->val( 'payment-provider/adyen/payments-wsdl' ),
 			array(

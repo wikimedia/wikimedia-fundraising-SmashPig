@@ -31,7 +31,7 @@ abstract class ListenerMessage extends JsonSerializableObject {
 		$retval = true;
 
 		// TODO: Cache this?
-		$actions = Context::get()->getConfiguration()->val( 'actions' );
+		$actions = Context::get()->getProviderConfiguration()->val( 'actions' );
 
 		foreach ( $actions as $actionClassName ) {
 			$action = new $actionClassName;

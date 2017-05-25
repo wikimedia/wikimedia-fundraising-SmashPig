@@ -2,7 +2,7 @@
 
 namespace SmashPig\Tests;
 
-use SmashPig\Core\Context;
+
 use SmashPig\Core\DataStores\PaymentsInitialDatabase;
 use SmashPig\Core\UtcDate;
 
@@ -15,8 +15,6 @@ class PaymentsInitialDatabaseTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$config = SmashPigDatabaseTestConfiguration::instance();
-		Context::initWithLogger( $config );
 		$this->db = PaymentsInitialDatabase::get();
 		$this->db->createTable();
 	}

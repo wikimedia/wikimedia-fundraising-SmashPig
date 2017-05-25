@@ -30,9 +30,10 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$config = $this->setConfig( 'ingenico' );
+		$providerConfiguration = $this->setProviderConfiguration( 'ingenico' );
 		$this->curlWrapper = $this->getMock( '\SmashPig\Core\Http\CurlWrapper' );
-		$config->overrideObjectInstance( 'curl/wrapper', $this->curlWrapper );
+		$providerConfiguration->overrideObjectInstance( 'curl/wrapper', $this->curlWrapper );
+
 		$this->authenticator = new Authenticator(
 			'5e45c937b9db33ae',
 			'I42Zf4pVnRdroHfuHnRiJjJ2B6+22h0yQt/R3nZR8Xg='

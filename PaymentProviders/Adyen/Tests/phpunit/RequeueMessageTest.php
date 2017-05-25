@@ -18,7 +18,7 @@ class RequeueMessageTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$config = AdyenTestConfiguration::createWithSuccessfulApi();
-		Context::initWithLogger( $config );
+		Context::get()->setProviderConfiguration( $config );
 		PendingDatabase::get()->createTable();
 	}
 

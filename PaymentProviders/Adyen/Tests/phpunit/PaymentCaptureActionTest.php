@@ -2,7 +2,6 @@
 namespace SmashPig\PaymentProviders\Adyen\Tests;
 
 use PHPQueue\Interfaces\FifoQueueStore;
-use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
@@ -12,10 +11,6 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
  * @group Adyen
  */
 class PaymentCaptureActionTest extends BaseSmashPigUnitTestCase  {
-	/**
-	 * @var Configuration
-	 */
-	protected $config;
 
 	/**
 	 * @var FifoQueueStore
@@ -24,9 +19,10 @@ class PaymentCaptureActionTest extends BaseSmashPigUnitTestCase  {
 
 	public function setUp() {
 		parent::setUp();
-		$this->config = AdyenTestConfiguration::createWithSuccessfulApi();
-		Context::initWithLogger( $this->config );
-		$this->jobQueue = $this->config->object( 'data-store/jobs-adyen' );
+		$providerConfig = AdyenTestConfiguration::createWithSuccessfulApi();
+		Context::get()->setProviderConfiguration( $providerConfig );
+		$globalConfig = Context::get()->getGlobalConfiguration();
+		$this->jobQueue = $globalConfig->object( 'data-store/jobs-adyen' );
 		$this->jobQueue->createTable( 'jobs-adyen' );
 	}
 

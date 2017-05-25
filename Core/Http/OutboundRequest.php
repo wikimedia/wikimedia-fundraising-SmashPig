@@ -2,7 +2,7 @@
 
 namespace SmashPig\Core\Http;
 
-use SmashPig\Core\Configuration;
+use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Core\Context;
 
 /**
@@ -15,7 +15,7 @@ class OutboundRequest {
 	protected $headers = array();
 
 	/**
-	 * @var Configuration
+	 * @var ProviderConfiguration
 	 */
 	protected $config;
 
@@ -71,7 +71,7 @@ class OutboundRequest {
 	}
 
 	public function execute() {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$wrapper = $config->object( 'curl/wrapper' );
 		return $wrapper->execute(
 			$this->url,

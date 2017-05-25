@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Core\Logging;
 
-use SmashPig\Core\Configuration;
+use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Core\SmashPigException;
 
 class Logger {
@@ -19,10 +19,10 @@ class Logger {
 	 *
 	 * @param string        $name      Root context name
 	 * @param int           $threshold Minimum log level to record into the context
-	 * @param Configuration $config    Configuration object to use
+	 * @param ProviderConfiguration $config    Configuration object to use
 	 * @param string        $prefix    Base prefix for logger
 	 */
-	public static function init( $name, $threshold, Configuration $config, $prefix ) {
+	public static function init( $name, $threshold, ProviderConfiguration $config, $prefix ) {
 		if ( self::$context ) {
 			// FIXME: is this necessary?
 			throw new SmashPigException( "Attempting to reinitialize the logger is not allowed!" );

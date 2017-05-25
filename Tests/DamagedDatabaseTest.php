@@ -3,7 +3,7 @@
 namespace SmashPig\Tests;
 
 use PDO;
-use SmashPig\Core\Context;
+
 use SmashPig\Core\DataStores\DamagedDatabase;
 
 class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
@@ -15,8 +15,6 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$config = SmashPigDatabaseTestConfiguration::instance();
-		Context::initWithLogger( $config );
 		$this->db = DamagedDatabase::get();
 		$this->db->createTable();
 	}

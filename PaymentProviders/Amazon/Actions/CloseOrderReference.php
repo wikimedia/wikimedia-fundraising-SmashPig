@@ -15,7 +15,7 @@ class CloseOrderReference implements IListenerMessageAction {
 			return true;
 		}
 
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$client = $config->object( 'payments-client', true );
 
 		$orderReferenceId = $msg->getOrderReferenceId();

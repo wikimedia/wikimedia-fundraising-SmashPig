@@ -1,4 +1,5 @@
 # Global settings
+# Access these settings via Context::getGlobalConfiguration
 #
 # To override, create a file in:
 #   /etc/smashpig/main.yaml
@@ -79,47 +80,10 @@ data-store:
                 <<: *REDIS
                 queue: donations
 
-logging:
-    root-context: SmashPig
-    # LOG_INFO
-    log-level: 6
-
-    enabled-log-streams:
-        - syslog
-
-    log-streams:
-        syslog:
-            class: SmashPig\Core\Logging\LogStreams\SyslogLogStream
-            constructor-parameters:
-                # LOG_LOCAL0
-                - 128
-                # LOG_NDELAY
-                - 8
-
-security:
-    ip-header-name: ""
-    ip-trusted-proxies: []
-    ip-whitelist: []
-
-endpoints: []
-
-namespaces: []
-
-include-files: []
-
-include-paths: []
-
-payment-provider: []
-
-actions: []
-
-email:
-    # TODO: Instead, format like: Name <email@domain>
-    from-address:
-        - sender@contoso.com
-        - Example Sender
-    bounce-address: bounce+$1@contoso.com
-    archive-addresses: []
+# Must implement Psr\Cache\CacheItemPoolInterface
+# See PSR-6: http://www.php-fig.org/psr/psr-6/
+cache:
+    class: SmashPig\Core\Cache\HashCache
 
 maintenance:
     job-runner:
@@ -134,17 +98,3 @@ maintenance:
 requeue-delay: 1200
 
 requeue-max-age: 12000
-
-curl:
-    wrapper:
-        class: SmashPig\Core\Http\CurlWrapper
-    validator:
-        class: SmashPig\Core\Http\HttpStatusValidator
-    timeout: 7
-    retries: 3
-    user-agent: SmashPig
-
-# Must implement Psr\Cache\CacheItemPoolInterface
-# See PSR-6: http://www.php-fig.org/psr/psr-6/
-cache:
-    class: SmashPig\Core\Cache\HashCache

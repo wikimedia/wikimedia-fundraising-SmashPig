@@ -10,10 +10,10 @@ use SmashPig\Core\Logging\Logger;
 
 class Listener implements IHttpActionHandler {
 
-	protected $config;
+	protected $providerConfiguration;
 
 	public function execute( Request $request, Response $response ) {
-		$this->config = Context::get()->getConfiguration();
+		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 
 		$requestValues = $request->getValues();
 
@@ -26,7 +26,7 @@ class Listener implements IHttpActionHandler {
 		$valid = false;
 		try {
 			Logger::info( 'Validating message' );
-			$valid = $this->config->object( 'api' )->validate( $requestValues );
+			$valid = $this->providerConfiguration->object( 'api' )->validate( $requestValues );
 		} catch ( Exception $e ) {
 			// Tried to validate a bunch of times and got nonsense responses.
 			Logger::error( $e->getMessage() );

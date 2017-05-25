@@ -8,7 +8,7 @@ use SmashPig\Core\Context;
 class AuditParser {
 
 	public function parseFile( $path ) {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$fileTypes = $config->val( 'audit/file-types' );
 
 		$data = array();

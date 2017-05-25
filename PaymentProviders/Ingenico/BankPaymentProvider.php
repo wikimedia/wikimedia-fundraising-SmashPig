@@ -28,7 +28,7 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 		parent::__construct( $options );
 		$this->cacheParameters = $options['cache-parameters'];
 		// FIXME: provide objects in constructor
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getGlobalConfiguration();
 		$this->cache = $config->object( 'cache' );
 	}
 

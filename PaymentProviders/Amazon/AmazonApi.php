@@ -21,7 +21,7 @@ class AmazonApi {
 	protected static $instance;
 
 	private function __construct() {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$this->client = $config->object( 'payments-client', true );
 	}
 
@@ -38,7 +38,7 @@ class AmazonApi {
 	 * @return IpnHandlerInterface
 	 */
 	public static function createIpnHandler( $headers, $body ) {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$klass = $config->val( 'ipn-handler-class' );
 		return new $klass( $headers, $body );
 	}

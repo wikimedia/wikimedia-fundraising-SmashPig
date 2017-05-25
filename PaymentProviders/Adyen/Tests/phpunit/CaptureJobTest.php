@@ -1,11 +1,11 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Test;
 
 use PHPQueue\Backend\PDO;
-use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\JsonSerializableObject;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\DataStores\QueueWrapper;
+use SmashPig\Core\ProviderConfiguration;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -18,7 +18,7 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
 class CaptureJobTest extends BaseSmashPigUnitTestCase {
 
 	/**
-	 * @var Configuration
+	 * @var ProviderConfiguration
 	 */
 	public $config;
 	/**
@@ -34,7 +34,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->config = AdyenTestConfiguration::createWithSuccessfulApi();
-		Context::initWithLogger( $this->config );
+		Context::get()->setProviderConfiguration( $this->config );
 		$this->pendingDatabase = PendingDatabase::get();
 		$this->pendingDatabase->createTable();
 		$this->pendingMessage = json_decode(

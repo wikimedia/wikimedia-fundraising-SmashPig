@@ -2,7 +2,6 @@
 namespace SmashPig\PaymentProviders\Adyen\Tests;
 
 use PHPQueue\Interfaces\FifoQueueStore;
-use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\UtcDate;
@@ -15,7 +14,7 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
  */
 class ReportAvailableTest extends BaseSmashPigUnitTestCase {
 	/**
-	 * @var Configuration
+	 * @var AdyenTestConfiguration
 	 */
 	protected $config;
 
@@ -27,7 +26,7 @@ class ReportAvailableTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->config = AdyenTestConfiguration::createWithSuccessfulApi();
-		Context::initWithLogger( $this->config );
+		Context::get()->setProviderConfiguration( $this->config );
 		$this->jobQueue = QueueWrapper::getQueue( 'jobs-adyen' );
 		$this->jobQueue->createTable( 'jobs-adyen' );
 	}

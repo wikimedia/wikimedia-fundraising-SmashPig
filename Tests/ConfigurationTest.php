@@ -1,6 +1,7 @@
 <?php
 namespace SmashPig\Tests;
 
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\LogStreams\ConsoleLogStream;
 
 /**
@@ -8,7 +9,7 @@ use SmashPig\Core\Logging\LogStreams\ConsoleLogStream;
 class ConfigurationTest extends BaseSmashPigUnitTestCase {
 
 	public function testOverride() {
-		$config = $this->setConfig();
+		$config = Context::get()->getProviderConfiguration();
 
 		$this->assertEquals( 'SmashPig', $config->val( 'logging/root-context' ),
 			'Default config was as expected.' );
@@ -27,7 +28,7 @@ class ConfigurationTest extends BaseSmashPigUnitTestCase {
 	 * TODO: Provide more cases using a dataProvider.
 	 */
 	public function testOverrideDeep() {
-		$config = $this->setConfig();
+		$config = Context::get()->getProviderConfiguration();
 
 		$config->override( array(
 			'endpoints' => array(
@@ -56,7 +57,7 @@ class ConfigurationTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testOverrideObjectInstance() {
-		$config = $this->setConfig();
+		$config = Context::get()->getProviderConfiguration();
 
 		$this->assertInstanceOf(
 			'SmashPig\Core\Logging\LogStreams\SyslogLogStream',
