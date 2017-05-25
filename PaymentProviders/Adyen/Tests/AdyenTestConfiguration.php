@@ -12,9 +12,6 @@ class AdyenTestConfiguration extends Configuration {
 		);
 		$config->override( $overrides );
 
-		// FIXME: What is this doing here?
-		PendingDatabase::get()->createTable();
-
 		return $config;
 	}
 

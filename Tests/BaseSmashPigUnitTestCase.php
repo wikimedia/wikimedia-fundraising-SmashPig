@@ -12,14 +12,10 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 		parent::setUp();
 
 		require_once __DIR__ . '/../vendor/autoload.php';
-
-		// Disable normal config search paths.
-		TestingConfiguration::installTestConfiguration();
 	}
 
 	public function tearDown() {
 		Context::set(); // Nullify the context for next run.
-		TestingConfiguration::tearDownConfiguration(); // And the default config
 	}
 
 	protected function loadJson( $path ) {

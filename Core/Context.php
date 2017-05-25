@@ -50,14 +50,6 @@ class Context {
 	 * @return Context
 	 */
 	public static function get() {
-		if ( Context::$instance === null ) {
-			// Remove this once we know we aren't going to blow up
-			Logger::notice(
-				'Context being initialized as part of get() request. Normally should use init() first.',
-				debug_backtrace( null )
-			);
-			Context::init( Configuration::getDefaultConfig() );
-		}
 		return Context::$instance;
 	}
 
@@ -126,20 +118,10 @@ class Context {
 	 *
 	 * Set the configuration using init()
 	 *
-	 * Use this instead of Configuration::getDefaultConfig();
-	 *
 	 * @return null|Configuration
 	 */
 	public function getConfiguration() {
-		if ( $this->config ) {
-			return $this->config;
-		} else {
-			Logger::notice(
-				'Context returning default configuration. Probably missing a setConfiguration().',
-				debug_backtrace( null )
-			);
-			return Configuration::getDefaultConfig();
-		}
+		return $this->config;
 	}
 
     /**

@@ -1,7 +1,10 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Test;
 
+use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\JsonSerializableObject;
+use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
+use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
@@ -11,6 +14,13 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
  * @group Adyen
  */
 class RequeueMessageTest extends BaseSmashPigUnitTestCase {
+
+	public function setUp() {
+		parent::setUp();
+		$config = AdyenTestConfiguration::createWithSuccessfulApi();
+		Context::initWithLogger( $config );
+		PendingDatabase::get()->createTable();
+	}
 
 	/**
 	 * @expectedException \SmashPig\Core\RetryableException

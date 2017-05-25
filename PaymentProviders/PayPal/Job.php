@@ -2,6 +2,7 @@
 
 use Exception;
 use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
@@ -26,7 +27,7 @@ class Job extends RunnableJob {
 	}
 
 	public function execute() {
-		$this->config = Configuration::getDefaultConfig();
+		$this->config = Context::get()->getConfiguration();
 
 		if ( $this->is_reject() ) {
 			// Returning false would cause it to go to the damaged queue, we

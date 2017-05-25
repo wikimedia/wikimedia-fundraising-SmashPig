@@ -8,9 +8,6 @@ use Symfony\Component\Yaml\Parser;
  */
 class Configuration {
 
-	/** @var Configuration the default configuration object returned when get_default_config is called */
-	protected static $defaultObj;
-
 	/** @var array K/V array of configuration options for the initialized node */
 	protected $options = array();
 
@@ -23,19 +20,6 @@ class Configuration {
 	 * FIXME: There's still something fishy about view.
 	 */
 	protected $viewName = 'default';
-
-	/**
-	 * Obtains the current default configuration object. You should probably be
-	 * using a context call instead of this. See Context->getConfiguration()
-	 * FIXME: Resolve ambiguity, only provide one entry point.
-	 *
-	 * Typically the object created by index.php
-	 *
-	 * @return Configuration
-	 */
-	public static function getDefaultConfig() {
-		return Configuration::$defaultObj;
-	}
 
 	/**
 	 * Creates a configuration object for a specific configuration node.
@@ -77,12 +61,6 @@ class Configuration {
 			$config->loadConfigFromPaths( $searchPath );
 		}
 		return $config;
-	}
-
-	protected function __construct() {
-		// Memoize configuration.
-		// TODO It could be confusing for the ctor to nuke the stored config.
-		self::$defaultObj = $this;
 	}
 
 	public function loadDefaultConfig() {

@@ -36,6 +36,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 		$this->config = AdyenTestConfiguration::createWithSuccessfulApi();
 		Context::initWithLogger( $this->config );
 		$this->pendingDatabase = PendingDatabase::get();
+		$this->pendingDatabase->createTable();
 		$this->pendingMessage = json_decode(
 			file_get_contents( __DIR__ . '/../Data/pending.json' ) , true
 		);

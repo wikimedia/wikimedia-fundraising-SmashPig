@@ -21,28 +21,14 @@ class TestingConfiguration extends Configuration {
 		return $searchPath;
 	}
 
-	public static function installTestConfiguration( $pathOverrides = array() ) {
-		// Late static binding so that a subclass creates one of itself
-		$singleton = static::createForViewWithOverrideFile( 'default', $pathOverrides );
-		Configuration::$defaultObj = $singleton;
-		return $singleton;
-	}
-
 	public static function loadConfigWithFileOverrides( $paths ) {
-		$config = static::installTestConfiguration( $paths );
+		$config = static::createForViewWithOverrideFile( 'default', $paths );
 		return $config;
 	}
 
 	public static function loadConfigWithLiteralOverrides( $data ) {
-		$config = static::installTestConfiguration();
+		$config = static::createForView( 'default' );
 		$config->override( $data );
 		return $config;
-	}
-
-	public static function tearDownConfiguration() {
-		$konfig = new ReflectionClass( 'SmashPig\Core\Configuration' );
-		$defaultConfig = $konfig->getProperty( 'defaultObj' );
-		$defaultConfig->setAccessible( true );
-		$defaultConfig->setValue( null );
 	}
 }

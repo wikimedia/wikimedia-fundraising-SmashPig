@@ -1,7 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\PayPal;
 
 use RuntimeException;
-use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Http\IHttpActionHandler;
 use SmashPig\Core\Http\Request;
@@ -13,7 +13,7 @@ class Listener implements IHttpActionHandler {
 	protected $config;
 
 	public function execute( Request $request, Response $response ) {
-		$this->config = Configuration::getDefaultConfig();
+		$this->config = Context::get()->getConfiguration();
 
 		$requestValues = $request->getValues();
 
