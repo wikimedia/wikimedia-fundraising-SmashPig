@@ -10,9 +10,9 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 	public function setUp() {
 		parent::setUp();
 		$globalConfig = TestingGlobalConfiguration::create();
-		// TODO: standard issue CurlWrapper mock would be nice too
-		$providerConfig = TestingProviderConfiguration::createDefault();
-		Context::initWithLogger( $globalConfig, $providerConfig );
+		Context::init( $globalConfig );
+		// TODO: create tables for all dbs/queues.
+		// Standard issue CurlWrapper mock would be nice too
 	}
 
 	public function tearDown() {

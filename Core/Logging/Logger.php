@@ -24,8 +24,7 @@ class Logger {
 	 */
 	public static function init( $name, $threshold, ProviderConfiguration $config, $prefix ) {
 		if ( self::$context ) {
-			// FIXME: is this necessary?
-			throw new SmashPigException( "Attempting to reinitialize the logger is not allowed!" );
+			self::$context = null; // should fire __destruct code
 		}
 
 		// Init all the log streams
@@ -62,6 +61,11 @@ class Logger {
 	public static function getTaggedLogger( $tag ) {
 		// We actually have this function so the TaggedLogger class is discoverable
 		return new TaggedLogger( $tag );
+	}
+
+	public static function setPrefix( $prefix ) {
+		self::$context->leaveContext();
+		self::$context->enterContext( $prefix );
 	}
 
 	/* --- CONTEXT HELPER METHODS --- */

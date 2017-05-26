@@ -12,7 +12,6 @@ use SmashPig\Core\Logging\Logger;
 class Context {
 	/** @var Context Reference to the current global context */
 	protected static $instance;
-	protected static $loggerInitialized = false;
 	protected $contextId;
 	protected $sourceRevision = 'unknown';
 	protected $sourceName = 'SmashPig';
@@ -32,25 +31,6 @@ class Context {
 			Context::$instance = new Context();
 			Context::$instance->setGlobalConfiguration( $config );
 			Context::$instance->setProviderConfiguration( $providerConfig );
-		}
-	}
-
-	public static function initWithLogger(
-		GlobalConfiguration $config,
-		$providerConfig = null,
-		$loggerPrefix = ''
-	) {
-		self::init( $config, $providerConfig );
-		$providerConfig = self::$instance->getProviderConfiguration();
-		if ( !self::$loggerInitialized ) {
-			// FIXME: Terminate logger crap with extreme prejudice
-			Logger::init(
-				$providerConfig->val( 'logging/root-context' ),
-				$providerConfig->val( 'logging/log-level' ),
-				$providerConfig,
-				$loggerPrefix
-			);
-			self::$loggerInitialized = true;
 		}
 	}
 
@@ -141,8 +121,14 @@ class Context {
 	}
 
 	public function setProviderConfiguration( ProviderConfiguration $configuration ) {
-		// FIXME: this should do something to the logger
 		$this->providerConfiguration = $configuration;
+		// FIXME: Terminate logger crap with extreme prejudice
+		Logger::init(
+			$configuration->val( 'logging/root-context' ),
+			$configuration->val( 'logging/log-level' ),
+			$configuration,
+			$configuration->getProviderName()
+		);
 	}
 
     /**
