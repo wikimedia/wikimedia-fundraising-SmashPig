@@ -3,6 +3,7 @@
 namespace SmashPig\Tests;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\GlobalConfiguration;
 
 class TestingContext extends Context {
@@ -18,6 +19,26 @@ class TestingContext extends Context {
 		}
 		Context::$instance->setProviderConfiguration( $providerConfig );
 		Context::$instance->setGlobalConfiguration( $config );
+		TestingDatabase::createTables();
+		self::initializeQueues( $config );
+	}
+
+	protected static function initializeQueues( GlobalConfiguration $config ) {
+		foreach ( $config->val( 'data-store' ) as $name => $definition ) {
+			if (
+				array_key_exists( 'class', $definition ) &&
+				// FIXME should really only do this for \PHPQueue\Backend\PDO
+				is_subclass_of( $definition['class'], '\PHPQueue\Interfaces\FifoQueueStore' )
+			) {
+				// FIXME PDO backend should know which table to create without an arg
+				if ( array_key_exists( 'queue', $definition['constructor-parameters'][0] ) ) {
+					$table = $definition['constructor-parameters'][0]['queue'];
+				} else {
+					$table = $name;
+				}
+				QueueWrapper::getQueue( $name )->createTable( $table );
+			}
+		}
 	}
 
 	public function getProviderConfiguration() {
@@ -26,4 +47,5 @@ class TestingContext extends Context {
 		}
 		return parent::getProviderConfiguration();
 	}
+
 }

@@ -36,7 +36,7 @@ class Context {
 
 	/**
 	 * Obtains the current context object
-	 * @return Context
+	 * @return static
 	 */
 	public static function get() {
 		return Context::$instance;

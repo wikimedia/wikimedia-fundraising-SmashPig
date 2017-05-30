@@ -16,7 +16,6 @@ class PaymentsInitialDatabaseTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->db = PaymentsInitialDatabase::get();
-		$this->db->createTable();
 	}
 
 	public function tearDown() {

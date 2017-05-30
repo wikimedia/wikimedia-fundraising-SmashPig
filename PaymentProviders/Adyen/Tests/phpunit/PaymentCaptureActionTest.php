@@ -23,7 +23,6 @@ class PaymentCaptureActionTest extends BaseSmashPigUnitTestCase  {
 		Context::get()->setProviderConfiguration( $providerConfig );
 		$globalConfig = Context::get()->getGlobalConfiguration();
 		$this->jobQueue = $globalConfig->object( 'data-store/jobs-adyen' );
-		$this->jobQueue->createTable( 'jobs-adyen' );
 	}
 
 	public function testSuccessfulAuth() {

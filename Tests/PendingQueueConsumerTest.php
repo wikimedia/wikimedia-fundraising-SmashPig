@@ -22,9 +22,7 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->pendingDb = PendingDatabase::get();
-		$this->pendingDb->createTable();
 		$this->paymentsInitialDb = PaymentsInitialDatabase::get();
-		$this->paymentsInitialDb->createTable();
 	}
 
 	public function tearDown() {

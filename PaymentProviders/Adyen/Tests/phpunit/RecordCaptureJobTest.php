@@ -30,7 +30,6 @@ class RecordCaptureJobTest extends BaseSmashPigUnitTestCase {
 		$this->config = AdyenTestConfiguration::createWithSuccessfulApi();
 		Context::get()->setProviderConfiguration( $this->config );
 		$this->pendingDatabase = PendingDatabase::get();
-		$this->pendingDatabase->createTable();
 		$this->pendingMessage = json_decode(
 			file_get_contents( __DIR__ . '/../Data/pending.json' ) , true
 		);
@@ -45,8 +44,6 @@ class RecordCaptureJobTest extends BaseSmashPigUnitTestCase {
 
 	public function testRecordCapture() {
 		$donationsQueue = QueueWrapper::getQueue( 'donations' );
-		$donationsQueue->createTable( 'donations' );
-
 		$capture = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture',
 			file_get_contents( __DIR__ . '/../Data/capture.json' )

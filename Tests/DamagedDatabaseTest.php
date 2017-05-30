@@ -16,7 +16,6 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->db = DamagedDatabase::get();
-		$this->db->createTable();
 	}
 
 	public function tearDown() {

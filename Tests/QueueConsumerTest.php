@@ -23,9 +23,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->queue = QueueWrapper::getQueue( 'test' );
-		$this->queue->createTable( 'test' );
 		$damagedDb = DamagedDatabase::get();
-		$damagedDb->createTable();
 		$this->damaged = $damagedDb->getDatabase();
 	}
 

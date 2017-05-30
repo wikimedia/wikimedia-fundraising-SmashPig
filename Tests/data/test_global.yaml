@@ -14,7 +14,12 @@ data-store:
         <<: *QUEUE
 
     payments-antifraud:
-        <<: *QUEUE
+        # Testing backend needs queue to be a valid table name
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: payments_antifraud
 
     pending:
         <<: *QUEUE
@@ -26,10 +31,18 @@ data-store:
         <<: *QUEUE
 
     jobs-paypal:
-        <<: *QUEUE
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: jobs_paypal
 
     jobs-adyen:
-        <<: *QUEUE
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: jobs_adyen
 
     donations:
         <<: *QUEUE

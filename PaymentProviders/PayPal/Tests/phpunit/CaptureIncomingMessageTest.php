@@ -43,10 +43,6 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->config = Context::get()->getGlobalConfiguration();
-		// php-queue\PDO complains about pop() from non-existent table
-		$this->config->object( 'data-store/jobs-paypal' )
-			->createTable( 'jobs-paypal' );
-
 		Context::get()->setProviderConfiguration(
 			PayPalTestConfiguration::get()
 		);
@@ -126,7 +122,6 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$job->execute();
 
 		$queue = $this->config->object( 'data-store/' . $msg['type'] );
-		$queue->createTable( $msg['type'] );
 		$message = $queue->pop();
 
 		if ( $job->is_reject() ) {

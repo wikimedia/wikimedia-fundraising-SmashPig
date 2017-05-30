@@ -28,7 +28,6 @@ class ReportAvailableTest extends BaseSmashPigUnitTestCase {
 		$this->config = AdyenTestConfiguration::createWithSuccessfulApi();
 		Context::get()->setProviderConfiguration( $this->config );
 		$this->jobQueue = QueueWrapper::getQueue( 'jobs-adyen' );
-		$this->jobQueue->createTable( 'jobs-adyen' );
 	}
 
 	public function testReportAvailable() {

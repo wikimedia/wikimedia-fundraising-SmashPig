@@ -16,7 +16,6 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->db = PendingDatabase::get();
-		$this->db->createTable();
 	}
 
 	public function tearDown() {

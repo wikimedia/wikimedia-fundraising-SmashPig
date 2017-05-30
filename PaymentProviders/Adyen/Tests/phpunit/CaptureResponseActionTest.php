@@ -26,7 +26,6 @@ class CaptureResponseActionTest extends BaseSmashPigUnitTestCase {
 
 		$this->jobQueue = $context->getGlobalConfiguration()
 			->object( 'data-store/jobs-adyen' );
-		$this->jobQueue->createTable( 'jobs-adyen' );
 	}
 
 	public function testSuccessfulCapture() {
