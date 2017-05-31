@@ -276,6 +276,14 @@ abstract class Configuration {
 		// Feeling lucky.
 		return true;
 	}
+
+	static protected function getBaseDirFromEnv( $envVar, $default ) {
+		$baseDir = getenv( $envVar );
+		if ( !$baseDir ) {
+			$baseDir = $default;
+		}
+		return rtrim( $baseDir, DIRECTORY_SEPARATOR );
+	}
 }
 
 /**

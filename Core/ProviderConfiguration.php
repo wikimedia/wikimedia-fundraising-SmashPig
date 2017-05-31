@@ -6,6 +6,8 @@ namespace SmashPig\Core;
 class ProviderConfiguration extends Configuration {
 
 	const NO_PROVIDER = 'no_provider';
+	const DIR_VAR = 'SMASHPIG_PROVIDER_CONFDIR';
+	const DEFAULT_BASEDIR = '/etc/smashpig';
 
 	protected $provider;
 
@@ -69,17 +71,18 @@ class ProviderConfiguration extends Configuration {
 	}
 
 	protected function getDefaultSearchPath() {
+		$baseDir = self::getBaseDirFromEnv( self::DIR_VAR, self::DEFAULT_BASEDIR );
 		if ( $this->provider !== self::NO_PROVIDER ) {
 			if ( isset( $_SERVER['HOME'] ) ) {
 				$searchPath[] = "{$_SERVER['HOME']}/.smashpig/{$this->provider}/main.yaml";
 			}
-			$searchPath[] = "/etc/smashpig/{$this->provider}/main.yaml";
+			$searchPath[] = "$baseDir/{$this->provider}/main.yaml";
 			$searchPath[] = __DIR__ . "/../config/{$this->provider}/main.yaml";
 		}
 		if ( isset( $_SERVER['HOME'] ) ) {
 			$searchPath[] = "{$_SERVER['HOME']}/.smashpig/provider-defaults.yaml";
 		}
-		$searchPath[] = '/etc/smashpig/provider-defaults.yaml';
+		$searchPath[] = "$baseDir/provider-defaults.yaml";
 		$searchPath[] = __DIR__ . '/../config/provider-defaults.yaml';
 		return $searchPath;
 	}

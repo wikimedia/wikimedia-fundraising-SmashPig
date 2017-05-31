@@ -1,9 +1,17 @@
 This project uses Composer [https://getcomposer.org] to manage dependencies.
 Upon first install and any upgrade please run composer install.
 
-Default configuration values are located in config/main.yaml. These are
-overridden by values in /etc/smashpig/main.yaml, then by values in
-~/.smashpig/main.yaml.
+Configuration settings are read from multiple directories. The highest priority
+is given to user-specific settings in ~/.smashpig, then machine-specific settings
+in /etc/smashpig, then defaults read from this project's 'config' directory.
+
+Within these folder, global settings like database and queue connections are read
+from main.yaml. Settings that can be overridden per provider are read from main.yaml
+files in subdirectories named for the provider, with common defaults in
+provider-defaults.yaml.
+
+To make SmashPig look in an location other than /etc/smashpig for machine-specific
+settings, set environment variables SMASHPIG_GLOBAL_CONFDIR or SMASHPIG_PROVIDER_CONFDIR.
 
 Command-line maintenance scripts have some common options:
     --help
