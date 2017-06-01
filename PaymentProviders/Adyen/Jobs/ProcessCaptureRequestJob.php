@@ -200,8 +200,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	 * @return \SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface
 	 */
 	protected function getApi() {
-		// FIXME: 'payment-provider/adyen' is redundant
-		$api = Context::get()->getProviderConfiguration()->object( 'payment-provider/adyen/api' );
+		$api = Context::get()->getProviderConfiguration()->object( 'api' );
 		$api->setAccount( $this->account );
 		return $api;
 	}

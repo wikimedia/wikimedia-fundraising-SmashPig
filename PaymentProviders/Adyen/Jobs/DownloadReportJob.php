@@ -41,13 +41,12 @@ class DownloadReportJob extends RunnableJob {
 
 		// Construct the temporary file path
 		$fileName = basename( $this->reportUrl );
-		// FIXME: 'payment-provider/adyen' is redundant
 		$this->downloadLoc =
-			$c->val( "payment-provider/adyen/accounts/{$this->account}/report-location" ) . '/' .
+			$c->val( "accounts/{$this->account}/report-location" ) . '/' .
 			$fileName;
 
-		$user = $c->val( "payment-provider/adyen/accounts/{$this->account}/report-username" );
-		$pass = $c->val( "payment-provider/adyen/accounts/{$this->account}/report-password" );
+		$user = $c->val( "accounts/{$this->account}/report-username" );
+		$pass = $c->val( "accounts/{$this->account}/report-password" );
 
 		$this->logger->info(
 			"Beginning report download from {$this->reportUrl} using username {$user} into {$this->downloadLoc}"

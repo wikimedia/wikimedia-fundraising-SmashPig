@@ -12,32 +12,24 @@ class AdyenTestConfiguration extends TestingProviderConfiguration {
 	}
 
 	public static function createWithSuccessfulApi() {
-		$override = array( 'payment-provider' =>
-			array( 'adyen' =>
-				array( 'api' =>
-					array(
-						'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
-						'constructor-parameters' =>
-							array( 'Success!' )
-					)
-				)
+		$override = array( 'api' =>
+			array(
+				'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
+				'constructor-parameters' =>
+					array( 'Success!' )
 			)
 		);
 		return self::instance( $override );
 	}
 
 	public static function createWithUnsuccessfulApi() {
-		$override = array( 'payment-provider' =>
-			array( 'adyen' =>
-				array( 'api' =>
-					array(
-						'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
-						'constructor-parameters' =>
-							// FIXME: Really?  or boolean `false` as it would be if
-							// we parsed "false" from yaml?
-							array( 'false' )
-					)
-				)
+		$override = array( 'api' =>
+			array(
+				'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
+				'constructor-parameters' =>
+					// FIXME: Really?  or boolean `false` as it would be if
+					// we parsed "false" from yaml?
+					array( 'false' )
 			)
 		);
 		return self::instance( $override );

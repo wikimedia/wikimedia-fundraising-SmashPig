@@ -53,7 +53,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * in the pending database, add an antifraud message, and return true.
 	 */
 	public function testSuccessfulCapture() {
-		$api = $this->config->object( 'payment-provider/adyen/api', true );
+		$api = $this->config->object( 'api', true );
 
 		$auth = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
@@ -103,7 +103,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * we should not capture the payment, but leave the donor details.
 	 */
 	public function testReviewThreshold() {
-		$api = $this->config->object( 'payment-provider/adyen/api', true );
+		$api = $this->config->object( 'api', true );
 
 		$auth = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
@@ -149,7 +149,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * we should cancel the authorization and delete the donor details.
 	 */
 	public function testRejectThreshold() {
-		$api = $this->config->object( 'payment-provider/adyen/api', true );
+		$api = $this->config->object( 'api', true );
 
 		$auth = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
@@ -197,7 +197,7 @@ class CaptureJobTest extends BaseSmashPigUnitTestCase {
 	 * should cancel the second one and leave the donor details in pending.
 	 */
 	public function testDuplicateAuthorisation() {
-		$api = $this->config->object( 'payment-provider/adyen/api', true );
+		$api = $this->config->object( 'api', true );
 
 		$auth1 = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
