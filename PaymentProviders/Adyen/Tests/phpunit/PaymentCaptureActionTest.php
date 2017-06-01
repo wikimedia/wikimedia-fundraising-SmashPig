@@ -8,6 +8,9 @@ use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
+/**
+ * @group Adyen
+ */
 class PaymentCaptureActionTest extends BaseSmashPigUnitTestCase  {
 	/**
 	 * @var Configuration

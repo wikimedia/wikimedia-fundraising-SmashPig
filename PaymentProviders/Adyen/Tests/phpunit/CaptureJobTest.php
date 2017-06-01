@@ -12,6 +12,8 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * Verify Adyen Capture job functions
+ *
+ * @group Adyen
  */
 class CaptureJobTest extends BaseSmashPigUnitTestCase {
 

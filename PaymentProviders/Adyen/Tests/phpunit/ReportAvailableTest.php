@@ -10,6 +10,9 @@ use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\ReportAvailable;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
+/**
+ * @group Adyen
+ */
 class ReportAvailableTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * @var Configuration

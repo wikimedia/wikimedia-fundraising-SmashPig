@@ -8,6 +8,9 @@ use SmashPig\PaymentProviders\Adyen\Actions\CaptureResponseAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
+/**
+ * @group Adyen
+ */
 class CaptureResponseActionTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * @var Configuration
@@ -22,6 +25,7 @@ class CaptureResponseActionTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->config = AdyenTestConfiguration::createWithSuccessfulApi();
+
 		Context::initWithLogger( $this->config );
 		$this->jobQueue = $this->config->object( 'data-store/jobs-adyen' );
 		$this->jobQueue->createTable( 'jobs-adyen' );

@@ -7,6 +7,8 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
 /**
  * Make sure a message that arrives before the pending databases entry gets
  * written is properly requeued for retry.
+ *
+ * @group Adyen
  */
 class RequeueMessageTest extends BaseSmashPigUnitTestCase {
 
