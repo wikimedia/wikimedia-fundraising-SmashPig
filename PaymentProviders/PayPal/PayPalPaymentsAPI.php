@@ -1,7 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\PayPal;
 
 use RuntimeException;
-use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 
 class PayPalPaymentsAPI {
@@ -24,7 +24,7 @@ class PayPalPaymentsAPI {
 		$max_attempts = 7;
 
 		for ( $i = 0; $i < $max_attempts; $i++ ) {
-			$url = Configuration::getDefaultConfig()->val( 'postback-url' );
+			$url = Context::get()->getConfiguration()->val( 'postback-url' );
 			$ch = curl_init();
 			curl_setopt( $ch, CURLOPT_URL, $url );
 			curl_setopt( $ch, CURLOPT_HEADER, 0 );

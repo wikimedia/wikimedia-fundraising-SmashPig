@@ -15,6 +15,8 @@ class Context {
 	protected static $loggerInitialized = false;
 	protected $contextId;
 	protected $sourceRevision = 'unknown';
+	protected $sourceName = 'SmashPig';
+	protected $sourceType = 'listener';
 
 	/** @var Configuration|null Reference to the context configuration object */
 	protected $config = null;
@@ -48,14 +50,6 @@ class Context {
 	 * @return Context
 	 */
 	public static function get() {
-		if ( Context::$instance === null ) {
-			// Remove this once we know we aren't going to blow up
-			Logger::notice(
-				'Context being initialized as part of get() request. Normally should use init() first.',
-				debug_backtrace( null )
-			);
-			Context::init( Configuration::getDefaultConfig() );
-		}
 		return Context::$instance;
 	}
 
@@ -79,13 +73,21 @@ class Context {
 		}
 
 		$versionStampPath = __DIR__ . "/../.version-stamp";
-		if ( file_exists( $versionStampPath ) ) {
-			$versionId = file_get_contents( $versionStampPath );
-			if ( $versionId !== false ) {
-				$this->sourceRevision = trim( $versionId );
-			}
-		}
+		$this->setVersionFromFile( $versionStampPath );
 	}
+
+    /**
+     * Sets the version string to the contents of a file, if it exists
+     * @param string $versionStampPath
+     */
+	public function setVersionFromFile( $versionStampPath ) {
+        if ( file_exists( $versionStampPath ) ) {
+            $versionId = file_get_contents( $versionStampPath );
+            if ( $versionId !== false ) {
+                $this->sourceRevision = trim( $versionId );
+            }
+        }
+    }
 
 	/**
 	 * Gets the global context identifier - this is used for logging, filenames,
@@ -95,10 +97,6 @@ class Context {
 	 */
 	public function getContextId() {
 		return $this->contextId;
-	}
-
-	public function getSourceRevision() {
-		return $this->sourceRevision;
 	}
 
 	/**
@@ -120,19 +118,55 @@ class Context {
 	 *
 	 * Set the configuration using init()
 	 *
-	 * Use this instead of Configuration::getDefaultConfig();
-	 *
 	 * @return null|Configuration
 	 */
 	public function getConfiguration() {
-		if ( $this->config ) {
-			return $this->config;
-		} else {
-			Logger::notice(
-				'Context returning default configuration. Probably missing a setConfiguration().',
-				debug_backtrace( null )
-			);
-			return Configuration::getDefaultConfig();
-		}
+		return $this->config;
 	}
+
+    /**
+     * Get the revision ID to tag queue messages
+     * @see setVersionFromFile
+     *
+     * @return string
+     */
+    public function getSourceRevision() {
+        return $this->sourceRevision;
+    }
+
+    /**
+     * Get an identifier for the application to tag queue messages
+     *
+     * @return string
+     */
+    public function getSourceName() {
+        return $this->sourceName;
+    }
+
+    /**
+     * Set an identifier for the application to tag queue messages
+     *
+     * @param string $sourceName
+     */
+    public function setSourceName( $sourceName ) {
+        $this->sourceName = $sourceName;
+    }
+
+    /**
+     * Get the application type used in queue messages
+     *
+     * @return string
+     */
+    public function getSourceType() {
+        return $this->sourceType;
+    }
+
+    /**
+     * Set the application type used in queue messages
+     *
+     * @param string $sourceType
+     */
+    public function setSourceType( $sourceType ) {
+        $this->sourceType = $sourceType;
+    }
 }

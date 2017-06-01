@@ -1,6 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
-use SmashPig\Core\Configuration;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Jobs\DeletePendingJob;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
@@ -18,7 +18,6 @@ class PaymentCaptureAction implements IListenerMessageAction {
 		$tl = new TaggedLogger( 'PaymentCaptureAction' );
 
 		if ( $msg instanceof Authorisation ) {
-			$jobQueueObj = Configuration::getDefaultConfig()->object( 'data-store/jobs-adyen' );
 			if ( $msg->success ) {
 				// Here we need to capture the payment, the job runner will collect the
 				// orphan message
@@ -27,7 +26,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					"with psp reference {$msg->pspReference}."
 				);
 				$job = ProcessCaptureRequestJob::factory( $msg );
-				$jobQueueObj->push( json_decode( $job->toJson(), true ) );
+				QueueWrapper::push( 'jobs-adyen', $job );
 
 			} else {
 				// And here we just need to destroy the orphan
@@ -40,7 +39,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					'adyen',
 					$msg->merchantReference
 				);
-				$jobQueueObj->push( json_decode( $job->toJson(), true ) );
+                QueueWrapper::push( 'jobs-adyen', $job );
 			}
 		}
 

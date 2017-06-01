@@ -3,7 +3,7 @@ namespace SmashPig\Maintenance;
 
 require ( 'MaintenanceBase.php' );
 
-use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\PendingDatabase;
 
@@ -104,7 +104,7 @@ class CreateIpnMessagesFromPendingDb extends MaintenanceBase {
 	}
 
 	protected function getAstroPaySignature( $pendingMessage, $result ) {
-		$c = Configuration::getDefaultConfig();
+		$c = Context::get()->getConfiguration();
 		$login = $c->val( 'login' );
 		$secret = $c->val( 'secret' );
 		$signed = $login . $result . $pendingMessage['gross'] . $pendingMessage['order_id'];

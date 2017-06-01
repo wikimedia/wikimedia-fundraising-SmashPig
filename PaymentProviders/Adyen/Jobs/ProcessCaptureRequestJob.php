@@ -1,7 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
-use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\PendingDatabase;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
@@ -155,7 +156,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	protected function getRiskAction( $dbMessage ) {
-		$config = Configuration::getDefaultConfig();
+		$config = Context::get()->getConfiguration();
 		$riskScore = isset( $dbMessage['risk_score'] ) ? $dbMessage['risk_score'] : 0;
 		$this->logger->debug( "Base risk score from payments site is $riskScore, " .
 			"raw CVV result is '{$this->cvvResult}' and raw AVS result is '{$this->avsResult}'." );
@@ -192,16 +193,14 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			$dbMessage, $riskScore, $scoreBreakdown, $action
 		);
 		$this->logger->debug( "Sending antifraud message with risk score $riskScore and action $action." );
-		Configuration::getDefaultConfig()
-			->object( 'data-store/payments-antifraud' )
-			->push( $antifraudMessage );
+		QueueWrapper::push( 'payments-antifraud', $antifraudMessage );
 	}
 
 	/**
 	 * @return \SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface
 	 */
 	protected function getApi() {
-		$api = Configuration::getDefaultConfig()->object( 'payment-provider/adyen/api' );
+		$api = Context::get()->getConfiguration()->object( 'payment-provider/adyen/api' );
 		$api->setAccount( $this->account );
 		return $api;
 	}

@@ -3,10 +3,9 @@ namespace SmashPig\Maintenance;
 
 require ( 'MaintenanceBase.php' );
 
-use SmashPig\Core\Configuration;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\DamagedDatabase;
-use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
 
 $maintClass = '\SmashPig\Maintenance\RequeueDelayedMessages';
 
@@ -38,14 +37,14 @@ class RequeueDelayedMessages extends MaintenanceBase {
 			$this->getOption( 'max-messages' )
 		);
 		$stats = array();
-		$config = Configuration::getDefaultConfig();
-
 		foreach( $messages as $message ) {
 			$queueName = $message['original_queue'];
-			// FIXME: getting it by alias
-			$queue = BaseQueueConsumer::getQueue( $queueName );
 			unset( $message['original_queue'] );
+
+			// leave the source fields intact
+            $queue = QueueWrapper::getQueue( $queueName );
 			$queue->push( $message );
+
 			$this->damagedDatabase->deleteMessage( $message );
 			if ( isset( $stats[$queueName] ) ) {
 				$stats[$queueName]++;

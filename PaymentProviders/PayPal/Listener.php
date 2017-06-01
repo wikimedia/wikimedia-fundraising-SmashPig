@@ -1,7 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\PayPal;
 
 use RuntimeException;
-use SmashPig\Core\Configuration;
+use SmashPig\Core\Context;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Http\IHttpActionHandler;
 use SmashPig\Core\Http\Request;
 use SmashPig\Core\Http\Response;
@@ -12,7 +13,7 @@ class Listener implements IHttpActionHandler {
 	protected $config;
 
 	public function execute( Request $request, Response $response ) {
-		$this->config = Configuration::getDefaultConfig();
+		$this->config = Context::get()->getConfiguration();
 
 		$requestValues = $request->getValues();
 
@@ -35,7 +36,7 @@ class Listener implements IHttpActionHandler {
 		if ( $valid ) {
 			$job = new Job;
 			$job->payload = $requestValues;
-			$this->config->object( 'data-store/jobs-paypal' )->push( $job );
+			QueueWrapper::push( 'jobs-paypal', $job );
 			Logger::info( 'Pushed new message to jobs-paypal: ' .
 				print_r( $requestValues, true ) );
 			return true;

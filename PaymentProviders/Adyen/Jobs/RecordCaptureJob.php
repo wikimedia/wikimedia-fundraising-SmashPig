@@ -1,10 +1,9 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
-use SmashPig\Core\Configuration;
 use SmashPig\Core\DataStores\PendingDatabase;
+use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
 
 /**
@@ -42,8 +41,6 @@ class RecordCaptureJob extends RunnableJob {
 				"'{$this->originalReference}' and order ID '{$this->merchantReference}'."
 		);
 
-		$config = Configuration::getDefaultConfig();
-
 		// Find the details from the payment site in the pending database.
 		$logger->debug( 'Attempting to locate associated message in pending database' );
 		$db = PendingDatabase::get();
@@ -55,8 +52,7 @@ class RecordCaptureJob extends RunnableJob {
 			// Add the gateway transaction ID and send it to the completed queue
 			$dbMessage['gateway_txn_id'] = $this->originalReference;
 
-			SourceFields::addToMessage( $dbMessage );
-			$config->object( 'data-store/donations' )->push( $dbMessage );
+            QueueWrapper::push( 'donations', $dbMessage );
 
 			// Remove it from the pending database
 			$logger->debug( 'Removing donor details message from pending database' );

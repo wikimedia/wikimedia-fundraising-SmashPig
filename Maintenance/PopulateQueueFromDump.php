@@ -3,7 +3,7 @@
 require ( 'MaintenanceBase.php' );
 
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\QueueConsumers\BaseQueueConsumer;
+use SmashPig\Core\DataStores\QueueWrapper;
 
 $maintClass = '\SmashPig\Maintenance\PopulateQueueFromDump';
 
@@ -16,8 +16,6 @@ $maintClass = '\SmashPig\Maintenance\PopulateQueueFromDump';
  */
 class PopulateQueueFromDump extends MaintenanceBase {
 
-	protected $datastore = null;
-
 	public function __construct() {
 		parent::__construct();
 		$this->addOption( 'queue', 'queue name to inject into', 'test' );
@@ -29,7 +27,7 @@ class PopulateQueueFromDump extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 */
 	public function execute() {
-		$this->datastore = BaseQueueConsumer::getQueue(
+		$datastore = QueueWrapper::getQueue(
 			$this->getOption( 'queue' )
 		);
 
@@ -55,7 +53,9 @@ class PopulateQueueFromDump extends MaintenanceBase {
 				continue;
 			}
 
-			$this->datastore->push( $message );
+			// push message directly to queue, bypassing QueueWrapper's adding
+            // source fields.
+			$datastore->push( $message );
 
 			$messageCount++;
 			if ( $messageCount % 1000 == 0 ) {
