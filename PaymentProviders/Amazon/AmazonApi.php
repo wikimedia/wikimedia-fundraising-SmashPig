@@ -117,4 +117,32 @@ class AmazonApi {
 		}
 		return $getDetailsResult['GetOrderReferenceDetailsResult']['OrderReferenceDetails'];
 	}
+
+	public function authorizeAndCapture( $orderReferenceId ) {
+		$details = $this->getOrderReferenceDetails( $orderReferenceId );
+		$state = $details['OrderReferenceStatus']['State'];
+		if ( $state !== 'Open' ) {
+			throw new SmashPigException(
+				"Cannot capture order in state $state."
+			);
+		}
+		$amount = $details['OrderTotal']['Amount'];
+		$currency = $details['OrderTotal']['CurrencyCode'];
+		$merchantReference = $details['SellerOrderAttributes']['SellerOrderId'];
+
+		$authorizeResult = $this->client->authorize(
+			array(
+				'amazon_order_reference_id' => $orderReferenceId,
+				'authorization_amount' => $amount,
+				'currency_code' => $currency,
+				'capture_now' => true, // combine authorize and capture steps
+				'authorization_reference_id' => $merchantReference,
+				'transaction_timeout' => 0,
+			)
+		)->toArray();
+		if ( !empty( $authorizeResult['Error'] ) ) {
+			throw new SmashPigException( $authorizeResult['Error']['Message'] );
+		}
+		return $authorizeResult['AuthorizeResult']['AuthorizationDetails'];
+	}
 }
