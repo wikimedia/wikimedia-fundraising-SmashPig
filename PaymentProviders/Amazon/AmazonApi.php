@@ -145,4 +145,17 @@ class AmazonApi {
 		}
 		return $authorizeResult['AuthorizeResult']['AuthorizationDetails'];
 	}
+
+	public function cancelOrderReference( $orderReferenceId, $reason = null ) {
+		$params = array(
+			'amazon_order_reference_id' => $orderReferenceId
+		);
+		if( $reason ) {
+			$params['cancelation_reason'] = $reason;
+		}
+		$result = $this->client->cancelOrderReference( $params )->toArray();
+		if ( !empty( $result['Error'] ) ) {
+			throw new SmashPigException( $result['Error']['Message'] );
+		}
+	}
 }
