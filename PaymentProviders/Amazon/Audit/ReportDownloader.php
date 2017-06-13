@@ -6,6 +6,7 @@ use SmashPig\Core\Logging\Logger;
 use DateTime;
 use DateTimeZone;
 use PayWithAmazon\ReportsClient;
+use PayWithAmazon\ReportsClientInterface;
 
 /**
  * Downloads transaction reports via MWS
@@ -19,6 +20,11 @@ class ReportDownloader {
 	protected $downloadedIds = array();
 
 	const FILE_REGEX = '/\d{4}-\d{2}-\d{2}-[_A-Z0-9]+_(?P<id>\d+).csv/';
+
+	/**
+	 * @var ReportsClientInterface
+	 */
+	protected $reportsClient;
 
 	public function __construct( $overrides ) {
 		$config = Context::get()->getProviderConfiguration();
