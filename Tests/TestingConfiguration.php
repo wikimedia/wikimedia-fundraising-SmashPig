@@ -18,7 +18,7 @@ class TestingConfiguration extends Configuration {
 		$searchPath = array();
 		// FIXME: this goes away along with all the 'view' stuff
 		if ( $this->viewName !== 'default' ) {
-			$searchPath[] = __DIR__ . "/../config/{$this->viewName}main.yaml";
+			$searchPath[] = __DIR__ . "/../config/{$this->viewName}/main.yaml";
 		}
 		$searchPath[] = __DIR__ . "/../config/main.yaml";
 		return $searchPath;
