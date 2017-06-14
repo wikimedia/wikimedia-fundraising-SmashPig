@@ -81,7 +81,7 @@ class RequestHandler {
 
 		// Check to make sure there's even a point to continuing
 		Logger::info( "Starting processing for request, configuration view: '$view', action: '$action'" );
-		if ( !$config->nodeExists( "endpoints/$action" ) ) {
+		if ( !$providerConfig->nodeExists( "endpoints/$action" ) ) {
 			Logger::debug( '403 will be given for unknown action on inbound URL.', $uri );
 			$response->setStatusCode( Response::HTTP_FORBIDDEN, "Action '$action' not configured. Cannot continue." );
 			return $response;
