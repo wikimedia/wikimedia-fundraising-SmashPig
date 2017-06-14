@@ -6,9 +6,6 @@ namespace SmashPig\Core;
  */
 class GlobalConfiguration extends Configuration {
 
-	const DIR_VAR = 'SMASHPIG_GLOBAL_CONFDIR';
-	const DEFAULT_BASEDIR = '/etc/smashpig';
-
 	/**
 	 * Creates a GlobalConfiguration object
 	 *
@@ -42,12 +39,11 @@ class GlobalConfiguration extends Configuration {
 	protected function getDefaultSearchPath() {
 		$searchPath = array();
 
-		$baseDir = self::getBaseDirFromEnv( self::DIR_VAR, self::DEFAULT_BASEDIR );
 		if ( isset( $_SERVER['HOME'] ) ) {
 			// FIXME: But I don't understand why this key is missing during testing.
 			$searchPath[] =  "{$_SERVER['HOME']}/.smashpig/main.yaml";
 		}
-		$searchPath[] = "$baseDir/main.yaml";
+		$searchPath[] = '/etc/smashpig/main.yaml';
 		$searchPath[] = __DIR__ . '/../config/main.yaml';
 		return $searchPath;
 	}
