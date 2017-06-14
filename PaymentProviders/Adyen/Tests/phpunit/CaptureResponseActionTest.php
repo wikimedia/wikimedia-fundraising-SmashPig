@@ -10,7 +10,7 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
 /**
  * @group Adyen
  */
-class CaptureResponseActionTest extends BaseSmashPigUnitTestCase {
+class CaptureResponseActionTest extends BaseAdyenTestCase {
 
 	/**
 	 * @var FifoQueueStore
@@ -19,12 +19,7 @@ class CaptureResponseActionTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$context = Context::get();
-		$context->setProviderConfiguration(
-			AdyenTestConfiguration::createWithSuccessfulApi()
-		);
-
-		$this->jobQueue = $context->getGlobalConfiguration()
+		$this->jobQueue = Context::get()->getGlobalConfiguration()
 			->object( 'data-store/jobs-adyen' );
 	}
 

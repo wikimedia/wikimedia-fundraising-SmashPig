@@ -48,7 +48,7 @@ class RequestHandler {
 
 		// --- Initialize core services ---
 		$config = GlobalConfiguration::create();
-		$providerConfig = ProviderConfiguration::createForProvider( $view );
+		$providerConfig = ProviderConfiguration::createForProvider( $view, $config );
 		Context::init( $config, $providerConfig );
 		// FIXME: let's always initialize this with the context
 		Logger::init(

@@ -44,7 +44,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		parent::setUp();
 		$this->config = Context::get()->getGlobalConfiguration();
 		Context::get()->setProviderConfiguration(
-			PayPalTestConfiguration::get()
+			PayPalTestConfiguration::get( $this->config )
 		);
 	}
 

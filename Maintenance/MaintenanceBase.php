@@ -143,10 +143,10 @@ abstract class MaintenanceBase {
 		}
 		// FIXME: 'provider' instead of 'config-node'
 		if ( $configNode === 'default' ) {
-			$providerConfig = ProviderConfiguration::createDefault();
+			$providerConfig = ProviderConfiguration::createDefault( $config );
 		} else {
 			// FIXME: need different override file for provider config
-			$providerConfig = ProviderConfiguration::createForProvider( $configNode );
+			$providerConfig = ProviderConfiguration::createForProvider( $configNode, $config );
 		}
 		Context::init( $config, $providerConfig );
 		Logger::init(

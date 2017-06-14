@@ -104,3 +104,8 @@ maintenance:
 requeue-delay: 1200
 
 requeue-max-age: 12000
+
+# By default, provider configuration files live in the same directory as
+# global configuration files. Change this value to read provider configuration
+# files from an alternate directory.
+provider-configuration-directory: '/etc/smashpig'

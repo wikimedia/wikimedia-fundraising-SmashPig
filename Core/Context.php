@@ -26,7 +26,7 @@ class Context {
 	public static function init( GlobalConfiguration $config, $providerConfig = null ) {
 		if ( !Context::$instance ) {
 			if ( !$providerConfig ) {
-				$providerConfig = ProviderConfiguration::createDefault();
+				$providerConfig = ProviderConfiguration::createDefault( $config );
 			}
 			Context::$instance = new Context();
 			Context::$instance->setGlobalConfiguration( $config );

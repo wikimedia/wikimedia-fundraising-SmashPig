@@ -15,7 +15,7 @@ class TestingContext extends Context {
 		// Override the existing context
 		Context::$instance = new TestingContext();
 		if ( !$providerConfig ) {
-			$providerConfig = TestingProviderConfiguration::createDefault();
+			$providerConfig = TestingProviderConfiguration::createDefault( $config );
 		}
 		Context::$instance->setProviderConfiguration( $providerConfig );
 		Context::$instance->setGlobalConfiguration( $config );

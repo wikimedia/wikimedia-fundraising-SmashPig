@@ -11,8 +11,9 @@ use SmashPig\PaymentProviders\Amazon\Audit\AuditParser;
 class AuditTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
-
-		Context::get()->setProviderConfiguration( AmazonTestConfiguration::instance() );
+		$ctx = Context::get();
+		$config = AmazonTestConfiguration::instance( $ctx->getGlobalConfiguration() );
+		$ctx->setProviderConfiguration( $config );
 	}
 
 	/**

@@ -12,12 +12,7 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
 /**
  * @group Adyen
  */
-class ReportAvailableTest extends BaseSmashPigUnitTestCase {
-	/**
-	 * @var AdyenTestConfiguration
-	 */
-	protected $config;
-
+class ReportAvailableTest extends BaseAdyenTestCase {
 	/**
 	 * @var FifoQueueStore
 	 */
@@ -25,8 +20,6 @@ class ReportAvailableTest extends BaseSmashPigUnitTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$this->config = AdyenTestConfiguration::createWithSuccessfulApi();
-		Context::get()->setProviderConfiguration( $this->config );
 		$this->jobQueue = QueueWrapper::getQueue( 'jobs-adyen' );
 	}
 

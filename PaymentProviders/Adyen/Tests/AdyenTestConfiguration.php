@@ -1,17 +1,18 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Tests;
 
+use SmashPig\Core\GlobalConfiguration;
 use SmashPig\Tests\TestingProviderConfiguration;
 
 class AdyenTestConfiguration extends TestingProviderConfiguration {
 
-	public static function instance( $overrides = array() ) {
-		$config = static::createForProvider( 'adyen' );
+	public static function instance( $overrides = array(), GlobalConfiguration $globalConfig ) {
+		$config = static::createForProvider( 'adyen', $globalConfig );
 		$config->override( $overrides );
 
 		return $config;
 	}
 
-	public static function createWithSuccessfulApi() {
+	public static function createWithSuccessfulApi( GlobalConfiguration $globalConfig ) {
 		$override = array( 'api' =>
 			array(
 				'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
@@ -19,10 +20,10 @@ class AdyenTestConfiguration extends TestingProviderConfiguration {
 					array( 'Success!' )
 			)
 		);
-		return self::instance( $override );
+		return self::instance( $override, $globalConfig );
 	}
 
-	public static function createWithUnsuccessfulApi() {
+	public static function createWithUnsuccessfulApi( GlobalConfiguration $globalConfig ) {
 		$override = array( 'api' =>
 			array(
 				'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
@@ -32,6 +33,6 @@ class AdyenTestConfiguration extends TestingProviderConfiguration {
 					array( 'false' )
 			)
 		);
-		return self::instance( $override );
+		return self::instance( $override, $globalConfig );
 	}
 }

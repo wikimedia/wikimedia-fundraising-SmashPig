@@ -28,8 +28,10 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 	 * @return TestingProviderConfiguration
 	 */
 	protected function setProviderConfiguration( $provider ) {
-		$config = TestingProviderConfiguration::createForProvider( $provider );
-		Context::get()->setProviderConfiguration( $config );
+		$ctx = Context::get();
+		$globalConfig = $ctx->getGlobalConfiguration();
+		$config = TestingProviderConfiguration::createForProvider( $provider, $globalConfig );
+		$ctx->setProviderConfiguration( $config );
 		return $config;
 	}
 }
