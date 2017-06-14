@@ -15,6 +15,9 @@ First import the pending queue messages using the SmashPig maintenance script:
 
 ~/src/SmashPig$ php Maintenance/PopulateQueueFromDump.php --queue pending adyen-12345-pending.json
 
+And move them from the pending queue to the pending table in your smashpig db.
+~/src/SmashPig$ php Maintenance/ConsumePendingQueue.php
+
 Then use the soap injector to simulate some IPN messages for the authorizations:
 ~/src/SmashPig/Tests/SoapInjector$ ./soapinject.py localhost '/ipn/smashpig_http_handler.php?p=adyen/listener' ../../adyen-12345-auths.xml
 

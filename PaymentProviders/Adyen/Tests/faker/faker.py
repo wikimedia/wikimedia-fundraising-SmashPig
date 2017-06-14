@@ -38,7 +38,7 @@ for x in range(0, num):
     header = 'adyen-'  + oid
     pqueue += pending.replace('[[CTID]]', ctid).replace('[[ORDERID]]', oid)
     auths += auth.replace('[[ORDERID]]', oid).replace('[[AUTHID]]', authid)
-    captures += captures.replace('[[ORDERID]]', oid).replace('[[AUTHID]]', authid).replace('[[CAPTUREID]]', captureid)
+    captures += capture.replace('[[ORDERID]]', oid).replace('[[AUTHID]]', authid).replace('[[CAPTUREID]]', captureid)
 
 with open(fileprefix + '-auths.xml', 'w') as myfile:
     myfile.write( ipnContainer.replace('[[ITEMS]]', auths ))
