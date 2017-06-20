@@ -17,8 +17,7 @@ class PendingDatabase extends SmashPigDatabase {
 			empty( $message['gateway'] ) ||
 			(   // need at least one transaction ID
 				empty( $message['gateway_txn_id'] ) &&
-				empty( $message['order_id'] ) &&
-				empty( $message['gateway_session_id'] )
+				empty( $message['order_id'] )
 			)
 		) {
 			throw new SmashPigException( 'Message missing required fields' );
@@ -38,11 +37,7 @@ class PendingDatabase extends SmashPigDatabase {
 		// These fields (and date) have their own columns in the database
 		// Copy the values from the message to the record
 		$indexedFields = array(
-			'gateway',
-			'gateway_account',
-			'gateway_txn_id',
-			'order_id',
-			'gateway_session_id'
+			'gateway', 'gateway_account', 'gateway_txn_id', 'order_id'
 		);
 
 		foreach ( $indexedFields as $fieldName ) {
@@ -80,31 +75,6 @@ class PendingDatabase extends SmashPigDatabase {
 		$params = array(
 			'gateway' => $gatewayName,
 			'order_id' => $orderId,
-		);
-		$executed = $this->prepareAndExecute( $sql, $params );
-		$row = $executed->fetch( PDO::FETCH_ASSOC );
-		if ( !$row ) {
-			return null;
-		}
-		return $this->messageFromDbRow( $row );
-	}
-
-	/**
-	 * Return record matching a (gateway, gateway_session_id), or null
-	 *
-	 * @param $gatewayName string
-	 * @param $gatewaySessionId string
-	 * @return array|null Record related to a transaction, or null if nothing matches
-	 */
-	public function fetchMessageByGatewaySessionId( $gatewayName, $gatewaySessionId ) {
-		$sql = 'select * from pending
-			where gateway = :gateway
-				and gateway_session_id = :gateway_session_id
-			limit 1';
-
-		$params = array(
-			'gateway' => $gatewayName,
-			'gateway_session_id' => $gatewaySessionId,
 		);
 		$executed = $this->prepareAndExecute( $sql, $params );
 		$row = $executed->fetch( PDO::FETCH_ASSOC );

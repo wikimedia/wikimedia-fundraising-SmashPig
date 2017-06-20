@@ -32,7 +32,6 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 			'gateway' => 'test',
 			'gateway_txn_id' => "txn-{$uniq}",
 			'order_id' => "order-{$uniq}",
-			'gateway_session_id' => "session-{$uniq}",
 			'gateway_account' => 'default',
 			'date' => 1468973648,
 			'amount' => 123,
@@ -62,7 +61,6 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 			'gateway_account' => 'default',
 			'order_id' => $message['order_id'],
 			'gateway_txn_id' => $message['gateway_txn_id'],
-			'gateway_session_id' => $message['gateway_session_id'],
 			'message' => json_encode( $message ),
 		);
 		$this->assertEquals( $expected, $rows[0],
@@ -80,23 +78,6 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 		$expected = $message + array(
 			'pending_id' => 1,
 		);
-		$this->assertEquals( $expected, $fetched,
-			'Fetched record matches stored message.' );
-	}
-
-	public function testFetchMessageByGatewaySessionId() {
-		$message = self::getTestMessage();
-		$this->db->storeMessage( $message );
-
-		$fetched = $this->db->fetchMessageByGatewaySessionId(
-			'test', $message['gateway_session_id'] );
-
-		$this->assertNotNull( $fetched,
-			'Record retrieved by fetchMessageByGatewaySessionId.' );
-
-		$expected = $message + array(
-				'pending_id' => 1,
-			);
 		$this->assertEquals( $expected, $fetched,
 			'Fetched record matches stored message.' );
 	}
