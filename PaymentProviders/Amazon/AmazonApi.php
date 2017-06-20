@@ -158,4 +158,8 @@ class AmazonApi {
 			throw new SmashPigException( $result['Error']['Message'] );
 		}
 	}
+
+	public static function isAmazonGeneratedMerchantReference( $reference ) {
+		return substr( $reference, 0, 10 ) === 'AUTHORIZE_';
+	}
 }
