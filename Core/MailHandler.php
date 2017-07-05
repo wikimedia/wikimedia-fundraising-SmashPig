@@ -4,9 +4,7 @@ use SmashPig\Core\Logging\Logger;
 
 /**
  * Abstraction on top of whatever email client we're actually using. For the moment that's
- * PHPMailer on top of sendmail. The PHPMailer library must be in the include path. Use the
- * configuration node 'include-paths' to do this.
- * FIXME: should be more explicit, phpmailer-include-path or something
+ * PHPMailer on top of sendmail, pulled in via Composer.
  */
 class MailHandler {
 
@@ -56,7 +54,7 @@ class MailHandler {
 	public static function sendEmail( $to, $subject, $textBody, $from = null, $replyTo = null, $htmlBody = null,
 		$attach = array(), $cc = null, $bcc = null, $useVerp = true
 	) {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$mailer = static::mailbaseFactory();
 
 		try {

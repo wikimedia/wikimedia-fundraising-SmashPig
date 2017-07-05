@@ -5,7 +5,7 @@ use SmashPig\Core\Http\IHttpActionHandler;
 use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\Configuration;
+use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Core\Messages\ListenerMessage;
 
 abstract class ListenerBase implements IHttpActionHandler {
@@ -16,11 +16,11 @@ abstract class ListenerBase implements IHttpActionHandler {
 	/** @var Response */
 	protected $response;
 
-	/** @var Configuration object - stores all listener configuration */
+	/** @var ProviderConfiguration object - stores all listener configuration */
 	protected $c;
 
 	public function __construct() {
-		$this->c = Context::get()->getConfiguration();
+		$this->c = Context::get()->getProviderConfiguration();
 	}
 
 	public function execute( Request $request, Response $response ) {

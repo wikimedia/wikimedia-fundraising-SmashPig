@@ -1,9 +1,10 @@
 <?php namespace SmashPig\Core\Http;
 
-use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
+use SmashPig\Core\GlobalConfiguration;
 use SmashPig\Core\Logging\Logger;
 
+use SmashPig\Core\ProviderConfiguration;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 /**
@@ -46,27 +47,29 @@ class RequestHandler {
 		$action = array_shift( $parts );
 
 		// --- Initialize core services ---
-		$config = Configuration::createForView( $view );
-		Context::init( $config );
+		$config = GlobalConfiguration::create();
+		$providerConfig = ProviderConfiguration::createForProvider( $view, $config );
+		Context::init( $config, $providerConfig );
+		// FIXME: let's always initialize this with the context
 		Logger::init(
-			$config->val( 'logging/root-context' ),
-			$config->val( 'logging/log-level' ),
-			$config,
+			$providerConfig->val( 'logging/root-context' ),
+			$providerConfig->val( 'logging/log-level' ),
+			$providerConfig,
 			Context::get()->getContextId()
 		);
 
-		if ( $config->nodeExists( 'disabled' ) && $config->val( 'disabled' ) ) {
+		if ( $providerConfig->nodeExists( 'disabled' ) && $providerConfig->val( 'disabled' ) ) {
 			Logger::debug( '403 will be given for disabled view.', $uri );
 			$response->setStatusCode( Response::HTTP_FORBIDDEN, "View '$view' disabled. Cannot continue." );
 			return $response;
 		}
 
-		if ( $config->nodeExists( 'charset' ) ) {
+		if ( $providerConfig->nodeExists( 'charset' ) ) {
 			// recreate the request with a different input encoding
 			// FIXME: This is only converting the POST values.  Also,
 			// is there really no better way to do this?
 			$decoded = rawurldecode( $request->getContent() );
-			$content = mb_convert_encoding( $decoded, 'UTF-8', $config->val( 'charset' ) );
+			$content = mb_convert_encoding( $decoded, 'UTF-8', $providerConfig->val( 'charset' ) );
 
 			parse_str( $content, $data );
 			$request->request = new ParameterBag( $data );
@@ -78,24 +81,24 @@ class RequestHandler {
 
 		// Check to make sure there's even a point to continuing
 		Logger::info( "Starting processing for request, configuration view: '$view', action: '$action'" );
-		if ( !$config->nodeExists( "endpoints/$action" ) ) {
+		if ( !$providerConfig->nodeExists( "endpoints/$action" ) ) {
 			Logger::debug( '403 will be given for unknown action on inbound URL.', $uri );
 			$response->setStatusCode( Response::HTTP_FORBIDDEN, "Action '$action' not configured. Cannot continue." );
 			return $response;
 		}
 
 		// Inform the request object of our security environment
-		$trustedHeader = $config->val( 'security/ip-header-name' );
+		$trustedHeader = $providerConfig->val( 'security/ip-header-name' );
 		if ( $trustedHeader ) {
 			$request->setTrustedHeaderName( Request::HEADER_CLIENT_IP, $trustedHeader );
 		}
-		$trustedProxies = $config->val( 'security/ip-trusted-proxies' );
+		$trustedProxies = $providerConfig->val( 'security/ip-trusted-proxies' );
 		if ( $trustedProxies ) {
 			$request->setTrustedProxies( $trustedProxies );
 		}
 
 		// --- Actually get the endpoint object and start the request ---
-		$endpointObj = $config->object( "endpoints/$action" );
+		$endpointObj = $providerConfig->object( "endpoints/$action" );
 		if ( $endpointObj instanceof IHttpActionHandler ) {
 			$endpointObj->execute( $request, $response );
 		} else {

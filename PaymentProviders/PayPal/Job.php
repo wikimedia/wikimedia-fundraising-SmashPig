@@ -1,23 +1,23 @@
 <?php namespace SmashPig\PaymentProviders\PayPal;
 
 use Exception;
-use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\ProviderConfiguration;
 
 class Job extends RunnableJob {
 
 	public $payload;
 
 	/**
-	 * @var Configuration
+	 * @var ProviderConfiguration
 	 */
-	protected $config;
+	protected $providerConfiguration;
 
 	public function is_reject() {
-		foreach ( $this->config->val( 'rejects' ) as $key => $val ) {
+		foreach ( $this->providerConfiguration->val( 'rejects' ) as $key => $val ) {
 			if ( isset( $this->payload->{$key} )
 				&& $this->payload->{$key} === $val ) {
 				return true;
@@ -27,7 +27,7 @@ class Job extends RunnableJob {
 	}
 
 	public function execute() {
-		$this->config = Context::get()->getConfiguration();
+		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 
 		if ( $this->is_reject() ) {
 			// Returning false would cause it to go to the damaged queue, we
@@ -54,7 +54,7 @@ class Job extends RunnableJob {
 
 		$msgClass = null;
 		$queue = '';
-		foreach ( $this->config->val( 'messages' ) as $type => $conf ) {
+		foreach ( $this->providerConfiguration->val( 'messages' ) as $type => $conf ) {
 			if ( in_array( $txn_type, $conf['txn_types'] ) ) {
 				$msgClass = $conf['class'];
 				$queue = $conf['queue'];

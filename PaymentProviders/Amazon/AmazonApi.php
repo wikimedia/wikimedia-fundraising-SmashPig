@@ -21,7 +21,7 @@ class AmazonApi {
 	protected static $instance;
 
 	private function __construct() {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$this->client = $config->object( 'payments-client', true );
 	}
 
@@ -38,7 +38,7 @@ class AmazonApi {
 	 * @return IpnHandlerInterface
 	 */
 	public static function createIpnHandler( $headers, $body ) {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$klass = $config->val( 'ipn-handler-class' );
 		return new $klass( $headers, $body );
 	}
@@ -116,5 +116,50 @@ class AmazonApi {
 			throw new SmashPigException( $getDetailsResult['Error']['Message'] );
 		}
 		return $getDetailsResult['GetOrderReferenceDetailsResult']['OrderReferenceDetails'];
+	}
+
+	public function authorizeAndCapture( $orderReferenceId ) {
+		$details = $this->getOrderReferenceDetails( $orderReferenceId );
+		$state = $details['OrderReferenceStatus']['State'];
+		if ( $state !== 'Open' ) {
+			throw new SmashPigException(
+				"Cannot capture order in state $state."
+			);
+		}
+		$amount = $details['OrderTotal']['Amount'];
+		$currency = $details['OrderTotal']['CurrencyCode'];
+		$merchantReference = $details['SellerOrderAttributes']['SellerOrderId'];
+
+		$authorizeResult = $this->client->authorize(
+			array(
+				'amazon_order_reference_id' => $orderReferenceId,
+				'authorization_amount' => $amount,
+				'currency_code' => $currency,
+				'capture_now' => true, // combine authorize and capture steps
+				'authorization_reference_id' => $merchantReference,
+				'transaction_timeout' => 0,
+			)
+		)->toArray();
+		if ( !empty( $authorizeResult['Error'] ) ) {
+			throw new SmashPigException( $authorizeResult['Error']['Message'] );
+		}
+		return $authorizeResult['AuthorizeResult']['AuthorizationDetails'];
+	}
+
+	public function cancelOrderReference( $orderReferenceId, $reason = null ) {
+		$params = array(
+			'amazon_order_reference_id' => $orderReferenceId
+		);
+		if( $reason ) {
+			$params['cancelation_reason'] = $reason;
+		}
+		$result = $this->client->cancelOrderReference( $params )->toArray();
+		if ( !empty( $result['Error'] ) ) {
+			throw new SmashPigException( $result['Error']['Message'] );
+		}
+	}
+
+	public static function isAmazonGeneratedMerchantReference( $reference ) {
+		return substr( $reference, 0, 10 ) === 'AUTHORIZE_';
 	}
 }

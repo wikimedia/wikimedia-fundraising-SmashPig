@@ -6,6 +6,7 @@ use SmashPig\Core\Logging\Logger;
 use DateTime;
 use DateTimeZone;
 use PayWithAmazon\ReportsClient;
+use PayWithAmazon\ReportsClientInterface;
 
 /**
  * Downloads transaction reports via MWS
@@ -20,8 +21,13 @@ class ReportDownloader {
 
 	const FILE_REGEX = '/\d{4}-\d{2}-\d{2}-[_A-Z0-9]+_(?P<id>\d+).csv/';
 
+	/**
+	 * @var ReportsClientInterface
+	 */
+	protected $reportsClient;
+
 	public function __construct( $overrides ) {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$this->archivePath =
 			empty( $overrides['archive-path'] )
 			? $config->val( 'audit/archive-path' )
@@ -55,7 +61,7 @@ class ReportDownloader {
 		$this->ensureAndScanFolder( $this->downloadPath );
 
 		$this->reportsClient =
-			Context::get()->getConfiguration()->object( 'reports-client', true );
+			Context::get()->getProviderConfiguration()->object( 'reports-client', true );
 
 		Logger::info( 'Getting report list' );
 		$startDate = new DateTime( "-{$this->days} days", new DateTimeZone( 'UTC' ) );

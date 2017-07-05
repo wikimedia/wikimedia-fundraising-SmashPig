@@ -14,11 +14,16 @@ $maintClass = 'SmashPig\Maintenance\DumpConfig';
 class DumpConfig extends MaintenanceBase {
 	public function execute() {
 		$context = Context::get();
-		$config = $context->getConfiguration();
+		$config = $context->getGlobalConfiguration();
 		$values = $config->val('/');
 		$yaml = Yaml::dump($values);
 
-		print $yaml;
+		print 'Global config: ' . $yaml;
+		$providerConfig = $context->getProviderConfiguration();
+		$values = $providerConfig->val('/');
+		$yaml = Yaml::dump($values);
+
+		print 'Provider config: ' . $yaml;
 	}
 }
 

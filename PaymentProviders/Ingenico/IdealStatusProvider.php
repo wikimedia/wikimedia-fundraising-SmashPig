@@ -31,7 +31,7 @@ class IdealStatusProvider {
 		$this->cacheParameters = $options['cache-parameters'];
 		$this->availabilityUrl = $options['availability-url'];
 		// FIXME: provide objects in constructor
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getGlobalConfiguration();
 		$this->cache = $config->object( 'cache' );
 	}
 

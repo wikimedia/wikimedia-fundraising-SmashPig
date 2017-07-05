@@ -11,11 +11,11 @@ use SmashPig\Core\Context;
 abstract class IngenicoPaymentProvider {
 
 	protected $api;
-	protected $config;
+	protected $providerConfiguration;
 
 	public function __construct( $options = array() ) {
 		// FIXME: provide objects in constructor
-		$this->config = Context::get()->getConfiguration();
-		$this->api = $this->config->object( 'api' );
+		$this->providerConfiguration = Context::get()->getProviderConfiguration();
+		$this->api = $this->providerConfiguration->object( 'api' );
 	}
 }

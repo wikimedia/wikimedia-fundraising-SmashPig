@@ -1,9 +1,9 @@
 This project uses Composer [https://getcomposer.org] to manage dependencies.
 Upon first install and any upgrade please run composer install.
 
-Default configuration values are located in SmashPig.yaml. These are
-overridden by values in /etc/fundraising/SmashPig.yaml, then by values in
-~/.fundraising/SmashPig.yaml.
+Default configuration values are located in config/main.yaml. These are
+overridden by values in /etc/smashpig/main.yaml, then by values in
+~/.smashpig/main.yaml.
 
 Command-line maintenance scripts have some common options:
     --help

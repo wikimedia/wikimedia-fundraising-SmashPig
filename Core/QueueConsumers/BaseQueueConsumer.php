@@ -142,7 +142,7 @@ abstract class BaseQueueConsumer {
 	protected function handleError( $message, Exception $ex ) {
 		if ( $ex instanceof RetryableException ) {
 			$now = UtcDate::getUtcTimestamp();
-			$config = Context::get()->getConfiguration();
+			$config = Context::get()->getGlobalConfiguration();
 
 			if ( !isset( $message['source_enqueued_time'] ) ) {
 				$message['source_enqueued_time'] = UtcDate::getUtcTimestamp();

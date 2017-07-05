@@ -6,6 +6,7 @@ use SmashPig\Core\Listeners\ListenerSecurityException;
 use SmashPig\Core\Listeners\ListenerDataException;
 use SmashPig\Core\Listeners\RestListener;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Maintenance\TestFailMail;
 
 /**
  * Uses the Amazon SDK to parse incoming IPN messages
@@ -57,6 +58,7 @@ class AmazonListener extends RestListener {
 			// because of how RestListener is implemented and because we only
 			// process one message per request
 			// Bad form, but it would be odd to hold this till doMessageSecurity
+			Logger::alert( 'Error validating Amazon message. Firewall problem?' );
 			throw new ListenerSecurityException( $ex->getMessage() );
 		}
 		$messageValues = $amazonHandlerMessage->toArray();

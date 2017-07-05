@@ -8,10 +8,11 @@
  * at the bottom of the script, and set $maintClass to the class name of the script.
  */
 
-use SmashPig\Core\Configuration;
 use SmashPig\Core\Context;
+use SmashPig\Core\GlobalConfiguration;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\LogStreams\ConsoleLogStream;
+use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Core\SmashPigException;
 
 use GetOptionKit\OptionCollection;
@@ -135,12 +136,23 @@ abstract class MaintenanceBase {
 		// --- Initialize core services ---
 		$configNode = $this->getOption( 'config-node' );
 		$configFile = $this->getOption( 'config-file' );
-		$config = Configuration::createForViewWithOverrideFile( $configNode, $configFile );
-		Context::init( $config );
+		if ( $configFile ) {
+			$config = GlobalConfiguration::createWithOverrideFile( $configFile );
+		} else {
+			$config = GlobalConfiguration::create();
+		}
+		// FIXME: 'provider' instead of 'config-node'
+		if ( $configNode === 'default' ) {
+			$providerConfig = ProviderConfiguration::createDefault( $config );
+		} else {
+			// FIXME: need different override file for provider config
+			$providerConfig = ProviderConfiguration::createForProvider( $configNode, $config );
+		}
+		Context::init( $config, $providerConfig );
 		Logger::init(
-			$config->val( 'logging/root-context' ) . '-' . end( explode( "\\", $maintClass ) ),
-			$config->val( 'logging/log-level' ),
-			$config,
+			$providerConfig->val( 'logging/root-context' ) . '-' . end( explode( "\\", $maintClass ) ),
+			$providerConfig->val( 'logging/log-level' ),
+			$providerConfig,
 			Context::get()->getContextId()
 		);
 		Logger::getContext()->addLogStream( new ConsoleLogStream() );
@@ -248,7 +260,7 @@ abstract class MaintenanceBase {
 	 * @return mixed Value of the option or null if no default was provided
 	 */
 	protected function getOptionOrConfig( $name, $defaultNode ) {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getGlobalConfiguration();
 		if ( $config->nodeExists( $defaultNode ) ) {
 			$default = $config->val( $defaultNode );
 		} else {

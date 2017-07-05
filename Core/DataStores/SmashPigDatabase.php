@@ -21,7 +21,7 @@ abstract class SmashPigDatabase {
 	protected static $dbs = array();
 
 	protected function __construct() {
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getGlobalConfiguration();
 		if ( !$this->getDatabase() ) {
 			$this->setDatabase( $config->object( $this->getConfigKey() ) );
 		}

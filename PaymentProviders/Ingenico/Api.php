@@ -29,7 +29,7 @@ class Api {
 		$this->baseUrl = $baseUrl;
 		$this->merchantId = $merchantId;
 		// FIXME: provide objects in constructor
-		$config = Context::get()->getConfiguration();
+		$config = Context::get()->getProviderConfiguration();
 		$this->authenticator = $config->object( 'authenticator' );
 	}
 

@@ -26,7 +26,7 @@ class QueueWrapper {
      * @return FifoQueueStore
      */
     public static function getQueue( $queueName ) {
-        $config = Context::get()->getConfiguration();
+        $config = Context::get()->getGlobalConfiguration();
         $key = "data-store/$queueName";
 
         // Examine the config node for a queue name

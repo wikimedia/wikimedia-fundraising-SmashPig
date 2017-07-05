@@ -104,7 +104,7 @@ class CreateIpnMessagesFromPendingDb extends MaintenanceBase {
 	}
 
 	protected function getAstroPaySignature( $pendingMessage, $result ) {
-		$c = Context::get()->getConfiguration();
+		$c = Context::get()->getProviderConfiguration();
 		$login = $c->val( 'login' );
 		$secret = $c->val( 'secret' );
 		$signed = $login . $result . $pendingMessage['gross'] . $pendingMessage['order_id'];
