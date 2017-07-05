@@ -10,7 +10,7 @@ function fakeIpnPost( notificationType ) {
 	$.getJSON( 'RawPosts/' + notificationType + '.json',
 		function( postJson ) {
 			$.ajax({
-				type: 'POST',
+				method: 'POST',
 				url: listenerUrl,
 				contentType: 'application/json; charset=utf-8',
 				headers: postJson.headers,
