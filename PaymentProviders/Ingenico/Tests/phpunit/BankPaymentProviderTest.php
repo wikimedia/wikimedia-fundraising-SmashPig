@@ -5,7 +5,6 @@ use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Cache\CacheItemPoolInterface;
 use SmashPig\Core\Cache\HashCacheItem;
 use SmashPig\Core\Context;
-use SmashPig\Core\Http\CurlWrapper;
 use SmashPig\PaymentProviders\Ingenico\BankPaymentProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -32,9 +31,7 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$providerConfiguration = $this->setProviderConfiguration( 'ingenico' );
-		$this->curlWrapper = $this->getMock( '\SmashPig\Core\Http\CurlWrapper' );
-		$providerConfiguration->overrideObjectInstance( 'curl/wrapper', $this->curlWrapper );
+		$this->setProviderConfiguration( 'ingenico' );
 
 		$globalConfig = Context::get()->getGlobalConfiguration();
 		$this->cache = $globalConfig->object( 'cache', true );
@@ -49,7 +46,7 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testGetBankList() {
-		$this->setUpResponse( 'productDirectory', 200 );
+		$this->setUpResponse( __DIR__ . '/../Data/productDirectory.response', 200 );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );
 		$this->assertEquals(
 			array(
@@ -60,7 +57,7 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testCacheBankList() {
-		$this->setUpResponse( 'productDirectory', 200 );
+		$this->setUpResponse( __DIR__  . '/../Data/productDirectory.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );
@@ -78,7 +75,7 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	 * When the lookup returns 404 we should cache the emptiness
 	 */
 	public function testCacheEmptyBankList() {
-		$this->setUpResponse( 'emptyDirectory', 404 );
+		$this->setUpResponse( __DIR__ . '/../Data/emptyDirectory.response', 404 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 		$results = $this->provider->getBankList( 'NL', 'COP' );
@@ -99,7 +96,7 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			true
 		);
 		$this->cache->save( $cacheItem );
-		$this->setUpResponse( 'productDirectory', 200 );
+		$this->setUpResponse( __DIR__ . '/../Data/productDirectory.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );
@@ -109,19 +106,5 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			),
 			$results
 		);
-	}
-
-	/**
-	 * @param string $filename Name of a file in ../Data representing a
-	 *  response (headers, blank line, body), which must use dos-style
-	 *  \r\n line endings.
-	 * @param integer $statusCode
-	 */
-	protected function setUpResponse( $filename, $statusCode ) {
-		$contents = file_get_contents( __DIR__ . "/../Data/$filename.response" );
-		$parsed = CurlWrapper::parseResponse(
-			$contents, array( 'http_code' => $statusCode )
-		);
-		$this->curlWrapper->method( 'execute' )->willReturn( $parsed );
 	}
 }

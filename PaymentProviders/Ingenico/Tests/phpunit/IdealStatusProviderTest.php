@@ -46,11 +46,7 @@ class IdealStatusProviderTest extends BaseSmashPigUnitTestCase {
 			),
 			'availability-url' => 'http://example.org/undocumented/api/GetIssuers'
 		) );
-		$contents = file_get_contents( __DIR__ . "/../Data/availability.response" );
-		$parsed = CurlWrapper::parseResponse(
-			$contents, array( 'http_code' => 200 )
-		);
-		$this->curlWrapper->method( 'execute' )->willReturn( $parsed );
+		$this->setUpResponse(__DIR__ . "/../Data/availability.response", 200);
 	}
 
 	public function testGetBankStatus() {
