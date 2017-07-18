@@ -28,6 +28,12 @@ class HostedCheckoutProvider extends IngenicoPaymentProvider {
 	function getHostedPaymentUrl($partialRedirectUrl) {
 		return "https://{$this->subdomain}.$partialRedirectUrl";
 	}
+
+	function getHostedPaymentStatus($hostedPaymentId){
+		$path = "hostedcheckouts/$hostedPaymentId";
+		$response = $this->api->makeApiCall($path, 'GET');
+		return $response;
+	}
 }
 
 

@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
+use PHPUnit_Framework_MockObject_MockObject;
 use SmashPig\PaymentProviders\Ingenico\HostedCheckoutProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -60,5 +61,18 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 		$hostedPaymentUrl = $this->provider->getHostedPaymentUrl($partialRedirectUrl);
 		$expectedUrl = 'https://payments.test.' . $partialRedirectUrl;
 		$this->assertEquals($expectedUrl, $hostedPaymentUrl);
+	}
+
+	public function testGetHostedPaymentStatus(){
+		$hostedPaymentId = '8915-28e5b79c889641c8ba770f1ba576c1fe';
+		$this->setUpResponse(__DIR__ . "/../Data/hostedPaymentStatus.response", 200);
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo("https://api-sandbox.globalcollect.com/v1/1234/hostedcheckouts/$hostedPaymentId"),
+				$this->equalTo('GET')
+			);
+		$response = $this->provider->getHostedPaymentStatus($hostedPaymentId);
+		$this->assertEquals('PAYMENT_CREATED', $response['status']);
+
 	}
 }
