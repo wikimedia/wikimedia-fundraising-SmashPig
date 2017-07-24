@@ -28,6 +28,7 @@ var_map:
     # FIXME This is only true for refund messages.  Where to represent?
     #txn_id: gateway_refund_id
     mc_currency: currency
+    currency_code: currency
     # FIXME rename refund_type
     reason_code: type
     #test_ipn:  # signals test mode
@@ -46,6 +47,9 @@ var_map:
     # FIXME this too
     address_name: supplemental_address_1
     gateway: gateway
+    # NOTE: order matters. When multiple PayPal fields map to the
+    # same SmashPig field, PayPal fields listed later take precedence.
+    amount_per_cycle: gross
     mc_gross: gross
     mc_amount3: gross
     amount3: gross

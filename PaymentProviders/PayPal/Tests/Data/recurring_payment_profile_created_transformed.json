@@ -15,5 +15,7 @@
   "start_date": 1492533928,
   "date": 1492533928,
   "gateway": "paypal_ec",
-  "recurring": "1"
+  "recurring": "1",
+  "gross": "140",
+  "currency": "JPY"
 }
