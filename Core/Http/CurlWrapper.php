@@ -130,17 +130,21 @@ class CurlWrapper {
 	}
 
 	public static function parseResponse( $response, $curlInfo ) {
-		$parts = explode( "\r\n\r\n", $response, 2 );
-		$headerLines = explode( "\r\n", $parts[0] );
+		$header_size = $curlInfo['header_size'];
+		$header = substr($response, 0, $header_size);
+		$body = substr($response, $header_size);
+		$header = str_replace("\r", "", $header);
+		$headerLines = explode( "\n", $header );
 		$responseHeaders = array();
 		foreach( $headerLines as $line ) {
 			if ( strstr( $line, ': ' ) !== false ) {
+				$line = rtrim($line);
 				list( $name, $value ) = explode( ': ', $line, 2 );
 				$responseHeaders[$name] = $value;
 			}
 		}
 		return array(
-			'body' => $parts[1],
+			'body' => $body,
 			'headers' => $responseHeaders,
 			'status' => (int)$curlInfo['http_code']
 		);

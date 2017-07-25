@@ -31,11 +31,16 @@ payment-provider:
                 cache-parameters:
                     duration: 900
                     key-base: SMASHPIG_INGENICO_IDEAL_BANK_LIST
+    cc:
+        class: Smashpig\PaymentProviders\Ingenico\HostedCheckoutProvider
+        constructor-parameters:
+            -
+                subdomain: 'payment'
+
 
 ideal-status-provider:
     class: SmashPig\PaymentProviders\Ingenico\BankPaymentProvider
     constructor-parameters:
-        -
             cache-parameters:
                 duration: 900
                 key: SMASHPIG_IDEAL_BANK_STATUS
