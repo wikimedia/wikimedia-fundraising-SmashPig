@@ -49,7 +49,7 @@ abstract class ListenerBase implements IHttpActionHandler {
 	 */
 	protected function validateRemoteIp() {
 		// Obtain whitelist
-		$whitelist = $this->c->val( 'security/ip-whitelist', true );
+		$whitelist = $this->c->val( 'security/ip-whitelist' );
 
 		// Obtain remote party IP
 		$remote_ip = $this->request->getClientIp();

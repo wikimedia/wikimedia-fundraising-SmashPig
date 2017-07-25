@@ -30,7 +30,7 @@ class QueueWrapper {
         $key = "data-store/$queueName";
 
         // Examine the config node for a queue name
-        $node = $config->val( $key, true );
+        $node = $config->val( $key );
         if (
             empty( $node['constructor-parameters'] ) ||
             empty( $node['constructor-parameters'][0]['queue'] )

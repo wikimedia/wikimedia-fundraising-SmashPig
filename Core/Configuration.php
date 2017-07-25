@@ -104,15 +104,12 @@ abstract class Configuration {
 	 * Obtain a value from the configuration. If the key does not exist this will throw an
 	 * exception.
 	 *
-	 * @param string $node        Parameter node to obtain. If this contains '/' it is assumed that the
+	 * @param string $path Parameter node to obtain. If this contains '/' it is assumed that the
 	 *                            value is contained under additional keys.
-	 * @param bool $returnRef     If true will return a reference to the configuration node. This will
-	 *                            mean that any modifications to the node will be stored in RAM for the
-	 *                            duration of the session.
 	 * @return mixed
 	 * @throws ConfigurationKeyException
 	 */
-	public function &val( $node, $returnRef = false ) {
+	public function val( $path ) {
 		/*
 		 * Magic "/" returns the entire configuration tree.
 		 *
@@ -122,34 +119,22 @@ abstract class Configuration {
 		 * Note: Never log this tree insecurely, it will contain processor
 		 * credentials and other sensitive information.
 		 */
-		if ( $node === '/' ) {
-			if ( $returnRef ) {
-				// TODO: Don't offer a return-by-reference.
-				$options = &$this->options;
-			} else {
-				$options = $this->options;
-			}
-			return $options;
+		if ( $path === '/' ) {
+			return $this->options;
 		}
 
-		$keys = explode( '/', $node );
+		$segments = explode( '/', $path );
 
-		$croot = & $this->options;
-		foreach ( $keys as $key ) {
-			if ( array_key_exists( $key, $croot ) ) {
-				$croot = & $croot[ $key ];
+		$currentNode = $this->options;
+		foreach ( $segments as $segment ) {
+			if ( array_key_exists( $segment, $currentNode ) ) {
+				$currentNode = $currentNode[$segment];
 			} else {
-				throw new ConfigurationKeyException( "Configuration key '{$node}' does not exist.", $node );
+				throw new ConfigurationKeyException( "Configuration key '{$path}' does not exist.", $path );
 			}
 		}
 
-		if ( $returnRef ) {
-			return $croot;
-		} else {
-			// Dereference the variable
-			$obj = $croot;
-			return $obj;
-		}
+		return $currentNode;
 	}
 
 	/**
@@ -208,7 +193,7 @@ abstract class Configuration {
 	 */
 	public function nodeExists( $node ) {
 		try {
-			$this->val( $node, true );
+			$this->val( $node );
 			return true;
 		} catch ( ConfigurationKeyException $ex ) {
 			return false;
