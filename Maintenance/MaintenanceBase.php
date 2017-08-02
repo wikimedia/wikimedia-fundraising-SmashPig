@@ -149,8 +149,10 @@ abstract class MaintenanceBase {
 			$providerConfig = ProviderConfiguration::createForProvider( $configNode, $config );
 		}
 		Context::init( $config, $providerConfig );
+		$maintClassParts = explode( "\\", $maintClass );
+
 		Logger::init(
-			$providerConfig->val( 'logging/root-context' ) . '-' . end( explode( "\\", $maintClass ) ),
+			$providerConfig->val( 'logging/root-context' ) . '-' . end( $maintClassParts ),
 			$providerConfig->val( 'logging/log-level' ),
 			$providerConfig,
 			Context::get()->getContextId()
