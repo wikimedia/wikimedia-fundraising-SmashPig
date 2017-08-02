@@ -7,7 +7,7 @@ use OutOfBoundsException;
 class ReferenceData {
 	// FIXME: replace this whole class with payment_(sub)method.yaml files
 
-	static $methods = array(
+	protected static $methods = array(
 		'1' => array( 'payment_method' => 'cc', 'payment_submethod' => 'visa' ),
 		'2' => array( 'payment_method' => 'cc', 'payment_submethod' => 'amex' ),
 		'3' => array( 'payment_method' => 'cc', 'payment_submethod' => 'mc' ),

@@ -3,7 +3,7 @@ namespace SmashPig\PaymentProviders\Amazon\Tests;
 
 use SmashPig\Core\Context;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
-use SmashPig\PaymentProviders\Amazon\Audit\AuditParser;
+use SmashPig\PaymentProviders\Amazon\Audit\AmazonAudit;
 
 /**
  * Verify Amazon audit file processor functions
@@ -20,7 +20,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	 * Normal donation
 	 */
 	public function testProcessDonation() {
-		$processor = new AuditParser();
+		$processor = new AmazonAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/audit/2015-10-01-SETTLEMENT_DATA_371273040777777.csv' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one donation' );
 		$actual = $output[0];
@@ -42,7 +42,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	 * Now try a refund
 	 */
 	public function testProcessRefund() {
-		$processor = new AuditParser();
+		$processor = new AmazonAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/audit/2015-10-06-REFUND_DATA_414749300022222.csv' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
 		$actual = $output[0];
@@ -62,7 +62,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	 * And a chargeback
 	 */
 	public function testProcessChargeback() {
-		$processor = new AuditParser();
+		$processor = new AmazonAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/audit/2015-10-06-REFUND_DATA_414749300033333.csv' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one chargeback' );
 		$actual = $output[0];

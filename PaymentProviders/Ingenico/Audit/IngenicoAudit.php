@@ -3,13 +3,14 @@
 use DOMDocument;
 use DOMElement;
 use RuntimeException;
+use SmashPig\Core\DataFiles\AuditParser;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\Ingenico\ReferenceData;
 
-class IngenicoAudit {
+class IngenicoAudit implements AuditParser {
 
-	protected $fileData = array();
+	protected $fileData;
 
 	protected $donationMap = array(
 		'PaymentAmount' => 'gross',
@@ -51,6 +52,7 @@ class IngenicoAudit {
 	);
 
 	public function parseFile( $path ) {
+		$this->fileData = array();
 		$unzippedFullPath = $this->getUnzippedFile( $path );
 
 		// load the XML into a DOMDocument.

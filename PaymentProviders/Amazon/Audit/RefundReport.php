@@ -10,13 +10,14 @@ use SmashPig\Core\UtcDate;
  * http://amazonpayments.s3.amazonaws.com/documents/Sample%20Settlement%20Report.pdf#page=25
  */
 class RefundReport {
-	protected $fileData = array();
+	protected $fileData;
 
 	public static function isMine( $filename ) {
 		return preg_match( '/.*REFUND_DATA.*csv/', $filename );
 	}
 
 	public function parse( $path ) {
+		$this->fileData = array();
 		$csv = new HeadedCsvReader( $path, ',', 4096, 0 );
 
 		while ( $csv->valid() ) {

@@ -1,11 +1,12 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\Audit;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\DataFiles\AuditParser;
 
 /**
  * Parses off-Amazon payments reports retrieved from MWS
  */
-class AuditParser {
+class AmazonAudit implements AuditParser {
 
 	public function parseFile( $path ) {
 		$config = Context::get()->getProviderConfiguration();

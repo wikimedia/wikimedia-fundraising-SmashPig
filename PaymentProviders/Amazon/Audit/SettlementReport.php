@@ -12,13 +12,14 @@ use SmashPig\PaymentProviders\Amazon\AmazonApi;
  */
 class SettlementReport {
 
-	protected $fileData = array();
+	protected $fileData;
 
 	public static function isMine( $filename ) {
 		return preg_match( '/.*SETTLEMENT_DATA.*csv/', $filename );
 	}
 
 	public function parse( $path ) {
+		$this->fileData = array();
 		// Skip 5 lines at start of file;
 		$csv = new HeadedCsvReader( $path, ',', 4096, 5 );
 
