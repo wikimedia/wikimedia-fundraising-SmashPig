@@ -24,6 +24,38 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'contribution_tracking_id' => '5551212',
 			'currency' => 'USD',
 			'order_id' => '987654321',
+			'installment' => 1,
+			'gateway_txn_id' => '987654321',
+			'payment_method' => 'cc',
+			'payment_submethod' => 'visa',
+			'date' => 1501368968,
+			'user_ip' => '111.222.33.44',
+			'first_name' => 'Arthur',
+			'last_name' => 'Aardvark',
+			'street_address' => '1111 Fake St',
+			'city' => 'Denver',
+			'country' => 'US',
+			'email' => 'dutchman@flying.net',
+		);
+		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
+	}
+
+	/**
+	 * Recurring donation
+	 */
+	public function testProcessRecurring() {
+		$processor = new IngenicoAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/recurring.xml.gz' );
+		$this->assertEquals( 1, count( $output ), 'Should have found one recurring donation' );
+		$actual = $output[0];
+		$expected = array(
+			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
+			'gross' => 3.00,
+			'contribution_tracking_id' => '5551212',
+			'currency' => 'USD',
+			'order_id' => '987654321',
+			'installment' => 3,
+			'recurring' => 1,
 			'gateway_txn_id' => '987654321',
 			'payment_method' => 'cc',
 			'payment_submethod' => 'visa',
@@ -53,6 +85,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'date' => 1500942220,
 			'gross' => 100,
 			'gateway_parent_id' => '123456789',
+			'installment' => 1,
 			'gross_currency' => 'USD',
 			'type' => 'refund',
 		);
@@ -73,6 +106,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'date' => 1495023569,
 			'gross' => 200,
 			'gateway_parent_id' => '5167046621',
+			'installment' => 1,
 			'gross_currency' => 'USD',
 			'type' => 'chargeback',
 		);

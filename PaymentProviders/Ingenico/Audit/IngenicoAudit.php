@@ -25,6 +25,10 @@ class IngenicoAudit implements AuditParser {
 		'AdditionalReference' => 'contribution_tracking_id',
 		'PaymentProductId' => 'gc_product_id',
 		'OrderID' => 'order_id',
+		// Ingenico recurring donations all have the same OrderID
+		// We can only tell them apart by the EffortID, which we
+		// might as well normalize to 'installment'.
+		'EffortID' => 'installment',
 		'PaymentCurrency' => 'currency',
 		'AmountLocal' => 'gross',
 		'TransactionDateTime' => 'date',
@@ -34,6 +38,7 @@ class IngenicoAudit implements AuditParser {
 		'DebitedAmount' => 'gross',
 		'AdditionalReference' => 'contribution_tracking_id',
 		'OrderID' => 'gateway_parent_id',
+		'EffortID' => 'installment',
 		'DebitedCurrency' => 'gross_currency',
 		'TransactionDateTime' => 'date',
 	);
@@ -41,7 +46,7 @@ class IngenicoAudit implements AuditParser {
 	protected $recordsWeCanDealWith = array(
 		// Credit card item that has been processed, but not settled.
 		// We take these seriously.
-		// TODO: Why aren't we waiting for +ON?
+		// TODO: Why aren't we waiting for +ON (settled)?
 		'XON' => 'donation',
 		// Settled "Invoice Payment". Could be invoice, bt, rtbt, check,
 		// prepaid card, ew, cash
@@ -98,12 +103,30 @@ class IngenicoAudit implements AuditParser {
 		$record = $this->xmlToArray( $recordNode, $this->donationMap );
 		$record['gateway_txn_id'] = $record['order_id'];
 		$record = $this->addPaymentMethod( $record );
+		if ( $record['installment'] > 1 ) {
+			$record['recurring'] = 1;
+			// If $record['installment'] == 1, we may have a normal one-time
+			// payment, or the first payment of a recurring donation.
+			// This logic is sufficient for WMF's purposes, because we're only
+			// using the 'recurring' flag parsed out of the audit file to make
+			// sure donations after the first one are correctly inserted rather
+			// than dropped as duplicates of the first donation.
+			// We'll determine the recurring-ness of donations where
+			// installment=1 when we parse our logs looking for the order type.
+		}
 		return $record;
 	}
 
 	protected function parseRefund( DOMElement $recordNode, $type ) {
 		$record = $this->xmlToArray( $recordNode, $this->refundMap );
 		$record['type'] = $type;
+		if ( $record['installment'] < 0 ) {
+			// Refunds have negative EffortID. Weird.
+			// TODO: for refunds of recurring payments, determine whether the
+			// refund's EffortID is always the negative of the corresponding
+			// installment's EffortID. We want to know which one we refunded.
+			$record['installment'] = $record['installment'] * -1;
+		}
 		return $record;
 	}
 
