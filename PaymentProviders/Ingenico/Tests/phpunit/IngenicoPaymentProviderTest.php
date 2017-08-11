@@ -32,4 +32,33 @@ class IngenicoPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$response = $this->provider->getPaymentStatus($paymentId);
 		$this->assertEquals($paymentId, $response['id']);
 	}
+
+	public function testApprovePayment(){
+		$paymentId = '000000850010000188180000200001';
+		$params = array(
+			"directDebitPaymentMethodSpecificInput" => array(
+				"dateCollect" => Date("Ymd"),
+			),
+		);
+		$this->setUpResponse(__DIR__ . '/../Data/paymentApproved.response', 200);
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo("https://api-sandbox.globalcollect.com/v1/1234/payments/$paymentId/approve"),
+				$this->equalTo('POST')
+			);
+		$response = $this->provider->approvePayment($paymentId, $params);
+		$this->assertEquals($paymentId, $response['payment']['id']);
+	}
+
+	public function testCancelPayment(){
+		$paymentId = '000000850010000188180000200001';
+		$this->setUpResponse(__DIR__ . '/../Data/paymentCanceled.response', 200);
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo("https://api-sandbox.globalcollect.com/v1/1234/payments/$paymentId/cancel"),
+				$this->equalTo('POST')
+			);
+		$response = $this->provider->cancelPayment($paymentId);
+		$this->assertEquals($paymentId, $response['payment']['id']);
+	}
 }
