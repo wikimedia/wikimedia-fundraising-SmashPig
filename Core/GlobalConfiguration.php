@@ -21,7 +21,7 @@ class GlobalConfiguration extends Configuration {
 	/**
 	 * Creates a configuration object, overriding values from files.
 	 *
-	 * @param array|string $overridePath  Extra configuration path(s) to search
+	 * @param array|string $overridePath Extra configuration path(s) to search
 	 *
 	 * @return GlobalConfiguration or subclass
 	 */
@@ -29,7 +29,7 @@ class GlobalConfiguration extends Configuration {
 		$config = new static();
 
 		$searchPath = array_merge(
-			( array ) $overridePath,
+			(array)$overridePath,
 			$config->getDefaultSearchPath()
 		);
 		$config->loadConfigFromPaths( $searchPath );
@@ -41,7 +41,7 @@ class GlobalConfiguration extends Configuration {
 
 		if ( isset( $_SERVER['HOME'] ) ) {
 			// FIXME: But I don't understand why this key is missing during testing.
-			$searchPath[] =  "{$_SERVER['HOME']}/.smashpig/main.yaml";
+			$searchPath[] = "{$_SERVER['HOME']}/.smashpig/main.yaml";
 		}
 		$searchPath[] = '/etc/smashpig/main.yaml';
 		$searchPath[] = __DIR__ . '/../config/main.yaml';

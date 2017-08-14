@@ -47,7 +47,7 @@ class DonationInterfaceMessage extends JsonSerializableObject {
 		foreach ( $values as $key => $value ) {
 			// If we're creating this from a database row with some extra
 			// info such as the pending_id, only include the real properties
-			if( property_exists( get_called_class(), $key ) ) {
+			if ( property_exists( get_called_class(), $key ) ) {
 				$message->$key = $value;
 			}
 		}

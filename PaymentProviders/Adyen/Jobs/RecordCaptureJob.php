@@ -52,7 +52,7 @@ class RecordCaptureJob extends RunnableJob {
 			// Add the gateway transaction ID and send it to the completed queue
 			$dbMessage['gateway_txn_id'] = $this->originalReference;
 
-            QueueWrapper::push( 'donations', $dbMessage );
+			QueueWrapper::push( 'donations', $dbMessage );
 
 			// Remove it from the pending database
 			$logger->debug( 'Removing donor details message from pending database' );

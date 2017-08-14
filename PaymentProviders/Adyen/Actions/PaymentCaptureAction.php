@@ -39,7 +39,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					'adyen',
 					$msg->merchantReference
 				);
-                QueueWrapper::push( 'jobs-adyen', $job );
+				QueueWrapper::push( 'jobs-adyen', $job );
 			}
 		}
 

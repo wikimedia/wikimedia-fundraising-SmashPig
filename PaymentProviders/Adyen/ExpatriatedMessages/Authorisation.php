@@ -44,7 +44,7 @@ class Authorisation extends AdyenMessage {
 			return;
 		}
 
-		$firstSegment = function( $value ) {
+		$firstSegment = function ( $value ) {
 			$parts = explode( ' ', $value );
 			return $parts[0];
 		};

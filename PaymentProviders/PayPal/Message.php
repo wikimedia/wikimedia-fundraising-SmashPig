@@ -41,6 +41,5 @@ abstract class Message {
 	}
 
 	static function normalizeMessage( &$message, $ipnArray ) {
-
 	}
 }

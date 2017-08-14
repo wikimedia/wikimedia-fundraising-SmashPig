@@ -28,17 +28,16 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 	 * @param string $filepath Full path to file representing a
 	 *  response (headers, blank line, body), which must use dos-style
 	 *  \r\n line endings.
-	 * @param integer $statusCode
+	 * @param int $statusCode
 	 */
 	protected function setUpResponse( $filepath, $statusCode ) {
 		$contents = file_get_contents( $filepath );
-		$header_size = strpos($contents, "\r\n\r\n") + 4;
+		$header_size = strpos( $contents, "\r\n\r\n" ) + 4;
 		$parsed = CurlWrapper::parseResponse(
-			$contents, array( 'http_code' => $statusCode, 'header_size' => $header_size)
+			$contents, array( 'http_code' => $statusCode, 'header_size' => $header_size )
 		);
 		$this->curlWrapper->method( 'execute' )->willReturn( $parsed );
 	}
-
 
 	protected function loadJson( $path ) {
 		return json_decode( file_get_contents( $path ), true );

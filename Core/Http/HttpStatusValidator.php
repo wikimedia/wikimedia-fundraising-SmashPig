@@ -10,7 +10,6 @@ use SmashPig\Core\Logging\Logger;
 class HttpStatusValidator implements ResponseValidator {
 
 	public function shouldRetry( $parsedResponse ) {
-
 		$statusCode = $parsedResponse['status'];
 		if ( array_search( $statusCode, $this->getSuccessCodes() ) !== false ) {
 			Logger::debug( "Successful request" );

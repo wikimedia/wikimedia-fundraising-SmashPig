@@ -13,7 +13,7 @@ class AdyenPaymentsAPI implements AdyenPaymentsInterface {
 	protected $account = '';
 
 	public function setAccount( $account ) {
-		require_once ( 'WSDL/Payment.php' );
+		require_once 'WSDL/Payment.php';
 
 		$this->account = $account;
 

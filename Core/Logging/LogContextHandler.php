@@ -66,8 +66,8 @@ class LogContextHandler {
 	 * in real time (IE: Syslog) because they will have logged items under the old
 	 * context name.
 	 *
-	 * @param string   $newName     New name for the current context
-	 * @param bool     $addLogEntry If false will not create a log line stating the name change
+	 * @param string $newName New name for the current context
+	 * @param bool $addLogEntry If false will not create a log line stating the name change
 	 *
 	 * @return string The old name of this context
 	 */

@@ -1,7 +1,7 @@
 <?php
 namespace SmashPig\Maintenance;
 
-require ( 'MaintenanceBase.php' );
+require 'MaintenanceBase.php';
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
@@ -84,7 +84,7 @@ class CreateIpnMessagesFromPendingDb extends MaintenanceBase {
 			$replacements['[[ASTROPAY_SIGNATURE_SUCCESS]]'] = $this->getAstroPaySignature( $pendingMessage, '9' );
 			$replacements['[[ASTROPAY_SIGNATURE_FAILURE]]'] = $this->getAstroPaySignature( $pendingMessage, '8' );
 		}
-		foreach( $templates as $template ) {
+		foreach ( $templates as $template ) {
 			$fullPath = $this->templateDir . $template;
 			if ( is_dir( $fullPath ) ) {
 				continue;
@@ -115,4 +115,4 @@ class CreateIpnMessagesFromPendingDb extends MaintenanceBase {
 
 }
 
-require ( RUN_MAINTENANCE_IF_MAIN );
+require RUN_MAINTENANCE_IF_MAIN;

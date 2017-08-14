@@ -1,7 +1,7 @@
 <?php
 namespace SmashPig\Maintenance;
 
-require ( 'MaintenanceBase.php' );
+require 'MaintenanceBase.php';
 
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Logging\Logger;
@@ -18,7 +18,6 @@ class RequeueDelayedMessages extends MaintenanceBase {
 	 * @var DamagedDatabase
 	 */
 	protected $damagedDatabase;
-
 
 	public function __construct() {
 		parent::__construct();
@@ -37,12 +36,12 @@ class RequeueDelayedMessages extends MaintenanceBase {
 			$this->getOption( 'max-messages' )
 		);
 		$stats = array();
-		foreach( $messages as $message ) {
+		foreach ( $messages as $message ) {
 			$queueName = $message['original_queue'];
 			unset( $message['original_queue'] );
 
 			// leave the source fields intact
-            $queue = QueueWrapper::getQueue( $queueName );
+			$queue = QueueWrapper::getQueue( $queueName );
 			$queue->push( $message );
 
 			$this->damagedDatabase->deleteMessage( $message );
@@ -61,4 +60,4 @@ class RequeueDelayedMessages extends MaintenanceBase {
 	}
 }
 
-require ( RUN_MAINTENANCE_IF_MAIN );
+require RUN_MAINTENANCE_IF_MAIN;

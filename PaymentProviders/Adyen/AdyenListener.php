@@ -24,7 +24,7 @@ class AdyenListener extends SoapListener {
 	);
 
 	public function __construct() {
-		require_once ( 'WSDL/Notification.php' );
+		require_once 'WSDL/Notification.php';
 		parent::__construct();
 	}
 

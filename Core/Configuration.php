@@ -151,10 +151,10 @@ abstract class Configuration {
 	 *          - argument1
 	 *          - foo/bar/baz
 	 *
-	 * @param string $node       Parameter node to obtain. If this contains '/'
+	 * @param string $node Parameter node to obtain. If this contains '/'
 	 *                           it is assumed that the value is contained
 	 *                           under additional keys.
-	 * @param bool $persistent   If true the object is saved for future calls.
+	 * @param bool $persistent If true the object is saved for future calls.
 	 * @return mixed|object
 	 * @throws ConfigurationKeyException
 	 */
@@ -205,7 +205,7 @@ abstract class Configuration {
 	 * array where the $base array does not have an array at that node. If it does have an
 	 * array the merge will continue recursively.
 	 *
-	 * @param array $base  The base array to merge into
+	 * @param array $base The base array to merge into
 	 * @param array $graft Values to merge into the $base
 	 *
 	 * @param string $myRoot Internal recursion state: parent node path so far,
@@ -214,7 +214,7 @@ abstract class Configuration {
 	 */
 	protected static function treeMerge( &$base, $graft, $myRoot = '' ) {
 		foreach ( $graft as $graftNodeName => $graftNodeValue ) {
-			$node = ($myRoot ? "{$myRoot}/{$graftNodeName}" : $graftNodeName);
+			$node = ( $myRoot ? "{$myRoot}/{$graftNodeName}" : $graftNodeName );
 
 			if ( array_key_exists( $graftNodeName, $base ) ) {
 				$baseNodeRef = &$base[$graftNodeName];
@@ -239,21 +239,21 @@ abstract class Configuration {
 	/**
 	 * Check that valueB can be merged on top of valueA.
 	 */
-	static protected function isMergable($valueA, $valueB) {
-		if (gettype($valueA) !== gettype($valueB)) {
+	protected static function isMergable( $valueA, $valueB ) {
+		if ( gettype( $valueA ) !== gettype( $valueB ) ) {
 			// Plain old different type
 			return false;
 		}
 
 		// Test for numeric vs map "array"--gotta love it.
-		if (is_array($valueA) && is_array($valueB)
+		if ( is_array( $valueA ) && is_array( $valueB )
 
 			// If either is empty, don't sweat it.
 			&& $valueA && $valueB
 
 			// If either has element [0], so must the other.
-			&& (array_key_exists(0, $valueA)
-				xor array_key_exists(0, $valueB))
+			&& ( array_key_exists( 0, $valueA )
+				xor array_key_exists( 0, $valueB ) )
 		) {
 			return false;
 		}

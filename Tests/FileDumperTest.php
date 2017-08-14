@@ -2,7 +2,6 @@
 
 namespace SmashPig\Tests;
 
-
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\QueueConsumers\QueueFileDumper;
 
@@ -25,7 +24,7 @@ class FileDumperTest extends BaseSmashPigUnitTestCase {
 	public function testDump() {
 		$queue = QueueWrapper::getQueue( 'test' );
 		$expected = '';
-		for( $i = 0; $i < 5; $i++ ) {
+		for ( $i = 0; $i < 5; $i++ ) {
 			$message = array(
 				'psycho' => 'alpha',
 				'disco' => 'beta',

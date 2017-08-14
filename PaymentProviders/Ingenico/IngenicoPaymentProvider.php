@@ -19,21 +19,21 @@ abstract class IngenicoPaymentProvider {
 		$this->api = $this->providerConfiguration->object( 'api' );
 	}
 
-	public function getPaymentStatus($paymentId){
+	public function getPaymentStatus( $paymentId ) {
 		$path = "payments/$paymentId";
-		$response = $this->api->makeApiCall($path, 'GET');
+		$response = $this->api->makeApiCall( $path, 'GET' );
 		return $response;
 	}
 
-	public function approvePayment($paymentId, $params){
+	public function approvePayment( $paymentId, $params ) {
 		$path = "payments/$paymentId/approve";
-		$response = $this->api->makeApiCall($path, 'POST', $params);
+		$response = $this->api->makeApiCall( $path, 'POST', $params );
 		return $response;
 	}
 
-	public function cancelPayment($paymentId){
+	public function cancelPayment( $paymentId ) {
 		$path = "payments/$paymentId/cancel";
-		$response = $this->api->makeApiCall($path, 'POST');
+		$response = $this->api->makeApiCall( $path, 'POST' );
 		return $response;
 	}
 }

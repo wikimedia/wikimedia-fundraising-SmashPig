@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Maintenance;
 
-require ( 'MaintenanceBase.php' );
+require 'MaintenanceBase.php';
 
 use SmashPig\Core\QueueConsumers\QueueFileDumper;
 use SmashPig\Core\Logging\Logger;
@@ -47,4 +47,4 @@ class EmptyQueueToDump extends MaintenanceBase {
 
 }
 
-require ( RUN_MAINTENANCE_IF_MAIN );
+require RUN_MAINTENANCE_IF_MAIN;

@@ -12,7 +12,7 @@ class RecurringMessage extends Message {
 			$message['middle_name'] = '';
 
 			if ( isset( $ipnMessage['address_street'] ) ) {
-				$split = explode("\n", str_replace("\r", '', $ipnMessage['address_street']));
+				$split = explode( "\n", str_replace( "\r", '', $ipnMessage['address_street'] ) );
 				$message['street_address'] = $split[0];
 				if ( count( $split ) > 1 ) {
 					$message['supplemental_address_1'] = $split[1];
@@ -22,7 +22,6 @@ class RecurringMessage extends Message {
 		}
 
 		switch ( $ipnMessage['txn_type'] ) {
-
 			case 'recurring_payment':
 				$message['txn_type'] = 'subscr_payment';
 				break;
@@ -30,8 +29,7 @@ class RecurringMessage extends Message {
 			case 'recurring_payment_profile_created':
 				$message['txn_type'] = 'subscr_signup';
 				// break the period out for civicrm
-				if( $ipnMessage['payment_cycle'] == 'Monthly' ) {
-
+				if ( $ipnMessage['payment_cycle'] == 'Monthly' ) {
 					$message['frequency_interval'] = '1';
 					$message['frequency_unit'] = 'month';
 				}
@@ -54,7 +52,6 @@ class RecurringMessage extends Message {
 				$message['cancel_date'] = time();
 				break;
 
-
 			case 'recurring_payment_failed':
 			case 'recurring_payment_skipped':
 			case 'recurring_payment_suspended':
@@ -64,7 +61,7 @@ class RecurringMessage extends Message {
 			case 'recurring_payment_expired':
 				$message['txn_type'] = 'subscr_eot';
 				break;
-				
+
 		}
 
 		$message['gateway'] = 'paypal_ec';
@@ -72,6 +69,5 @@ class RecurringMessage extends Message {
 		if ( !isset( $message['date'] ) ) {
 			$message['date'] = time();
 		}
-
 	}
 }

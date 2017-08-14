@@ -1,7 +1,7 @@
 <?php
 namespace SmashPig\Maintenance;
 
-require ( 'MaintenanceBase.php' );
+require 'MaintenanceBase.php';
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\QueueConsumers\PendingQueueConsumer;
@@ -24,7 +24,6 @@ class ConsumePendingQueue extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 */
 	public function execute() {
-
 		$basePath = 'maintenance/consume-pending/';
 		$consumer = new PendingQueueConsumer(
 			$this->getOption( 'queue' ),
@@ -42,4 +41,4 @@ class ConsumePendingQueue extends MaintenanceBase {
 	}
 }
 
-require ( RUN_MAINTENANCE_IF_MAIN );
+require RUN_MAINTENANCE_IF_MAIN;

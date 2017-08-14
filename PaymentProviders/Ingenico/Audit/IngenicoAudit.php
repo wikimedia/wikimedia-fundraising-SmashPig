@@ -158,7 +158,7 @@ class IngenicoAudit implements AuditParser {
 		);
 		$record = array_merge( $record, $normalized );
 
-		unset ( $record['gc_product_id'] );
+		unset( $record['gc_product_id'] );
 		return $record;
 	}
 

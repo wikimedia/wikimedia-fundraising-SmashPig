@@ -2,7 +2,6 @@
 
 namespace SmashPig\Tests;
 
-
 use SmashPig\Core\DataStores\PaymentsInitialDatabase;
 use SmashPig\Core\DataStores\PendingDatabase;
 

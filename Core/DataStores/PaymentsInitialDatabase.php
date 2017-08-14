@@ -15,7 +15,7 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 	 * @param array $message Payments initial message
 	 *	FIXME: Or pass ID parameters explicitly and call this
 	 *	isTransactionFinalizedByGatewayOrderId??
-	 * @return boolean
+	 * @return bool
 	 */
 	public function isTransactionFailed( $message ) {
 		$message = $this->fetchMessageByGatewayOrderId(
@@ -40,7 +40,6 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 		}
 		return false;
 	}
-
 
 	/**
 	 * Return record matching a (gateway, order_id), or null if none is found
@@ -67,11 +66,11 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 	}
 
 	public function storeMessage( $message ) {
-        list( $fieldList, $paramList ) = self::formatInsertParameters(
+		list( $fieldList, $paramList ) = self::formatInsertParameters(
 			$message
 		);
 
-        $sql = "INSERT INTO payments_initial ( $fieldList ) VALUES ( $paramList )";
+		$sql = "INSERT INTO payments_initial ( $fieldList ) VALUES ( $paramList )";
 		$this->prepareAndExecute( $sql, $message );
 
 		return $this->getDatabase()->lastInsertId();

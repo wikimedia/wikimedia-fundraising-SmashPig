@@ -29,21 +29,21 @@ class MailHandler {
 	 *     IE: bounce+$1@contoso.com
 	 * email/archive-addresses A list of addresses to always BCC when this function is used
 	 *
-	 * @param string            $to        Email address of recipient
-	 * @param string            $subject   Subject line of email
-	 * @param string            $textBody  Non HTML text of email (fallback text if $htmlBody is defined)
-	 * @param null|string|array $from      Email address of sender, if null is the value of the configuration
+	 * @param string $to Email address of recipient
+	 * @param string $subject Subject line of email
+	 * @param string $textBody Non HTML text of email (fallback text if $htmlBody is defined)
+	 * @param null|string|array $from Email address of sender, if null is the value of the configuration
 	 *                                     node 'email/from-address'. If passed as an array it is expected that
 	 *                                     index 0 is the address and index 1 is the friendly name of the address.
-	 * @param null|string       $replyTo   Address that recipient will reply to. If null will be set from the value
+	 * @param null|string $replyTo Address that recipient will reply to. If null will be set from the value
 	 *                                     of $from.
-	 * @param null|string       $htmlBody  HTML text of the email
-	 * @param array             $attach    Paths to any attachments. These can have any legal PHP file descriptor.
-	 * @param null|string|array $cc        Carbon-Copy addresses.
-	 * @param null|string|array $bcc       Blind carbon-copy addresses. If specified these will always be in addition
+	 * @param null|string $htmlBody HTML text of the email
+	 * @param array $attach Paths to any attachments. These can have any legal PHP file descriptor.
+	 * @param null|string|array $cc Carbon-Copy addresses.
+	 * @param null|string|array $bcc Blind carbon-copy addresses. If specified these will always be in addition
 	 *                                     to any archival addresses specified by the 'email/archive-addresses'
 	 *                                     configuration node.
-	 * @param bool|string       $useVerp   If true will set the MAIL FROM to the value specified under configuration
+	 * @param bool|string $useVerp If true will set the MAIL FROM to the value specified under configuration
 	 *                                     node 'email/bounce-address'. This can be overriden if a string is passed
 	 *                                     instead of strict true. In either case, '$1' will be replaced by the
 	 *                                     first $to address, RFC-3986 encoded.

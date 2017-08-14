@@ -20,7 +20,6 @@ class RequeueMessageTest extends BaseAdyenTestCase {
 	 * @expectedException \SmashPig\Core\RetryableException
 	 */
 	public function testRequeueMessage() {
-
 		$auth = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
@@ -28,7 +27,6 @@ class RequeueMessageTest extends BaseAdyenTestCase {
 
 		$job = ProcessCaptureRequestJob::factory( $auth );
 		$job->execute();
-
 	}
 
 }

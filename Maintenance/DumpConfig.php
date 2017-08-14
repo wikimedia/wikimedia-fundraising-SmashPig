@@ -15,13 +15,13 @@ class DumpConfig extends MaintenanceBase {
 	public function execute() {
 		$context = Context::get();
 		$config = $context->getGlobalConfiguration();
-		$values = $config->val('/');
-		$yaml = Yaml::dump($values);
+		$values = $config->val( '/' );
+		$yaml = Yaml::dump( $values );
 
 		print 'Global config: ' . $yaml;
 		$providerConfig = $context->getProviderConfiguration();
-		$values = $providerConfig->val('/');
-		$yaml = Yaml::dump($values);
+		$values = $providerConfig->val( '/' );
+		$yaml = Yaml::dump( $values );
 
 		print 'Provider config: ' . $yaml;
 	}

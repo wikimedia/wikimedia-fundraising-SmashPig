@@ -114,7 +114,7 @@ class CurlWrapper {
 			CURLOPT_VERBOSE => true,
 			CURLOPT_STDERR => $logStream,
 		);
-		switch( $method ) {
+		switch ( $method ) {
 			case 'PUT':
 				$options[CURLOPT_PUT] = 1;
 				break;
@@ -139,14 +139,14 @@ class CurlWrapper {
 
 	public static function parseResponse( $response, $curlInfo ) {
 		$header_size = $curlInfo['header_size'];
-		$header = substr($response, 0, $header_size);
-		$body = substr($response, $header_size);
-		$header = str_replace("\r", "", $header);
+		$header = substr( $response, 0, $header_size );
+		$body = substr( $response, $header_size );
+		$header = str_replace( "\r", "", $header );
 		$headerLines = explode( "\n", $header );
 		$responseHeaders = array();
-		foreach( $headerLines as $line ) {
+		foreach ( $headerLines as $line ) {
 			if ( strstr( $line, ': ' ) !== false ) {
-				$line = rtrim($line);
+				$line = rtrim( $line );
 				list( $name, $value ) = explode( ': ', $line, 2 );
 				$responseHeaders[$name] = $value;
 			}

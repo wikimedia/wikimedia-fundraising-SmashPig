@@ -36,7 +36,7 @@ abstract class SmashPigDatabase {
 	 */
 	public function getDatabase() {
 		$className = get_called_class();
-		if ( isset ( self::$dbs[$className] ) ) {
+		if ( isset( self::$dbs[$className] ) ) {
 			return self::$dbs[$className];
 		}
 		return null;
@@ -93,7 +93,7 @@ abstract class SmashPigDatabase {
 		$prepared = $this->getDatabase()->prepare( $sql );
 
 		foreach ( $dbRecord as $field => $value ) {
-			if( gettype( $value ) === 'integer' ) {
+			if ( gettype( $value ) === 'integer' ) {
 				$paramType = PDO::PARAM_INT;
 			} else {
 				$paramType = PDO::PARAM_STR;

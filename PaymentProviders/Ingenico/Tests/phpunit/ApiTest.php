@@ -45,7 +45,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testCreateRequest() {
-		$headerVerification = function( $headers ) {
+		$headerVerification = function ( $headers ) {
 			$date = new DateTime( $headers['Date'] );
 			return $date !== null &&
 				$headers['Content-Type'] === 'application/json';

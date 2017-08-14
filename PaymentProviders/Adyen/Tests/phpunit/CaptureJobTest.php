@@ -32,7 +32,7 @@ class CaptureJobTest extends BaseAdyenTestCase {
 
 		$this->pendingDatabase = PendingDatabase::get();
 		$this->pendingMessage = json_decode(
-			file_get_contents( __DIR__ . '/../Data/pending.json' ) , true
+			file_get_contents( __DIR__ . '/../Data/pending.json' ), true
 		);
 		$this->pendingDatabase->storeMessage( $this->pendingMessage );
 		$this->antifraudQueue = QueueWrapper::getQueue( 'payments-antifraud' );

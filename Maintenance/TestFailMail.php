@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Maintenance;
 
-require ( 'MaintenanceBase.php' );
+require 'MaintenanceBase.php';
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
@@ -34,4 +34,4 @@ class TestFailMail extends MaintenanceBase {
 	}
 }
 
-require ( RUN_MAINTENANCE_IF_MAIN );
+require RUN_MAINTENANCE_IF_MAIN;

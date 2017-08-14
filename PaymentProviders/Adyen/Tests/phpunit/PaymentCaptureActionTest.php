@@ -26,7 +26,7 @@ class PaymentCaptureActionTest extends BaseAdyenTestCase {
 	public function testSuccessfulAuth() {
 		$auth = new Authorisation();
 		$auth->success = true;
-		$auth->merchantAccountCode = 'WikimediaTest' ;
+		$auth->merchantAccountCode = 'WikimediaTest';
 		$auth->currency = 'USD';
 		$auth->amount = '10';
 		$auth->merchantReference = mt_rand();
@@ -60,7 +60,7 @@ class PaymentCaptureActionTest extends BaseAdyenTestCase {
 	public function testFailedAuth() {
 		$auth = new Authorisation();
 		$auth->success = false;
-		$auth->merchantAccountCode = 'WikimediaTest' ;
+		$auth->merchantAccountCode = 'WikimediaTest';
 		$auth->merchantReference = mt_rand();
 
 		$action = new PaymentCaptureAction();

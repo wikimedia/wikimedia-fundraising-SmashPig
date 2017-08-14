@@ -21,9 +21,9 @@ class MockAdyenPaymentsAPI implements AdyenPaymentsInterface {
 	/**
 	 * Fakes a Capture modification to a given Adyen transaction.
 	 *
-	 * @param string    $currency       Original currency of the request
-	 * @param int       $amount         Amount to be captured. Less than or equal to the original request
-	 * @param string    $pspReference   Original pspReference of the request
+	 * @param string $currency Original currency of the request
+	 * @param int $amount Amount to be captured. Less than or equal to the original request
+	 * @param string $pspReference Original pspReference of the request
 	 *
 	 * @returns bool|string The return code set in the constructor.
 	 */

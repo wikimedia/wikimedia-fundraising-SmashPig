@@ -2,7 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Amazon\Maintenance;
 
-require( __DIR__ . '/../../../Maintenance/MaintenanceBase.php' );
+require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
 use SmashPig\Core\DataFiles\CsvReader;
 use SmashPig\Maintenance\MaintenanceBase;
@@ -50,4 +50,4 @@ class AuthorizeAndCapture extends MaintenanceBase {
 	}
 }
 
-require ( RUN_MAINTENANCE_IF_MAIN );
+require RUN_MAINTENANCE_IF_MAIN;

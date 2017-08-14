@@ -25,7 +25,7 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 	}
 
 	protected static function getTestMessage( $uniq = null ) {
-		if ( !$uniq ) { 
+		if ( !$uniq ) {
 			$uniq = mt_rand();
 		}
 		return array(

@@ -7,8 +7,8 @@ interface IHttpActionHandler {
 	/**
 	 * Execute an arbitrary action based on the inbound $request object.
 	 *
-	 * @param Request    $request     HTTP request context object
-	 * @param Response $response    HTTP response data object
+	 * @param Request $request HTTP request context object
+	 * @param Response $response HTTP response data object
 	 *
 	 * @return Null
 	 */

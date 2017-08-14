@@ -26,7 +26,7 @@ class RecordCaptureJobTest extends BaseAdyenTestCase {
 		parent::setUp();
 		$this->pendingDatabase = PendingDatabase::get();
 		$this->pendingMessage = json_decode(
-			file_get_contents( __DIR__ . '/../Data/pending.json' ) , true
+			file_get_contents( __DIR__ . '/../Data/pending.json' ), true
 		);
 		$this->pendingMessage['captured'] = true;
 		$this->pendingDatabase->storeMessage( $this->pendingMessage );

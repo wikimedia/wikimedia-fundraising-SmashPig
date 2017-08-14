@@ -17,10 +17,10 @@ class Logger {
 	 * Will add all LogStreams registered under logging/enabled-log-streams. These
 	 * handlers must have class instantiation entries under logging/log-streams/<name>.
 	 *
-	 * @param string        $name      Root context name
-	 * @param int           $threshold Minimum log level to record into the context
-	 * @param ProviderConfiguration $config    Configuration object to use
-	 * @param string        $prefix    Base prefix for logger
+	 * @param string $name Root context name
+	 * @param int $threshold Minimum log level to record into the context
+	 * @param ProviderConfiguration $config Configuration object to use
+	 * @param string $prefix Base prefix for logger
 	 */
 	public static function init( $name, $threshold, ProviderConfiguration $config, $prefix ) {
 		if ( self::$context ) {
@@ -77,10 +77,10 @@ class Logger {
 	 * @return LogContextHandler
 	 */
 	public static function getContext() {
-		if ( Logger::$context === null ) {
+		if ( self::$context === null ) {
 			throw new SmashPigException( "No context available. Logger not initialized?" );
 		}
-		return Logger::$context;
+		return self::$context;
 	}
 
 	/* === EVENT HANDLING === */
@@ -89,12 +89,12 @@ class Logger {
 	 * error contact. Use this for things like database failures, top of PHP error stack
 	 * exceptions, and non recoverable errors like being unable to requeue a message.
 	 *
-	 * @param string           $msg         Message string to log
-	 * @param null|object      $data        Serializable data object relevant to the event, if any
-	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
+	 * @param string $msg Message string to log
+	 * @param null|object $data Serializable data object relevant to the event, if any
+	 * @param null|\Exception $ex Exception object relevant to the event, if any
 	 */
 	public static function alert( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_ALERT, $msg, null, $data, $ex ) );
+		self::$context->addEventToContext( new LogEvent( LOG_ALERT, $msg, null, $data, $ex ) );
 	}
 
 	/**
@@ -102,59 +102,59 @@ class Logger {
 	 * may be digested/filtered in some way. Use this for malformed data, and recoverable
 	 * exceptions (ie: a queued message could not be processed but could be requeued.)
 	 *
-	 * @param string           $msg         Message string to log
-	 * @param null|object      $data        Serializable data object relevant to the event, if any
-	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
+	 * @param string $msg Message string to log
+	 * @param null|object $data Serializable data object relevant to the event, if any
+	 * @param null|\Exception $ex Exception object relevant to the event, if any
 	 */
 	public static function error( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_ERR, $msg, null, $data, $ex ) );
+		self::$context->addEventToContext( new LogEvent( LOG_ERR, $msg, null, $data, $ex ) );
 	}
 
 	/**
 	 * Log a warning message, NOT AN ERROR, but indication that an error may occur if action
 	 * is not taken, e.g. file system 85% full; db lag > 5s; APC/MemCache unavailable; etc
 	 *
-	 * @param string           $msg         Message string to log
-	 * @param null|object      $data        Serializable data object relevant to the event, if any
-	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
+	 * @param string $msg Message string to log
+	 * @param null|object $data Serializable data object relevant to the event, if any
+	 * @param null|\Exception $ex Exception object relevant to the event, if any
 	 */
 	public static function warning( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_WARNING, $msg, null, $data, $ex ) );
+		self::$context->addEventToContext( new LogEvent( LOG_WARNING, $msg, null, $data, $ex ) );
 	}
 
 	/**
 	 * Log an event that is unusual but IS NOT an error condition - might be summarized in an
 	 * email to developers or admins to spot potential problems - no immediate action required.
 	 *
-	 * @param string           $msg         Message string to log
-	 * @param null|object      $data        Serializable data object relevant to the event, if any
-	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
+	 * @param string $msg Message string to log
+	 * @param null|object $data Serializable data object relevant to the event, if any
+	 * @param null|\Exception $ex Exception object relevant to the event, if any
 	 */
 	public static function notice( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_NOTICE, $msg, null, $data, $ex ) );
+		self::$context->addEventToContext( new LogEvent( LOG_NOTICE, $msg, null, $data, $ex ) );
 	}
 
 	/**
 	 * Log information in the course of normal operational - may be harvested for reporting,
 	 * measuring throughput, etc. - no action required.
 	 *
-	 * @param string           $msg         Message string to log
-	 * @param null|object      $data        Serializable data object relevant to the event, if any
-	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
+	 * @param string $msg Message string to log
+	 * @param null|object $data Serializable data object relevant to the event, if any
+	 * @param null|\Exception $ex Exception object relevant to the event, if any
 	 */
 	public static function info( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_INFO, $msg, null, $data, $ex ) );
+		self::$context->addEventToContext( new LogEvent( LOG_INFO, $msg, null, $data, $ex ) );
 	}
 
 	/**
 	 * Log information useful to developers for debugging the application; not useful
 	 * during normal operation.
 	 *
-	 * @param string           $msg         Message string to log
-	 * @param null|object      $data        Serializable data object relevant to the event, if any
-	 * @param null|\Exception  $ex          Exception object relevant to the event, if any
+	 * @param string $msg Message string to log
+	 * @param null|object $data Serializable data object relevant to the event, if any
+	 * @param null|\Exception $ex Exception object relevant to the event, if any
 	 */
 	public static function debug( $msg, $data = null, $ex = null ) {
-		Logger::$context->addEventToContext( new LogEvent( LOG_DEBUG, $msg, null, $data, $ex ) );
+		self::$context->addEventToContext( new LogEvent( LOG_DEBUG, $msg, null, $data, $ex ) );
 	}
 }
