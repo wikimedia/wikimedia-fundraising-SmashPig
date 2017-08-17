@@ -1,59 +1,55 @@
 <?php namespace SmashPig\PaymentProviders\AstroPay\Audit;
 
 use OutOfBoundsException;
+use SmashPig\Core\DataFiles\AuditParser;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\AstroPay\ReferenceData;
 
-class AstroPayAudit {
+class AstroPayAudit implements AuditParser {
 
-	protected $columnHeaders;
-	protected $ignoredStatuses;
-	protected $fileData = array();
-	protected $file;
+	protected $columnHeaders = array(
+		'Type', // 'Payment' or 'Refund'
+		'Creation date', // YYYY-MM-dd HH:mm:ss
+		'Settlement date', // same format
+		'Reference', // gateway_trxn_id
+		'Invoice', // ct_id.attempt_num
+		'Country',
+		'Payment Method', // corresponds to our payment_submethod
+		'Payment Method Type', // our payment_method
+		'Net Amount (local)',
+		'Amount (USD)', // gross, including fee
+		'currency', // yup, this one is lower case
+		'Status',
+		'User Mail',
+		// These two fields refer to the original donation for refunds
+		'Transaction Reference',
+		'Transaction Invoice',
+		'Fee', // In USD.  AstroPay's processing fee
+		'IOF', // In USD.  Fee for financial transactions in Brazil
+		// The IOF is included in AstroPay's fee, but broken out by request
+	);
 
-	public function __construct() {
-		$this->columnHeaders = array(
-			'Type', // 'Payment' or 'Refund'
-			'Creation date', // YYYY-MM-dd HH:mm:ss
-			'Settlement date', // same format
-			'Reference', // gateway_trxn_id
-			'Invoice', // ct_id.attempt_num
-			'Country',
-			'Payment Method', // corresponds to our payment_submethod
-			'Payment Method Type', // our payment_method
-			'Net Amount (local)',
-			'Amount (USD)', // gross, including fee
-			'currency', // yup, this one is lower case
-			'Status',
-			'User Mail',
-			// These two fields refer to the original donation for refunds
-			'Transaction Reference',
-			'Transaction Invoice',
-			'Fee', // In USD.  AstroPay's processing fee
-			'IOF', // In USD.  Fee for financial transactions in Brazil
-			// The IOF is included in AstroPay's fee, but broken out by request
-		);
-		// We don't need do anything with some audit lines
-		$this->ignoredStatuses = array(
-			'Cancelled', // User pressed cancel or async payment expired
-			'In process', // Chargeback is... charging back? 'Settled' means done
-			'Reimbursed', // Chargeback settled in our favor - not refunding
-			'Waiting Details', // Refund is in limbo; we'll wait for 'Completed'
-		);
-	}
+	protected $ignoredStatuses = array(
+		'Cancelled', // User pressed cancel or async payment expired
+		'In process', // Chargeback is... charging back? 'Settled' means done
+		'Reimbursed', // Chargeback settled in our favor - not refunding
+		'Waiting Details', // Refund is in limbo; we'll wait for 'Completed'
+	);
+
+	protected $fileData;
 
 	public function parseFile( $path ) {
-		$this->path = $path;
-		$this->file = fopen( $path, 'r' );
+		$this->fileData = array();
+		$file = fopen( $path, 'r' );
 
 		$ignoreLines = 1;
 		for ( $i = 0; $i < $ignoreLines; $i++ ) {
-			fgets( $this->file );
+			fgets( $file );
 		}
 
-		while ( $line = fgetcsv( $this->file, 0, ';', '"', '\\' ) ) {
+		while ( $line = fgetcsv( $file, 0, ';', '"', '\\' ) ) {
 			try {
 				$this->parseLine( $line );
 			} catch ( NormalizationException $ex ) {
@@ -61,7 +57,7 @@ class AstroPayAudit {
 				Logger::error( $ex->getMessage() );
 			}
 		}
-		fclose( $this->file );
+		fclose( $file );
 
 		return $this->fileData;
 	}

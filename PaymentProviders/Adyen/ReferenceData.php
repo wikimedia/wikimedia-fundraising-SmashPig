@@ -4,7 +4,7 @@ use OutOfBoundsException;
 
 class ReferenceData {
 
-	static $methods = array(
+	protected static $methods = array(
 		'alipay' => array(
 			'method' => 'ew',
 			'submethod' => 'ew_alipay',

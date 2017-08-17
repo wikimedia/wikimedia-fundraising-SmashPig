@@ -1,6 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Audit;
 
 use OutOfBoundsException;
+use SmashPig\Core\DataFiles\AuditParser;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\Adyen\ReferenceData;
@@ -12,11 +14,41 @@ use SmashPig\PaymentProviders\Adyen\ReferenceData;
  * Sends donations, chargebacks, and refunds to queue.
  * https://docs.adyen.com/manuals/reporting-manual/settlement-detail-report-structure/settlement-detail-report-journal-types
  */
-class AdyenAudit {
+class AdyenAudit implements AuditParser {
 
-	protected $columnHeaders;
-	protected $ignoredStatuses;
-	protected $fileData = array();
+	protected $columnHeaders = array(
+		'Company Account',
+		'Merchant Account',
+		'Psp Reference',
+		'Merchant Reference',
+		'Payment Method',
+		'Creation Date',
+		'TimeZone',
+		'Type',
+		'Modification Reference',
+		'Gross Currency',
+		'Gross Debit (GC)',
+		'Gross Credit (GC)',
+		'Exchange Rate',
+		'Net Currency',
+		'Net Debit (NC)',
+		'Net Credit (NC)',
+		'Commission (NC)',
+		'Markup (NC)',
+		'Scheme Fees (NC)',
+		'Interchange (NC)',
+		'Payment Method Variant',
+		'Modification Merchant Reference',
+		'Batch Number',
+		'Reserved4',
+		'Reserved5',
+		'Reserved6',
+		'Reserved7',
+		'Reserved8',
+		'Reserved9',
+		'Reserved10',
+	);
+
 	protected static $ignoredTypes = array(
 		'fee',
 		'misccosts',
@@ -38,52 +70,18 @@ class AdyenAudit {
 		'paidoutreversed',
 	);
 
-	public function __construct() {
-		$this->columnHeaders = array(
-			'Company Account',
-			'Merchant Account',
-			'Psp Reference',
-			'Merchant Reference',
-			'Payment Method',
-			'Creation Date',
-			'TimeZone',
-			'Type',
-			'Modification Reference',
-			'Gross Currency',
-			'Gross Debit (GC)',
-			'Gross Credit (GC)',
-			'Exchange Rate',
-			'Net Currency',
-			'Net Debit (NC)',
-			'Net Credit (NC)',
-			'Commission (NC)',
-			'Markup (NC)',
-			'Scheme Fees (NC)',
-			'Interchange (NC)',
-			'Payment Method Variant',
-			'Modification Merchant Reference',
-			'Batch Number',
-			'Reserved4',
-			'Reserved5',
-			'Reserved6',
-			'Reserved7',
-			'Reserved8',
-			'Reserved9',
-			'Reserved10',
-		);
-	}
+	protected $fileData;
 
-	// TODO base class this?
 	public function parseFile( $path ) {
-		$this->path = $path;
-		$this->file = fopen( $path, 'r' );
+		$this->fileData = array();
+		$file = fopen( $path, 'r' );
 
 		$ignoreLines = 1;
 		for ( $i = 0; $i < $ignoreLines; $i++ ) {
-			fgets( $this->file );
+			fgets( $file );
 		}
 
-		while ( $line = fgetcsv( $this->file, 0, ',', '"', '\\' ) ) {
+		while ( $line = fgetcsv( $file, 0, ',', '"', '\\' ) ) {
 			try {
 				$this->parseLine( $line );
 			} catch ( NormalizationException $ex ) {
@@ -91,7 +89,7 @@ class AdyenAudit {
 				Logger::error( $ex->getMessage() );
 			}
 		}
-		fclose( $this->file );
+		fclose( $file );
 
 		return $this->fileData;
 	}
