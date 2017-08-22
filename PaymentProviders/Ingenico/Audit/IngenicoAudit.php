@@ -120,9 +120,9 @@ class IngenicoAudit implements AuditParser {
 	protected function parseRefund( DOMElement $recordNode, $type ) {
 		$record = $this->xmlToArray( $recordNode, $this->refundMap );
 		$record['type'] = $type;
-		// FIXME: Transaction ID is the same as the parent transaction ID.
+		// FIXME: Refund ID is the same as the parent transaction ID.
 		// That's not helpful...
-		$record['gateway_txn_id'] = $record['gateway_parent_id'];
+		$record['gateway_refund_id'] = $record['gateway_parent_id'];
 		if ( $record['installment'] < 0 ) {
 			// Refunds have negative EffortID. Weird.
 			// TODO: for refunds of recurring payments, determine whether the
