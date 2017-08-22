@@ -40,6 +40,8 @@ class IngenicoAudit implements AuditParser {
 		'OrderID' => 'gateway_parent_id',
 		'EffortID' => 'installment',
 		'DebitedCurrency' => 'gross_currency',
+		'DateDue' => 'date',
+		// Order matters. Prefer TransactionDateTime if it is present.
 		'TransactionDateTime' => 'date',
 	);
 
