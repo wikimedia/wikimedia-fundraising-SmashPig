@@ -1,7 +1,6 @@
 <?php
 namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
-use PHPUnit_Framework_MockObject_MockObject;
 use Psr\Cache\CacheItemPoolInterface;
 use SmashPig\Core\Cache\HashCacheItem;
 use SmashPig\Core\Context;
@@ -12,11 +11,6 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
  * @group Ingenico
  */
 class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
-
-	/**
-	 * @var PHPUnit_Framework_MockObject_MockObject
-	 */
-	protected $curlWrapper;
 
 	/**
 	 * @var BankPaymentProvider
