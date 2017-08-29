@@ -40,6 +40,8 @@ class IngenicoAudit implements AuditParser {
 		'OrderID' => 'gateway_parent_id',
 		'EffortID' => 'installment',
 		'DebitedCurrency' => 'gross_currency',
+		'DateDue' => 'date',
+		// Order matters. Prefer TransactionDateTime if it is present.
 		'TransactionDateTime' => 'date',
 	);
 
@@ -120,6 +122,9 @@ class IngenicoAudit implements AuditParser {
 	protected function parseRefund( DOMElement $recordNode, $type ) {
 		$record = $this->xmlToArray( $recordNode, $this->refundMap );
 		$record['type'] = $type;
+		// FIXME: Refund ID is the same as the parent transaction ID.
+		// That's not helpful...
+		$record['gateway_refund_id'] = $record['gateway_parent_id'];
 		if ( $record['installment'] < 0 ) {
 			// Refunds have negative EffortID. Weird.
 			// TODO: for refunds of recurring payments, determine whether the

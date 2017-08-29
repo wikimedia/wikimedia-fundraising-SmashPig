@@ -28,6 +28,7 @@ class PendingDatabase extends SmashPigDatabase {
 	 * Build and insert a database record from a pending queue message
 	 *
 	 * @param array $message
+	 * @return int ID of message in pending database
 	 */
 	public function storeMessage( $message ) {
 		$this->validateMessage( $message );
@@ -57,6 +58,8 @@ class PendingDatabase extends SmashPigDatabase {
 			$sql = $this->getInsertStatement( $dbRecord );
 		}
 		$this->prepareAndExecute( $sql, $dbRecord );
+
+		return $this->getDatabase()->lastInsertId();
 	}
 
 	/**

@@ -73,6 +73,8 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 
         $sql = "INSERT INTO payments_initial ( $fieldList ) VALUES ( $paramList )";
 		$this->prepareAndExecute( $sql, $message );
+
+		return $this->getDatabase()->lastInsertId();
 	}
 
 	protected function getConfigKey() {
