@@ -67,13 +67,21 @@ class CurlWrapper {
 				$errno = curl_errno( $ch );
 				$err = curl_error( $ch );
 
-				Logger::alert(
-					"cURL transaction to {$url} failed: ($errno) $err.  " .
+				Logger::warning(
+					"cURL transaction to {$url} failed: ($errno) $err. " .
 					"cURL verbose logging: $logged"
 				);
 			}
 			$tries++;
 			if ( $tries >= $loopCount ) {
+				if ( $continue ) {
+					// We ran out of retries, but apparently still haven't got
+					// anything good. Squawk.
+					Logger::alert(
+						"cURL transaction to {$url} failed {$loopCount} times! " .
+						'Please see previous warning-level logs for details.'
+					);
+				}
 				$continue = false;
 			}
 		} while ( $continue ); // End while cURL transaction hasn't returned something useful
