@@ -9,7 +9,7 @@ use SmashPig\PaymentProviders\AstroPay\ReferenceData;
 
 class AstroPayAudit implements AuditParser {
 
-	protected $columnHeaders = array(
+	protected $columnHeaders = [
 		'Type', // 'Payment' or 'Refund'
 		'Creation date', // YYYY-MM-dd HH:mm:ss
 		'Settlement date', // same format
@@ -29,19 +29,19 @@ class AstroPayAudit implements AuditParser {
 		'Fee', // In USD.  AstroPay's processing fee
 		'IOF', // In USD.  Fee for financial transactions in Brazil
 		// The IOF is included in AstroPay's fee, but broken out by request
-	);
+	];
 
-	protected $ignoredStatuses = array(
+	protected $ignoredStatuses = [
 		'Cancelled', // User pressed cancel or async payment expired
 		'In process', // Chargeback is... charging back? 'Settled' means done
 		'Reimbursed', // Chargeback settled in our favor - not refunding
 		'Waiting Details', // Refund is in limbo; we'll wait for 'Completed'
-	);
+	];
 
 	protected $fileData;
 
 	public function parseFile( $path ) {
-		$this->fileData = array();
+		$this->fileData = [];
 		$file = fopen( $path, 'r' );
 
 		$ignoreLines = 1;
@@ -70,7 +70,7 @@ class AstroPayAudit implements AuditParser {
 			return;
 		}
 
-		$msg = array();
+		$msg = [];
 
 		// Common to all types
 		$msg['date'] = UtcDate::getUtcTimestamp( $row['Creation date'] );

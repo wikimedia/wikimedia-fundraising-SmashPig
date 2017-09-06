@@ -12,7 +12,7 @@ class AmazonAudit implements AuditParser {
 		$config = Context::get()->getProviderConfiguration();
 		$fileTypes = $config->val( 'audit/file-types' );
 
-		$data = array();
+		$data = [];
 
 		foreach ( $fileTypes as $type ) {
 			if ( $type::isMine( $path ) ) {

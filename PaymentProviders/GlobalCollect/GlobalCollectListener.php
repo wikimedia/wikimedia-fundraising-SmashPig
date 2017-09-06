@@ -18,7 +18,7 @@ class GlobalCollectListener extends RestListener {
 
 		$this->success = true;
 
-		return array( $message );
+		return [ $message ];
 	}
 
 	/**

@@ -35,17 +35,17 @@ class QueueWrapper {
 			empty( $node['constructor-parameters'] ) ||
 			empty( $node['constructor-parameters'][0]['queue'] )
 		) {
-			$nameParam = array(
-				'data-store' => array(
-					$queueName => array(
-						'constructor-parameters' => array(
-							array(
+			$nameParam = [
+				'data-store' => [
+					$queueName => [
+						'constructor-parameters' => [
+							[
 								'queue' => $queueName
-							)
-						)
-					)
-				)
-			);
+							]
+						]
+					]
+				]
+			];
 			$config->override( $nameParam );
 		}
 

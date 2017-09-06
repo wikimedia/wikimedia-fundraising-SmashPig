@@ -41,7 +41,7 @@ abstract class PaymentCapture extends AmazonMessage {
 	public function normalizeForQueue() {
 		$queueMsg = parent::normalizeForQueue();
 
-		$queueMsg = array_merge( $queueMsg, array(
+		$queueMsg = array_merge( $queueMsg, [
 			'completion_message_id' => $this->completion_message_id,
 			'contribution_tracking_id' => $this->contribution_tracking_id,
 			'currency' => $this->currency,
@@ -51,7 +51,7 @@ abstract class PaymentCapture extends AmazonMessage {
 			'order_id' => $this->order_id,
 			'payment_method' => 'amazon',
 			'fee' => $this->fee
-		) );
+		] );
 
 		return $queueMsg;
 	}

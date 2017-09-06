@@ -36,10 +36,10 @@ class DeletePendingJob extends RunnableJob {
 			"and order ID='{$this->order_id}'"
 		);
 
-		$deleteParams = array(
+		$deleteParams = [
 			'gateway' => $this->gateway,
 			'order_id' => $this->order_id,
-		);
+		];
 		PendingDatabase::get()
 			->deleteMessage( $deleteParams );
 

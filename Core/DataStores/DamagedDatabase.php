@@ -33,14 +33,14 @@ class DamagedDatabase extends SmashPigDatabase {
 			DateFields::getOriginalDateOrDefault( $message, $now )
 		);
 
-		$dbRecord = array(
+		$dbRecord = [
 			'original_date' => $originalDate,
 			'damaged_date' => UtcDate::getUtcDatabaseString(),
 			'original_queue' => $originalQueue,
 			'error' => $error,
 			'trace' => $trace,
 			'message' => json_encode( $message ),
-		);
+		];
 		if ( $retryDate ) {
 			$dbRecord['retry_date'] = UtcDate::getUtcDatabaseString(
 				$retryDate
@@ -49,9 +49,9 @@ class DamagedDatabase extends SmashPigDatabase {
 
 		// These fields have their own columns in the database
 		// Copy the values from the message to the record
-		$indexedFields = array(
+		$indexedFields = [
 			'gateway', 'gateway_txn_id', 'order_id'
-		);
+		];
 
 		foreach ( $indexedFields as $fieldName ) {
 			if ( isset( $message[$fieldName] ) ) {
@@ -83,15 +83,15 @@ class DamagedDatabase extends SmashPigDatabase {
 			ORDER BY retry_date ASC
 			LIMIT ' . $limit;
 
-		$params = array(
+		$params = [
 			'now' => UtcDate::getUtcDatabaseString()
-		);
+		];
 
 		$executed = $this->prepareAndExecute( $sql, $params );
 
 		$rows = $executed->fetchAll( PDO::FETCH_ASSOC );
 		return array_map(
-			array( $this, 'messageFromDbRow' ),
+			[ $this, 'messageFromDbRow' ],
 			$rows
 		);
 	}
@@ -104,9 +104,9 @@ class DamagedDatabase extends SmashPigDatabase {
 	public function deleteMessage( $message ) {
 		$sql = 'DELETE FROM damaged
 			WHERE id = :id';
-		$params = array(
+		$params = [
 			'id' => $message['damaged_id']
-		);
+		];
 		$this->prepareAndExecute( $sql, $params );
 	}
 
@@ -121,9 +121,9 @@ class DamagedDatabase extends SmashPigDatabase {
 		if ( $queue ) {
 			$sql .= ' AND original_queue = :queue';
 		}
-		$params = array(
+		$params = [
 			'date' => UtcDate::getUtcDatabaseString( $originalDate ),
-		);
+		];
 		if ( $queue ) {
 			$params['queue'] = $queue;
 		}

@@ -5,7 +5,7 @@ use SmashPig\PaymentProviders\AstroPay\Messages\NormalizedMessage;
 
 abstract class AstroPayMessage extends ListenerMessage {
 
-	protected $fields = array(
+	protected $fields = [
 		'result',
 		'x_invoice',
 		'x_iduser',
@@ -17,7 +17,7 @@ abstract class AstroPayMessage extends ListenerMessage {
 		'x_amount',
 		'x_control',
 		'x_currency',
-	);
+	];
 
 	protected $result;
 	protected $x_invoice;
@@ -60,7 +60,7 @@ abstract class AstroPayMessage extends ListenerMessage {
 		// AstroPay invoice format is ct_id.numAttempt
 		$invoiceParts = explode( '.', $this->x_invoice );
 
-		$queueMsg = array(
+		$queueMsg = [
 			'gateway' => 'astropay',
 			'contribution_tracking_id' => $invoiceParts[0],
 			'gateway_txn_id' => $this->x_document,
@@ -75,7 +75,7 @@ abstract class AstroPayMessage extends ListenerMessage {
 			// TODO: see comment on Amazon\ExpatriatedMessages\PaymentCapture->completion_message_id
 			'completion_message_id' => 'astropay-' . $this->x_invoice,
 			'order_id' => $this->x_invoice
-		);
+		];
 
 		return $queueMsg;
 	}

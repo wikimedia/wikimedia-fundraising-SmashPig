@@ -10,7 +10,7 @@ class MessageTest extends BaseSmashPigUnitTestCase {
 
 	public function testAntifraudFactory() {
 		$ctId = mt_rand( 0, 1000000 );
-		$diMessage = array(
+		$diMessage = [
 			'contribution_tracking_id' => $ctId,
 			'date' => 1455128736,
 			'gateway' => 'adyen',
@@ -18,12 +18,12 @@ class MessageTest extends BaseSmashPigUnitTestCase {
 			'payment_method' => 'cc',
 			'user_ip' => '8.8.4.4',
 			'order_id' => $ctId . '.0',
-		);
+		];
 
-		$scoreBreakdown = array(
+		$scoreBreakdown = [
 			'getScoreCountry' => 25,
 			'getScoreEmailDomain' => 10,
-		);
+		];
 		$afMessage = DonationInterfaceAntifraudFactory::create(
 			$diMessage, 12.5, $scoreBreakdown, 'process'
 		);

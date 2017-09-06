@@ -10,7 +10,7 @@ class RefundMessage extends Message {
 		if ( isset( $message['txn_type'] ) && $message['txn_type'] === 'adjustment' ) {
 			$message['type'] = 'chargeback';
 
-		} elseif ( isset( $ipnMessage['reason_code'] ) && in_array( $ipnMessage['reason_code'], array( 'refund', 'buyer_complaint', 'other' ) ) ) {
+		} elseif ( isset( $ipnMessage['reason_code'] ) && in_array( $ipnMessage['reason_code'], [ 'refund', 'buyer_complaint', 'other' ] ) ) {
 			$message['type'] = 'refund';
 
 		}

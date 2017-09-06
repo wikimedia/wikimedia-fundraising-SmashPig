@@ -13,11 +13,11 @@ class ConfigurationTest extends BaseSmashPigUnitTestCase {
 
 		$this->assertEquals( 'SmashPig', $config->val( 'logging/root-context' ),
 			'Default config was as expected.' );
-		$config->override( array(
-			'logging' => array(
+		$config->override( [
+			'logging' => [
 				'root-context' => 'FOO',
-			),
-		) );
+			],
+		] );
 		$this->assertEquals( 'FOO', $config->val( 'logging/root-context' ),
 			'Config was overridden.' );
 	}
@@ -30,27 +30,27 @@ class ConfigurationTest extends BaseSmashPigUnitTestCase {
 	public function testOverrideDeep() {
 		$config = Context::get()->getProviderConfiguration();
 
-		$config->override( array(
-			'endpoints' => array(
-				'listener' => array(
+		$config->override( [
+			'endpoints' => [
+				'listener' => [
 					'class' => 'SmashPig\Ham',
 					'postback-url' => 'http://Salad',
-				),
-			),
-		) );
+				],
+			],
+		] );
 
-		$config->override( array(
-			'endpoints' => array(
-				'listener' => array(
+		$config->override( [
+			'endpoints' => [
+				'listener' => [
 					'postback-url' => 'http://Rice',
-				),
-			),
-		) );
+				],
+			],
+		] );
 
-		$expected = array(
+		$expected = [
 			'class' => 'SmashPig\Ham',
 			'postback-url' => 'http://Rice',
-		);
+		];
 
 		$this->assertEquals( $expected, $config->val( 'endpoints/listener' ),
 			'Deep merge went as hoped' );

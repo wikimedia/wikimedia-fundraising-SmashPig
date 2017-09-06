@@ -25,12 +25,12 @@ class FileDumperTest extends BaseSmashPigUnitTestCase {
 		$queue = QueueWrapper::getQueue( 'test' );
 		$expected = '';
 		for ( $i = 0; $i < 5; $i++ ) {
-			$message = array(
+			$message = [
 				'psycho' => 'alpha',
 				'disco' => 'beta',
 				'bio' => 'aqua',
 				'dooloop' => mt_rand()
-			);
+			];
 			$queue->push( $message );
 			$expected .= json_encode( $message ) . "\n";
 		}

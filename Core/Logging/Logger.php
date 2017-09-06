@@ -28,7 +28,7 @@ class Logger {
 		}
 
 		// Init all the log streams
-		$streamObjs = array();
+		$streamObjs = [];
 		try {
 			$streams = $config->val( 'logging/enabled-log-streams' );
 

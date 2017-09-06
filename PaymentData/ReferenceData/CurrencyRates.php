@@ -15,7 +15,7 @@ class CurrencyRates {
 
 	public static function getCurrencyRates() {
 		// Not rounding numbers under 1 because I don't think that's a big issue and could cause issues with the max check.
-		$currencyRates = array(
+		$currencyRates = [
 			'ADF' => 6.01,
 			'ADP' => 152,
 			'AED' => 3.67,
@@ -213,7 +213,7 @@ class CurrencyRates {
 			'ZAR' => 13,
 			'ZMK' => 5328,
 			'ZWD' => 376,
-		);
+		];
 
 		return $currencyRates;
 	}

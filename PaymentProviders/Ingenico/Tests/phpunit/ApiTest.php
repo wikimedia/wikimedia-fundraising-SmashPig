@@ -52,11 +52,11 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				$this->equalTo( 'POST' ),
 				$this->callback( $headerVerification ),
 				$this->equalTo( '{"foo":"bar"}' )
-			)->willReturn( array(
+			)->willReturn( [
 				'body' => '{"baz":"quux"}'
-			) );
+			] );
 
-		$this->api->makeApiCall( 'testPath', 'POST', array( 'foo' => 'bar' ) );
+		$this->api->makeApiCall( 'testPath', 'POST', [ 'foo' => 'bar' ] );
 	}
 
 	/**
@@ -65,11 +65,11 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 	 */
 	public function testError() {
 		$this->curlWrapper->method( 'execute' )
-			->willReturn( array(
+			->willReturn( [
 				'body' => '{"errorId" : "460d9c9c-098c-4d84-b1e5-ee27ec601757","errors" : [ {   "code" : "9002",   "message" : "MISSING_OR_INVALID_AUTHORIZATION",   "httpStatusCode" : 403} ] }',
-				'headers' => array(),
+				'headers' => [],
 				'status' => 403
-			) );
-		$this->api->makeApiCall( 'testPath', 'POST', array( 'foo' => 'bar' ) );
+			] );
+		$this->api->makeApiCall( 'testPath', 'POST', [ 'foo' => 'bar' ] );
 	}
 }

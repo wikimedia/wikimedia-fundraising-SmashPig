@@ -19,7 +19,7 @@ class SettlementReport {
 	}
 
 	public function parse( $path ) {
-		$this->fileData = array();
+		$this->fileData = [];
 		// Skip 5 lines at start of file;
 		$csv = new HeadedCsvReader( $path, ',', 4096, 5 );
 
@@ -47,7 +47,7 @@ class SettlementReport {
 			return;
 		}
 
-		$msg = array();
+		$msg = [];
 		$orderId = $csv->currentCol( 'SellerReferenceId' );
 		if ( AmazonApi::isAmazonGeneratedMerchantReference( $orderId ) ) {
 			// If the capture was pushed through via console and the

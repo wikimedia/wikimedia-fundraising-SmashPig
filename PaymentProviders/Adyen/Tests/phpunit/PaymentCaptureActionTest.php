@@ -43,11 +43,11 @@ class PaymentCaptureActionTest extends BaseAdyenTestCase {
 			'SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob',
 			$job['php-message-class']
 		);
-		$sameProps = array(
+		$sameProps = [
 			'currency', 'amount', 'pspReference', 'merchantReference',
 			'avsResult', 'cvvResult',
 
-		);
+		];
 		foreach ( $sameProps as $prop ) {
 			$this->assertEquals(
 				$auth->$prop,

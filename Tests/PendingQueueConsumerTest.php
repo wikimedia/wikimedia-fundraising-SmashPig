@@ -97,13 +97,13 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public static function generateRandomPendingMessage() {
-		$message = array(
+		$message = [
 			'gateway' => 'test',
 			'date' => time(),
 			'order_id' => mt_rand(),
 			'cousin' => 'itt',
 			'kookiness' => mt_rand(),
-		);
+		];
 		return $message;
 	}
 
@@ -115,13 +115,13 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 	 * @return array Message suitable for the pending queue.
 	 */
 	public static function generatePendingMessageFromInitial( $initialRow ) {
-		$message = array(
+		$message = [
 			'gateway' => $initialRow['gateway'],
 			'date' => $initialRow['date'],
 			'order_id' => $initialRow['order_id'],
 			'cousin' => 'itt',
 			'kookiness' => mt_rand(),
-		);
+		];
 		return $message;
 	}
 }

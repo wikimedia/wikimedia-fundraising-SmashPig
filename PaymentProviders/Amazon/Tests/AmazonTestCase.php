@@ -16,9 +16,9 @@ class AmazonTestCase extends BaseSmashPigUnitTestCase {
 		$config = AmazonTestConfiguration::instance( $ctx->getGlobalConfiguration() );
 		$ctx->setProviderConfiguration( $config );
 		$this->mockClient = $config->object( 'payments-client', true );
-		$this->mockClient->calls = array();
-		$this->mockClient->returns = array();
-		$this->mockClient->exceptions = array();
+		$this->mockClient->calls = [];
+		$this->mockClient->returns = [];
+		$this->mockClient->exceptions = [];
 	}
 
 	public function tearDown() {

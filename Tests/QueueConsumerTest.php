@@ -35,27 +35,27 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 
 	public function testOneMessage() {
 		$consumer = new TestingQueueConsumer( 'test' );
-		$payload = array(
+		$payload = [
 			'wednesday' => 'addams',
 			'spookiness' => mt_rand(),
-		);
+		];
 		$this->queue->push( $payload );
 		$count = $consumer->dequeueMessages();
 		$this->assertEquals( 1, $count, 'Should report 1 message processed' );
-		$this->assertEquals( array( $payload ), $consumer->processed, 'Bad message' );
+		$this->assertEquals( [ $payload ], $consumer->processed, 'Bad message' );
 		$this->assertNull( $this->queue->pop(),
 			'Should delete message when processing is successful'
 		);
 	}
 
 	public function testDamagedQueue() {
-		$payload = array(
+		$payload = [
 			'gateway' => 'test',
 			'date' => time(),
 			'order_id' => mt_rand(),
 			'cousin' => 'itt',
 			'kookiness' => mt_rand(),
-		);
+		];
 
 		$consumer = new TestingQueueConsumer( 'test' );
 		$consumer->exception = new Exception( 'kaboom!' );
@@ -69,7 +69,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 			);
 		}
 		$this->assertEquals(
-			array( $payload ),
+			[ $payload ],
 			$consumer->processed,
 			'Processing snafu'
 		);
@@ -87,15 +87,15 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testMessageLimit() {
-		$messages = array();
+		$messages = [];
 		for ( $i = 0; $i < 5; $i++ ) {
-			$message = array(
+			$message = [
 				'gateway' => 'test',
 				'date' => time(),
 				'order_id' => mt_rand(),
 				'box' => 'thing' . $i,
 				'creepiness' => mt_rand(),
-			);
+			];
 			$messages[] = $message;
 			$this->queue->push( $message );
 		}
@@ -126,15 +126,15 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testKeepRunningOnDamage() {
-		$messages = array();
+		$messages = [];
 		for ( $i = 0; $i < 5; $i++ ) {
-			$message = array(
+			$message = [
 				'gateway' => 'test',
 				'date' => time(),
 				'order_id' => mt_rand(),
 				'box' => 'thing' . $i,
 				'creepiness' => mt_rand(),
-			);
+			];
 			$messages[] = $message;
 			$this->queue->push( $message );
 		}

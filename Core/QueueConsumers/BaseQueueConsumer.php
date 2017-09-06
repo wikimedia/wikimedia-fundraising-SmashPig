@@ -93,7 +93,7 @@ abstract class BaseQueueConsumer {
 	public function dequeueMessages() {
 		$startTime = time();
 		$processed = 0;
-		$realCallback = array( $this, 'processMessageWithErrorHandling' );
+		$realCallback = [ $this, 'processMessageWithErrorHandling' ];
 		do {
 			$data = $this->backend->popAtomic( $realCallback );
 			if ( $data !== null ) {
@@ -102,7 +102,7 @@ abstract class BaseQueueConsumer {
 			$timeOk = $this->timeLimit === 0 || time() <= $startTime + $this->timeLimit;
 			$countOk = $this->messageLimit === 0 || $processed < $this->messageLimit;
 
-			$debugMessages = array();
+			$debugMessages = [];
 			if ( $data === null ) {
 				$debugMessages[] = 'Queue is empty.';
 			} elseif ( !$timeOk ) {

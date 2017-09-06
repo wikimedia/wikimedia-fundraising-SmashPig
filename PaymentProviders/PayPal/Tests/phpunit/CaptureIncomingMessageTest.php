@@ -32,7 +32,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	 * @var array
 	 */
 	// filename and the queue it should get dropped in
-	static $message_data = array(
+	static $message_data = [
 		'web_accept.json' => 'donations',
 		'express_checkout.json' => 'donations',
 		'recurring_payment_profile_created.json' => 'recurring',
@@ -48,7 +48,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		'refund_other.json' => 'refund',
 		// this should not actually get written to
 		// TODO 'new_case.json' => 'no-op',
-	);
+	];
 
 	public function setUp() {
 		parent::setUp();
@@ -62,16 +62,16 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function messageProvider() {
-		$messages = array();
+		$messages = [];
 		foreach ( self::$message_data as $file => $type ) {
 			$payloadFile = __DIR__ . '/../Data/' . $file;
-			$messageData = array(
+			$messageData = [
 				'type' => $type,
 				'payload' => json_decode(
 					file_get_contents( $payloadFile ),
 					true
 				)
-			);
+			];
 			$transformedFile = str_replace( '.json', '_transformed.json', $payloadFile );
 			if ( file_exists( $transformedFile ) ) {
 				$messageData['transformed'] = json_decode(
@@ -79,7 +79,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 					true
 				);
 			}
-			$messages[] = array( $messageData );
+			$messages[] = [ $messageData ];
 		}
 		return $messages;
 	}
@@ -94,9 +94,9 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	protected function getCurlMock( $returnString ) {
 		$wrapper = $this->getMock( 'SmashPig\Core\Http\CurlWrapper' );
 		$wrapper->method( 'execute' )
-			->willReturn( array(
+			->willReturn( [
 				'body' => $returnString
-			) );
+			] );
 		$this->providerConfig->overrideObjectInstance( 'curl/wrapper', $wrapper );
 		return $wrapper;
 	}
@@ -118,7 +118,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testBlankMessage() {
-		$this->capture( array() );
+		$this->capture( [] );
 		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
 		$this->assertNull( $jobQueue->pop() );
 	}
@@ -166,17 +166,17 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 
 	public function testFailedVerification() {
 		$this->getCurlMock( 'INVALID' );
-		$jobMessage = array( 'txn_type' => 'fail' );
+		$jobMessage = [ 'txn_type' => 'fail' ];
 		$this->assertFalse( $this->capture( $jobMessage ) );
 	}
 
 	public function testRetryValidator() {
 		$validator = $this->providerConfig->object( 'curl/validator' );
-		$response = array(
+		$response = [
 			'status' => 200,
-			'headers' => array(),
+			'headers' => [],
 			'body' => '<html><head><title>Fail</title></head><body>Oops</body></html>'
-		);
+		];
 		$this->assertTrue( $validator->shouldRetry( $response ) );
 		$response['body'] = 'INVALID';
 		$this->assertFalse( $validator->shouldRetry( $response ) );

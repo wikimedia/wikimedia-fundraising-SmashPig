@@ -31,14 +31,14 @@ abstract class PaymentRefund extends AmazonMessage {
 	public function normalizeForQueue() {
 		$queueMsg = parent::normalizeForQueue();
 
-		$queueMsg = array_merge( $queueMsg, array(
+		$queueMsg = array_merge( $queueMsg, [
 			'gateway_parent_id' => $this->gateway_parent_id,
 			'gateway_refund_id' => $this->gateway_txn_id,
 			'gross_currency' => $this->currency,
 			// Docs say RefundType is always 'SellerInitiated'
 			// Waiting to hear back about how they inform us of chargebacks.
 			'type' => 'refund',
-		) );
+		] );
 
 		return $queueMsg;
 	}

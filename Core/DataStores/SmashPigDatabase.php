@@ -18,7 +18,7 @@ abstract class SmashPigDatabase {
 	 * it, even in an abstract class like this one. See
 	 * http://stackoverflow.com/questions/11417681/static-properties-on-base-class-and-inheritance#11418607
 	 */
-	protected static $dbs = array();
+	protected static $dbs = [];
 
 	protected function __construct() {
 		$config = Context::get()->getGlobalConfiguration();
@@ -78,7 +78,7 @@ abstract class SmashPigDatabase {
 		// Build a list of parameter names for safe db insert
 		// Same as the field list, but each parameter is prefixed with a colon
 		$paramList = ':' . implode( ', :', $fields );
-		return array( $fieldList, $paramList );
+		return [ $fieldList, $paramList ];
 	}
 
 	/**

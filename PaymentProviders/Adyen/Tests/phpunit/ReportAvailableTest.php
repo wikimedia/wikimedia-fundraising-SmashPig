@@ -44,12 +44,12 @@ class ReportAvailableTest extends BaseAdyenTestCase {
 		$this->assertTrue( $diff < 60, 'Odd enqueued time' );
 		SourceFields::removeFromMessage( $job );
 		unset( $job['propertiesExcludedFromExport'] );
-		$expected = array(
+		$expected = [
 			'php-message-class' => 'SmashPig\PaymentProviders\Adyen\Jobs\DownloadReportJob',
 			'reportUrl' => $url,
 			'account' => $account,
 			'gateway' => 'adyen',
-		);
+		];
 		$this->assertEquals( $expected, $job );
 	}
 

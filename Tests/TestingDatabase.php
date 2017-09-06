@@ -3,18 +3,18 @@
 namespace SmashPig\Tests;
 
 class TestingDatabase {
-	public static $classes = array(
+	public static $classes = [
 		'SmashPig\Core\DataStores\DamagedDatabase',
 		'SmashPig\Core\DataStores\PaymentsInitialDatabase',
 		'SmashPig\Core\DataStores\PendingDatabase',
-	);
+	];
 
 	public static function clearStatics() {
 		foreach ( self::$classes as $className ) {
 			$klass = new \ReflectionClass( $className );
 			$dbProperty = $klass->getProperty( 'dbs' );
 			$dbProperty->setAccessible( true );
-			$dbProperty->setValue( array() );
+			$dbProperty->setValue( [] );
 		}
 	}
 

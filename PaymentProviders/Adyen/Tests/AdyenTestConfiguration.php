@@ -5,7 +5,7 @@ use SmashPig\Tests\TestingProviderConfiguration;
 
 class AdyenTestConfiguration extends TestingProviderConfiguration {
 
-	public static function instance( $overrides = array(), GlobalConfiguration $globalConfig ) {
+	public static function instance( $overrides = [], GlobalConfiguration $globalConfig ) {
 		$config = static::createForProvider( 'adyen', $globalConfig );
 		$config->override( $overrides );
 
@@ -13,26 +13,26 @@ class AdyenTestConfiguration extends TestingProviderConfiguration {
 	}
 
 	public static function createWithSuccessfulApi( GlobalConfiguration $globalConfig ) {
-		$override = array( 'api' =>
-			array(
+		$override = [ 'api' =>
+			[
 				'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
 				'constructor-parameters' =>
-					array( 'Success!' )
-			)
-		);
+					[ 'Success!' ]
+			]
+		];
 		return self::instance( $override, $globalConfig );
 	}
 
 	public static function createWithUnsuccessfulApi( GlobalConfiguration $globalConfig ) {
-		$override = array( 'api' =>
-			array(
+		$override = [ 'api' =>
+			[
 				'class' => 'SmashPig\PaymentProviders\Adyen\Tests\MockAdyenPaymentsAPI',
 				'constructor-parameters' =>
 					// FIXME: Really?  or boolean `false` as it would be if
 					// we parsed "false" from yaml?
-					array( 'false' )
-			)
-		);
+					[ 'false' ]
+			]
+		];
 		return self::instance( $override, $globalConfig );
 	}
 }

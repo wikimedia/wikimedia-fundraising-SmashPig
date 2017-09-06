@@ -33,7 +33,7 @@ class PaymentResult {
 	protected $form;
 	protected $redirect;
 	protected $refresh = false;
-	protected $errors = array();
+	protected $errors = [];
 	protected $failed = false;
 
 	protected function __construct() {
@@ -57,7 +57,7 @@ class PaymentResult {
 		return $response;
 	}
 
-	public static function newRefresh( $errors = array() ) {
+	public static function newRefresh( $errors = [] ) {
 		$response = new PaymentResult();
 		$response->refresh = true;
 		$response->errors = $errors;
@@ -69,7 +69,7 @@ class PaymentResult {
 		return $response;
 	}
 
-	public static function newFailure( $errors = array() ) {
+	public static function newFailure( $errors = [] ) {
 		$response = new PaymentResult();
 		$response->failed = true;
 		$response->errors = $errors;
@@ -79,9 +79,9 @@ class PaymentResult {
 	public static function newEmpty() {
 		$response = new PaymentResult();
 		// FIXME: encapsulated errors, no message
-		$response->errors = array( new PaymentError(
+		$response->errors = [ new PaymentError(
 			'internal-0000', 'Internal error: no results yet.', LogLevel::ERROR
-		) );
+		) ];
 		$response->failed = true;
 		return $response;
 	}

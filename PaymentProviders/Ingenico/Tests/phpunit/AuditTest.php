@@ -18,7 +18,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$output = $processor->parseFile( __DIR__ . '/../Data/donation.xml.gz' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one donation' );
 		$actual = $output[0];
-		$expected = array(
+		$expected = [
 			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
 			'gross' => 3.00,
 			'contribution_tracking_id' => '5551212',
@@ -36,7 +36,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'city' => 'Denver',
 			'country' => 'US',
 			'email' => 'dutchman@flying.net',
-		);
+		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
 
@@ -48,7 +48,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$output = $processor->parseFile( __DIR__ . '/../Data/recurring.xml.gz' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one recurring donation' );
 		$actual = $output[0];
-		$expected = array(
+		$expected = [
 			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
 			'gross' => 3.00,
 			'contribution_tracking_id' => '5551212',
@@ -67,7 +67,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'city' => 'Denver',
 			'country' => 'US',
 			'email' => 'dutchman@flying.net',
-		);
+		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
 
@@ -79,7 +79,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$output = $processor->parseFile( __DIR__ . '/../Data/refund.xml.gz' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
 		$actual = $output[0];
-		$expected = array(
+		$expected = [
 			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
 			'contribution_tracking_id' => '5551212',
 			'date' => 1500942220,
@@ -89,7 +89,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'installment' => 1,
 			'gross_currency' => 'USD',
 			'type' => 'refund',
-		);
+		];
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
 
@@ -101,7 +101,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$output = $processor->parseFile( __DIR__ . '/../Data/chargeback.xml.gz' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one chargeback' );
 		$actual = $output[0];
-		$expected = array(
+		$expected = [
 			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
 			'contribution_tracking_id' => '5551212',
 			'date' => 1495023569,
@@ -111,7 +111,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'installment' => 1,
 			'gross_currency' => 'USD',
 			'type' => 'chargeback',
-		);
+		];
 		$this->assertEquals( $expected, $actual, 'Did not parse chargeback correctly' );
 	}
 
@@ -124,7 +124,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$output = $processor->parseFile( __DIR__ . '/../Data/sparseRefund.xml.gz' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
 		$actual = $output[0];
-		$expected = array(
+		$expected = [
 			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
 			'contribution_tracking_id' => '48987654',
 			'date' => 1503964800,
@@ -134,7 +134,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'installment' => '', // EffortID came in blank too
 			'gross_currency' => 'EUR',
 			'type' => 'refund',
-		);
+		];
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
 }

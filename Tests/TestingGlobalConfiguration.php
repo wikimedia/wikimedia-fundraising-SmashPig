@@ -15,7 +15,7 @@ class TestingGlobalConfiguration extends GlobalConfiguration {
 	 * @implements Configuration::getDefaultSearchPath
 	 */
 	protected function getDefaultSearchPath() {
-		$searchPath = array();
+		$searchPath = [];
 		$searchPath[] = __DIR__ . '/data/test_global.yaml';
 		$searchPath[] = __DIR__ . '/../config/main.yaml';
 		return $searchPath;

@@ -18,7 +18,7 @@ class PaymentsInitialDatabaseTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public static function generateTestMessage() {
-		$message = array(
+		$message = [
 			'id' => mt_rand(),
 			'contribution_tracking_id' => mt_rand(),
 			'gateway' => 'test_gateway',
@@ -33,7 +33,7 @@ class PaymentsInitialDatabaseTest extends BaseSmashPigUnitTestCase {
 			'currency_code' => 'EUR',
 			'server' => 'localhost',
 			'date' => UtcDate::getUtcDatabaseString( time() ),
-		);
+		];
 		return $message;
 	}
 

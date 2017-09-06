@@ -12,10 +12,10 @@ use SmashPig\Core\Logging\Logger;
  */
 class AstroPayListener extends RestListener {
 
-	protected $byResult = array(
+	protected $byResult = [
 		'9' => 'SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages\PaymentMessage',
 		'8' => 'SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages\ExpirationMessage',
-	);
+	];
 
 	protected function parseEnvelope( Request $request ) {
 		$requestValues = $request->getValues();
@@ -23,10 +23,10 @@ class AstroPayListener extends RestListener {
 		$secureLog = Logger::getTaggedLogger( 'RawData' );
 		$secureLog->info( "Incoming message (raw)", $requestValues );
 
-		$messages = array();
+		$messages = [];
 
 		// Can't even check signature without these four
-		$required = array( 'result', 'x_amount', 'x_invoice', 'x_control' );
+		$required = [ 'result', 'x_amount', 'x_invoice', 'x_control' ];
 		$missing = array_diff( $required, array_keys( $requestValues ) );
 		if ( count( $missing ) ) {
 			$list = implode( ',', $missing );

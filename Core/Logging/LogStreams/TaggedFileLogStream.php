@@ -8,7 +8,7 @@ class TaggedFileLogStream implements ILogStream {
 	/** @var string Stores the current context string in a file system safe manner */
 	protected $contextName = '';
 
-	protected $tags = array();
+	protected $tags = [];
 
 	protected $directory = '';
 
@@ -21,7 +21,7 @@ class TaggedFileLogStream implements ILogStream {
 		}
 
 		if ( !is_array( $tags ) ) {
-			$tags = array( $tags );
+			$tags = [ $tags ];
 		}
 		$this->tags = $tags;
 	}

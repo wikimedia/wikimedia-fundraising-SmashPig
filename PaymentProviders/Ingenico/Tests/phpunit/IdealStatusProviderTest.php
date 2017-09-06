@@ -32,29 +32,29 @@ class IdealStatusProviderTest extends BaseSmashPigUnitTestCase {
 		$this->cache = $globalConfig->object( 'cache', true );
 		$this->cache->clear();
 
-		$this->provider = new IdealStatusProvider( array(
-			'cache-parameters' => array(
+		$this->provider = new IdealStatusProvider( [
+			'cache-parameters' => [
 				'duration' => 10,
 				'key' => 'BLAH_BLAH'
-			),
+			],
 			'availability-url' => 'http://example.org/undocumented/api/GetIssuers'
-		) );
+		] );
 		$this->setUpResponse( __DIR__ . "/../Data/availability.response", 200 );
 	}
 
 	public function testGetBankStatus() {
 		$results = $this->provider->getBankStatus();
 		$this->assertEquals(
-			array(
-				'ABNANL2A' => array(
+			[
+				'ABNANL2A' => [
 					'name' => 'ABN AMRO',
 					'availability' => '40',
-				),
-				'INGBNL2A' => array(
+				],
+				'INGBNL2A' => [
 					'name' => 'Issuer Simulation V3 - ING',
 					'availability' => '100',
-				)
-			),
+				]
+			],
 			$results
 		);
 	}
@@ -64,16 +64,16 @@ class IdealStatusProviderTest extends BaseSmashPigUnitTestCase {
 			->method( 'execute' );
 		$results = $this->provider->getBankStatus();
 		$this->assertEquals(
-			array(
-				'ABNANL2A' => array(
+			[
+				'ABNANL2A' => [
 					'name' => 'ABN AMRO',
 					'availability' => '40',
-				),
-				'INGBNL2A' => array(
+				],
+				'INGBNL2A' => [
 					'name' => 'Issuer Simulation V3 - ING',
 					'availability' => '100',
-				)
-			),
+				]
+			],
 			$results
 		);
 		$cachedResults = $this->provider->getBankStatus();

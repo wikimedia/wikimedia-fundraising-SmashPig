@@ -14,7 +14,7 @@ class TestingProviderConfiguration extends ProviderConfiguration {
 	 * @implements Configuration::getDefaultSearchPath
 	 */
 	protected function getDefaultSearchPath() {
-		$searchPaths = array();
+		$searchPaths = [];
 		if ( $this->provider !== self::NO_PROVIDER ) {
 			$searchPaths[] = __DIR__ . "/../config/{$this->provider}/main.yaml";
 		}

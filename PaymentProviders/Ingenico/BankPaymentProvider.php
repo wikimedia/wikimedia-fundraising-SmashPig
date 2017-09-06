@@ -24,7 +24,7 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 	 */
 	protected $cache;
 
-	public function __construct( array $options = array() ) {
+	public function __construct( array $options = [] ) {
 		parent::__construct( $options );
 		$this->cacheParameters = $options['cache-parameters'];
 		// FIXME: provide objects in constructor
@@ -46,12 +46,12 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 		$cacheItem = $this->cache->getItem( $cacheKey );
 
 		if ( !$cacheItem->isHit() || $this->shouldBeExpired( $cacheItem ) ) {
-			$query = array(
+			$query = [
 				'countryCode' => $country,
 				'currencyCode' => $currency
-			);
+			];
 			$path = "products/$productId/directory";
-			$banks = array();
+			$banks = [];
 
 			try {
 				$response = $this->api->makeApiCall( $path, 'GET', $query );
@@ -68,10 +68,10 @@ class BankPaymentProvider extends IngenicoPaymentProvider {
 				// the country/currency/product. That's legitimate, so cache the empty array
 			}
 			$duration = $this->cacheParameters['duration'];
-			$cacheItem->set( array(
+			$cacheItem->set( [
 				'value' => $banks,
 				'expiration' => time() + $duration
-			) );
+			] );
 			$cacheItem->expiresAfter( $duration );
 			$this->cache->save( $cacheItem );
 		}

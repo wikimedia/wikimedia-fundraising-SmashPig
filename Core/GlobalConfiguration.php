@@ -37,7 +37,7 @@ class GlobalConfiguration extends Configuration {
 	}
 
 	protected function getDefaultSearchPath() {
-		$searchPath = array();
+		$searchPath = [];
 
 		if ( isset( $_SERVER['HOME'] ) ) {
 			// FIXME: But I don't understand why this key is missing during testing.
@@ -49,6 +49,6 @@ class GlobalConfiguration extends Configuration {
 	}
 
 	protected function getDefaultOptions() {
-		return array();
+		return [];
 	}
 }

@@ -101,7 +101,7 @@ class CurlWrapper {
 	}
 
 	protected function getCurlOptions( $url, $method, $headers, $data, $logStream ) {
-		$options = array(
+		$options = [
 			CURLOPT_URL => $url,
 			CURLOPT_USERAGENT => $this->providerConfiguration->val( 'curl/user-agent' ),
 			CURLOPT_HEADER => 1,
@@ -113,7 +113,7 @@ class CurlWrapper {
 			CURLOPT_FORBID_REUSE => true,
 			CURLOPT_VERBOSE => true,
 			CURLOPT_STDERR => $logStream,
-		);
+		];
 		switch ( $method ) {
 			case 'PUT':
 				$options[CURLOPT_PUT] = 1;
@@ -143,7 +143,7 @@ class CurlWrapper {
 		$body = substr( $response, $header_size );
 		$header = str_replace( "\r", "", $header );
 		$headerLines = explode( "\n", $header );
-		$responseHeaders = array();
+		$responseHeaders = [];
 		foreach ( $headerLines as $line ) {
 			if ( strstr( $line, ': ' ) !== false ) {
 				$line = rtrim( $line );
@@ -151,10 +151,10 @@ class CurlWrapper {
 				$responseHeaders[$name] = $value;
 			}
 		}
-		return array(
+		return [
 			'body' => $body,
 			'headers' => $responseHeaders,
 			'status' => (int)$curlInfo['http_code']
-		);
+		];
 	}
 }

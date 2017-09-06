@@ -27,10 +27,10 @@ class SourceFields {
 	 * @return array
 	 */
 	public static function removeFromMessage( &$message ) {
-		$sourceFields = array();
-		$suffixes = array(
+		$sourceFields = [];
+		$suffixes = [
 			'name', 'type', 'host', 'run_id', 'version', 'enqueued_time'
-		);
+		];
 		foreach ( $suffixes as $suffix ) {
 			$name = 'source_' . $suffix;
 			$sourceFields[$name] = $message[$name];

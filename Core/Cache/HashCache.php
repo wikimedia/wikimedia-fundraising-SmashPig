@@ -8,9 +8,9 @@ use Psr\Cache\InvalidArgumentException;
 
 class HashCache implements CacheItemPoolInterface {
 
-	protected $items = array();
+	protected $items = [];
 
-	protected $deferredQueue = array();
+	protected $deferredQueue = [];
 
 	/**
 	 * Returns a Cache Item representing the specified key.
@@ -51,8 +51,8 @@ class HashCache implements CacheItemPoolInterface {
 	 *   key is not found. However, if no keys are specified then an empty
 	 *   traversable MUST be returned instead.
 	 */
-	public function getItems( array $keys = array() ) {
-		return array_map( array( $this, 'getItem' ), $keys );
+	public function getItems( array $keys = [] ) {
+		return array_map( [ $this, 'getItem' ], $keys );
 	}
 
 	/**
@@ -83,7 +83,7 @@ class HashCache implements CacheItemPoolInterface {
 	 *   True if the pool was successfully cleared. False if there was an error.
 	 */
 	public function clear() {
-		$this->items = array();
+		$this->items = [];
 		return true;
 	}
 
@@ -118,7 +118,7 @@ class HashCache implements CacheItemPoolInterface {
 	 *   True if the items were successfully removed. False if there was an error.
 	 */
 	public function deleteItems( array $keys ) {
-		array_walk( $keys, array( $this, 'deleteItem' ) );
+		array_walk( $keys, [ $this, 'deleteItem' ] );
 		return true;
 	}
 

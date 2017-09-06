@@ -10,7 +10,7 @@ class AdyenListener extends SoapListener {
 
 	protected $wsdlpath = "https://ca-live.adyen.com/ca/services/Notification?wsdl";
 
-	protected $classmap = array(
+	protected $classmap = [
 		'NotificationRequest'      => 'SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequest',
 		'NotificationRequestItem'  => 'SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem',
 		'anyType2anyTypeMap'       => 'SmashPig\PaymentProviders\Adyen\WSDL\anyType2anyTypeMap',
@@ -21,7 +21,7 @@ class AdyenListener extends SoapListener {
 		'ServiceException'         => 'SmashPig\PaymentProviders\Adyen\WSDL\ServiceException',
 		'Error'                    => 'SmashPig\PaymentProviders\Adyen\WSDL\Error',
 		'Type'                     => 'SmashPig\PaymentProviders\Adyen\WSDL\Type',
-	);
+	];
 
 	public function __construct() {
 		require_once 'WSDL/Notification.php';
@@ -60,7 +60,7 @@ class AdyenListener extends SoapListener {
 	 * @return WSDL\sendNotificationResponse
 	 */
 	public function sendNotification( WSDL\sendNotification $var ) {
-		$messages = array();
+		$messages = [];
 
 		$respstring = "[failed]";
 

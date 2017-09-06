@@ -20,7 +20,7 @@ class TestFailMail extends MaintenanceBase {
 		Logger::debug( 'Debug log message' );
 		Logger::notice( 'Notice...' );
 		Logger::getTaggedLogger( 'RawData' )->info( 'This should be tagged RawData' );
-		Logger::warning( 'Warning!', array( 'foo' => 'bar' ) );
+		Logger::warning( 'Warning!', [ 'foo' => 'bar' ] );
 
 		try {
 			$this->throwException();

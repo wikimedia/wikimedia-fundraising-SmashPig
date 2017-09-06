@@ -72,11 +72,11 @@ class CaptureJobTest extends BaseAdyenTestCase {
 		);
 
 		$this->assertEquals(
-			array(
+			[
 				'currency' => 'USD',
 				'amount' => 10,
 				'pspReference' => '762895314225',
-			),
+			],
 			$api->captured[0],
 			'RequestCaptureJob did not make the right capture call'
 		);

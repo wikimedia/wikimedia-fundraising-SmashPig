@@ -22,7 +22,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 		if ( !$uniq ) {
 			$uniq = mt_rand();
 		}
-		return array(
+		return [
 			'gateway' => 'test',
 			'gateway_txn_id' => "txn-{$uniq}",
 			'order_id' => "order-{$uniq}",
@@ -30,7 +30,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 			'date' => 1468973648,
 			'amount' => 123,
 			'currency' => 'EUR',
-		);
+		];
 	}
 
 	public function testStoreMessage() {
@@ -50,7 +50,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 		$rows = $result->fetchAll( PDO::FETCH_ASSOC );
 		$this->assertEquals( 1, count( $rows ),
 			'One row stored and retrieved.' );
-		$expected = array(
+		$expected = [
 			'id' => $damagedId,
 			// NOTE: This is a db-specific string, sqlite3 in this case, and
 			// you'll have different formatting if using any other database.
@@ -63,7 +63,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 			'error' => $err,
 			'trace' => $trace,
 			'retry_date' => null,
-		);
+		];
 		unset( $rows[0]['damaged_date'] );
 		$this->assertEquals( $expected, $rows[0],
 			'Stored message had expected contents' );
@@ -78,10 +78,10 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 		$this->assertNotNull( $fetched,
 			'No record retrieved by fetchRetryMessages.' );
 
-		$expected = $message + array(
+		$expected = $message + [
 			'damaged_id' => 1,
 			'original_queue' => 'test_queue'
-		);
+		];
 		$this->assertEquals( $expected, $fetched[0],
 			'Fetched record does not matches stored message.' );
 	}

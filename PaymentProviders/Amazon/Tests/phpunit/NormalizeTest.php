@@ -23,7 +23,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testNormalizeCaptureCompleted() {
-		$expected = array(
+		$expected = [
 			'completion_message_id' => 'amazon-98765432-1',
 			'contribution_tracking_id' => '98765432',
 			'currency' => 'USD',
@@ -35,7 +35,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 			'gross' => '10.0',
 			'order_id' => '98765432-1',
 			'payment_method' => 'amazon',
-		);
+		];
 		$message = new CaptureCompleted( $this->captureCompleted );
 		$normalized = $message->normalizeForQueue();
 		$this->assertEquals( $expected, $normalized );
@@ -43,7 +43,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 
 	public function testNormalizeRefundCompleted() {
 		$id = 'P01-0000000-0000000-C' . mt_rand( 10000, 99999 );
-		$expected = array(
+		$expected = [
 			'gross_currency' => 'USD',
 			'date' => 1357002061,
 			'gateway' => 'amazon',
@@ -51,7 +51,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 			'gateway_refund_id' => 'P01-0000000-0000000-R00000',
 			'gross' => '10.0',
 			'type' => 'refund',
-		);
+		];
 		$message = new RefundCompleted( $this->refundCompleted );
 		$message->setParentId( $id );
 		$normalized = $message->normalizeForQueue();

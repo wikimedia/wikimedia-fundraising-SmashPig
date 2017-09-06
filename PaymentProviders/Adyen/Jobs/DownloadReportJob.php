@@ -22,9 +22,9 @@ class DownloadReportJob extends RunnableJob {
 	protected $reportUrl;
 
 	protected $downloadLoc;
-	protected $propertiesExcludedFromExport = array(
+	protected $propertiesExcludedFromExport = [
 		'logger', 'downloadLoc'
-	);
+	];
 
 	public static function factory( $account, $url ) {
 		$obj = new DownloadReportJob();

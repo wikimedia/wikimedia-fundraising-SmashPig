@@ -11,14 +11,14 @@ class ConsoleLogStream implements ILogStream {
 	/** @var LogContextHandler */
 	protected $context;
 
-	protected $levelNames = array(
+	protected $levelNames = [
 		LOG_ALERT   => 'ALERT',
 		LOG_ERR     => 'ERROR',
 		LOG_WARNING => 'WARNING',
 		LOG_INFO    => 'INFO',
 		LOG_NOTICE  => 'NOTICE',
 		LOG_DEBUG   => 'DEBUG',
-	);
+	];
 
 	public function registerContextHandler( LogContextHandler $ch ) {
 		$this->context = $ch;

@@ -22,7 +22,7 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 		if ( !$uniq ) {
 			$uniq = mt_rand();
 		}
-		return array(
+		return [
 			'gateway' => 'test',
 			'gateway_txn_id' => "txn-{$uniq}",
 			'order_id' => "order-{$uniq}",
@@ -30,7 +30,7 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 			'date' => 1468973648,
 			'amount' => 123,
 			'currency' => 'EUR',
-		);
+		];
 	}
 
 	public function testStoreMessage() {
@@ -46,7 +46,7 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 		$rows = $result->fetchAll( PDO::FETCH_ASSOC );
 		$this->assertEquals( 1, count( $rows ),
 			'One row stored and retrieved.' );
-		$expected = array(
+		$expected = [
 			'id' => $id,
 			// NOTE: This is a db-specific string, sqlite3 in this case, and
 			// you'll have different formatting if using any other database.
@@ -56,7 +56,7 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 			'order_id' => $message['order_id'],
 			'gateway_txn_id' => $message['gateway_txn_id'],
 			'message' => json_encode( $message ),
-		);
+		];
 		$this->assertEquals( $expected, $rows[0],
 			'Stored message had expected contents' );
 	}
@@ -69,9 +69,9 @@ class PendingDatabaseTest extends BaseSmashPigUnitTestCase {
 		$this->assertNotNull( $fetched,
 			'Record retrieved by fetchMessageByGatewayOrderId.' );
 
-		$expected = $message + array(
+		$expected = $message + [
 			'pending_id' => 1,
-		);
+		];
 		$this->assertEquals( $expected, $fetched,
 			'Fetched record matches stored message.' );
 	}

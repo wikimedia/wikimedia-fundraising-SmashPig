@@ -33,13 +33,13 @@ class PendingDatabase extends SmashPigDatabase {
 	public function storeMessage( $message ) {
 		$this->validateMessage( $message );
 
-		$dbRecord = array();
+		$dbRecord = [];
 
 		// These fields (and date) have their own columns in the database
 		// Copy the values from the message to the record
-		$indexedFields = array(
+		$indexedFields = [
 			'gateway', 'gateway_account', 'gateway_txn_id', 'order_id'
-		);
+		];
 
 		foreach ( $indexedFields as $fieldName ) {
 			if ( isset( $message[$fieldName] ) ) {
@@ -75,10 +75,10 @@ class PendingDatabase extends SmashPigDatabase {
 				and order_id = :order_id
 			limit 1';
 
-		$params = array(
+		$params = [
 			'gateway' => $gatewayName,
 			'order_id' => $orderId,
-		);
+		];
 		$executed = $this->prepareAndExecute( $sql, $params );
 		$row = $executed->fetch( PDO::FETCH_ASSOC );
 		if ( !$row ) {
@@ -99,7 +99,7 @@ class PendingDatabase extends SmashPigDatabase {
 			order by date asc
 			limit 1';
 
-		$params = array( 'gateway' => $gatewayName );
+		$params = [ 'gateway' => $gatewayName ];
 		$executed = $this->prepareAndExecute( $sql, $params );
 		$row = $executed->fetch( PDO::FETCH_ASSOC );
 		if ( !$row ) {
@@ -121,7 +121,7 @@ class PendingDatabase extends SmashPigDatabase {
 			where gateway = :gateway
 			order by date desc
 			limit $limit";
-		$params = array( 'gateway' => $gatewayName );
+		$params = [ 'gateway' => $gatewayName ];
 		$executed = $this->prepareAndExecute( $sql, $params );
 		$rows = $executed->fetchAll( PDO::FETCH_ASSOC );
 		if ( !$rows ) {
@@ -152,10 +152,10 @@ class PendingDatabase extends SmashPigDatabase {
 			delete from pending
 			where gateway = :gateway
 				and order_id = :order_id';
-		$params = array(
+		$params = [
 			'gateway' => $message['gateway'],
 			'order_id' => $message['order_id'],
-		);
+		];
 
 		$this->prepareAndExecute( $sql, $params );
 	}
@@ -169,9 +169,9 @@ class PendingDatabase extends SmashPigDatabase {
 	 */
 	public function deleteOldMessages( $originalDate, $gateway = null ) {
 		$sql = 'DELETE FROM pending WHERE date < :date';
-		$params = array(
+		$params = [
 			'date' => UtcDate::getUtcDatabaseString( $originalDate ),
-		);
+		];
 		if ( $gateway ) {
 			$sql .= ' AND gateway = :gateway';
 			$params['gateway'] = $gateway;
@@ -207,7 +207,7 @@ class PendingDatabase extends SmashPigDatabase {
 	 * @return string SQL to update a pending record, with parameters
 	 */
 	protected function getUpdateStatement( $record ) {
-		$sets = array();
+		$sets = [];
 		foreach ( array_keys( $record ) as $field ) {
 			$sets[] = "$field = :$field";
 		}

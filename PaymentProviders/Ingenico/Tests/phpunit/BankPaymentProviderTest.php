@@ -31,21 +31,21 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->cache = $globalConfig->object( 'cache', true );
 		$this->cache->clear();
 
-		$this->provider = new BankPaymentProvider( array(
-			'cache-parameters' => array(
+		$this->provider = new BankPaymentProvider( [
+			'cache-parameters' => [
 				'duration' => 10,
 				'key-base' => 'BLAH_BLAH'
-			)
-		) );
+			]
+		] );
 	}
 
 	public function testGetBankList() {
 		$this->setUpResponse( __DIR__ . '/../Data/productDirectory.response', 200 );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );
 		$this->assertEquals(
-			array(
+			[
 				'INGBNL2A' => 'Issuer Simulation V3 - ING'
-			),
+			],
 			$results
 		);
 	}
@@ -56,9 +56,9 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			->method( 'execute' );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );
 		$this->assertEquals(
-			array(
+			[
 				'INGBNL2A' => 'Issuer Simulation V3 - ING'
-			),
+			],
 			$results
 		);
 		$cachedResults = $this->provider->getBankList( 'NL', 'EUR' );
@@ -73,7 +73,7 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 		$results = $this->provider->getBankList( 'NL', 'COP' );
-		$this->assertEquals( array(), $results );
+		$this->assertEquals( [], $results );
 		$cached = $this->cache->getItem( 'BLAH_BLAH_NL_COP_809' );
 		$this->assertTrue( $cached->isHit() );
 		$again = $this->provider->getBankList( 'NL', 'COP' );
@@ -83,10 +83,10 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	public function testBustedCacheExpiration() {
 		$cacheItem = new HashCacheItem(
 			'BLAH_BLAH_NL_EUR_809',
-			array(
-				'value' => array( 'STALE' => 'NotValid' ),
+			[
+				'value' => [ 'STALE' => 'NotValid' ],
 				'expiration' => time() - 100
-			),
+			],
 			true
 		);
 		$this->cache->save( $cacheItem );
@@ -95,9 +95,9 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			->method( 'execute' );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );
 		$this->assertEquals(
-			array(
+			[
 				'INGBNL2A' => 'Issuer Simulation V3 - ING'
-			),
+			],
 			$results
 		);
 	}

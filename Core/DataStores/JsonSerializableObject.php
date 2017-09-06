@@ -7,7 +7,7 @@ use SmashPig\Core\Logging\Logger;
  */
 abstract class JsonSerializableObject {
 	/** @var array List of public/protected properties that should not be serialized. */
-	protected $propertiesExcludedFromExport = array();
+	protected $propertiesExcludedFromExport = [];
 
 	/**
 	 * Default constructor.
@@ -27,7 +27,7 @@ abstract class JsonSerializableObject {
 	 *
 	 * @return JsonSerializableObject Object ready for __wakeup().
 	 */
-	protected static function serializedConstructor( $className, $properties = array() ) {
+	protected static function serializedConstructor( $className, $properties = [] ) {
 		$obj = new $className();
 		foreach ( $properties as $propName => $propValue ) {
 			$obj->$propName = $propValue;
@@ -57,7 +57,7 @@ abstract class JsonSerializableObject {
 	public function toJson( $resumeUse = true ) {
 		$this->__sleep();
 
-		$properties = array();
+		$properties = [];
 
 		foreach ( get_object_vars( $this ) as $propName => $propValue ) {
 			if ( !in_array( $propName, $this->propertiesExcludedFromExport ) ) {

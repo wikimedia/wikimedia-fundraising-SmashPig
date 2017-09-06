@@ -21,7 +21,7 @@ class NationalCurrencies {
 	}
 
 	static function getNationalCurrencies() {
-		$nationalCurrencies = array(
+		$nationalCurrencies = [
 			'AD' => 'EUR',
 			'AE' => 'AED',
 			'AF' => 'AFN',
@@ -248,7 +248,7 @@ class NationalCurrencies {
 			'ZA' => 'ZAR',
 			'ZM' => 'ZMK',
 			'ZW' => 'BWP',
-		);
+		];
 		return $nationalCurrencies;
 	}
 }

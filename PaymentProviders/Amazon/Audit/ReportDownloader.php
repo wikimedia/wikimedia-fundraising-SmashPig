@@ -17,7 +17,7 @@ class ReportDownloader {
 	protected $archivePath;
 	protected $downloadPath;
 	protected $days;
-	protected $downloadedIds = array();
+	protected $downloadedIds = [];
 
 	const FILE_REGEX = '/\d{4}-\d{2}-\d{2}-[_A-Z0-9]+_(?P<id>\d+).csv/';
 
@@ -65,14 +65,14 @@ class ReportDownloader {
 
 		Logger::info( 'Getting report list' );
 		$startDate = new DateTime( "-{$this->days} days", new DateTimeZone( 'UTC' ) );
-		$list = $this->reportsClient->getReportList( array(
+		$list = $this->reportsClient->getReportList( [
 			'available_from_date' => $startDate->format( DateTime::ATOM ),
 			'max_count' => 100,
-			'report_type_list' => array(
+			'report_type_list' => [
 				ReportsClient::OFFAMAZONPAYMENTS_SETTLEMENT,
 				ReportsClient::OFFAMAZONPAYMENTS_REFUND,
-			),
-		) )->toArray();
+			],
+		] )->toArray();
 		foreach ( $list['GetReportListResult']['ReportInfo'] as $reportInfo ) {
 			// If you're planning to download more than 15 reports at a time, be
 			// aware that the client will handle throttling by default, retrying
@@ -91,9 +91,9 @@ class ReportDownloader {
 		);
 		if ( array_search( $id, $this->downloadedIds ) === false ) {
 			Logger::debug( "Downloading report dated {$reportInfo['AvailableDate']} with id: $id" );
-			$report = $this->reportsClient->getReport( array(
+			$report = $this->reportsClient->getReport( [
 				'report_id' => $id,
-			) );
+			] );
 			$date = substr( $reportInfo['AvailableDate'], 0, 10 );
 			$path = "{$this->downloadPath}/{$date}-{$type}{$id}.csv";
 			Logger::info( "Saving report to $path" );

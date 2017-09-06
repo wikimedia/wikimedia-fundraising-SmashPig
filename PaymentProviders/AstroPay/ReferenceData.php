@@ -4,23 +4,23 @@ use OutOfBoundsException;
 
 class ReferenceData {
 
-	protected static $methods = array(
+	protected static $methods = [
 		'Bank Transfer' => 'bt',
 		'Cash Payment' => 'cash',
 		'Credit Card' => 'cc',
 		'Debit Card' => 'cc',
-	);
+	];
 
 	// At least one AstroPay bank code is used for both credit cards
 	// and bank transfers. We have a different internal code for each.
-	protected static $multiTypeSubmethods = array(
-		'WP' => array(
+	protected static $multiTypeSubmethods = [
+		'WP' => [
 			'cc' => 'webpay',
 			'bt' => 'webpay_bt',
-		),
-	);
+		],
+	];
 
-	protected static $simpleSubmethods = array(
+	protected static $simpleSubmethods = [
 		'AG' => 'argen',
 		'AE' => 'amex',
 		'AU' => 'aura',
@@ -77,7 +77,7 @@ class ReferenceData {
 		'VD' => 'visa-debit',
 		'VI' => 'visa',
 		'WP' => 'webpay',
-	);
+	];
 
 	public static function decodePaymentMethod( $type, $bankCode ) {
 		if ( !array_key_exists( $type, self::$methods ) ) {
@@ -87,7 +87,7 @@ class ReferenceData {
 		$method = self::$methods[$type];
 		$submethod = self::decodePaymentSubmethod( $method, $bankCode );
 
-		return array( $method, $submethod );
+		return [ $method, $submethod ];
 	}
 
 	public static function decodePaymentSubmethod( $method, $bankCode ) {

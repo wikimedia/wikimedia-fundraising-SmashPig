@@ -17,14 +17,14 @@ class FailmailLogStream implements ILogStream {
 	protected $to;
 	protected $from;
 
-	protected $levels = array(
+	protected $levels = [
 		LOG_ALERT   => '[ALERT]',
 		LOG_ERR     => '[ERROR]',
 		LOG_WARNING => '[WARNING]',
 		LOG_INFO    => '[INFO]',
 		LOG_NOTICE  => '[NOTICE]',
 		LOG_DEBUG   => '[DEBUG]',
-	);
+	];
 
 	public function __construct( $toAddr, $fromAddr = null ) {
 		$this->to = $toAddr;
@@ -116,10 +116,10 @@ class FailmailLogStream implements ILogStream {
 			return;
 		}
 
-		$body = array( "A problem has developed in SmashPig -- the available context is shown below. Data "
+		$body = [ "A problem has developed in SmashPig -- the available context is shown below. Data "
 			. "objects are excluded for security but may be found in alternative log streams if configured.\n\n"
 			. "NOTE: Additional errors may have occurred this session, but this email will only be sent "
-			. "once. Check log streams for additional errors in this session.\n" );
+			. "once. Check log streams for additional errors in this session.\n" ];
 
 		foreach ( $events as $event ) {
 			$name = $this->levels[ $event->level ];

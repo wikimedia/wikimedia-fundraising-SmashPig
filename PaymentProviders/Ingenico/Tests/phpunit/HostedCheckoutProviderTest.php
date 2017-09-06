@@ -18,34 +18,34 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->setProviderConfiguration( 'ingenico' );
-		$this->provider = new HostedCheckoutProvider( array( 'subdomain' => 'payments.test' ) );
+		$this->provider = new HostedCheckoutProvider( [ 'subdomain' => 'payments.test' ] );
 	}
 
 	public function testCreateHostedPayment() {
-		$params = array(
-			array(
-			"hostedCheckoutSpecificInput" => array(
+		$params = [
+			[
+			"hostedCheckoutSpecificInput" => [
 				"locale" => "en_GB",
 				"variant" => "testVariant"
-				),
-			),
-			"order" => array(
-				"amountOfMoney" => array(
+				],
+			],
+			"order" => [
+				"amountOfMoney" => [
 					"currencyCode" => "USD",
 					"amount" => 2345
-				),
-				"customer" => array(
-					"billingAddress" => array(
+				],
+				"customer" => [
+					"billingAddress" => [
 						"countryCode" => "US"
-					)
-				)
-			)
-		);
-		$expectedResponse = array(
+					]
+				]
+			]
+		];
+		$expectedResponse = [
 			"partialRedirectUrl" => "poweredbyglobalcollect.com/pay8915-53ebca407e6b4a1dbd086aad4f10354d:8915-28e5b79c889641c8ba770f1ba576c1fe:9798f4c44ac6406e8288494332d1daa0",
 			"hostedCheckoutId" => "8915-28e5b79c889641c8ba770f1ba576c1fe",
 			"RETURNMAC" => "f5b66cf9-c64c-4c8d-8171-b47205c89a56"
-		);
+		];
 		$this->setUpResponse( __Dir__ . '/../Data/newHostedCheckout.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(

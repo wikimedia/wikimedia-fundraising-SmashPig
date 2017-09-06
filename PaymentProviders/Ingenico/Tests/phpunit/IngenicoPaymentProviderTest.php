@@ -35,11 +35,11 @@ class IngenicoPaymentProviderTest extends BaseSmashPigUnitTestCase {
 
 	public function testApprovePayment() {
 		$paymentId = '000000850010000188180000200001';
-		$params = array(
-			"directDebitPaymentMethodSpecificInput" => array(
+		$params = [
+			"directDebitPaymentMethodSpecificInput" => [
 				"dateCollect" => Date( "Ymd" ),
-			),
-		);
+			],
+		];
 		$this->setUpResponse( __DIR__ . '/../Data/paymentApproved.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(

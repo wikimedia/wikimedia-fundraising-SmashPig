@@ -16,7 +16,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$output = $processor->parseFile( __DIR__ . '/../Data/donation.csv' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one donation' );
 		$actual = $output[0];
-		$expected = array(
+		$expected = [
 			'gateway' => 'astropay',
 			'date' => 1434450583,
 			'gross' => '5.00',
@@ -32,7 +32,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settled_currency' => 'USD',
 			'settled_fee' => '0.03',
 			'settled_gross' => '1.50',
-		);
+		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
 
@@ -44,7 +44,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$output = $processor->parseFile( __DIR__ . '/../Data/refund.csv' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
 		$actual = $output[0];
-		$expected = array(
+		$expected = [
 			'gateway' => 'astropay',
 			'contribution_tracking_id' => '314159265',
 			'date' => 1434747909,
@@ -54,7 +54,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gross_currency' => 'BRL',
 			'log_id' => '314159265.0',
 			'type' => 'refund',
-		);
+		];
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
 
@@ -66,7 +66,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$output = $processor->parseFile( __DIR__ . '/../Data/chargebacks.csv' );
 		$this->assertEquals( 1, count( $output ), 'Should have found one chargeback' );
 		$actual = $output[0];
-		$expected = array(
+		$expected = [
 			'gateway' => 'astropay',
 			'contribution_tracking_id' => '314159265',
 			'date' => 1434747909,
@@ -76,7 +76,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gross_currency' => 'BRL',
 			'log_id' => '314159265.0',
 			'type' => 'chargeback',
-		);
+		];
 		$this->assertEquals( $expected, $actual, 'Did not parse chargeback correctly' );
 	}
 }
