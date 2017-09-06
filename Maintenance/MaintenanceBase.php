@@ -146,7 +146,9 @@ abstract class MaintenanceBase {
 			$providerConfig = ProviderConfiguration::createDefault( $config );
 		} else {
 			// FIXME: need different override file for provider config
-			$providerConfig = ProviderConfiguration::createForProvider( $configNode, $config );
+			$providerConfig = ProviderConfiguration::createForProvider(
+				$configNode, $config
+			);
 		}
 		Context::init( $config, $providerConfig );
 		$maintClassParts = explode( "\\", $maintClass );
@@ -200,7 +202,9 @@ abstract class MaintenanceBase {
 	 */
 	protected function addOption( $name, $description, $default = null, $alias = false ) {
 		if ( in_array( $name, $this->desiredOptions ) ) {
-			throw new SmashPigException( "Option '$name' already exists. Cannot add again." );
+			throw new SmashPigException(
+				"Option '$name' already exists. Cannot add again."
+			);
 		}
 		$this->desiredOptions[$name] = array(
 			'desc' => $description,
@@ -211,7 +215,8 @@ abstract class MaintenanceBase {
 		if ( $alias ) {
 			if ( in_array( $alias, $this->aliasParamsMap ) ) {
 				throw new SmashPigException(
-					"Option '$name' cannot take alias '$alias'. Already in use." );
+					"Option '$name' cannot take alias '$alias'. Already in use."
+				);
 			}
 			$this->aliasParamsMap[$alias] = $name;
 		}
@@ -288,7 +293,8 @@ abstract class MaintenanceBase {
 
 		if ( ( $last !== false ) && ( $last['required'] == false ) && $required ) {
 			throw new SmashPigException(
-				"May not add a required argument after optional arguments already in the stack." );
+				"May not add a required argument after optional arguments already in the stack."
+			);
 		}
 
 		$this->expectedArguments[] = array(
@@ -327,7 +333,8 @@ abstract class MaintenanceBase {
 				$id = $this->expectedArgumentIdMap[$id];
 			} else {
 				throw new SmashPigException(
-					"Requested named argument '{$id}' was not registered with addArgument()" );
+					"Requested named argument '{$id}' was not registered with addArgument()"
+				);
 			}
 		}
 		return $this->hasArgument( $id ) ? $this->args[$id] : $default;
@@ -428,7 +435,8 @@ abstract class MaintenanceBase {
 			} else {
 				$st = fgets( STDIN, 1024 );
 			}
-			if ( $st === false ) { return false;
+			if ( $st === false ) {
+				return false;
 			}
 			$resp = trim( $st );
 			return $resp;
