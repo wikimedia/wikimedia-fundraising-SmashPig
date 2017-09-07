@@ -42,7 +42,7 @@
 	"scripts": {
 		"test": [
 			"parallel-lint . --exclude vendor",
-			"phpunit",
+			"[ ! -f phpunit.xml ] || phpunit",
 			"phpcs -p -s"
 		]
 	},
