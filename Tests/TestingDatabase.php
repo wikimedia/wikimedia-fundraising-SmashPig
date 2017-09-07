@@ -2,29 +2,28 @@
 
 namespace SmashPig\Tests;
 
-use SmashPig\Core\DataStores\DamagedDatabase;
-use SmashPig\Core\DataStores\PaymentsInitialDatabase;
-use SmashPig\Core\DataStores\PendingDatabase;
-
 class TestingDatabase {
-	/**
-	 * @param string|object $classish Database class to reset, as a qualified
-	 * class name or example object.  Must be a subtype of SmashPigDatabase for
-	 * the statics to make sense.
-	 */
-	public static function clearStatics( $classish ) {
-		$klass = new \ReflectionClass( $classish );
-		$dbProperty = $klass->getProperty( 'dbs' );
-		$dbProperty->setAccessible( true );
-		$dbProperty->setValue( array() );
+	public static $classes = array(
+		'SmashPig\Core\DataStores\DamagedDatabase',
+		'SmashPig\Core\DataStores\PaymentsInitialDatabase',
+		'SmashPig\Core\DataStores\PendingDatabase',
+	);
+
+	public static function clearStatics() {
+		foreach ( self::$classes as $className ) {
+			$klass = new \ReflectionClass( $className );
+			$dbProperty = $klass->getProperty( 'dbs' );
+			$dbProperty->setAccessible( true );
+			$dbProperty->setValue( array() );
+		}
 	}
 
 	/**
 	 * Initialize all the db tables
 	 */
 	public static function createTables() {
-		DamagedDatabase::get()->createTable();
-		PaymentsInitialDatabase::get()->createTable();
-		PendingDatabase::get()->createTable();
+		foreach ( self::$classes as $className ) {
+			$className::get()->createTable();
+		}
 	}
 }

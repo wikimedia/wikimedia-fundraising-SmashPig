@@ -18,11 +18,6 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 		$this->db = DamagedDatabase::get();
 	}
 
-	public function tearDown() {
-		TestingDatabase::clearStatics( $this->db );
-		parent::tearDown();
-	}
-
 	protected static function getTestMessage( $uniq = null ) {
 		if ( !$uniq ) {
 			$uniq = mt_rand();

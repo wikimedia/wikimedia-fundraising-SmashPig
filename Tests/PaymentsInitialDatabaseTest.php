@@ -17,12 +17,6 @@ class PaymentsInitialDatabaseTest extends BaseSmashPigUnitTestCase {
 		$this->db = PaymentsInitialDatabase::get();
 	}
 
-	public function tearDown() {
-		TestingDatabase::clearStatics( $this->db );
-
-		parent::tearDown();
-	}
-
 	public static function generateTestMessage() {
 		$message = array(
 			'id' => mt_rand(),

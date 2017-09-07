@@ -20,6 +20,7 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 	}
 
 	public function tearDown() {
+		TestingDatabase::clearStatics();
 		Context::set(); // Nullify the context for next run.
 	}
 

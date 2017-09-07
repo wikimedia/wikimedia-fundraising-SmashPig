@@ -24,13 +24,6 @@ class SmashPigDatabaseTest extends BaseSmashPigUnitTestCase {
 		$this->paymentsInitialDb = PaymentsInitialDatabase::get();
 	}
 
-	public function tearDown() {
-		TestingDatabase::clearStatics( $this->paymentsInitialDb );
-		TestingDatabase::clearStatics( $this->pendingDb );
-
-		parent::tearDown();
-	}
-
 	public function testDifferentDatabases() {
 		$pendingPdo = $this->pendingDb->getDatabase();
 		$initPdo = $this->paymentsInitialDb->getDatabase();

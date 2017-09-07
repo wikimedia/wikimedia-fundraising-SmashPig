@@ -24,16 +24,6 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 		$this->paymentsInitialDb = PaymentsInitialDatabase::get();
 	}
 
-	public function tearDown() {
-		// FIXME: huh.  I guess we should use class names to avoid possible
-		// incomplete destruction in the case that paymentsInitialDb was never
-		// initialized.
-		TestingDatabase::clearStatics( $this->paymentsInitialDb );
-		TestingDatabase::clearStatics( $this->pendingDb );
-
-		parent::tearDown();
-	}
-
 	/**
 	 * We consume a message normally if there's nothing in the payments_initial
 	 * table.
