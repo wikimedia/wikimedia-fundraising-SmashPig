@@ -12,6 +12,5 @@ class PaymentMessage extends Message {
 		}
 
 		// TODO: Implement normalizeMessage() method.
-
 	}
 }

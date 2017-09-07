@@ -19,7 +19,6 @@ class Authenticator {
 	}
 
 	public function signRequest( OutboundRequest $request ) {
-
 		$toSign = $this->getStringToSign( $request );
 
 		$signature = base64_encode(
@@ -53,7 +52,7 @@ class Authenticator {
 		$toSign = $request->getMethod() . "\n"
 			. $contentType . "\n"
 			. $headers['Date'] . "\n"
-			//TODO X-GCS headers
+			// TODO X-GCS headers
 			. $pathToSign . "\n";
 
 		return $toSign;

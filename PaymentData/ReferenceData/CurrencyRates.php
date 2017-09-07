@@ -13,7 +13,7 @@ class CurrencyRates {
 
 	static public $lastUpdated = '2017-05-02';
 
-	static public function getCurrencyRates() {
+	public static function getCurrencyRates() {
 		// Not rounding numbers under 1 because I don't think that's a big issue and could cause issues with the max check.
 		$currencyRates = array(
 			'ADF' => 6.01,

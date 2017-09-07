@@ -10,22 +10,17 @@ class RefundMessage extends Message {
 		if ( isset( $message['txn_type'] ) && $message['txn_type'] === 'adjustment' ) {
 			$message['type'] = 'chargeback';
 
-			// For chargebacks, express checkout sets the 'invoice' field
-			if ( isset( $ipnMessage['invoice'] ) ) {
-				$message['gateway'] = 'paypal_ec';
-			} else {
-				$message['gateway'] = 'paypal';
-			}
-		} elseif ( isset( $ipnMessage['reason_code'] ) && $ipnMessage['reason_code'] === 'refund' ) {
+		} elseif ( isset( $ipnMessage['reason_code'] ) && in_array( $ipnMessage['reason_code'], array( 'refund', 'buyer_complaint', 'other' ) ) ) {
 			$message['type'] = 'refund';
 
-			// For refunds, express checkout puts a description in transaction_subject,
-			// but legacy puts a contribution tracking ID there.
-			if ( isset( $ipnMessage['transaction_subject'] ) && !is_numeric( $ipnMessage['transaction_subject'] ) ) {
-				$message['gateway'] = 'paypal_ec';
-			} else {
-				$message['gateway'] = 'paypal';
-			}
+		}
+
+		// Express checkout sets the 'invoice' field, legacy doesn't.
+		// EC refunds of recurring payments use 'rp_invoice_id'
+		if ( isset( $ipnMessage['invoice'] ) || isset( $ipnMessage['rp_invoice_id'] ) ) {
+			$message['gateway'] = 'paypal_ec';
+		} else {
+			$message['gateway'] = 'paypal';
 		}
 	}
 }

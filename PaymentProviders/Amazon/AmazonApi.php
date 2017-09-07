@@ -60,7 +60,7 @@ class AmazonApi {
 				"No authorizations found for order reference $orderReferenceId!"
 			);
 		}
-		$authorizationIds = (array) $details['IdList']['member'];
+		$authorizationIds = (array)$details['IdList']['member'];
 		// Check the status of each authorization against the order reference
 		foreach ( $authorizationIds as $id ) {
 			$authResult = $this->client->getAuthorizationDetails( array(
@@ -150,7 +150,7 @@ class AmazonApi {
 		$params = array(
 			'amazon_order_reference_id' => $orderReferenceId
 		);
-		if( $reason ) {
+		if ( $reason ) {
 			$params['cancelation_reason'] = $reason;
 		}
 		$result = $this->client->cancelOrderReference( $params )->toArray();

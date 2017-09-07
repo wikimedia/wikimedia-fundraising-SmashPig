@@ -1,7 +1,7 @@
 <?php
 namespace SmashPig\Maintenance;
 
-require ( 'MaintenanceBase.php' );
+require 'MaintenanceBase.php';
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\PendingDatabase;
@@ -39,4 +39,4 @@ class DeleteExpiredPendingMessages extends MaintenanceBase {
 	}
 }
 
-require ( RUN_MAINTENANCE_IF_MAIN );
+require RUN_MAINTENANCE_IF_MAIN;

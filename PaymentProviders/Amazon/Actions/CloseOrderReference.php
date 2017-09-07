@@ -39,7 +39,7 @@ class CloseOrderReference implements IListenerMessageAction {
 				);
 				return false;
 			}
-		} catch( Exception $ex ) {
+		} catch ( Exception $ex ) {
 			Logger::warning(
 				"Error closing order reference $orderReferenceId: " .
 				$ex->getMessage()

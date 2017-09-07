@@ -48,7 +48,6 @@ class Listener implements IHttpActionHandler {
 
 		Logger::info( 'INVALID IPN message: ' .  print_r( $requestValues, true ) );
 		return false;
-
 	}
 
 }

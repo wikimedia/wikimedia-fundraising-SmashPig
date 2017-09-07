@@ -13,4 +13,3 @@ interface Runnable {
 	 */
 	public function execute();
 }
-

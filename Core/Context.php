@@ -24,13 +24,13 @@ class Context {
 	protected $providerConfiguration = null;
 
 	public static function init( GlobalConfiguration $config, $providerConfig = null ) {
-		if ( !Context::$instance ) {
+		if ( !self::$instance ) {
 			if ( !$providerConfig ) {
 				$providerConfig = ProviderConfiguration::createDefault( $config );
 			}
-			Context::$instance = new Context();
-			Context::$instance->setGlobalConfiguration( $config );
-			Context::$instance->setProviderConfiguration( $providerConfig );
+			self::$instance = new Context();
+			self::$instance->setGlobalConfiguration( $config );
+			self::$instance->setProviderConfiguration( $providerConfig );
 		}
 	}
 
@@ -39,7 +39,7 @@ class Context {
 	 * @return static
 	 */
 	public static function get() {
-		return Context::$instance;
+		return self::$instance;
 	}
 
 	/**
@@ -48,8 +48,8 @@ class Context {
 	 * @return Context
 	 */
 	public static function set( Context $c = null ) {
-		$old = Context::$instance;
-		Context::$instance = $c;
+		$old = self::$instance;
+		self::$instance = $c;
 
 		return $old;
 	}
@@ -65,18 +65,18 @@ class Context {
 		$this->setVersionFromFile( $versionStampPath );
 	}
 
-    /**
-     * Sets the version string to the contents of a file, if it exists
-     * @param string $versionStampPath
-     */
+	/**
+	 * Sets the version string to the contents of a file, if it exists
+	 * @param string $versionStampPath
+	 */
 	public function setVersionFromFile( $versionStampPath ) {
-        if ( file_exists( $versionStampPath ) ) {
-            $versionId = file_get_contents( $versionStampPath );
-            if ( $versionId !== false ) {
-                $this->sourceRevision = trim( $versionId );
-            }
-        }
-    }
+		if ( file_exists( $versionStampPath ) ) {
+			$versionId = file_get_contents( $versionStampPath );
+			if ( $versionId !== false ) {
+				$this->sourceRevision = trim( $versionId );
+			}
+		}
+	}
 
 	/**
 	 * Gets the global context identifier - this is used for logging, filenames,
@@ -131,49 +131,49 @@ class Context {
 		);
 	}
 
-    /**
-     * Get the revision ID to tag queue messages
-     * @see setVersionFromFile
-     *
-     * @return string
-     */
-    public function getSourceRevision() {
-        return $this->sourceRevision;
-    }
+	/**
+	 * Get the revision ID to tag queue messages
+	 * @see setVersionFromFile
+	 *
+	 * @return string
+	 */
+	public function getSourceRevision() {
+		return $this->sourceRevision;
+	}
 
-    /**
-     * Get an identifier for the application to tag queue messages
-     *
-     * @return string
-     */
-    public function getSourceName() {
-        return $this->sourceName;
-    }
+	/**
+	 * Get an identifier for the application to tag queue messages
+	 *
+	 * @return string
+	 */
+	public function getSourceName() {
+		return $this->sourceName;
+	}
 
-    /**
-     * Set an identifier for the application to tag queue messages
-     *
-     * @param string $sourceName
-     */
-    public function setSourceName( $sourceName ) {
-        $this->sourceName = $sourceName;
-    }
+	/**
+	 * Set an identifier for the application to tag queue messages
+	 *
+	 * @param string $sourceName
+	 */
+	public function setSourceName( $sourceName ) {
+		$this->sourceName = $sourceName;
+	}
 
-    /**
-     * Get the application type used in queue messages
-     *
-     * @return string
-     */
-    public function getSourceType() {
-        return $this->sourceType;
-    }
+	/**
+	 * Get the application type used in queue messages
+	 *
+	 * @return string
+	 */
+	public function getSourceType() {
+		return $this->sourceType;
+	}
 
-    /**
-     * Set the application type used in queue messages
-     *
-     * @param string $sourceType
-     */
-    public function setSourceType( $sourceType ) {
-        $this->sourceType = $sourceType;
-    }
+	/**
+	 * Set the application type used in queue messages
+	 *
+	 * @param string $sourceType
+	 */
+	public function setSourceType( $sourceType ) {
+		$this->sourceType = $sourceType;
+	}
 }

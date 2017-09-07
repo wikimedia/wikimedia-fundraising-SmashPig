@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Maintenance;
 
-require ( 'MaintenanceBase.php' );
+require 'MaintenanceBase.php';
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\QueueConsumers\JobQueueConsumer;
@@ -26,7 +26,6 @@ class QueueJobRunner extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 */
 	public function execute() {
-
 		// Get some defaults from configuration
 		$basePath = 'maintenance/job-runner/';
 
@@ -48,4 +47,4 @@ class QueueJobRunner extends MaintenanceBase {
 
 }
 
-require ( RUN_MAINTENANCE_IF_MAIN );
+require RUN_MAINTENANCE_IF_MAIN;

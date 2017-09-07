@@ -1,6 +1,6 @@
 <?php namespace SmashPig\Maintenance;
 
-require ( 'MaintenanceBase.php' );
+require 'MaintenanceBase.php';
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\QueueWrapper;
@@ -54,7 +54,7 @@ class PopulateQueueFromDump extends MaintenanceBase {
 			}
 
 			// push message directly to queue, bypassing QueueWrapper's adding
-            // source fields.
+			// source fields.
 			$datastore->push( $message );
 
 			$messageCount++;
@@ -83,4 +83,4 @@ class PopulateQueueFromDump extends MaintenanceBase {
 
 }
 
-require ( RUN_MAINTENANCE_IF_MAIN );
+require RUN_MAINTENANCE_IF_MAIN;

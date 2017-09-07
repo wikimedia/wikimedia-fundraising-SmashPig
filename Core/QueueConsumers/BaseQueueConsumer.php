@@ -105,16 +105,16 @@ abstract class BaseQueueConsumer {
 			$debugMessages = array();
 			if ( $data === null ) {
 				$debugMessages[] = 'Queue is empty.';
-			} else if ( !$timeOk ) {
+			} elseif ( !$timeOk ) {
 				$debugMessages[] = "Time limit ($this->timeLimit) is elapsed.";
-			} else if ( !$countOk ) {
+			} elseif ( !$countOk ) {
 				$debugMessages[] = "Message limit ($this->messageLimit) is reached.";
 			}
 			if ( !empty( $debugMessages ) ) {
 				Logger::debug( implode( ' ', $debugMessages ) );
 			}
 		}
-		while( $timeOk && $countOk && $data !== null );
+		while ( $timeOk && $countOk && $data !== null );
 		return $processed;
 	}
 

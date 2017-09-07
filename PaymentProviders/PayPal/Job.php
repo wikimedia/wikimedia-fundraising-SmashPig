@@ -71,12 +71,12 @@ class Job extends RunnableJob {
 		$normalized = call_user_func( $creator, $request );
 
 		// Save to appropriate queue.
-        QueueWrapper::push( $queue, $normalized );
+		QueueWrapper::push( $queue, $normalized );
 
 		// FIXME random document formats
 		if ( substr( $txn_type, 0, 7 ) === 'subscr_' ) {
 			$log_id = "subscr_id:{$request['subscr_id']}";
-		} elseif ( substr( $txn_type, 0, 10 ) === 'recurring_'  ) {
+		} elseif ( substr( $txn_type, 0, 10 ) === 'recurring_' ) {
 			$log_id = "recurring_payment_id:{$request['recurring_payment_id']}";
 		} else {
 			$log_id = "txn_id:{$request['txn_id']}";

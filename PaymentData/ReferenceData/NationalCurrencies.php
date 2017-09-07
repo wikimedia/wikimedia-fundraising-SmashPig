@@ -12,12 +12,11 @@ class NationalCurrencies {
 	static function getNationalCurrency( $country ) {
 		$country = substr( $country, 0, 2 );
 		$country = strtoupper( $country );
-		$nationalCurrencies = NationalCurrencies::getNationalCurrencies();
+		$nationalCurrencies = self::getNationalCurrencies();
 		if ( isset( $nationalCurrencies[$country] ) ) {
 			return $nationalCurrencies[$country];
+		} else { return null;
 		}
-		else
-			return NULL;
 	}
 
 	static function getNationalCurrencies() {

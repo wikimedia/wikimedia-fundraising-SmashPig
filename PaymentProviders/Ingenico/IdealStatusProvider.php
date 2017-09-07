@@ -44,7 +44,6 @@ class IdealStatusProvider {
 		$cacheItem = $this->cache->getItem( $cacheKey );
 
 		if ( !$cacheItem->isHit() ) {
-
 			$banks = array();
 
 			$url = $this->availabilityUrl;

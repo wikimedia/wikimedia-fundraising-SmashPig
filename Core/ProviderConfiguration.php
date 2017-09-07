@@ -2,7 +2,6 @@
 
 namespace SmashPig\Core;
 
-
 class ProviderConfiguration extends Configuration {
 
 	const NO_PROVIDER = 'no_provider';
@@ -50,7 +49,7 @@ class ProviderConfiguration extends Configuration {
 		$config = new static( $globalConfig );
 		$config->provider = $provider;
 		$searchPath = array_merge(
-			( array ) $overridePath,
+			(array)$overridePath,
 			$config->getDefaultSearchPath()
 		);
 		$config->loadConfigFromPaths( $searchPath );

@@ -64,7 +64,7 @@ class SyslogLogStream implements ILogStream {
 	 *
 	 * @param string[] $contextNames Stack of context names. $contextName[0] is
 	 *                               the new name of the current context
-	 * @param string   $oldTopName   The old name of the current context
+	 * @param string $oldTopName The old name of the current context
 	 */
 	public function renameContext( $contextNames, $oldTopName ) {
 		$this->rootContext = array_slice( $contextNames, -1 );

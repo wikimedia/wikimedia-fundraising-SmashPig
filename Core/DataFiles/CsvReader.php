@@ -31,7 +31,7 @@ class CsvReader implements \Iterator {
 	 *
 	 * @param string $file Path to file
 	 * @param string $delimiter Delimiter to use between CSV fields
-	 * @param int    $maxRowLength Maximum length a field can take (affects buffering)
+	 * @param int $maxRowLength Maximum length a field can take (affects buffering)
 	 *
 	 * @throws DataFileException on non open-able file.
 	 */

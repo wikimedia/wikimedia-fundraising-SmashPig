@@ -15,7 +15,7 @@ class PendingDatabase extends SmashPigDatabase {
 		if (
 			empty( $message['date'] ) ||
 			empty( $message['gateway'] ) ||
-			(   // need at least one transaction ID
+			( // need at least one transaction ID
 				empty( $message['gateway_txn_id'] ) &&
 				empty( $message['order_id'] )
 			)
@@ -127,9 +127,9 @@ class PendingDatabase extends SmashPigDatabase {
 		if ( !$rows ) {
 			return null;
 		}
-		$messages = array_map( function( $row ) {
+		$messages = array_map( function ( $row ) {
 			return json_decode( $row['message'], true );
-		}, $rows);
+		}, $rows );
 
 		return $messages;
 	}
@@ -208,7 +208,7 @@ class PendingDatabase extends SmashPigDatabase {
 	 */
 	protected function getUpdateStatement( $record ) {
 		$sets = array();
-		foreach( array_keys( $record ) as $field ) {
+		foreach ( array_keys( $record ) as $field ) {
 			$sets[] = "$field = :$field";
 		}
 		$update = 'UPDATE pending SET ' .

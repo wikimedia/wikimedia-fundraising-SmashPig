@@ -87,7 +87,7 @@ class DamagedDatabase extends SmashPigDatabase {
 			'now' => UtcDate::getUtcDatabaseString()
 		);
 
-		$executed = $this->prepareAndExecute( $sql, $params);
+		$executed = $this->prepareAndExecute( $sql, $params );
 
 		$rows = $executed->fetchAll( PDO::FETCH_ASSOC );
 		return array_map(

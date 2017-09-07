@@ -21,8 +21,8 @@ abstract class JsonSerializableObject {
 	 * reserializing the object. Should also be customized if the default constructor
 	 * has required arguments.
 	 *
-	 * @param string $className  Name of the class to instantiate
-	 * @param array  $properties Stored properties from the serialized object
+	 * @param string $className Name of the class to instantiate
+	 * @param array $properties Stored properties from the serialized object
 	 * (Keys = property names, Values = property values)
 	 *
 	 * @return JsonSerializableObject Object ready for __wakeup().
@@ -89,7 +89,7 @@ abstract class JsonSerializableObject {
 	 * behaviour. This is REQUIRED when __construct() is overriden with required parameters.
 	 *
 	 * @param string $className The name of the class to construct
-	 * @param string $jsonStr   JSON string to recompose the object from.
+	 * @param string $jsonStr JSON string to recompose the object from.
 	 *
 	 * @throws DataSerializationException
 	 * @return JsonSerializableObject
@@ -112,7 +112,7 @@ abstract class JsonSerializableObject {
 	 * For those instances where you must instantiate a serialized object from a string.
 	 *
 	 * @param string $className Fully qualified class name. Must inherit from JsonSerializableObject
-	 * @param string $jsonStr   JSON string to populate the object with.
+	 * @param string $jsonStr JSON string to populate the object with.
 	 *
 	 * @return JsonSerializableObject
 	 * @throws DataSerializationException

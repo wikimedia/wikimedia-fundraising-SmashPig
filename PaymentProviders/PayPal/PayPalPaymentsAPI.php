@@ -11,7 +11,6 @@ class PayPalPaymentsAPI {
 	 * @return bool
 	 */
 	public function validate( $post_fields = array() ) {
-
 		$post_fields['cmd'] = '_notify-validate';
 
 		$url = Context::get()->getProviderConfiguration()->val( 'postback-url' );

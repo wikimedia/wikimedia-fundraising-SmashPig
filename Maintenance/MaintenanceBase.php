@@ -26,7 +26,7 @@ if ( !defined( "SMASHPIG_ENTRY_POINT" ) ) {
 	define( "SMASHPIG_ENTRY_POINT", $argv[0] );
 
 	$root = __DIR__ . '/../';
-	require_once ( $root . 'vendor/autoload.php' );
+	require_once $root . 'vendor/autoload.php';
 
 	/** @var MaintenanceBase $maintClass Set this to the name of the class to execute */
 	$maintClass = false;
@@ -187,15 +187,15 @@ abstract class MaintenanceBase {
 	 * Add a parameter to the script. Will be displayed on --help
 	 * with the associated description
 	 *
-	 * @param string $name 			Long name of the param, used with -- (ie help, version, etc)
-	 * @param string $description 	Description of the param to show on --help
-	 * @param mixed  $default		Value given back to the script if no
+	 * @param string $name Long name of the param, used with -- (ie help, version, etc)
+	 * @param string $description Description of the param to show on --help
+	 * @param mixed $default Value given back to the script if no
 	 *                              argument is given. If this remains null the
 	 *                              option is treated as a boolean with no
 	 *                              argument expected; returning true if the
 	 *                              option is present in the command line
 	 *                              string.
-	 * @param string $alias 		Optional character to use as short name, used with -
+	 * @param string $alias Optional character to use as short name, used with -
 	 * @throws SmashPigException
 	 */
 	protected function addOption( $name, $description, $default = null, $alias = false ) {
@@ -232,8 +232,8 @@ abstract class MaintenanceBase {
 	 * Get the value of a given option. Will return $default if provided and the option was
 	 * not explicitly set, else will return the default set when the option was created.
 	 *
-	 * @param string $name		Name of the option to retrieve
-	 * @param mixed	 $default	Optional default override for the option
+	 * @param string $name Name of the option to retrieve
+	 * @param mixed $default Optional default override for the option
 	 *
 	 * @return mixed Value of the option or null if no default was provided
 	 */
@@ -256,7 +256,7 @@ abstract class MaintenanceBase {
 	 * $defaultNode if the node exists and the option was not explicitly set, else
 	 * will return the default set when the option was created.
 	 *
-	 * @param string $name			Name of the option to retrieve
+	 * @param string $name Name of the option to retrieve
 	 * @param string $defaultNode	Config node holding override for the option
 	 *
 	 * @return mixed Value of the option or null if no default was provided
@@ -274,16 +274,15 @@ abstract class MaintenanceBase {
 	/**
 	 * Adds a numbered argument that can be parsed out of the command line string.
 	 *
-	 * @param string $arg           Name of the argument, like 'start'
-	 * @param string $description   Description of the argument
-	 * @param bool   $required      If true and the argument is not provided,
+	 * @param string $arg Name of the argument, like 'start'
+	 * @param string $description Description of the argument
+	 * @param bool $required If true and the argument is not provided,
 	 *                              will not execute the script. Instead will
 	 *                              display the help message.
 	 *
 	 * @throws SmashPigException if an argument is required after an optional argument
 	 */
 	protected function addArgument( $arg, $description, $required = true ) {
-
 		$last = end( $this->expectedArguments );
 		reset( $this->expectedArguments );
 
@@ -303,7 +302,7 @@ abstract class MaintenanceBase {
 	/**
 	 * Determine if a given argument exists.
 	 *
-	 * @param int|string $id 	If an integer, 0 will return the first unnamed argument given. If
+	 * @param int|string $id If an integer, 0 will return the first unnamed argument given. If
 	 * 							a string, will return that named argument.
 	 *
 	 * @returns bool True if there is an argument in that position
@@ -315,7 +314,7 @@ abstract class MaintenanceBase {
 	/**
 	 * Get the value of a given argument. May be a name or numeric position.
 	 *
-	 * @param int|string $id 	If an integer, 0 will return the first unnamed argument given. If
+	 * @param int|string $id If an integer, 0 will return the first unnamed argument given. If
 	 * 							a string, will return that named argument.
 	 * @param mixed	$default	Default value to return if argument does not exist.
 	 *
@@ -368,7 +367,7 @@ abstract class MaintenanceBase {
 			print "\nERROR: {$e->getMessage()}\n";
 			$this->helpifRequested( true );
 		}
-		//Validate number of arguments
+		// Validate number of arguments
 		$count = 0;
 		array_walk(
 			$this->expectedArguments,
@@ -382,7 +381,7 @@ abstract class MaintenanceBase {
 		}
 
 		$this->inputLoaded = true;
-   	}
+	}
 
 	/* === Runtime I/O === */
 
@@ -394,7 +393,7 @@ abstract class MaintenanceBase {
 	 * @return Mixed
 	 */
 	protected function getStdIn( $len = null ) {
-		if ( $len == MaintenanceBase::STDIN_ALL ) {
+		if ( $len == self::STDIN_ALL ) {
 			return file_get_contents( 'php://stdin' );
 		}
 		$f = fopen( 'php://stdin', 'rt' );
@@ -429,7 +428,8 @@ abstract class MaintenanceBase {
 			} else {
 				$st = fgets( STDIN, 1024 );
 			}
-			if ( $st === false ) return false;
+			if ( $st === false ) { return false;
+			}
 			$resp = trim( $st );
 			return $resp;
 		}
@@ -439,7 +439,7 @@ abstract class MaintenanceBase {
 	 * Writes an error message to the console
 	 *
 	 * @param string $string Message to write
-	 * @param bool   $fatal  True if the script should exit immediately and set an error code
+	 * @param bool $fatal True if the script should exit immediately and set an error code
 	 */
 	public static function error( $string, $fatal = false ) {
 		if ( $fatal ) {
@@ -570,7 +570,7 @@ abstract class MaintenanceBase {
 		$errline = 'Unknown Line', $errcontext = null
 	) {
 		$str = "($errno) $errstr @ $errfile:$errline";
-		MaintenanceBase::error( $str );
+		self::error( $str );
 		Logger::alert( $str, $errcontext );
 
 		return false;

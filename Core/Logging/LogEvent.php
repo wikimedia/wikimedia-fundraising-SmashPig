@@ -28,10 +28,10 @@ class LogEvent {
 	/**
 	 * Construct a new log event from parameters.
 	 *
-	 * @param int        $level     The RFC log level, e.g. LOG_ALERT
-	 * @param string     $message   Human readable string about the event. Do not include sensitive information here
-	 * @param string     $tag       Optional descriptive tag, e.g. RawData
-	 * @param mixed      $data      Optional data object (should be serializable); may include sensitive information
+	 * @param int $level The RFC log level, e.g. LOG_ALERT
+	 * @param string $message Human readable string about the event. Do not include sensitive information here
+	 * @param string $tag Optional descriptive tag, e.g. RawData
+	 * @param mixed $data Optional data object (should be serializable); may include sensitive information
 	 * @param \Exception $exception Optional exception object related to this event
 	 * @param int|string $timestamp Optional Unix timestamp, or date string of event. If not given this assumes now
 	 */

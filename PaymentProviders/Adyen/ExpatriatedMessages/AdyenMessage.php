@@ -53,7 +53,7 @@ abstract class AdyenMessage extends ListenerMessage {
 
 		if ( class_exists( $className ) ) {
 			Logger::debug( "Attempting construction of '$className'" );
-			$obj =  new $className();
+			$obj = new $className();
 		} else {
 			Logger::debug( "Class not found '$className'" );
 			return false;

@@ -36,11 +36,14 @@
     },
 	"require-dev": {
 		"jakub-onderka/php-parallel-lint": "^0.9",
+		"mediawiki/mediawiki-codesniffer": "0.11.0",
 		"phpunit/phpunit": "^4.8"
 	},
 	"scripts": {
 		"test": [
-			"parallel-lint . --exclude vendor"
+			"parallel-lint . --exclude vendor",
+			"[ ! -f phpunit.xml ] || phpunit",
+			"phpcs -p -s"
 		]
 	},
     "autoload": {

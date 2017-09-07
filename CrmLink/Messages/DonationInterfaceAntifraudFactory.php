@@ -11,7 +11,6 @@ class DonationInterfaceAntifraudFactory {
 		$scoreBreakdown = array(),
 		$validationAction = 'process'
 	) {
-
 		$antifraud = array(
 			'risk_score' => $riskScore,
 			'score_breakdown' => $scoreBreakdown,
@@ -28,7 +27,7 @@ class DonationInterfaceAntifraudFactory {
 			// no 'server' available
 		);
 
-		foreach( $keysToCopy as $key ) {
+		foreach ( $keysToCopy as $key ) {
 			$antifraud[$key] = $donationMessage[$key];
 		}
 

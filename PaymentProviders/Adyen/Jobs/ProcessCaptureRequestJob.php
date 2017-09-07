@@ -136,7 +136,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		if ( $dbMessage && isset( $dbMessage['order_id'] ) ) {
 			$this->logger->debug( 'A valid message was obtained from the pending database.' );
 		} else {
-			$errMessage =  "Could not find a processable message for " .
+			$errMessage = "Could not find a processable message for " .
 				"PSP Reference '{$this->pspReference}' and ".
 				"order ID '{$this->merchantReference}'.";
 			$this->logger->warning(
