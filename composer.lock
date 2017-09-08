@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "49f648da1f342cce1119e51af1b5898c",
+    "content-hash": "b8dcf1b77ee5212502380d42ff772749",
     "packages": [
         {
             "name": "amzn/login-and-pay-with-amazon-sdk-php",

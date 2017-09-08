@@ -4,6 +4,7 @@
     "keywords": ["payments", "donations"],
     "homepage": "http://smashpig.org",
     "license": "GPL-2.0",
+    "version": "0.5.0",
     "authors": [
         {
             "name": "Katie Horn",
