@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "ebce03acaa2a8feb271c2081f1b1f964",
+    "content-hash": "49f648da1f342cce1119e51af1b5898c",
     "packages": [
         {
             "name": "amzn/login-and-pay-with-amazon-sdk-php",
@@ -88,16 +88,16 @@
         },
         {
             "name": "coderkungfu/php-queue",
-            "version": "dev-master",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CoderKungfu/php-queue.git",
-                "reference": "dd8412f105632d31cdd77933ec40a08640752c99"
+                "reference": "a9baeb0ae3b05bbd0d2f9f56c8365ff63f64524a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CoderKungfu/php-queue/zipball/dd8412f105632d31cdd77933ec40a08640752c99",
-                "reference": "dd8412f105632d31cdd77933ec40a08640752c99",
+                "url": "https://api.github.com/repos/CoderKungfu/php-queue/zipball/a9baeb0ae3b05bbd0d2f9f56c8365ff63f64524a",
+                "reference": "a9baeb0ae3b05bbd0d2f9f56c8365ff63f64524a",
                 "shasum": ""
             },
             "require": {
@@ -107,10 +107,10 @@
             },
             "require-dev": {
                 "amazonwebservices/aws-sdk-for-php": "dev-master",
-                "aws/aws-sdk-php": "dev-master",
+                "aws/aws-sdk-php": ">=2.8",
                 "ext-memcache": "*",
                 "iron-io/iron_mq": "dev-master",
-                "microsoft/windowsazure": "dev-master",
+                "microsoft/windowsazure": ">=0.4.0",
                 "mrpoundsign/pheanstalk-5.3": "dev-master",
                 "predis/predis": "1.*"
             },
@@ -153,7 +153,7 @@
                 "queue",
                 "transaction"
             ],
-            "time": "2017-04-17T14:11:55+00:00"
+            "time": "2017-09-08T03:14:59+00:00"
         },
         {
             "name": "corneltek/getoptionkit",
@@ -2056,7 +2056,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "coderkungfu/php-queue": 20,
         "amzn/login-and-pay-with-amazon-sdk-php": 20
     },
     "prefer-stable": false,

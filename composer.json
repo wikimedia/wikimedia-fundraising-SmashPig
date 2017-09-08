@@ -23,7 +23,7 @@
         }
     ],
     "require": {
-        "coderkungfu/php-queue": "dev-master",
+        "coderkungfu/php-queue": "^1.0",
         "php": ">=5.3.3",
         "phpmailer/phpmailer": "^5.2",
         "predis/predis": "^1.1",
