@@ -7,7 +7,7 @@ class NationalCurrencies {
 	 * Retrieved from reference on Jul 6, 2012
 	 * http://fasteri.com/list/country-code-dialing-code-currency-timezone-of-countries.html
 	 * @param string $country Two letter ISO country code
-	 * @return mixed|null
+	 * @return string|null
 	 */
 	static function getNationalCurrency( $country ) {
 		$country = substr( $country, 0, 2 );
@@ -15,7 +15,8 @@ class NationalCurrencies {
 		$nationalCurrencies = self::getNationalCurrencies();
 		if ( isset( $nationalCurrencies[$country] ) ) {
 			return $nationalCurrencies[$country];
-		} else { return null;
+		} else {
+			return null;
 		}
 	}
 
