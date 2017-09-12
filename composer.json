@@ -4,6 +4,7 @@
     "keywords": ["payments", "donations"],
     "homepage": "http://smashpig.org",
     "license": "GPL-2.0",
+    "version": "0.5.0",
     "authors": [
         {
             "name": "Katie Horn",
@@ -23,7 +24,7 @@
         }
     ],
     "require": {
-        "coderkungfu/php-queue": "dev-master",
+        "coderkungfu/php-queue": "^1.0",
         "php": ">=5.3.3",
         "phpmailer/phpmailer": "^5.2",
         "predis/predis": "^1.1",
@@ -32,6 +33,7 @@
         "symfony/yaml": "^2.8",
         "amzn/login-and-pay-with-amazon-sdk-php": "dev-master",
         "psr/cache": "^1.0",
+        "psr/log": "^1.0",
         "corneltek/getoptionkit": "^2.5"
     },
 	"require-dev": {

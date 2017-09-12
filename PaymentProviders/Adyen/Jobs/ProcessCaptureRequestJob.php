@@ -8,6 +8,7 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\RetryableException;
 use SmashPig\CrmLink\Messages\DonationInterfaceAntifraudFactory;
+use SmashPig\CrmLink\ValidationAction;
 use SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 
@@ -33,10 +34,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	 */
 	protected $logger;
 	protected $propertiesExcludedFromExport = array( 'logger' );
-	// Actions to take after examining capture request and pending db message
-	const ACTION_PROCESS = 'process'; // all clear to capture payment
-	const ACTION_REJECT = 'reject'; // very likely fraud - cancel the authorization
-	const ACTION_REVIEW = 'review'; // potential fraud or duplicate - do not capture now
+
 	const ACTION_DUPLICATE = 'duplicate'; // known duplicate - cancel the authorization
 	const ACTION_MISSING = 'missing'; // missing donor details - shunt job to damaged queue
 
@@ -76,7 +74,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 
 		$action = $this->determineAction( $dbMessage );
 		switch ( $action ) {
-			case self::ACTION_PROCESS:
+			case ValidationAction::PROCESS:
 				// Attempt to capture the payment
 				/**
 				 * @var AdyenPaymentsInterface
@@ -109,7 +107,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 					$success = false;
 				}
 				break;
-			case self::ACTION_REJECT:
+			case ValidationAction::REJECT:
 				$this->cancelAuthorization();
 				// Delete the fraudy donor details
 				$db->deleteMessage( $dbMessage );
@@ -120,7 +118,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				// leave it intact for the legitimate RecordCaptureJob.
 				$this->cancelAuthorization();
 				break;
-			case self::ACTION_REVIEW:
+			case ValidationAction::REVIEW:
 				// Don't capture the payment right now, but leave the donor details in
 				// the pending database in case the authorization is captured via the console.
 				break;
@@ -177,12 +175,12 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		} else {
 			$this->logger->warning( "AVS result '{$this->avsResult}' not found in avs-map.", $avsMap );
 		}
-		$action = self::ACTION_PROCESS;
+		$action = ValidationAction::PROCESS;
 		if ( $riskScore >= $providerConfig->val( 'fraud-filters/review-threshold' ) ) {
-			$action = self::ACTION_REVIEW;
+			$action = ValidationAction::REVIEW;
 		}
 		if ( $riskScore >= $providerConfig->val( 'fraud-filters/reject-threshold' ) ) {
-			$action = self::ACTION_REJECT;
+			$action = ValidationAction::REJECT;
 		}
 		$this->sendAntifraudMessage( $dbMessage, $riskScore, $scoreBreakdown, $action );
 		return $action;
