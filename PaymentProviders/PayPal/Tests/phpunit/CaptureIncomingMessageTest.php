@@ -46,6 +46,8 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		'chargeback_settlement_ec.json' => 'refund',
 		'buyer_complaint.json' => 'refund',
 		'refund_other.json' => 'refund',
+		'refund_unauthorized_spoof.json' => 'refund',
+		'refund_admin_fraud_reversal.json' => 'refund',
 		// this should not actually get written to
 		// TODO 'new_case.json' => 'no-op',
 	];
