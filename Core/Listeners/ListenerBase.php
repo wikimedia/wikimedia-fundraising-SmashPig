@@ -74,7 +74,7 @@ abstract class ListenerBase implements IHttpActionHandler {
 				// Obtain address, CIDR block, and verify correctness of form
 				list( $network_ip, $block ) = explode( '/', $ip );
 				if ( !filter_var( $network_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ||
-					!filter_var( $block, FILTER_VALIDATE_INT, array( 'min_range' => 0, 'max_range' => 32 ) )
+					!filter_var( $block, FILTER_VALIDATE_INT, [ 'min_range' => 0, 'max_range' => 32 ] )
 				) {
 					throw new ListenerConfigException( "Malformed IP address in whitelist: {$ip}" );
 				}

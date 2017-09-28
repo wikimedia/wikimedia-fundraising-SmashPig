@@ -16,7 +16,7 @@ use SmashPig\PaymentProviders\Adyen\ReferenceData;
  */
 class AdyenAudit implements AuditParser {
 
-	protected $columnHeaders = array(
+	protected $columnHeaders = [
 		'Company Account',
 		'Merchant Account',
 		'Psp Reference',
@@ -47,9 +47,9 @@ class AdyenAudit implements AuditParser {
 		'Reserved8',
 		'Reserved9',
 		'Reserved10',
-	);
+	];
 
-	protected static $ignoredTypes = array(
+	protected static $ignoredTypes = [
 		'fee',
 		'misccosts',
 		'merchantpayout',
@@ -68,12 +68,12 @@ class AdyenAudit implements AuditParser {
 		'settlecost',
 		'paidout',
 		'paidoutreversed',
-	);
+	];
 
 	protected $fileData;
 
 	public function parseFile( $path ) {
-		$this->fileData = array();
+		$this->fileData = [];
 		$file = fopen( $path, 'r' );
 
 		$ignoreLines = 1;
@@ -101,11 +101,11 @@ class AdyenAudit implements AuditParser {
 			return;
 		}
 
-		$msg = array(
+		$msg = [
 			'gateway' => 'adyen',
 			'log_id' => $row['Merchant Reference'],
 			'date' => $this->getDate( $row ),
-		);
+		];
 		$parts = explode( '.', $row['Merchant Reference'] );
 		$msg['contribution_tracking_id'] = $parts[0];
 

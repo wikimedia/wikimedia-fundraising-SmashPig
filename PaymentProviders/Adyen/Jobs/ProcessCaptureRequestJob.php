@@ -33,7 +33,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	 * @var TaggedLogger
 	 */
 	protected $logger;
-	protected $propertiesExcludedFromExport = array( 'logger' );
+	protected $propertiesExcludedFromExport = [ 'logger' ];
 
 	const ACTION_DUPLICATE = 'duplicate'; // known duplicate - cancel the authorization
 	const ACTION_MISSING = 'missing'; // missing donor details - shunt job to damaged queue
@@ -160,7 +160,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			"raw CVV result is '{$this->cvvResult}' and raw AVS result is '{$this->avsResult}'." );
 		$cvvMap = $providerConfig->val( 'fraud-filters/cvv-map' );
 		$avsMap = $providerConfig->val( 'fraud-filters/avs-map' );
-		$scoreBreakdown = array();
+		$scoreBreakdown = [];
 		if ( array_key_exists( $this->cvvResult, $cvvMap ) ) {
 			$scoreBreakdown['getCVVResult'] = $cvvScore = $cvvMap[$this->cvvResult];
 			$this->logger->debug( "CVV result '{$this->cvvResult}' adds risk score $cvvScore." );

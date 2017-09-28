@@ -55,10 +55,10 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 			where gateway = :gateway
 				and order_id = :order_id
 			limit 1';
-		$params = array(
+		$params = [
 			'gateway' => $gatewayName,
 			'order_id' => $orderId,
-		);
+		];
 		$executed = $this->prepareAndExecute( $sql, $params );
 		$row = $executed->fetch( PDO::FETCH_ASSOC );
 		if ( !$row ) {

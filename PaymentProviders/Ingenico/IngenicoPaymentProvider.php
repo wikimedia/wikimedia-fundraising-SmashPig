@@ -13,7 +13,7 @@ abstract class IngenicoPaymentProvider {
 	protected $api;
 	protected $providerConfiguration;
 
-	public function __construct( $options = array() ) {
+	public function __construct( $options = [] ) {
 		// FIXME: provide objects in constructor
 		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 		$this->api = $this->providerConfiguration->object( 'api' );

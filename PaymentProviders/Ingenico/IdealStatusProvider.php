@@ -27,7 +27,7 @@ class IdealStatusProvider {
 	 */
 	protected $availabilityUrl;
 
-	public function __construct( array $options = array() ) {
+	public function __construct( array $options = [] ) {
 		$this->cacheParameters = $options['cache-parameters'];
 		$this->availabilityUrl = $options['availability-url'];
 		// FIXME: provide objects in constructor
@@ -44,7 +44,7 @@ class IdealStatusProvider {
 		$cacheItem = $this->cache->getItem( $cacheKey );
 
 		if ( !$cacheItem->isHit() ) {
-			$banks = array();
+			$banks = [];
 
 			$url = $this->availabilityUrl;
 
@@ -53,20 +53,20 @@ class IdealStatusProvider {
 			$response = json_decode( $rawResponse['body'], true );
 
 			foreach ( $response['Issuers'] as $issuer ) {
-				$banks[$issuer['BankId']] = array(
+				$banks[$issuer['BankId']] = [
 					'name' => $issuer['BankName'],
 					'availability' => $issuer['Percent']
-				);
+				];
 			}
 
 			$duration = $this->cacheParameters['duration'];
 
-			$cacheItem->set( array(
+			$cacheItem->set( [
 				'value' => $banks,
 				# TODO: determine timezone and parse this format: '22-3-2017, 23:40'
 				'lastupdate' => $response['LastUpdate'],
 				'expiration' => time() + $duration
-			) );
+			] );
 			$cacheItem->expiresAfter( $duration );
 			$this->cache->save( $cacheItem );
 		}

@@ -15,21 +15,21 @@ class PaymentMessage extends GlobalCollectMessage {
 	protected $status_date;
 	protected $status_id;
 
-	protected $fields = array(
+	protected $fields = [
 		'additional_reference',
-		'amount' => array( 'map' => 'gross' ),
+		'amount' => [ 'map' => 'gross' ],
 		'attempt_id',
-		'currency_code' => array( 'map' => 'currency' ),
+		'currency_code' => [ 'map' => 'currency' ],
 		'effort_id',
 		'merchant_id',
-		'order_id' => array( 'map' => 'gateway_txn_id' ),
+		'order_id' => [ 'map' => 'gateway_txn_id' ],
 		'payment_method_id',
-		'payment_product_id' => array( 'map' => 'payment_product' ),
+		'payment_product_id' => [ 'map' => 'payment_product' ],
 		'payment_reference',
-		'received_date' => array( 'map' => 'date' ),
+		'received_date' => [ 'map' => 'date' ],
 		'status_date',
 		'status_id',
-	);
+	];
 
 	public function getDestinationQueue() {
 		// XXX

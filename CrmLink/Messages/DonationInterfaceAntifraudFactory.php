@@ -8,16 +8,16 @@ class DonationInterfaceAntifraudFactory {
 	public static function create(
 		$donationMessage,
 		$riskScore,
-		$scoreBreakdown = array(),
+		$scoreBreakdown = [],
 		$validationAction = 'process'
 	) {
-		$antifraud = array(
+		$antifraud = [
 			'risk_score' => $riskScore,
 			'score_breakdown' => $scoreBreakdown,
 			'validation_action' => $validationAction,
-		);
+		];
 
-		$keysToCopy = array(
+		$keysToCopy = [
 			'contribution_tracking_id',
 			'date',
 			'gateway',
@@ -25,7 +25,7 @@ class DonationInterfaceAntifraudFactory {
 			'payment_method',
 			'user_ip'
 			// no 'server' available
-		);
+		];
 
 		foreach ( $keysToCopy as $key ) {
 			$antifraud[$key] = $donationMessage[$key];

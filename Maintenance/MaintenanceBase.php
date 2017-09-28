@@ -43,25 +43,25 @@ abstract class MaintenanceBase {
 	/** @var array Desired parameters. Keys are long names, values are arrays
 	 * with keys 'desc', 'default', and 'alias'
 	 */
-	protected $desiredOptions = array();
+	protected $desiredOptions = [];
 
 	/** @var array Map aliased parameter names to long ones, e.g. -h -> --help */
-	protected $aliasParamsMap = array();
+	protected $aliasParamsMap = [];
 
 	/**
 	 * @var array[] Arguments expected on the command line
 	 *              Each element has keys 'name', 'desc', 'required'
 	 */
-	protected $expectedArguments = array();
+	protected $expectedArguments = [];
 
 	/** @var string[] Lookup table for argument name to index in the $args array */
-	protected $expectedArgumentIdMap = array();
+	protected $expectedArgumentIdMap = [];
 
 	/** @var array List of options that were actually passed */
-	protected $options = array();
+	protected $options = [];
 
 	/** @var array List of arguments that were actually passed */
-	protected $args = array();
+	protected $args = [];
 
 	/** @var string Name of the script that is actually executing */
 	protected $scriptName = '';
@@ -206,11 +206,11 @@ abstract class MaintenanceBase {
 				"Option '$name' already exists. Cannot add again."
 			);
 		}
-		$this->desiredOptions[$name] = array(
+		$this->desiredOptions[$name] = [
 			'desc' => $description,
 			'default' => $default,
 			'alias' => $alias,
-		);
+		];
 
 		if ( $alias ) {
 			if ( in_array( $alias, $this->aliasParamsMap ) ) {
@@ -297,11 +297,11 @@ abstract class MaintenanceBase {
 			);
 		}
 
-		$this->expectedArguments[] = array(
+		$this->expectedArguments[] = [
 			'name' => $arg,
 			'desc' => $description,
 			'required' => $required
-		);
+		];
 		$this->expectedArgumentIdMap[$arg] = count( $this->expectedArguments ) - 1;
 	}
 

@@ -5,12 +5,21 @@ namespace SmashPig\PaymentProviders\PayPal;
 class RefundMessage extends Message {
 
 	public static function normalizeMessage( &$message, $ipnMessage ) {
+		$reasonCodes = [
+			'refund',
+			'buyer_complaint',
+			'other',
+			'unauthorized_spoof',
+			'admin_fraud_reversal'
+		];
+
 		$message['gateway_refund_id'] = $ipnMessage['txn_id'];
 		$message['gross_currency'] = $ipnMessage['mc_currency'];
+
 		if ( isset( $message['txn_type'] ) && $message['txn_type'] === 'adjustment' ) {
 			$message['type'] = 'chargeback';
 
-		} elseif ( isset( $ipnMessage['reason_code'] ) && in_array( $ipnMessage['reason_code'], array( 'refund', 'buyer_complaint', 'other' ) ) ) {
+		} elseif ( isset( $ipnMessage['reason_code'] ) && in_array( $ipnMessage['reason_code'], $reasonCodes ) ) {
 			$message['type'] = 'refund';
 
 		}

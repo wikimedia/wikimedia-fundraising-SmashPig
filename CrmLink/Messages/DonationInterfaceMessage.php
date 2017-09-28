@@ -42,7 +42,7 @@ class DonationInterfaceMessage extends JsonSerializableObject {
 	 * @param array $values
 	 * @return DonationInterfaceMessage
 	 */
-	public static function fromValues( $values = array() ) {
+	public static function fromValues( $values = [] ) {
 		$message = new DonationInterfaceMessage();
 		foreach ( $values as $key => $value ) {
 			// If we're creating this from a database row with some extra

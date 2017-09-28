@@ -12,7 +12,7 @@ class OutboundRequest {
 	/**
 	 * @var array
 	 */
-	protected $headers = array();
+	protected $headers = [];
 
 	/**
 	 * @var ProviderConfiguration

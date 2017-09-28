@@ -44,7 +44,7 @@ class Job extends RunnableJob {
 		} elseif (
 			isset( $request['payment_status'] ) &&
 			// TODO can these go in config? --------------v-----------v
-			in_array( $request['payment_status'], array( 'Reversed', 'Refunded' ) )
+			in_array( $request['payment_status'], [ 'Reversed', 'Refunded' ] )
 		) {
 			// refund, chargeback, or reversal
 			$txn_type = 'refund';
@@ -67,7 +67,7 @@ class Job extends RunnableJob {
 
 		// Transform into new message.
 
-		$creator = array( $msgClass, 'fromIpnMessage' );
+		$creator = [ $msgClass, 'fromIpnMessage' ];
 		$normalized = call_user_func( $creator, $request );
 
 		// Save to appropriate queue.

@@ -4,95 +4,95 @@ use OutOfBoundsException;
 
 class ReferenceData {
 
-	protected static $methods = array(
-		'alipay' => array(
+	protected static $methods = [
+		'alipay' => [
 			'method' => 'ew',
 			'submethod' => 'ew_alipay',
-		),
-		'amex' => array(
+		],
+		'amex' => [
 			'method' => 'cc',
 			'submethod' => 'amex',
-		),
-		'bijcard' => array(
+		],
+		'bijcard' => [
 			'method' => 'cc',
 			'submethod' => 'bij',
-		),
+		],
 		// International Bank Transfer (IBAN)
-		'banktransfer_IBAN' => array(
+		'banktransfer_IBAN' => [
 			'method' => 'bt',
 			'submethod' => 'iban',
-		),
+		],
 		// China Union Pay
-		'cup' => array(
+		'cup' => [
 			'method' => 'cc',
 			'submethod' => 'cup',
-		),
-		'diners' => array(
+		],
+		'diners' => [
 			'method' => 'cc',
 			'submethod' => 'dc',
-		),
+		],
 		// Sofortüberweisung
-		'directEbanking' => array(
+		'directEbanking' => [
 			'method' => 'rtbt',
 			'submethod' => 'rtbt_sofortuberweisung',
-		),
-		'discover' => array(
+		],
+		'discover' => [
 			'method' => 'cc',
 			'submethod' => 'discover',
-		),
-		'dotpay' => array(
+		],
+		'dotpay' => [
 			'method' => 'ew',
 			'submethod' => 'ew_dotpay',
-		),
-		'ideal' => array(
+		],
+		'ideal' => [
 			'method' => 'rtbt',
 			'submethod' => 'rtbt_ideal',
-		),
-		'jcb' => array(
+		],
+		'jcb' => [
 			'method' => 'cc',
 			'submethod' => 'jcb',
-		),
-		'mc' => array(
+		],
+		'mc' => [
 			'method' => 'cc',
 			'submethod' => 'mc',
-			'variants' => array(
+			'variants' => [
 				'mcdebit' => 'mc-debit',
-			),
-		),
-		'multibanco' => array(
+			],
+		],
+		'multibanco' => [
 			'method' => 'rtbt',
 			'submethod' => 'rtbt_multibanco',
-		),
-		'safetypay' => array(
+		],
+		'safetypay' => [
 			'method' => 'rtbt',
 			'submethod' => 'rtbt_safetypay',
-		),
-		'sepadirectdebit' => array(
+		],
+		'sepadirectdebit' => [
 			'method' => 'dd',
 			'submethod' => 'dd_sepa',
-		),
-		'tenpay' => array(
+		],
+		'tenpay' => [
 			'method' => 'ew',
 			'submethod' => 'ew_tenpay',
-		),
-		'trustly' => array(
+		],
+		'trustly' => [
 			'method' => 'obt',
 			'submethod' => 'trustly',
-		),
-		'visa' => array(
+		],
+		'visa' => [
 			'method' => 'cc',
 			'submethod' => 'visa',
-			'variants' => array(
+			'variants' => [
 				'visabeneficial' => 'visa-beneficial', // guessing at Adyen code
 				'visadebit' => 'visa-debit',
 				'visaelectron' => 'visa-electron', // guessing at Adyen code
-			)
-		),
-		'visadankort' => array(
+			]
+		],
+		'visadankort' => [
 			'method' => 'cc',
 			'submethod' => 'visa',
-		)
-	);
+		]
+	];
 
 	/**
 	 * @param string $method Adyen's 'Payment Method'
@@ -111,6 +111,6 @@ class ReferenceData {
 		} else {
 			$ourSubmethod = $entry['submethod'];
 		}
-		return array( $ourMethod, $ourSubmethod );
+		return [ $ourMethod, $ourSubmethod ];
 	}
 }

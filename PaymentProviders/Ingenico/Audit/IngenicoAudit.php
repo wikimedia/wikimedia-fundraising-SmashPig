@@ -12,7 +12,7 @@ class IngenicoAudit implements AuditParser {
 
 	protected $fileData;
 
-	protected $donationMap = array(
+	protected $donationMap = [
 		'PaymentAmount' => 'gross',
 		'IPAddressCustomer' => 'user_ip',
 		'BillingFirstname' => 'first_name',
@@ -32,9 +32,9 @@ class IngenicoAudit implements AuditParser {
 		'PaymentCurrency' => 'currency',
 		'AmountLocal' => 'gross',
 		'TransactionDateTime' => 'date',
-	);
+	];
 
-	protected $refundMap = array(
+	protected $refundMap = [
 		'DebitedAmount' => 'gross',
 		'AdditionalReference' => 'contribution_tracking_id',
 		'OrderID' => 'gateway_parent_id',
@@ -43,9 +43,9 @@ class IngenicoAudit implements AuditParser {
 		'DateDue' => 'date',
 		// Order matters. Prefer TransactionDateTime if it is present.
 		'TransactionDateTime' => 'date',
-	);
+	];
 
-	protected $recordsWeCanDealWith = array(
+	protected $recordsWeCanDealWith = [
 		// Credit card item that has been processed, but not settled.
 		// We take these seriously.
 		// TODO: Why aren't we waiting for +ON (settled)?
@@ -56,10 +56,10 @@ class IngenicoAudit implements AuditParser {
 		'-CB' => 'chargeback', // Credit card chargeback
 		'-CR' => 'refund', // Credit card refund
 		'+AP' => 'donation', // Direct Debit collected
-	);
+	];
 
 	public function parseFile( $path ) {
-		$this->fileData = array();
+		$this->fileData = [];
 		$unzippedFullPath = $this->getUnzippedFile( $path );
 
 		// load the XML into a DOMDocument.
@@ -136,7 +136,7 @@ class IngenicoAudit implements AuditParser {
 	}
 
 	protected function xmlToArray( DOMElement $recordNode, $map ) {
-		$record = array();
+		$record = [];
 		foreach ( $map as $theirs => $ours ) {
 			foreach ( $recordNode->getElementsByTagName( $theirs ) as $recordItem ) {
 				$record[$ours] = $recordItem->nodeValue;  // there 'ya go: Normal already.

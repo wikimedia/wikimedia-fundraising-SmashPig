@@ -35,7 +35,7 @@ class RequeueDelayedMessages extends MaintenanceBase {
 		$messages = $this->damagedDatabase->fetchRetryMessages(
 			$this->getOption( 'max-messages' )
 		);
-		$stats = array();
+		$stats = [];
 		foreach ( $messages as $message ) {
 			$queueName = $message['original_queue'];
 			unset( $message['original_queue'] );

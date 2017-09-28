@@ -26,9 +26,9 @@ class CloseOrderReference implements IListenerMessageAction {
 		// the successful capture
 		try {
 			$response = $client->closeOrderReference(
-				array(
+				[
 					'amazon_order_reference_id' => $orderReferenceId,
-				)
+				]
 			)->toArray();
 
 			if ( !empty( $response['Error'] ) ) {

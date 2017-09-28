@@ -99,11 +99,11 @@ class LogEvent {
 	public function getExceptionBlob() {
 		$cex = $this->exception;
 		if ( !$cex ) {
-			return array();
+			return [];
 		}
 
 		// Get the caused by header
-		$descStr = array();
+		$descStr = [];
 		do {
 			$descStr[] = get_class( $cex ) . "@{$cex->getFile()}:{$cex->getLine()} ({$cex->getMessage()})";
 			$cex = $cex->getPrevious();

@@ -17,7 +17,7 @@ class RefundReport {
 	}
 
 	public function parse( $path ) {
-		$this->fileData = array();
+		$this->fileData = [];
 		$csv = new HeadedCsvReader( $path, ',', 4096, 0 );
 
 		while ( $csv->valid() ) {
@@ -43,7 +43,7 @@ class RefundReport {
 			return;
 		}
 
-		$msg = array();
+		$msg = [];
 		$msg['date'] = UtcDate::getUtcTimestamp(
 			$csv->currentCol( 'LastUpdateTimestamp' )
 		);

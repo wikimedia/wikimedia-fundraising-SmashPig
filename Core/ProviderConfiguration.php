@@ -57,10 +57,10 @@ class ProviderConfiguration extends Configuration {
 	}
 
 	protected static function remapProvider( $provider ) {
-		$remap = array(
+		$remap = [
 			'astropay' => 'dlocal',
 			'globalcollect' => 'ingenico'
-		);
+		];
 		if ( array_key_exists( $provider, $remap ) ) {
 			return $remap[$provider];
 		}

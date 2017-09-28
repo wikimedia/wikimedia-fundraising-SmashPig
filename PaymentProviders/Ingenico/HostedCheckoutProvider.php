@@ -8,7 +8,7 @@ class HostedCheckoutProvider extends IngenicoPaymentProvider {
 	 * @var subdomain
 	 */
 	protected $subdomain;
-	public function __construct( array $options = array() ) {
+	public function __construct( array $options = [] ) {
 		parent::__construct( $options );
 		if ( array_key_exists( 'subdomain', $options ) ) {
 			$this->subdomain = $options['subdomain'];

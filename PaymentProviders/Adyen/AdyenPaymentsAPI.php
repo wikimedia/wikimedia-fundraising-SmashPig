@@ -20,11 +20,11 @@ class AdyenPaymentsAPI implements AdyenPaymentsInterface {
 		$c = Context::get()->getProviderConfiguration();
 		$this->soapClient = new WSDL\Payment(
 			$c->val( 'payments-wsdl' ),
-			array(
+			[
 				 'cache_wsdl' => WSDL_CACHE_BOTH,
 				 'login'      => $c->val( "accounts/{$this->account}/ws-username" ),
 				 'password'   => $c->val( "accounts/{$this->account}/ws-password" ),
-			)
+			]
 		);
 	}
 

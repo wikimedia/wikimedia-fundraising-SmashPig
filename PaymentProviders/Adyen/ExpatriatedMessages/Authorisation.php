@@ -10,7 +10,7 @@ class Authorisation extends AdyenMessage {
 
 	/** @var array Modification operations currently supported by the referenced transaction. This includes
 	 * things like CAPTURE, REFUND, and CANCEL. */
-	public $operations = array();
+	public $operations = [];
 
 	/** @var string When success is set to true and the payment method is visa, mc, or amex this field contains
 	 * the authorization code, last 4 digits of the card, and the expiry date as <6 digit auth>:<Last 4>:<MM/YYYY>.
@@ -34,7 +34,7 @@ class Authorisation extends AdyenMessage {
 		if ( $msgObj->operations ) {
 			$this->operations = (array)$msgObj->operations->string;
 		} else {
-			$this->operations = array();
+			$this->operations = [];
 		}
 
 		$this->reason = $msgObj->reason;

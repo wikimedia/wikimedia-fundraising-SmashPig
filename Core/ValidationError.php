@@ -15,7 +15,7 @@ class ValidationError {
 	 * @param string $messageKey i18n key for the error message
 	 * @param array $messageParams parameters to interpolate into the message
 	 */
-	public function __construct( $field, $messageKey, $messageParams = array() ) {
+	public function __construct( $field, $messageKey, $messageParams = [] ) {
 		$this->field = $field;
 		$this->messageKey = $messageKey;
 		$this->messageParams = $messageParams;

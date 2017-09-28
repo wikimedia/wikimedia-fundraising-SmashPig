@@ -6,7 +6,7 @@ use SmashPig\Core\Logging\LogStreams\ILogStream;
 
 class LogContextHandler {
 	/** @var [LogEvent[]] Stack of LogEvent arrays holding all log lines for a context */
-	protected $contextData = array( array() );
+	protected $contextData = [ [] ];
 
 	/** @var string[] Stack of strings holding context names */
 	protected $contextNames;
@@ -15,7 +15,7 @@ class LogContextHandler {
 	protected $logStreams;
 
 	public function __construct( $rootName, $logStreams ) {
-		$this->contextNames = array( $rootName );
+		$this->contextNames = [ $rootName ];
 		$this->contextString = self::createQualifiedContextName( $this->contextNames );
 
 		$this->logStreams = $logStreams;
@@ -135,7 +135,7 @@ class LogContextHandler {
 		if ( isset( $this->contextData[ $n ] ) ) {
 			return $this->contextData[ $n ];
 		} else {
-			return array();
+			return [];
 		}
 	}
 

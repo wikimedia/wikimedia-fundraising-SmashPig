@@ -10,7 +10,7 @@ class PayPalPaymentsAPI {
 	 * @param array $post_fields Associative array of fields posted to listener
 	 * @return bool
 	 */
-	public function validate( $post_fields = array() ) {
+	public function validate( $post_fields = [] ) {
 		$post_fields['cmd'] = '_notify-validate';
 
 		$url = Context::get()->getProviderConfiguration()->val( 'postback-url' );

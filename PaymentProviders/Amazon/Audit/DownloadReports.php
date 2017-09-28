@@ -20,11 +20,11 @@ class DownloadReports extends MaintenanceBase {
 	}
 
 	public function execute() {
-		$downloaderConfig = array(
+		$downloaderConfig = [
 			'archive-path' => $this->getOption( 'archive-path' ),
 			'download-path' => $this->getOption( 'download-path' ),
 			'days' => $this->getOption( 'days' ),
-		);
+		];
 		$downloader = new ReportDownloader( $downloaderConfig );
 		$downloader->download();
 	}

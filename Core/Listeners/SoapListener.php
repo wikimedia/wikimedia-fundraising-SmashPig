@@ -13,16 +13,16 @@ abstract class SoapListener extends ListenerBase {
 	protected $wsdlpath = '';
 
 	/** @var array Mapping of WSDL entity names to PHP classes. Key is the entity name, value is the fully defined class name */
-	protected $classmap = array();
+	protected $classmap = [];
 
 	public function __construct() {
 		parent::__construct();
 		$this->server = new \SoapServer(
 			$this->wsdlpath,
-			array(
+			[
 				 'classmap'   => $this->classmap,
 				 'cache_wsdl' => WSDL_CACHE_BOTH,
-			)
+			]
 		);
 	}
 

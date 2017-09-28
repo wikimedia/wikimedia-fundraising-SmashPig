@@ -9,10 +9,10 @@ use Symfony\Component\Yaml\Parser;
 abstract class Configuration {
 
 	/** @var array K/V array of configuration options for the initialized node */
-	protected $options = array();
+	protected $options = [];
 
 	/** @var array keyed on class name that stores persistent objects */
-	protected $objects = array();
+	protected $objects = [];
 
 	public function loadDefaultConfig() {
 		$this->loadConfigFromPaths( $this->getDefaultSearchPath() );
@@ -33,10 +33,10 @@ abstract class Configuration {
 		$paths = $this->expandSearchPathToActual( $searchPath );
 
 		// Reset to empty set.
-		$this->options = array();
+		$this->options = [];
 
 		// Attempt to load the configuration files from disk
-		$configs = array();
+		$configs = [];
 		$yamlParser = new Parser();
 		foreach ( $paths as $path ) {
 			$config = $yamlParser->parse( file_get_contents( $path ) );
@@ -70,7 +70,7 @@ abstract class Configuration {
 				throw new \RuntimeException( "Illegal glob while matching {$pattern}" );
 			}
 			return array_merge( $carry, $matchingPaths );
-		}, array() );
+		}, [] );
 
 		return $paths;
 	}
@@ -167,7 +167,7 @@ abstract class Configuration {
 		$className = $this->val( $node . '/class' );
 
 		// Optional keys
-		$arguments = array();
+		$arguments = [];
 		// It would be nice to be able to provide other objects defined
 		// in config as arguments. We might have had that pre-simplification
 		// with nodes that referred to other nodes.

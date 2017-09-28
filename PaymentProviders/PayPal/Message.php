@@ -9,7 +9,7 @@ abstract class Message {
 	public static function fromIpnMessage( $ipnArray ) {
 		$config = Context::get()->getProviderConfiguration();
 
-		$message = array();
+		$message = [];
 		$map = $config->val( 'var_map' );
 		foreach ( $map as $rx => $tx ) {
 			if ( array_key_exists( $rx, $ipnArray ) ) {

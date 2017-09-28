@@ -6,12 +6,12 @@ use SmashPig\PaymentProviders\GlobalCollect\Messages\NormalizedMessage;
 abstract class GlobalCollectMessage extends ListenerMessage {
 
 	protected function getFieldInfo() {
-		$fieldInfo = array();
+		$fieldInfo = [];
 		foreach ( $this->fields as $key => $info ) {
 			// Allow mixed list/hash
 			if ( is_numeric( $key ) ) {
 				$key = $info;
-				$info = array();
+				$info = [];
 			}
 			$fieldInfo[$key] = $info;
 		}
@@ -32,7 +32,7 @@ abstract class GlobalCollectMessage extends ListenerMessage {
 	 * @return array associative queue message thing
 	 */
 	public function normalizeForQueue() {
-		$queueMsg = array();
+		$queueMsg = [];
 
 		foreach ( $this->getFieldInfo() as $key => $info ) {
 			$destKey = ( array_key_exists( 'map', $info ) ? $info['map'] : $key );

@@ -26,12 +26,12 @@ class SubscriptionMessage extends Message {
 				// break the period out for civicrm
 				if ( isset( $ipnMessage['period3'] ) ) {
 					// map paypal period unit to civicrm period units
-					$period_map = array(
+					$period_map = [
 						'm' => 'month',
 						'd' => 'day',
 						'w' => 'week',
 						'y' => 'year',
-					);
+					];
 
 					$period = explode( " ", $ipnMessage['period3'] );
 					$message['frequency_interval'] = $period[0];

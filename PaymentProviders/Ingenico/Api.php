@@ -75,7 +75,7 @@ class Api {
 			throw new ApiException( "Response body is not valid JSON: '{$response['body']}'" );
 		}
 		if ( !empty( $decoded['errors'] ) ) {
-			$messages = array();
+			$messages = [];
 			if ( !empty( $decoded['errorId'] ) ) {
 				$messages[] = "Ingenico error id {$decoded['errorId']}.";
 			}
