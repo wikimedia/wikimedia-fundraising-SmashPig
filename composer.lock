@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "fee4aaa96914c937ec0da16560a49826",
+    "content-hash": "a7d28313e99779a1610eb3eda5532900",
     "packages": [
         {
             "name": "amzn/login-and-pay-with-amazon-sdk-php",
@@ -2063,5 +2063,7 @@
     "platform": {
         "php": ">=5.4"
     },
-    "platform-dev": []
+    "platform-dev": {
+        "ext-sqlite3": "*"
+    }
 }

@@ -17,6 +17,7 @@ postback-url: https://ipnpb.paypal.com/cgi-bin/webscr
 
 # TODO: merge this with DonationInterface style var_map
 var_map:
+    time_created: date
     payment_date: date # needs strtotime(payment_date)
     # FIXME Recurring messages use non-normalized field names, for example:
     txn_type: txn_type

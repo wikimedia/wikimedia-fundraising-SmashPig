@@ -55,6 +55,7 @@ class RecurringMessage extends Message {
 			case 'recurring_payment_failed':
 			case 'recurring_payment_skipped':
 			case 'recurring_payment_suspended':
+			case 'recurring_payment_suspended_due_to_max_failed_payment':
 				$message['txn_type'] = 'subscr_failed';
 				break;
 
