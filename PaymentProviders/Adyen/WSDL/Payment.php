@@ -499,19 +499,17 @@ class Payment extends \SoapClient {
 		'Type' => 'Type',
 	);
 
-	protected $count;
 	protected $retries;
 	protected $uri = 'http://payment.services.adyen.com';
 
 	public function Payment( $wsdl = "https://pal-live.adyen.com/pal/Payment.wsdl", $options = array() ) {
-		$this->retries = Context::get()->getProviderConfiguration()->val('curl/retries');
+		$this->retries = Context::get()->getProviderConfiguration()->val( 'curl/retries' );
 		foreach ( self::$classmap as $key => $value ) {
 			if ( !isset( $options['classmap'][$key] ) ) {
 				$options['classmap'][$key] = $value;
 			}
-			$options['connection_timeout'] = Context::get()->getProviderConfiguration()->val('curl/timeout');
+			$options['connection_timeout'] = Context::get()->getProviderConfiguration()->val( 'curl/timeout' );
 			$options['exceptions'] = true;
-
 		}
 		parent::__construct( $wsdl, $options );
 	}
@@ -624,7 +622,6 @@ class Payment extends \SoapClient {
 	 */
 	public function refund( refund $parameters ) {
 		return $this->makeApiCall( 'refund', $parameters );
-
 	}
 
 	/**
@@ -638,19 +635,24 @@ class Payment extends \SoapClient {
 	}
 
 	protected function makeApiCall ( $path, $parameters ) {
-		$this->count = 0;
-		while ( $this->count < $this->retries ) {
+		$count = 0;
+		while ( $count < $this->retries ) {
 			try {
-				return $this->__soapCall( $path, array($parameters), array('uri' => $this->uri, 'soapaction' => '') );
-			} catch (\SoapFault $e) {
-                $this->count += 1;
-				if ($this->count == $this->retries) {
+				return $this->__soapCall(
+					$path,
+					array( $parameters ),
+					array( 'uri' => $this->uri, 'soapaction' => '' )
+				);
+			} catch ( \SoapFault $e ) {
+				$count += 1;
+				if ( $count == $this->retries ) {
 					throw $e;
 				}
-				Logger::error( "Exception caught in Soap call $path: {$e->getMessage()}", $e->getTrace(), $e );
+				Logger::warning(
+					"Exception caught in Soap call $path: {$e->getMessage()}", $e->getTrace(), $e
+				);
 			}
 		}
-
 	}
 
 }
