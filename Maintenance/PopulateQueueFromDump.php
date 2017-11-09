@@ -53,9 +53,15 @@ class PopulateQueueFromDump extends MaintenanceBase {
 				continue;
 			}
 
-			// push message directly to queue, bypassing QueueWrapper's adding
-			// source fields.
-			$datastore->push( $message );
+			// if $message SourceFields headers are not set then we send it through QueueWrapper::push()
+			if ( !array_key_exists( 'source_enqueued_time', $message ) ) {
+				// QueueWrapper::push() injects additional useful properties
+				// useful properties declared here \SmashPig\CrmLink\Messages\SourceFields::addToMessage()
+				QueueWrapper::push( $this->getOption( 'queue' ), $message );
+			} else {
+
+				$datastore->push( $message );
+			}
 
 			$messageCount++;
 			if ( $messageCount % 1000 == 0 ) {
