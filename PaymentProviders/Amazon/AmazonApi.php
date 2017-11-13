@@ -40,7 +40,8 @@ class AmazonApi {
 	public static function createIpnHandler( $headers, $body ) {
 		$config = Context::get()->getProviderConfiguration();
 		$klass = $config->val( 'ipn-handler-class' );
-		return new $klass( $headers, $body );
+		$proxy = $config->val( 'proxy' );
+		return new $klass( $headers, $body, $proxy );
 	}
 
 	/**
