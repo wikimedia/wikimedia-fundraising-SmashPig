@@ -34,6 +34,14 @@ abstract class AmazonMessage extends ListenerMessage {
 		return true;
 	}
 
+	public function getCurrency() {
+		return $this->currency;
+	}
+
+	public function getGross() {
+		return $this->gross;
+	}
+
 	protected function setGatewayIds( $amazonId ) {
 		$this->gateway_txn_id = $amazonId;
 	}

@@ -2,6 +2,8 @@
 namespace SmashPig\PaymentProviders\Amazon\Tests;
 
 use SmashPig\PaymentProviders\Amazon\Actions\ReconstructMerchantReference;
+use SmashPig\PaymentProviders\Amazon\Actions\RetryAuthorization;
+use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\AuthorizationDeclined;
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;
 
 class ActionsTest extends AmazonTestCase {
@@ -27,5 +29,30 @@ class ActionsTest extends AmazonTestCase {
 		$action->execute( $message );
 		$this->assertEquals( '98765432-1', $message->getOrderId() );
 		$this->assertEmpty( $this->mockClient->calls );
+	}
+
+	/**
+	 * Retry auths declined because TransactionTimedOut
+	 */
+	public function testRetryAuthorizationTimedOut() {
+		$authDeclined = $this->loadJson( __DIR__ . "/../Data/IPN/AuthorizationDeclined.json" );
+		$message = new AuthorizationDeclined( $authDeclined );
+		$action = new RetryAuthorization();
+		$action->execute( $message );
+		$this->assertArrayHasKey( 'authorize', $this->mockClient->calls );
+		$params = $this->mockClient->calls['authorize'][0];
+		$originalDetails = $authDeclined['AuthorizationDetails'];
+		$this->assertEquals(
+			$originalDetails['AuthorizationAmount']['Amount'],
+			$params['authorization_amount']
+		);
+		$this->assertEquals(
+			$originalDetails['AuthorizationReferenceId'],
+			$params['authorization_reference_id']
+		);
+		$this->assertEquals(
+			$message->getOrderReferenceId(),
+			$params['amazon_order_reference_id']
+		);
 	}
 }
