@@ -1,12 +1,12 @@
 <?php namespace SmashPig\PaymentProviders\Ingenico\Audit;
 
-use DOMDocument;
 use DOMElement;
 use RuntimeException;
 use SmashPig\Core\DataFiles\AuditParser;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\Ingenico\ReferenceData;
+use XMLReader;
 
 class IngenicoAudit implements AuditParser {
 
@@ -62,17 +62,18 @@ class IngenicoAudit implements AuditParser {
 		$this->fileData = [];
 		$unzippedFullPath = $this->getUnzippedFile( $path );
 
-		// load the XML into a DOMDocument.
-		// Total Memory Hog Alert. Handle with care.
-		$domDoc = new DOMDocument( '1.0' );
-		Logger::info( "Loading XML from $unzippedFullPath" );
-		$domDoc->load( $unzippedFullPath );
-		unlink( $unzippedFullPath );
+		Logger::info( "Opening $unzippedFullPath with XMLReader" );
+		$reader = new XMLReader();
+		$reader->open( $unzippedFullPath );
 		Logger::info( "Processing" );
-
-		foreach ( $domDoc->getElementsByTagName( 'DataRecord' ) as $recordNode ) {
-			$this->parseRecord( $recordNode );
+		while ( $reader->read() ) {
+			if ( $reader->nodeType === XMLReader::ELEMENT && $reader->name == 'tns:DataRecord' ) {
+				$record = $reader->expand();
+				$this->parseRecord( $record );
+			}
 		}
+		$reader->close();
+		unlink( $unzippedFullPath );
 
 		return $this->fileData;
 	}

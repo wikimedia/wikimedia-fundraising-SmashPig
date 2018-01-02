@@ -1,5 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\WSDL;
 
+use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\Context;
+
 class BalanceCheckRequest {
 	public $additionalAmount; // Amount
 	public $additionalData; // anyType2anyTypeMap
@@ -496,11 +499,17 @@ class Payment extends \SoapClient {
 		'Type' => 'Type',
 	);
 
+	protected $retries;
+	protected $uri = 'http://payment.services.adyen.com';
+
 	public function Payment( $wsdl = "https://pal-live.adyen.com/pal/Payment.wsdl", $options = array() ) {
+		$this->retries = Context::get()->getProviderConfiguration()->val( 'curl/retries' );
 		foreach ( self::$classmap as $key => $value ) {
 			if ( !isset( $options['classmap'][$key] ) ) {
 				$options['classmap'][$key] = $value;
 			}
+			$options['connection_timeout'] = Context::get()->getProviderConfiguration()->val( 'curl/timeout' );
+			$options['exceptions'] = true;
 		}
 		parent::__construct( $wsdl, $options );
 	}
@@ -512,11 +521,7 @@ class Payment extends \SoapClient {
 	 * @return authoriseResponse
 	 */
 	public function authorise( authorise $parameters ) {
-		return $this->__soapCall( 'authorise', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'authorise', $parameters );
 	}
 
 	/**
@@ -526,11 +531,7 @@ class Payment extends \SoapClient {
 	 * @return authorise3dResponse
 	 */
 	public function authorise3d( authorise3d $parameters ) {
-		return $this->__soapCall( 'authorise3d', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'authorise3d', $parameters );
 	}
 
 	/**
@@ -540,11 +541,7 @@ class Payment extends \SoapClient {
 	 * @return authoriseReferralResponse
 	 */
 	public function authoriseReferral( authoriseReferral $parameters ) {
-		return $this->__soapCall( 'authoriseReferral', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'authoriseReferral', $parameters );
 	}
 
 	/**
@@ -554,11 +551,7 @@ class Payment extends \SoapClient {
 	 * @return balanceCheckResponse
 	 */
 	public function balanceCheck( balanceCheck $parameters ) {
-		return $this->__soapCall( 'balanceCheck', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'balanceCheck', $parameters );
 	}
 
 	/**
@@ -568,11 +561,7 @@ class Payment extends \SoapClient {
 	 * @return cancelResponse
 	 */
 	public function cancel( cancel $parameters ) {
-		return $this->__soapCall( 'cancel', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'canel', $parameters );
 	}
 
 	/**
@@ -582,11 +571,7 @@ class Payment extends \SoapClient {
 	 * @return cancelOrRefundResponse
 	 */
 	public function cancelOrRefund( cancelOrRefund $parameters ) {
-		return $this->__soapCall( 'cancelOrRefund', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'cancelOrRefund', $parameters );
 	}
 
 	/**
@@ -596,11 +581,7 @@ class Payment extends \SoapClient {
 	 * @return captureResponse
 	 */
 	public function capture( capture $parameters ) {
-		return $this->__soapCall( 'capture', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'capture', $parameters );
 	}
 
 	/**
@@ -610,11 +591,7 @@ class Payment extends \SoapClient {
 	 * @return checkFraudResponse
 	 */
 	public function checkFraud( checkFraud $parameters ) {
-		return $this->__soapCall( 'checkFraud', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'checkFraud', $parameters );
 	}
 
 	/**
@@ -624,11 +601,7 @@ class Payment extends \SoapClient {
 	 * @return directdebitFuncResponse
 	 */
 	public function directdebit( directdebit $parameters ) {
-		return $this->__soapCall( 'directdebit', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'directdebit', $parameters );
 	}
 
 	/**
@@ -638,11 +611,7 @@ class Payment extends \SoapClient {
 	 * @return fundTransferResponse
 	 */
 	public function fundTransfer( fundTransfer $parameters ) {
-		return $this->__soapCall( 'fundTransfer', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'fundTransfer', $parameters );
 	}
 
 	/**
@@ -652,11 +621,7 @@ class Payment extends \SoapClient {
 	 * @return refundResponse
 	 */
 	public function refund( refund $parameters ) {
-		return $this->__soapCall( 'refund', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'refund', $parameters );
 	}
 
 	/**
@@ -666,11 +631,28 @@ class Payment extends \SoapClient {
 	 * @return refundWithDataResponse
 	 */
 	public function refundWithData( refundWithData $parameters ) {
-		return $this->__soapCall( 'refundWithData', array( $parameters ), array(
-				'uri' => 'http://payment.services.adyen.com',
-				'soapaction' => ''
-			)
-		);
+		return $this->makeApiCall( 'refundWithData', $parameters );
+	}
+
+	protected function makeApiCall ( $path, $parameters ) {
+		$count = 0;
+		while ( $count < $this->retries ) {
+			try {
+				return $this->__soapCall(
+					$path,
+					array( $parameters ),
+					array( 'uri' => $this->uri, 'soapaction' => '' )
+				);
+			} catch ( \SoapFault $e ) {
+				$count += 1;
+				if ( $count == $this->retries ) {
+					throw $e;
+				}
+				Logger::warning(
+					"Exception caught in Soap call $path: {$e->getMessage()}", $e->getTrace(), $e
+				);
+			}
+		}
 	}
 
 }

@@ -21,6 +21,9 @@ class AmazonListener extends RestListener {
 			'Completed' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted',
 			'Declined' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundDeclined',
 		],
+		'PaymentAuthorize' => [
+			'Declined' => 'SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\AuthorizationDeclined',
+		]
 	];
 
 	protected function parseEnvelope( Request $request ) {
@@ -72,7 +75,9 @@ class AmazonListener extends RestListener {
 				$secureLog->debug( 'Created message', $message );
 				$messages[] = $message;
 			} else {
-				Logger::info( "Message ignored: status = {$status}" );
+				Logger::info(
+					"Message ignored: notificationType = {$type}, status = {$status}"
+				);
 			}
 		} else {
 			Logger::info( "Message ignored: notificationType = {$type}" );
@@ -87,6 +92,8 @@ class AmazonListener extends RestListener {
 				return $values['CaptureDetails']['CaptureStatus']['State'];
 			case 'PaymentRefund':
 				return $values['RefundDetails']['RefundStatus']['State'];
+			case 'PaymentAuthorize':
+				return $values['AuthorizationDetails']['AuthorizationStatus']['State'];
 			default:
 				return false;
 		}

@@ -27,16 +27,25 @@ credentials: &CREDENTIALS
     region: ''
     sandbox: false
 
+proxy: &PROXY
+    cabundle_file: ~ # /path/to/file
+    proxy_host: ~ # 192.168.1.1
+    proxy_port: -1 # 8080
+    proxy_username: ~ # proxyme
+    proxy_password: ~ # plz
+
 # Override these to mock the Amazon SDK classes
 payments-client:
     class: PayWithAmazon\PaymentsClient
     constructor-parameters:
         - <<: *CREDENTIALS
+          <<: *PROXY
 
 reports-client:
     class: PayWithAmazon\ReportsClient
     constructor-parameters:
         - <<: *CREDENTIALS
+          <<: *PROXY
 
 ipn-handler-class: PayWithAmazon\IpnHandler
 
