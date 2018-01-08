@@ -8,6 +8,7 @@ actions:
     - SmashPig\PaymentProviders\Amazon\Actions\ReconstructMerchantReference
     - SmashPig\PaymentProviders\Amazon\Actions\CloseOrderReference
     - SmashPig\PaymentProviders\Amazon\Actions\AssociateRefundParent
+    - SmashPig\PaymentProviders\Amazon\Actions\RetryAuthorization
     - SmashPig\PaymentProviders\Amazon\Actions\AddMessageToQueue
 
 endpoints:
