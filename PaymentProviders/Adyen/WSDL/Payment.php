@@ -502,7 +502,7 @@ class Payment extends \SoapClient {
 	protected $retries;
 	protected $uri = 'http://payment.services.adyen.com';
 
-	public function Payment( $wsdl = "https://pal-live.adyen.com/pal/Payment.wsdl", $options = array() ) {
+	public function __construct( $wsdl = "https://pal-live.adyen.com/pal/Payment.wsdl", $options = array() ) {
 		$this->retries = Context::get()->getProviderConfiguration()->val( 'curl/retries' );
 		foreach ( self::$classmap as $key => $value ) {
 			if ( !isset( $options['classmap'][$key] ) ) {
@@ -636,7 +636,6 @@ class Payment extends \SoapClient {
 
 	protected function makeApiCall ( $path, $parameters ) {
 		$count = 0;
-		Logger::info( 'Adyen payments retries value', print_r( $this->retries ) );
 		while ( $count < $this->retries ) {
 			try {
 				return $this->__soapCall(
