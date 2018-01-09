@@ -506,11 +506,11 @@ class Payment extends \SoapClient {
 		$this->retries = Context::get()->getProviderConfiguration()->val( 'curl/retries' );
 		foreach ( self::$classmap as $key => $value ) {
 			if ( !isset( $options['classmap'][$key] ) ) {
-				$options['classmap'][$key] = $value;
+				$options['classmap'][$key] = '\SmashPig\PaymentProviders\Adyen\WSDL\\' . $value;
 			}
-			$options['connection_timeout'] = Context::get()->getProviderConfiguration()->val( 'curl/timeout' );
-			$options['exceptions'] = true;
 		}
+		$options['connection_timeout'] = Context::get()->getProviderConfiguration()->val( 'curl/timeout' );
+		$options['exceptions'] = true;
 		parent::__construct( $wsdl, $options );
 	}
 
