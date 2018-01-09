@@ -43,7 +43,6 @@ class AdyenPaymentsAPI implements AdyenPaymentsInterface {
 
 		try {
 			$resp = $this->soapClient->capture( $data );
-			Logger::info( 'Adyen capture response', print_r( $resp ) );
 		} catch ( \Exception $ex ) {
 			Logger::error( 'SOAP capture request threw exception!', null, $ex );
 			return false;

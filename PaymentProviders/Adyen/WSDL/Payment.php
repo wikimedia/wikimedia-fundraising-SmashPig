@@ -636,7 +636,6 @@ class Payment extends \SoapClient {
 
 	protected function makeApiCall ( $path, $parameters ) {
 		$count = 0;
-		Logger::info( 'Adyen payments retries value', print_r( $this->retries ) );
 		while ( $count < $this->retries ) {
 			try {
 				return $this->__soapCall(
