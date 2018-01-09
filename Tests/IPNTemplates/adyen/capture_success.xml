@@ -13,7 +13,7 @@
                         </amount>
                         <eventCode>CAPTURE</eventCode>
                         <eventDate>2015-12-11T20:30:03+01:00</eventDate>
-                        <merchantAccountCode>WikimediaCOM</merchantAccountCode>
+                        <merchantAccountCode>[[ACCOUNT_CODE]]</merchantAccountCode>
                         <merchantReference>[[ORDER_ID]]</merchantReference>
                         <operations xsi:nil="true"/>
                         <originalReference>[[PROCESSOR_REF_1]]</originalReference>

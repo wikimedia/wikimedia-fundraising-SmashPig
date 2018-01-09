@@ -22,7 +22,7 @@
 						</amount>
 						<eventCode>AUTHORISATION</eventCode>
 						<eventDate>2016-01-25T17:07:36.862+01:00</eventDate>
-						<merchantAccountCode>WikimediaCOM</merchantAccountCode>
+						<merchantAccountCode>[[ACCOUNT_CODE]]</merchantAccountCode>
 						<merchantReference>[[ORDER_ID]]</merchantReference>
 						<operations>
 							<string>CANCEL</string>

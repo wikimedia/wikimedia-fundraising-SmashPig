@@ -84,6 +84,9 @@ class CreateIpnMessagesFromPendingDb extends MaintenanceBase {
 			$replacements['[[ASTROPAY_SIGNATURE_SUCCESS]]'] = $this->getAstroPaySignature( $pendingMessage, '9' );
 			$replacements['[[ASTROPAY_SIGNATURE_FAILURE]]'] = $this->getAstroPaySignature( $pendingMessage, '8' );
 		}
+		if ( isset( $pendingMessage['gateway_account'] ) ) {
+			$replacements['[[ACCOUNT_CODE]]'] = $pendingMessage['gateway_account'];
+		}
 		foreach ( $templates as $template ) {
 			$fullPath = $this->templateDir . $template;
 			if ( is_dir( $fullPath ) ) {
