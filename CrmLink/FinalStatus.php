@@ -12,4 +12,5 @@ class FinalStatus {
 	const REVISED = 'revised';
 	const REFUNDED = 'refunded';
 	const CANCELLED = 'cancelled';
+	const TIMEOUT = 'timeout';
 }

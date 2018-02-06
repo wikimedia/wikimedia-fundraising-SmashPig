@@ -12,7 +12,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ejegg/login-and-pay-with-amazon-sdk-php",
-                "reference": "3349385d31f214fc2d2b7f68af289a957458559c"
+                "reference": "ec0f9e5b18edd5c2e61e8dfdde88e679a88dd533"
             },
             "require": {
                 "ext-curl": "*",
@@ -44,7 +44,7 @@
                 "payment",
                 "payments"
             ],
-            "time": "2018-01-05T16:31:47+00:00"
+            "time": "2018-02-05T15:24:08+00:00"
         },
         {
             "name": "clio/clio",
