@@ -34,6 +34,7 @@ proxy: &PROXY
     proxy_port: -1 # 8080
     proxy_username: ~ # proxyme
     proxy_password: ~ # plz
+    proxy_tcp: ~ # 12.34.56.78 -or- mws.amazonservices.com: 12.34.56.78
 
 # Override these to mock the Amazon SDK classes
 payments-client:
