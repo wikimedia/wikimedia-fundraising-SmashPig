@@ -5,9 +5,15 @@ use SmashPig\Core\SmashPigException;
 
 class HostedCheckoutProvider extends IngenicoPaymentProvider {
 	/**
-	 * @var subdomain
+	 * @var string subdomain
 	 */
 	protected $subdomain;
+
+	/**
+	 * HostedCheckoutProvider constructor.
+	 * @param array $options
+	 * @throws SmashPigException
+	 */
 	public function __construct( array $options = [] ) {
 		parent::__construct( $options );
 		if ( array_key_exists( 'subdomain', $options ) ) {
