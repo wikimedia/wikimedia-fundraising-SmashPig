@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
 use PHPUnit_Framework_MockObject_MockObject;
+use SmashPig\PaymentProviders\Ingenico\ApiException;
 use SmashPig\PaymentProviders\Ingenico\HostedCheckoutProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -74,4 +75,25 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 		$response = $this->provider->getHostedPaymentStatus( $hostedPaymentId );
 		$this->assertEquals( 'PAYMENT_CREATED', $response['status'] );
 	}
+
+	/**
+	 * this shouild test that the ApiException is thrown but the message contents is subject to implementation
+	 * @requires PHPUnit 5
+	 * @see  mediawiki-fr/extensions/DonationInterface/vendor/wikimedia/smash-pig/PaymentProviders/Ingenico/Api.php:86
+	 */
+	public function testGetHostedPaymentStatusRejectedThrowsAPIException() {
+		$this->expectException( ApiException::class );
+		$this->expectExceptionMessage( "Error code 430285: Not authorised." ); // need to work this out once implemented?
+
+		$hostedPaymentId = 'DUMMY-ID-8915-28e5b79c889641c8ba770f1ba576c1fe';
+		$this->setUpResponse( __DIR__ . "/../Data/hostedPaymentStatusRejected.response", 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo( "https://api-sandbox.globalcollect.com/v1/1234/hostedcheckouts/$hostedPaymentId" ),
+				$this->equalTo( 'GET' )
+			);
+
+		$response = $this->provider->getHostedPaymentStatus( $hostedPaymentId );
+	}
+
 }

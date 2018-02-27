@@ -95,7 +95,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	}
 
 	protected function getCurlMock( $returnString ) {
-		$wrapper = $this->getMock( 'SmashPig\Core\Http\CurlWrapper' );
+		$wrapper = $this->createMock( 'SmashPig\Core\Http\CurlWrapper' );
 		$wrapper->method( 'execute' )
 			->willReturn( [
 				'body' => $returnString

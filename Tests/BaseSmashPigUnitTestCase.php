@@ -16,7 +16,7 @@ class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
 		parent::setUp();
 		$globalConfig = TestingGlobalConfiguration::create();
 		TestingContext::init( $globalConfig );
-		$this->curlWrapper = $this->getMock( '\SmashPig\Core\Http\CurlWrapper' );
+		$this->curlWrapper = $this->createMock( '\SmashPig\Core\Http\CurlWrapper' );
 	}
 
 	public function tearDown() {

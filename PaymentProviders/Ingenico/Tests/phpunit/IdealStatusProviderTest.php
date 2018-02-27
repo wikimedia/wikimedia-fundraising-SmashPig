@@ -25,7 +25,7 @@ class IdealStatusProviderTest extends BaseSmashPigUnitTestCase {
 		parent::setUp();
 
 		$providerConfiguration = $this->setProviderConfiguration( 'ingenico' );
-		$this->curlWrapper = $this->getMock( '\SmashPig\Core\Http\CurlWrapper' );
+		$this->curlWrapper = $this->createMock( '\SmashPig\Core\Http\CurlWrapper' );
 		$providerConfiguration->overrideObjectInstance( 'curl/wrapper', $this->curlWrapper );
 
 		$globalConfig = Context::get()->getGlobalConfiguration();

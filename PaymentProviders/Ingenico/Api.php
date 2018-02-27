@@ -65,6 +65,19 @@ class Api {
 		return $decoded;
 	}
 
+	protected function error_search( $array ) {
+		if ( !empty( $array['errors'] ) ) {
+			return $array['errors'];
+		}
+		if ( array_key_exists( 'payment', $array ) && array_key_exists( 'errors', $array['payment']['statusOutput'] ) ) {
+			return $array['payment']['statusOutput']['errors'];
+		} elseif ( array_key_exists( 'createdPaymentOutput', $array ) && array_key_exists( 'errors', $array['createdPaymentOutput']['payment']['statusOutput'] ) ) {
+			return $array['createdPaymentOutput']['payment']['statusOutput']['errors'];
+		} else {
+			return [];
+		}
+	}
+
 	/**
 	 * @param array $response The CurlWrapper-formatteed response from Ingenico
 	 * @param array $decoded The decoded JSON response body. Null if bad JSON
@@ -74,17 +87,20 @@ class Api {
 		if ( $decoded === null ) {
 			throw new ApiException( "Response body is not valid JSON: '{$response['body']}'" );
 		}
-		if ( !empty( $decoded['errors'] ) ) {
+
+		$errors = $this->error_search( $decoded );
+
+		if ( !empty( $errors ) ) {
 			$messages = [];
 			if ( !empty( $decoded['errorId'] ) ) {
 				$messages[] = "Ingenico error id {$decoded['errorId']}.";
 			}
-			foreach ( $decoded['errors'] as $error ) {
+			foreach ( $errors as $error ) {
 				$messages[] = "Error code {$error['code']}: {$error['message']}.";
 			}
 			$concatenated = implode( ' ', $messages );
 			$ex = new ApiException( $concatenated );
-			$ex->setRawErrors( $decoded['errors'] );
+			$ex->setRawErrors( $errors );
 			throw $ex;
 		}
 	}
