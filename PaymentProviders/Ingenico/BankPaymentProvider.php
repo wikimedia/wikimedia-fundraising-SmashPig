@@ -5,6 +5,7 @@ namespace SmashPig\PaymentProviders\Ingenico;
 use Psr\Cache\CacheItemPoolInterface;
 use SmashPig\Core\Context;
 use Symfony\Component\HttpFoundation\Response;
+use Smashpig\Core\ApiException;
 
 /**
  * Handle bank payments via Ingenico
@@ -12,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
  * up iDEAL banks. Caches the results in the PSR-6 cache defined at
  * config key 'cache'.
  */
-class BankPaymentProvider extends IngenicoPaymentProvider {
+class BankPaymentProvider extends PaymentProvider {
 
 	/**
 	 * @var array()

@@ -2,8 +2,6 @@
 
 namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
-use PHPUnit_Framework_MockObject_MockObject;
-use SmashPig\PaymentProviders\Ingenico\ApiException;
 use SmashPig\PaymentProviders\Ingenico\HostedCheckoutProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -77,16 +75,11 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	/**
-	 * this shouild test that the ApiException is thrown but the message contents is subject to implementation
-	 * @requires PHPUnit 5
-	 * @see  mediawiki-fr/extensions/DonationInterface/vendor/wikimedia/smash-pig/PaymentProviders/Ingenico/Api.php:86
+	 * @dataProvider hostedPaymentStatusRejectedErrors
 	 */
-	public function testGetHostedPaymentStatusRejectedThrowsAPIException() {
-		$this->expectException( ApiException::class );
-		$this->expectExceptionMessage( "Error code 430285: Not authorised." ); // need to work this out once implemented?
-
+	public function testGetHostedPaymentStatusFailuresReturnErrors( $errorCode, $errorDescription ) {
 		$hostedPaymentId = 'DUMMY-ID-8915-28e5b79c889641c8ba770f1ba576c1fe';
-		$this->setUpResponse( __DIR__ . "/../Data/hostedPaymentStatusRejected.response", 200 );
+		$this->setUpResponse( __DIR__ . "/../Data/hostedPaymentStatusRejected$errorCode.response", 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
 				$this->equalTo( "https://api-sandbox.globalcollect.com/v1/1234/hostedcheckouts/$hostedPaymentId" ),
@@ -94,6 +87,25 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 			);
 
 		$response = $this->provider->getHostedPaymentStatus( $hostedPaymentId );
+		$this->assertNotEmpty( $response['errors'] );
+		$this->assertEquals( $errorCode, $response['errors'][0]['code'] );
+		$this->assertEquals( $errorDescription, $response['errors'][0]['message'] );
+	}
+
+	/**
+	 * We don't have an exhaustive list here; the codes below are the failure event
+	 * codes that we've been able to evoke so far using the Ingenico test card details
+	 */
+	public function hostedPaymentStatusRejectedErrors() {
+		return [
+			[ '430424', 'Unable to authorise' ],
+			[ '430475', 'Not authorised' ],
+			[ '430327', 'Unable to authorise' ],
+			[ '430409', 'Referred' ],
+			[ '430330', 'Not authorised' ],
+			[ '430306', 'Card expired' ],
+			[ '430260', 'Not authorised' ],
+		];
 	}
 
 }

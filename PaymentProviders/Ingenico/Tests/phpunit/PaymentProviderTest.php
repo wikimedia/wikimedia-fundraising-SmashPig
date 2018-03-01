@@ -3,13 +3,13 @@
 namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
 use PHPUnit_Framework_MockObject_MockObject;
-use SmashPig\PaymentProviders\Ingenico\IngenicoPaymentProvider;
+use SmashPig\PaymentProviders\Ingenico\PaymentProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * @group Ingenico
  */
-class IngenicoPaymentProviderTest extends BaseSmashPigUnitTestCase {
+class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * @var PHPUnit_Framework_MockObject_MockObject
 	 */
@@ -18,7 +18,7 @@ class IngenicoPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->setProviderConfiguration( 'ingenico' );
-		$this->provider = $this->getMockForAbstractClass( '\SmashPig\PaymentProviders\Ingenico\IngenicoPaymentProvider' );
+		$this->provider = $this->getMockForAbstractClass( '\SmashPig\PaymentProviders\Ingenico\PaymentProvider' );
 	}
 
 	public function testGetPaymentStatus() {
