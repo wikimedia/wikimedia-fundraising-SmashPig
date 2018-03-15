@@ -36,4 +36,10 @@ abstract class IngenicoPaymentProvider {
 		$response = $this->api->makeApiCall( $path, 'POST' );
 		return $response;
 	}
+
+	public function tokenizePayment( $paymentId ) {
+		$path = "payments/$paymentId/tokenize";
+		$response = $this->api->makeApiCall( $path, 'POST' );
+		return $response;
+	}
 }
