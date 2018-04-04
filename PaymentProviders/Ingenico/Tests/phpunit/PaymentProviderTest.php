@@ -76,4 +76,42 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 			$response['token']
 		);
 	}
+
+	public function testCreatePayment() {
+		$params = [
+			'cardPaymentSpecificInput' => [
+				'isRecurring' => true,
+				'recurringPaymentSequenceIndicator' => 'recurring',
+				'token' => '229a1d6e-1b26-4c91-8e00-969a49c9d041',
+			],
+			'order' => [
+				'amountOfMoney' => [
+					'amount' => '1234',
+					'currencyCode' => 'USD',
+				],
+				'references' => [
+					'descriptor' => 'Recurring donation to Wikimedia!',
+					'merchantReference' => '12345.1',
+				],
+			],
+		];
+		$this->setUpResponse( __DIR__ . '/../Data/createPayment.response', 201 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo( "https://api-sandbox.globalcollect.com/v1/1234/payments" ),
+				$this->equalTo( 'POST' ),
+				$this->anything(),
+				$this->callback( function ( $arg ) use ( $params ) {
+					$this->assertEquals(
+						$params, json_decode( $arg, true )
+					);
+					return true;
+				} )
+			);
+		$response = $this->provider->createPayment( $params );
+		$this->assertEquals(
+			'000000850010000188130000200001',
+			$response['payment']['id']
+		);
+	}
 }

@@ -28,6 +28,17 @@ abstract class PaymentProvider {
 	}
 
 	/**
+	 * @param array $params
+	 * @return mixed
+	 */
+	public function createPayment( $params ) {
+		$path = "payments";
+		$response = $this->api->makeApiCall( $path, 'POST', $params );
+		$this->addPaymentStatusErrorsIfPresent( $response, $response['payment'] );
+		return $response;
+	}
+
+	/**
 	 * @param $paymentId
 	 *
 	 * @return mixed
