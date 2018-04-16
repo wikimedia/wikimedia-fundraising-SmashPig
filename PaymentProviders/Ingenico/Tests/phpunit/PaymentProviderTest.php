@@ -79,31 +79,46 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 
 	public function testCreatePayment() {
 		$params = [
-			'cardPaymentSpecificInput' => [
-				'isRecurring' => true,
-				'recurringPaymentSequenceIndicator' => 'recurring',
-				'token' => '229a1d6e-1b26-4c91-8e00-969a49c9d041',
-			],
-			'order' => [
-				'amountOfMoney' => [
-					'amount' => '1234',
-					'currencyCode' => 'USD',
-				],
-				'references' => [
-					'descriptor' => 'Recurring donation to Wikimedia!',
-					'merchantReference' => '12345.1',
-				],
-			],
+			'recurring' => true,
+			'installment' => 'recurring',
+			'recurring_payment_token' => '229a1d6e-1b26-4c91-8e00-969a49c9d041',
+			'amount' => '1234',
+			'currency' => 'USD',
+			'descriptor' => 'Recurring donation to Wikimedia!',
+			'order_id' => '12345.1',
 		];
+
+		$expectedTransformedParams = [
+			'cardPaymentMethodSpecificInput' =>
+				[
+					'isRecurring' => $params['recurring'],
+					'recurringPaymentSequenceIndicator' => $params['installment'],
+					'token' => $params['recurring_payment_token'],
+				],
+			'order' =>
+				[
+					'amountOfMoney' =>
+						[
+							'amount' => $params['amount'],
+							'currencyCode' => $params['currency'],
+						],
+					'references' =>
+						[
+							'descriptior' => $params['descriptor'],
+							'merchantReference' => $params['order_id'],
+						],
+				],
+		];
+
 		$this->setUpResponse( __DIR__ . '/../Data/createPayment.response', 201 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
 				$this->equalTo( "https://api-sandbox.globalcollect.com/v1/1234/payments" ),
 				$this->equalTo( 'POST' ),
 				$this->anything(),
-				$this->callback( function ( $arg ) use ( $params ) {
+				$this->callback( function ( $arg ) use ( $expectedTransformedParams ) {
 					$this->assertEquals(
-						$params, json_decode( $arg, true )
+						$expectedTransformedParams, json_decode( $arg, true )
 					);
 					return true;
 				} )

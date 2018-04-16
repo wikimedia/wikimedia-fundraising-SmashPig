@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\Ingenico;
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\Mapper;
 
 /**
  * Base class for Ingenico payments. Each payment product group should get
@@ -33,7 +34,9 @@ abstract class PaymentProvider {
 	 */
 	public function createPayment( $params ) {
 		$path = "payments";
-		$response = $this->api->makeApiCall( $path, 'POST', $params );
+		$mapConfig = $this->providerConfiguration->val( 'maps/create-payment' );
+		$requestParams = Mapper::map( $params, $mapConfig['path'] );
+		$response = $this->api->makeApiCall( $path, 'POST', $requestParams );
 		$this->addPaymentStatusErrorsIfPresent( $response, $response['payment'] );
 		return $response;
 	}

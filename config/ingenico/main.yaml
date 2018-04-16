@@ -49,3 +49,8 @@ ideal-status-provider:
 curl:
     validator:
         class: SmashPig\PaymentProviders\Ingenico\RestResponseValidator
+
+maps:
+    create-payment:
+        path: config/ingenico/maps/createPayment.yaml
+
