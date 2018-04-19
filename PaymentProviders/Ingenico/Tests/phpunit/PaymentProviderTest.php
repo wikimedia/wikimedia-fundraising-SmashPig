@@ -82,7 +82,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 			'recurring' => true,
 			'installment' => 'recurring',
 			'recurring_payment_token' => '229a1d6e-1b26-4c91-8e00-969a49c9d041',
-			'amount' => '1234',
+			'amount' => 10, // dollars
 			'currency' => 'USD',
 			'descriptor' => 'Recurring donation to Wikimedia!',
 			'order_id' => '12345.1',
@@ -99,7 +99,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 				[
 					'amountOfMoney' =>
 						[
-							'amount' => $params['amount'],
+							'amount' => 1000, // cents due to AmountToCents Transformer
 							'currencyCode' => $params['currency'],
 						],
 					'references' =>

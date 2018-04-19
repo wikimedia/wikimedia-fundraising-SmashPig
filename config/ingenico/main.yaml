@@ -53,4 +53,6 @@ curl:
 maps:
     create-payment:
         path: config/ingenico/maps/createPayment.yaml
+        transformers:
+            - SmashPig\Core\Mapper\Transformers\AmountToCents
 

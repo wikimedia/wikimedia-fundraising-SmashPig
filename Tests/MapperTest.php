@@ -2,7 +2,7 @@
 
 namespace SmashPig\Tests;
 
-use SmashPig\Core\Mapper;
+use SmashPig\Core\Mapper\Mapper;
 use Symfony\Component\Yaml\Exception\ParseException;
 use SmashPig\Core\SmashPigException;
 
@@ -11,23 +11,37 @@ use SmashPig\Core\SmashPigException;
  */
 class MapperTest extends BaseSmashPigUnitTestCase {
 
+	public function testThrowsSmashPigExceptionIfCannotLoadMapFile() {
+		$this->expectException( SmashPigException::class );
+
+		$testMapFilePath = 'Tests/data/test_map_doesnt_exist.yaml';
+		$output = Mapper::map( [], $testMapFilePath );
+	}
+
+	public function testThrowsSmashPigExceptionIfMapContainsInvalidYaml() {
+		$this->expectException( SmashPigException::class );
+
+		$testMapFilePath = 'Tests/data/test_map_not_valid_yaml.yaml';
+		$output = Mapper::map( [], $testMapFilePath );
+	}
+
 	public function testMapReplacesString() {
 		$testMapFilePath = 'Tests/data/test_map_string.yaml';
 		$testMapVars['test_string_value'] = 'abc';
 
-		$testOutput = Mapper::map(
+		$output = Mapper::map(
 			$testMapVars,
 			$testMapFilePath
 		);
 
-		$this->assertEquals( [ 'test-string' => 'abc' ], $testOutput );
+		$this->assertEquals( [ 'test-string' => 'abc' ], $output );
 	}
 
 	public function testMapReplacesArrayValue() {
 		$testMapFilePath = 'Tests/data/test_map_array.yaml';
 		$testMapVars['test_array_value'] = 'abc';
 
-		$testOutput = Mapper::map( $testMapVars, $testMapFilePath );
+		$output = Mapper::map( $testMapVars, $testMapFilePath );
 
 		$expected = [
 			'test-array' => [
@@ -35,7 +49,7 @@ class MapperTest extends BaseSmashPigUnitTestCase {
 			],
 		];
 
-		$this->assertEquals( $expected, $testOutput );
+		$this->assertEquals( $expected, $output );
 	}
 
 	public function testMapReplacesMultiDimensionalArrayValues() {
@@ -48,7 +62,7 @@ class MapperTest extends BaseSmashPigUnitTestCase {
 			'nested-array-value-four' => 'jkl',
 		];
 
-		$testOutput = Mapper::map( $testMapVars, $testMapFilePath );
+		$output = Mapper::map( $testMapVars, $testMapFilePath );
 
 		$expected = [
 			'test-nested-array' =>
@@ -78,14 +92,14 @@ class MapperTest extends BaseSmashPigUnitTestCase {
 				],
 		];
 
-		$this->assertEquals( $expected, $testOutput );
+		$this->assertEquals( $expected, $output );
 	}
 
 	public function testMapClearsUnsetVariablePlaceholders() {
 		$testMapFilePath = 'Tests/data/test_map_unset.yaml';
 		$emptyTestMapVars = [];
 
-		$testOutput = Mapper::map( $emptyTestMapVars, $testMapFilePath );
+		$output = Mapper::map( $emptyTestMapVars, $testMapFilePath );
 
 		$expected = [
 			'test-array' => [
@@ -94,7 +108,7 @@ class MapperTest extends BaseSmashPigUnitTestCase {
 			'test-string' => null,
 		];
 
-		$this->assertEquals( $expected, $testOutput );
+		$this->assertEquals( $expected, $output );
 	}
 
 	public function testMapReplacesDuplicateValues() {
@@ -102,7 +116,7 @@ class MapperTest extends BaseSmashPigUnitTestCase {
 
 		// this should be injected twice.
 		$testMapVars['test_array_value'] = 'abc';
-		$testOutput = Mapper::map( $testMapVars, $testMapFilePath );
+		$output = Mapper::map( $testMapVars, $testMapFilePath );
 
 		$expected = [
 			'test-array' => [
@@ -111,36 +125,91 @@ class MapperTest extends BaseSmashPigUnitTestCase {
 			],
 		];
 
-		$this->assertEquals( $expected, $testOutput );
+		$this->assertEquals( $expected, $output );
 	}
 
 	public function testMapToOutputFormatJson() {
 		$testMapFilePath = 'Tests/data/test_map_array.yaml';
 		$testMapVars['test_array_value'] = 'abc';
 
-		$testOutput = Mapper::map(
+		$output = Mapper::map(
 			$testMapVars,
 			$testMapFilePath,
+			[],
 			Mapper::FORMAT_JSON
 		);
 
 		$expected = '{"test-array":{"test-array-value":"abc"}}';
 
-		$this->assertEquals( $expected, $testOutput );
+		$this->assertEquals( $expected, $output );
 	}
 
-	public function testThrowsSmashPigExceptionIfCannotLoadMapFile() {
-		$this->expectException( SmashPigException::class );
+	public function testMapperTransformsUsingClosure() {
+		$testMapFilePath = 'Tests/data/test_map_string.yaml';
+		$testMapVars['test_string_value'] = 'abc';
 
-		$testMapFilePath = 'Tests/data/test_map_doesnt_exist.yaml';
-		$testOutput = Mapper::map( [], $testMapFilePath );
+		$uppercaseTransformer = function ( $original, &$transformed ) {
+			foreach ( $original as $key => $value ) {
+				$transformed[$key] = strtoupper( $value );
+			}
+		};
+
+		$output = Mapper::map(
+			$testMapVars,
+			$testMapFilePath,
+			[ $uppercaseTransformer ]
+		);
+
+		$this->assertEquals( [ 'test-string' => 'ABC' ], $output );
 	}
 
-	public function testThrowsParserExceptionIfMapContainsInvalidYaml() {
-		$this->expectException( ParseException::class );
+	public function testMapperTransformsUsingMultipleClosures() {
+		$testMapFilePath = 'Tests/data/test_map_string.yaml';
+		$testMapVars['test_string_value'] = 'abc';
 
-		$testMapFilePath = 'Tests/data/test_map_not_valid_yaml.yaml';
-		$testOutput = Mapper::map( [], $testMapFilePath );
+		$uppercaseTransformer = function ( $original, &$transformed ) {
+			foreach ( $original as $key => $value ) {
+				$transformed[$key] = strtoupper( $transformed[$key] );
+			}
+		};
+
+		$underscoreSeparatorTransformer = function ( $original, &$transformed ) {
+			foreach ( $original as $key => $value ) {
+				// using $transformed[$key] to allow for transformation "layering".
+				$transformed[$key] = implode( "_", str_split( $transformed[$key] ) );
+			}
+		};
+
+		$output = Mapper::map(
+			$testMapVars,
+			$testMapFilePath,
+			[
+				$uppercaseTransformer,
+				$underscoreSeparatorTransformer,
+			]
+		);
+
+		$this->assertEquals( [ 'test-string' => 'A_B_C' ], $output );
+	}
+
+	public function testMapperTransformerWithTransformerClass() {
+		$testMapFilePath = 'Tests/data/test_map_money_transformer.yaml';
+		$testMapVars = [
+			'amount' => 10, // $10 here, but we want cents!
+			'currency' => 'usd',
+		];
+
+		$output = Mapper::map(
+			$testMapVars,
+			$testMapFilePath,
+			[ new \SmashPig\Core\Mapper\Transformers\AmountToCents() ]
+		);
+
+		$expected = [
+			'amount' => 1000 // gimme those cents!!!
+		];
+
+		$this->assertEquals( $expected, $output );
 	}
 
 }
