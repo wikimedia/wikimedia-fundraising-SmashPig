@@ -94,6 +94,28 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	}
 
 	/**
+	 * Now try a recurring refund of installment higher than 1
+	 */
+	public function testProcessRecurringRefund() {
+		$processor = new IngenicoAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/recurringrefund.xml.gz' );
+		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
+		$actual = $output[0];
+		$expected = [
+			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
+			'contribution_tracking_id' => '5551212',
+			'date' => 1500942220,
+			'gross' => 100,
+			'gateway_parent_id' => '123456789',
+			'gateway_refund_id' => '123456789-2',
+			'installment' => 2,
+			'gross_currency' => 'USD',
+			'type' => 'refund',
+		];
+		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
+	}
+
+	/**
 	 * And a chargeback
 	 */
 	public function testProcessChargeback() {

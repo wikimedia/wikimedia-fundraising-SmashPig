@@ -132,6 +132,9 @@ class IngenicoAudit implements AuditParser {
 			// refund's EffortID is always the negative of the corresponding
 			// installment's EffortID. We want to know which one we refunded.
 			$record['installment'] = $record['installment'] * -1;
+			if ( $record['installment'] > 1 ) {
+				$record['gateway_refund_id'] .= '-' . $record['installment'];
+			}
 		}
 		return $record;
 	}
