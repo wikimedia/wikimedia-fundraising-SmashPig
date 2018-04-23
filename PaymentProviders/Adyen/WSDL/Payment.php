@@ -561,7 +561,7 @@ class Payment extends \SoapClient {
 	 * @return cancelResponse
 	 */
 	public function cancel( cancel $parameters ) {
-		return $this->makeApiCall( 'canel', $parameters );
+		return $this->makeApiCall( 'cancel', $parameters );
 	}
 
 	/**
