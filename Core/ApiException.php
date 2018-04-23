@@ -1,8 +1,6 @@
 <?php
 
-namespace SmashPig\PaymentProviders\Ingenico;
-
-use SmashPig\Core\SmashPigException;
+namespace SmashPig\Core;
 
 class ApiException extends SmashPigException {
 
@@ -15,4 +13,9 @@ class ApiException extends SmashPigException {
 	public function getRawErrors() {
 		return $this->rawErrors;
 	}
+
+	public function setMessage( $message ) {
+		$this->message = $message;
+	}
+
 }

@@ -3,11 +3,22 @@ namespace SmashPig\PaymentProviders\Ingenico;
 
 use SmashPig\Core\SmashPigException;
 
-class HostedCheckoutProvider extends IngenicoPaymentProvider {
+/**
+ * Class HostedCheckoutProvider
+ *
+ * @package SmashPig\PaymentProviders\Ingenico
+ */
+class HostedCheckoutProvider extends PaymentProvider {
 	/**
-	 * @var subdomain
+	 * @var string subdomain
 	 */
 	protected $subdomain;
+
+	/**
+	 * HostedCheckoutProvider constructor.
+	 * @param array $options
+	 * @throws SmashPigException
+	 */
 	public function __construct( array $options = [] ) {
 		parent::__construct( $options );
 		if ( array_key_exists( 'subdomain', $options ) ) {
@@ -17,19 +28,35 @@ class HostedCheckoutProvider extends IngenicoPaymentProvider {
 		}
 	}
 
-	function createHostedPayment( $params ) {
+	/**
+	 * @param $params
+	 *
+	 * @return mixed
+	 */
+	public function createHostedPayment( $params ) {
 		$path = 'hostedcheckouts';
 		$response = $this->api->makeApiCall( $path, 'POST', $params );
 		return $response;
 	}
 
-	function getHostedPaymentUrl( $partialRedirectUrl ) {
-		return "https://{$this->subdomain}.$partialRedirectUrl";
-	}
-
-	function getHostedPaymentStatus( $hostedPaymentId ) {
+	/**
+	 * @param $hostedPaymentId
+	 *
+	 * @return mixed
+	 */
+	public function getHostedPaymentStatus( $hostedPaymentId ) {
 		$path = "hostedcheckouts/$hostedPaymentId";
 		$response = $this->api->makeApiCall( $path, 'GET' );
+		$this->addPaymentStatusErrorsIfPresent( $response,  $response['createdPaymentOutput']['payment'] );
 		return $response;
+	}
+
+	/**
+	 * @param $partialRedirectUrl
+	 *
+	 * @return string
+	 */
+	public function getHostedPaymentUrl( $partialRedirectUrl ) {
+		return "https://{$this->subdomain}.$partialRedirectUrl";
 	}
 }

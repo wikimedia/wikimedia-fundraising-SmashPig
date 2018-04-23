@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeZone;
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\OutboundRequest;
+use SmashPig\Core\ApiException;
 
 /**
  * Prepares and sends requests to the Ingenico Connect API.
@@ -18,9 +19,19 @@ class Api {
 	 * @var Authenticator
 	 */
 	protected $authenticator;
+
 	protected $baseUrl;
+
 	protected $merchantId;
 
+	/**
+	 * Api constructor.
+	 *
+	 * @param $baseUrl
+	 * @param $merchantId
+	 *
+	 * @throws \SmashPig\Core\ConfigurationKeyException
+	 */
 	public function __construct( $baseUrl, $merchantId ) {
 		// Ensure trailing slash
 		if ( substr( $baseUrl, -1 ) !== '/' ) {
@@ -33,6 +44,14 @@ class Api {
 		$this->authenticator = $config->object( 'authenticator' );
 	}
 
+	/**
+	 * @param $path
+	 * @param string $method
+	 * @param null $data
+	 *
+	 * @return mixed
+	 * @throws \SmashPig\Core\ApiException
+	 */
 	public function makeApiCall( $path, $method = 'POST', $data = null ) {
 		if ( is_array( $data ) ) {
 			// FIXME: this is weird, maybe OutboundRequest should handle this part
@@ -54,38 +73,68 @@ class Api {
 		$request->setHeader( 'Date', $date->format( 'D, d M Y H:i:s T' ) );
 
 		// set more headers...
-
 		$this->authenticator->signRequest( $request );
 
 		$response = $request->execute();
+		$decodedResponse = json_decode( $response['body'], true );
 
-		$decoded = json_decode( $response['body'], true );
-		$this->checkErrors( $response, $decoded );
+		if ( $this->isErrorResponse( $decodedResponse ) ) {
+			$this->throwApiException( $response, $decodedResponse );
+		}
 
-		return $decoded;
+		return $decodedResponse;
 	}
 
 	/**
-	 * @param array $response The CurlWrapper-formatteed response from Ingenico
-	 * @param array $decoded The decoded JSON response body. Null if bad JSON
-	 * @throws ApiException
+	 * @param $decodedResponse
+	 *
+	 * @return bool
 	 */
-	protected function checkErrors( $response, $decoded ) {
-		if ( $decoded === null ) {
-			throw new ApiException( "Response body is not valid JSON: '{$response['body']}'" );
-		}
-		if ( !empty( $decoded['errors'] ) ) {
-			$messages = [];
-			if ( !empty( $decoded['errorId'] ) ) {
-				$messages[] = "Ingenico error id {$decoded['errorId']}.";
-			}
-			foreach ( $decoded['errors'] as $error ) {
-				$messages[] = "Error code {$error['code']}: {$error['message']}.";
-			}
-			$concatenated = implode( ' ', $messages );
-			$ex = new ApiException( $concatenated );
-			$ex->setRawErrors( $decoded['errors'] );
-			throw $ex;
+	protected function isErrorResponse( $decodedResponse ) {
+		if ( !isset( $decodedResponse ) ) {
+			return true;
+		} elseif ( !empty( $decodedResponse['errorId'] )
+			&& !empty( $decodedResponse['errors'] ) ) {
+			return true;
+		} else {
+			return false;
 		}
 	}
+
+	/**
+	 * @param $response
+	 * @param $decodedResponse
+	 *
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	protected function throwApiException( $response, $decodedResponse ) {
+		$ex = new ApiException();
+		if ( $decodedResponse === null ) {
+			$message = "Response body is not valid JSON: '{$response['body']}'";
+		} else {
+			$message = $this->getApiExceptionMessage(
+				$decodedResponse['errorId'],
+				$decodedResponse['errors']
+			);
+			$ex->setRawErrors( $decodedResponse['errors'] );
+		}
+
+		$ex->setMessage( $message );
+		throw $ex;
+	}
+
+	/**
+	 * @param $errorId
+	 * @param $errors
+	 *
+	 * @return bool|string
+	 */
+	protected function getApiExceptionMessage( $errorId, $errors ) {
+		$message = "Ingenico error id {$errorId} : ";
+		foreach ( $errors as $error ) {
+			$message .= "Error code {$error['code']}: {$error['message']}. ";
+		}
+		return substr( $message, 0, -1 );
+	}
+
 }

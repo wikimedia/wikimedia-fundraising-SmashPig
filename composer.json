@@ -28,7 +28,7 @@
     ],
     "require": {
         "coderkungfu/php-queue": "^1.0",
-        "php": ">=5.4",
+        "php": ">=5.6",
         "phpmailer/phpmailer": "^5.2",
         "predis/predis": "^1.1",
         "symfony/event-dispatcher": "^2.1",
@@ -42,10 +42,11 @@
 	"require-dev": {
 		"jakub-onderka/php-parallel-lint": "^0.9",
 		"mediawiki/mediawiki-codesniffer": "0.11.0",
-		"phpunit/phpunit": "^4.8",
+		"phpunit/phpunit": "^5.6",
 		"ext-sqlite3": "*"
 	},
 	"scripts": {
+		"fix": "phpcbf",
 		"test": [
 			"parallel-lint . --exclude vendor",
 			"[ ! -f phpunit.xml ] || phpunit",
