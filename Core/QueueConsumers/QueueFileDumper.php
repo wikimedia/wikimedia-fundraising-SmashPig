@@ -1,5 +1,7 @@
 <?php namespace SmashPig\Core\QueueConsumers;
 
+use RuntimeException;
+
 class QueueFileDumper extends BaseQueueConsumer {
 
 	/**
@@ -16,6 +18,9 @@ class QueueFileDumper extends BaseQueueConsumer {
 	public function __construct( $queueName, $messageLimit, $filename ) {
 		parent::__construct( $queueName, 0, $messageLimit );
 		$this->file = fopen( $filename, 'a' );
+		if ( !$this->file ) {
+			throw new RuntimeException( "Can't open $filename for appending" );
+		}
 	}
 
 	public function processMessage( $message ) {
