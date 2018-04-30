@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\DataStores\PaymentsFraudDatabase;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Jobs\RunnableJob;
@@ -70,6 +71,16 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$this->logger->debug( 'Attempting to locate associated message in pending database.' );
 		$db = PendingDatabase::get();
 		$dbMessage = $db->fetchMessageByGatewayOrderId( 'adyen', $this->merchantReference );
+		$messageIsFromFredge = false;
+		if ( !$dbMessage ) {
+			$this->logger->info( 'No message found in pending database, looking in fredge.' );
+			// Try to find the risk score from fredge
+			$messageIsFromFredge = true;
+			$fraudDb = PaymentsFraudDatabase::get();
+			$dbMessage = $fraudDb->fetchMessageByGatewayOrderId(
+				'adyen', $this->merchantReference
+			);
+		}
 		$success = true;
 
 		$action = $this->determineAction( $dbMessage );
@@ -93,8 +104,11 @@ class ProcessCaptureRequestJob extends RunnableJob {
 							'Marking pending database message as captured.'
 					);
 
-					$dbMessage['captured'] = true;
-					$db->storeMessage( $dbMessage );
+					if ( !$messageIsFromFredge ) {
+						// If we read the message from pending, update it.
+						$dbMessage['captured'] = true;
+						$db->storeMessage( $dbMessage );
+					}
 				} else {
 					// Some kind of error in the request. We should keep the pending
 					// db entry, complain loudly, and move this capture job to the
@@ -132,7 +146,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 
 	protected function determineAction( $dbMessage ) {
 		if ( $dbMessage && isset( $dbMessage['order_id'] ) ) {
-			$this->logger->debug( 'A valid message was obtained from the pending database.' );
+			$this->logger->debug( 'Found a valid message.' );
 		} else {
 			$errMessage = "Could not find a processable message for " .
 				"PSP Reference '{$this->pspReference}' and ".
