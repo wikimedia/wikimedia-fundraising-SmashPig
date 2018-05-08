@@ -95,6 +95,20 @@ class MapperTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $expected, $output );
 	}
 
+	public function testMapReplacesCompoundValue() {
+		$testMapFilePath = 'Tests/data/test_map_compound_value.yaml';
+		$testMapVars['test_prefix_value'] = 'Mr';
+		$testMapVars['test_first_name_value'] = 'Jimmy';
+		$testMapVars['test_second_name_value'] = 'Wales';
+
+		$testOutput = Mapper::map(
+			$testMapVars,
+			$testMapFilePath
+		);
+
+		$this->assertEquals( [ 'test-name' => 'Mr Jimmy Wales' ], $testOutput );
+	}
+
 	public function testMapClearsUnsetVariablePlaceholders() {
 		$testMapFilePath = 'Tests/data/test_map_unset.yaml';
 		$emptyTestMapVars = [];

@@ -133,26 +133,12 @@ class Mapper {
 	}
 
 	/**
-	 * Transform input variables to %variable% format.
-	 *
-	 * @param array $inputVars
-	 *
-	 * @return array $formattedInputVars
-	 */
-	protected function formatInputVars( $inputVars ) {
-		$formattedInputVars = [];
-		foreach ( $inputVars as $var => $value ) {
-			$formattedInputVars['%' . strtolower( $var ) . '%'] = $value;
-		}
-		return $formattedInputVars;
-	}
-
-	/**
 	 * Convert YAML string to array
 	 *
 	 * @param string $yaml
 	 *
 	 * @return array
+	 * @throws \SmashPig\Core\SmashPigException
 	 */
 	protected function convertYamlMapToArray( $yaml ) {
 		try {
@@ -210,8 +196,12 @@ class Mapper {
 	}
 
 	/**
-	 * Translate map %placeholders% to input values and clear out any
-	 * unset/unused %placeholders% strings
+	 * Translate map file %placeholders% to input values and clear out any
+	 * unset/unused %placeholders% strings.
+	 *
+	 * It's possible to use multiple %placeholders% within a value (compound value)
+	 * e.g. 'Miss %first_name% %second_name%' will generate the expected output
+	 * if both keys exists within $input.
 	 *
 	 * @param $map
 	 * @param $input
@@ -219,13 +209,15 @@ class Mapper {
 	 * @return string
 	 */
 	protected function translatePlaceholdersToInput( $map, $input ) {
-		$input = $this->formatInputVars( $input );
-
-		// walk through map setting %placeholder% values as either the
-		// corresponding input value, or null if no matching input value set.
 		array_walk_recursive( $map, function ( &$value ) use ( $input ) {
-			if ( preg_match( "/%[^%]+%/", $value ) === 1 ) {
-				$value = array_key_exists( $value, $input ) ? $input[$value] : null;
+			$replacements = [];
+			// this is ugly php but it works, preg_match_all return values are horrible.
+			if ( preg_match_all( "/%([^%]+)%/", $value, $matches ) >= 1 ) {
+				foreach ( $matches[1] as $i => $match ) {
+					$replacement = array_key_exists( $match, $input ) ? $input[$match] : null;
+					$replacements[$matches[0][$i]] = $replacement;
+				}
+				$value = strtr( $value, $replacements );
 			}
 		} );
 
