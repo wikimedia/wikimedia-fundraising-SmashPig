@@ -7,5 +7,5 @@ order:
         amount: %amount%
         currencyCode: %currency%
     references:
-        descriptior: %descriptor%
+        descriptor: %description%
         merchantReference: %order_id%
