@@ -1,4 +1,5 @@
 <?php
+
 namespace SmashPig\Core\DataStores;
 
 use PDO;
@@ -72,6 +73,31 @@ class DamagedDatabase extends SmashPigDatabase {
 	}
 
 	/**
+	 * Return record matching a (gateway, order_id), or null
+	 *
+	 * @param $gatewayName string
+	 * @param $orderId string
+	 * @return array|null Record related to a transaction, or null if nothing matches
+	 */
+	public function fetchMessageByGatewayOrderId( $gatewayName, $orderId ) {
+		$sql = 'select * from damaged
+			where gateway = :gateway
+				and order_id = :order_id
+			limit 1';
+
+		$params = [
+			'gateway' => $gatewayName,
+			'order_id' => $orderId,
+		];
+		$executed = $this->prepareAndExecute( $sql, $params );
+		$row = $executed->fetch( PDO::FETCH_ASSOC );
+		if ( !$row ) {
+			return null;
+		}
+		return $this->messageFromDbRow( $row );
+	}
+
+	/**
 	 * Return messages ready to be retried
 	 *
 	 * @param int $limit number of records to return
@@ -79,7 +105,7 @@ class DamagedDatabase extends SmashPigDatabase {
 	 */
 	public function fetchRetryMessages( $limit ) {
 		$sql = 'SELECT * FROM damaged
-			WHERE retry_date < :now
+			WHERE retry_date <= :now
 			ORDER BY retry_date ASC
 			LIMIT ' . $limit;
 
