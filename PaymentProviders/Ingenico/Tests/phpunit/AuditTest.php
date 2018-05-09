@@ -106,7 +106,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'contribution_tracking_id' => '5551212',
 			'date' => 1500942220,
 			'gross' => 100,
-			'gateway_parent_id' => '123456789',
+			'gateway_parent_id' => '123456789-2',
 			'gateway_refund_id' => '123456789-2',
 			'installment' => 2,
 			'gross_currency' => 'USD',
