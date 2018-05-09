@@ -1,4 +1,5 @@
 <?php
+
 namespace SmashPig\Core\DataStores;
 
 use PDO;
@@ -104,7 +105,7 @@ class DamagedDatabase extends SmashPigDatabase {
 	 */
 	public function fetchRetryMessages( $limit ) {
 		$sql = 'SELECT * FROM damaged
-			WHERE retry_date < :now
+			WHERE retry_date <= :now
 			ORDER BY retry_date ASC
 			LIMIT ' . $limit;
 
