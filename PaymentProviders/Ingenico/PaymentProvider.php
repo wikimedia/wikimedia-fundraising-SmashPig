@@ -152,7 +152,7 @@ abstract class PaymentProvider {
 	protected function logPaymentStatusErrors( $errors ) {
 		foreach ( $errors as $error ) {
 			$logMessage = "Error code {$error['code']}: {$error['message']}.";
-			Logger::error( $logMessage );
+			Logger::warning( $logMessage );
 		}
 	}
 }
