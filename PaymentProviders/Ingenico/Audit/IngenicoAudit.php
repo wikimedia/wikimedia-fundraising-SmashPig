@@ -96,8 +96,17 @@ class IngenicoAudit implements AuditParser {
 			$record = $this->parseDonation( $recordNode );
 		}
 		$record = $this->normalizeValues( $record );
-		// TODO: label Connect API donations as 'ingenico'
-		$record['gateway'] = 'globalcollect';
+
+		// Hack to determine which API integration the txn came in on.
+		// Connect API transactions have EmailTypeIndicator among the
+		// CustomerData nodes, while older ones have IPAddressCustomer
+		// TODO: does this work for refunds?
+		$typeIndicator = $recordNode->getElementsByTagName( 'EmailTypeIndicator' );
+		if ( $typeIndicator->length === 0 ) {
+			$record['gateway'] = 'globalcollect';
+		} else {
+			$record['gateway'] = 'ingenico';
+		}
 
 		$this->fileData[] = $record;
 	}

@@ -19,7 +19,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( 1, count( $output ), 'Should have found one donation' );
 		$actual = $output[0];
 		$expected = [
-			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
+			'gateway' => 'globalcollect',
 			'gross' => 3.00,
 			'contribution_tracking_id' => '5551212',
 			'currency' => 'USD',
@@ -49,7 +49,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( 1, count( $output ), 'Should have found one recurring donation' );
 		$actual = $output[0];
 		$expected = [
-			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
+			'gateway' => 'globalcollect',
 			'gross' => 3.00,
 			'contribution_tracking_id' => '5551212',
 			'currency' => 'USD',
@@ -80,7 +80,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
 		$actual = $output[0];
 		$expected = [
-			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
+			'gateway' => 'globalcollect',
 			'contribution_tracking_id' => '5551212',
 			'date' => 1500942220,
 			'gross' => 100,
@@ -124,7 +124,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( 1, count( $output ), 'Should have found one chargeback' );
 		$actual = $output[0];
 		$expected = [
-			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
+			'gateway' => 'globalcollect',
 			'contribution_tracking_id' => '5551212',
 			'date' => 1495023569,
 			'gross' => 200,
@@ -147,7 +147,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
 		$actual = $output[0];
 		$expected = [
-			'gateway' => 'globalcollect', // TODO: switch to ingenico for Connect
+			'gateway' => 'globalcollect',
 			'contribution_tracking_id' => '48987654',
 			'date' => 1503964800,
 			'gross' => 15,
@@ -159,4 +159,34 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
+
+	/**
+	 * Donation via new API, gets new gateway
+	 */
+	public function testProcessConnectDonation() {
+		$processor = new IngenicoAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/connectdonation.xml.gz' );
+		$this->assertEquals( 1, count( $output ), 'Should have found one donation' );
+		$actual = $output[0];
+		$expected = [
+			'gateway' => 'ingenico',
+			'gross' => 3.00,
+			'contribution_tracking_id' => '5551212',
+			'currency' => 'USD',
+			'order_id' => '987654321',
+			'installment' => 1,
+			'gateway_txn_id' => '987654321',
+			'payment_method' => 'cc',
+			'payment_submethod' => 'visa',
+			'date' => 1501368968,
+			'first_name' => 'Arthur',
+			'last_name' => 'Aardvark',
+			'street_address' => '1111 Fake St',
+			'city' => 'Denver',
+			'country' => 'US',
+			'email' => 'dutchman@flying.net',
+		];
+		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
+	}
+
 }
