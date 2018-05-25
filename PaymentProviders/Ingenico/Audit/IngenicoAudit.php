@@ -22,13 +22,15 @@ class IngenicoAudit implements AuditParser {
 		'ZipCode' => 'postal_code',
 		'BillingCountryCode' => 'country',
 		'BillingEmail' => 'email',
-		'AdditionalReference' => 'contribution_tracking_id',
+		'AdditionalReference' => 'invoice_id',
 		'PaymentProductId' => 'gc_product_id',
 		'OrderID' => 'order_id',
+		'MerchantID' => 'merchant_id',
 		// Ingenico recurring donations all have the same OrderID
 		// We can only tell them apart by the EffortID, which we
 		// might as well normalize to 'installment'.
 		'EffortID' => 'installment',
+		'AttemptID' => 'attempt_id',
 		'PaymentCurrency' => 'currency',
 		'AmountLocal' => 'gross',
 		'TransactionDateTime' => 'date',
@@ -36,9 +38,11 @@ class IngenicoAudit implements AuditParser {
 
 	protected $refundMap = [
 		'DebitedAmount' => 'gross',
-		'AdditionalReference' => 'contribution_tracking_id',
+		'AdditionalReference' => 'invoice_id',
 		'OrderID' => 'gateway_parent_id',
+		'MerchantID' => 'merchant_id',
 		'EffortID' => 'installment',
+		'AttemptID' => 'attempt_id',
 		'DebitedCurrency' => 'gross_currency',
 		'DateDue' => 'date',
 		// Order matters. Prefer TransactionDateTime if it is present.
@@ -89,31 +93,36 @@ class IngenicoAudit implements AuditParser {
 			return;
 		}
 
-		if ( $category === '-' ) {
-			$refundType = $this->recordsWeCanDealWith[$compoundType];
-			$record = $this->parseRefund( $recordNode, $refundType );
-		} else {
-			$record = $this->parseDonation( $recordNode );
-		}
-		$record = $this->normalizeValues( $record );
-
 		// Hack to determine which API integration the txn came in on.
 		// Connect API transactions have EmailTypeIndicator among the
 		// CustomerData nodes, while older ones have IPAddressCustomer
 		// TODO: does this work for refunds?
 		$typeIndicator = $recordNode->getElementsByTagName( 'EmailTypeIndicator' );
 		if ( $typeIndicator->length === 0 ) {
-			$record['gateway'] = 'globalcollect';
+			$gateway = 'globalcollect';
 		} else {
-			$record['gateway'] = 'ingenico';
+			$gateway = 'ingenico';
 		}
+
+		if ( $category === '-' ) {
+			$refundType = $this->recordsWeCanDealWith[$compoundType];
+			$record = $this->parseRefund( $recordNode, $refundType, $gateway );
+		} else {
+			$record = $this->parseDonation( $recordNode, $gateway );
+		}
+		$record['gateway'] = $gateway;
+		$record = $this->normalizeValues( $record );
 
 		$this->fileData[] = $record;
 	}
 
-	protected function parseDonation( DOMElement $recordNode ) {
+	protected function parseDonation( DOMElement $recordNode, $gateway ) {
 		$record = $this->xmlToArray( $recordNode, $this->donationMap );
-		$record['gateway_txn_id'] = $record['order_id'];
+		if ( $gateway === 'globalcollect' ) {
+			$record['gateway_txn_id'] = $record['order_id'];
+		} else {
+			$record['gateway_txn_id'] = $this->getConnectPaymentId( $record );
+		}
 		$record = $this->addPaymentMethod( $record );
 		if ( $record['installment'] > 1 ) {
 			$record['recurring'] = 1;
@@ -129,18 +138,22 @@ class IngenicoAudit implements AuditParser {
 		return $record;
 	}
 
-	protected function parseRefund( DOMElement $recordNode, $type ) {
+	protected function parseRefund( DOMElement $recordNode, $type, $gateway ) {
 		$record = $this->xmlToArray( $recordNode, $this->refundMap );
 		$record['type'] = $type;
-		if ( $record['installment'] < 0 ) {
-			// Refunds have negative EffortID. Weird.
-			// TODO: for refunds of recurring payments, determine whether the
-			// refund's EffortID is always the negative of the corresponding
-			// installment's EffortID. We want to know which one we refunded.
-			$record['installment'] = $record['installment'] * -1;
-			if ( $record['installment'] > 1 ) {
-				$record['gateway_parent_id'] .= '-' . $record['installment'];
+		if ( $gateway === 'globalcollect' ) {
+			if ( $record['installment'] < 0 ) {
+				// Refunds have negative EffortID. Weird.
+				// TODO: for refunds of recurring payments, determine whether the
+				// refund's EffortID is always the negative of the corresponding
+				// installment's EffortID. We want to know which one we refunded.
+				$record['installment'] = $record['installment'] * -1;
+				if ( $record['installment'] > 1 ) {
+					$record['gateway_parent_id'] .= '-' . $record['installment'];
+				}
 			}
+		} else {
+
 		}
 		// FIXME: Refund ID is the same as the parent transaction ID.
 		// That's not helpful...
@@ -217,6 +230,24 @@ class IngenicoAudit implements AuditParser {
 		return $unzippedFullPath;
 	}
 
+	protected function getConnectPaymentId( $record ) {
+		$merchantId = str_pad(
+			$record['merchant_id'], 10, '0', STR_PAD_LEFT
+		);
+		$orderId = isset( $record['order_id'] ) ? $record['order_id'] :
+			$record['gateway_parent_id'];
+		$orderId = str_pad(
+			$orderId, 10, '0', STR_PAD_LEFT
+		);
+		$effortId = str_pad(
+			$record['installment'], 5, '0', STR_PAD_LEFT
+		);
+		$attemptId = str_pad(
+			$record['attempt_id'], 5, '0', STR_PAD_LEFT
+		);
+		return "$merchantId$orderId$effortId$attemptId";
+	}
+
 	/**
 	 * Normalize amounts, dates, and IDs to match everything else in SmashPig
 	 * FIXME: do this with transformers migrated in from DonationInterface
@@ -228,12 +259,16 @@ class IngenicoAudit implements AuditParser {
 		if ( isset( $record['gross'] ) ) {
 			$record['gross'] = $record['gross'] / 100;
 		}
-		if ( isset( $record['contribution_tracking_id'] ) ) {
-			$parts = explode( '.', $record['contribution_tracking_id'] );
+		if ( isset( $record['invoice_id'] ) ) {
+			$parts = explode( '.', $record['invoice_id'] );
 			$record['contribution_tracking_id'] = $parts[0];
 		}
 		if ( isset( $record['date'] ) ) {
 			$record['date'] = UtcDate::getUtcTimestamp( $record['date'] );
+		}
+		// Only used internally
+		if ( isset( $record['attempt_id'] ) ) {
+			unset( $record['attempt_id'] );
 		}
 		return $record;
 	}
