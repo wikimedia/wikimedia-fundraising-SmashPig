@@ -71,7 +71,7 @@ class SettlementReport {
 		$msg['gateway'] = 'amazon';
 		$msg['gateway_txn_id'] = $csv->currentCol( 'AmazonTransactionId' );
 		$msg['gross'] = $csv->currentCol( 'TransactionAmount' );
-		$msg['log_id'] = $csv->currentCol( 'SellerReferenceId' );
+		$msg['invoice_id'] = $csv->currentCol( 'SellerReferenceId' );
 		$msg['payment_method'] = 'amazon';
 
 		$this->fileData[] = $msg;

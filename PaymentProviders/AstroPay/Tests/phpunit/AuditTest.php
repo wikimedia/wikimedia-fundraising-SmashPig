@@ -28,7 +28,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'currency' => 'BRL',
 			'email' => 'donoriffic@example.org',
 			'gateway_txn_id' => '5432123',
-			'log_id' => '266221341.0',
+			'invoice_id' => '266221341.0',
 			'payment_method' => 'cc',
 			'payment_submethod' => 'mc',
 			'settled_date' => 1434456032,
@@ -55,7 +55,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gateway_parent_id' => '7654321',
 			'gateway_refund_id' => '12345',
 			'gross_currency' => 'BRL',
-			'log_id' => '314159265.0',
+			'invoice_id' => '314159265.0',
 			'type' => 'refund',
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
@@ -77,7 +77,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gateway_parent_id' => '7654321',
 			'gateway_refund_id' => '12345',
 			'gross_currency' => 'BRL',
-			'log_id' => '314159265.0',
+			'invoice_id' => '314159265.0',
 			'type' => 'chargeback',
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse chargeback correctly' );

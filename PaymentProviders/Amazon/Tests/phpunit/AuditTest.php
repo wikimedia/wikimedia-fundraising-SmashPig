@@ -35,7 +35,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'order_id' => '87654321-0',
 			'currency' => 'USD',
 			'gateway_txn_id' => 'P01-1488694-1234567-C034811',
-			'log_id' => '87654321-0',
+			'invoice_id' => '87654321-0',
 			'payment_method' => 'amazon',
 			'fee' => '0.59',
 		];
@@ -57,7 +57,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'order_id' => '8032276654432210046',
 			'currency' => 'USD',
 			'gateway_txn_id' => 'P01-5551212-4903176-C039376',
-			'log_id' => '8032276654432210046',
+			'invoice_id' => '8032276654432210046',
 			'payment_method' => 'amazon',
 			'fee' => '0.41',
 		];
