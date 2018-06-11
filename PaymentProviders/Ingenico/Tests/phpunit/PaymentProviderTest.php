@@ -26,7 +26,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->setUpResponse( __DIR__ . '/../Data/paymentStatus.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://api-sandbox.globalcollect.com/v1/1234/payments/$paymentId" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId" ),
 				$this->equalTo( 'GET' )
 			);
 		$response = $this->provider->getPaymentStatus( $paymentId );
@@ -43,7 +43,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->setUpResponse( __DIR__ . '/../Data/paymentApproved.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://api-sandbox.globalcollect.com/v1/1234/payments/$paymentId/approve" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId/approve" ),
 				$this->equalTo( 'POST' )
 			);
 		$response = $this->provider->approvePayment( $paymentId, $params );
@@ -55,7 +55,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->setUpResponse( __DIR__ . '/../Data/paymentCanceled.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://api-sandbox.globalcollect.com/v1/1234/payments/$paymentId/cancel" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId/cancel" ),
 				$this->equalTo( 'POST' )
 			);
 		$response = $this->provider->cancelPayment( $paymentId );
@@ -67,7 +67,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->setUpResponse( __DIR__ . '/../Data/paymentToken.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://api-sandbox.globalcollect.com/v1/1234/payments/$paymentId/tokenize" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId/tokenize" ),
 				$this->equalTo( 'POST' )
 			);
 		$response = $this->provider->tokenizePayment( $paymentId );
@@ -113,7 +113,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->setUpResponse( __DIR__ . '/../Data/createPayment.response', 201 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://api-sandbox.globalcollect.com/v1/1234/payments" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments" ),
 				$this->equalTo( 'POST' ),
 				$this->anything(),
 				$this->callback( function ( $arg ) use ( $expectedTransformedParams ) {
