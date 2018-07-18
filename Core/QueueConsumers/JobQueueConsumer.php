@@ -17,24 +17,7 @@ class JobQueueConsumer extends BaseQueueConsumer {
 	 * @throws \SmashPig\Core\DataStores\DataSerializationException
 	 */
 	public function processMessage( $jobMessage ) {
-		if ( !isset( $jobMessage['php-message-class'] ) ) {
-			throw new RuntimeException(
-				'Job message missing required key \'php-message-class\''
-			);
-		}
-
-		// TODO: encapsulate the reconstitution step elsewhere.
-		// FIXME It seems bad that these objects indiscriminately store
-		// things as properties. The message is mingled with stuff like
-		// php-message-class. Could collide.
-		$className = $jobMessage['php-message-class'];
-		Logger::info( "Hydrating a message with class $className" );
-
-		$jsonMessage = json_encode( $jobMessage );
-
-		Logger::debug( "Job payload: $jsonMessage" );
-		$jobObj = JsonSerializableObject::fromJsonProxy( $className, $jsonMessage );
-
+		$jobObj = $this->createJobObject( $jobMessage );
 		if ( $jobObj instanceof Runnable ) {
 			Logger::info( 'Running job' );
 			if ( !$jobObj->execute() ) {
@@ -52,6 +35,36 @@ class JobQueueConsumer extends BaseQueueConsumer {
 		}
 
 		$this->successCount += 1;
+	}
+
+	/**
+	 * @param array $jobMessage
+	 * @return JsonSerializableObject|Runnable
+	 * @throws \SmashPig\Core\DataStores\DataSerializationException
+	 */
+	public function createJobObject( $jobMessage ) {
+		// older, deprecated jobs
+		if ( isset( $jobMessage['php-message-class'] ) ) {
+			// FIXME It seems bad that these objects indiscriminately store
+			// things as properties. The message is mingled with stuff like
+			// php-message-class. Could collide.
+			$className = $jobMessage['php-message-class'];
+			Logger::info( "Hydrating a message with class $className" );
+			$jsonMessage = json_encode( $jobMessage );
+			Logger::debug( "Job payload: $jsonMessage" );
+			return JsonSerializableObject::fromJsonProxy( $className, $jsonMessage );
+		} elseif ( isset( $jobMessage['payload'] ) && isset( $jobMessage['class'] ) ) {
+			// TODO: or they could specify factory functions?
+			$className = $jobMessage['class'];
+			Logger::info( "Hydrating a message with class $className" );
+			$job = new $className();
+			$job->payload = $jobMessage['payload'];
+			return $job;
+		} else {
+			throw new RuntimeException(
+				'Job message needs either \'php-message-class\' or \'class\' and \'payload\''
+			);
+		}
 	}
 
 	/**

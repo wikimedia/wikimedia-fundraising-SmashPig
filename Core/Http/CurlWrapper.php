@@ -25,6 +25,9 @@ class CurlWrapper {
 		Logger::info( "Initiating cURL" );
 		$ch = curl_init();
 
+		if ( $this->providerConfiguration->val( 'curl/log-outbound' ) ) {
+			Logger::debug( "Outbound data: '$data'" );
+		}
 		// Always capture the cURL output
 		$curlDebugLog = fopen( 'php://temp', 'r+' );
 

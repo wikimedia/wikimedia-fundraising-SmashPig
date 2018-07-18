@@ -44,6 +44,8 @@ curl:
         class: SmashPig\Core\Http\CurlWrapper
     validator:
         class: SmashPig\Core\Http\HttpStatusValidator
+    # FIXME: provide these as constructor-parameters to CurlWrapper?
     timeout: 7
     retries: 3
     user-agent: SmashPig
+    log-outbound: false

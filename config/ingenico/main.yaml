@@ -14,7 +14,7 @@ endpoints:
 api:
     class: SmashPig\PaymentProviders\Ingenico\Api
     constructor-parameters:
-        - 'https://api-sandbox.globalcollect.com/'
+        - 'https://eu.sandbox.api-ingenico.com/'
         - 1234 # numeric merchant ID
 
 authenticator:
