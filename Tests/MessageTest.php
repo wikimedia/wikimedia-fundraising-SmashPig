@@ -8,9 +8,9 @@ use SmashPig\CrmLink\Messages\DonationInterfaceAntifraudFactory;
  */
 class MessageTest extends BaseSmashPigUnitTestCase {
 
-	public function testAntifraudFactory() {
+	protected function getDiMessage() {
 		$ctId = mt_rand( 0, 1000000 );
-		$diMessage = [
+		return [
 			'contribution_tracking_id' => $ctId,
 			'date' => 1455128736,
 			'gateway' => 'adyen',
@@ -19,6 +19,10 @@ class MessageTest extends BaseSmashPigUnitTestCase {
 			'user_ip' => '8.8.4.4',
 			'order_id' => $ctId . '.0',
 		];
+	}
+
+	public function testAntifraudFactory() {
+		$diMessage = $this->getDiMessage();
 
 		$scoreBreakdown = [
 			'getScoreCountry' => 25,
@@ -37,5 +41,20 @@ class MessageTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $scoreBreakdown, $afMessage['score_breakdown'] );
 		$this->assertEquals( '8.8.4.4', $afMessage['user_ip'] );
 		$this->assertEquals( 'process', $afMessage['validation_action'] );
+	}
+
+	public function testAntifraudFactoryDateFormat() {
+		$diMessage = $this->getDiMessage();
+		$diMessage['date'] = '2018-07-12 14:22:02';
+
+		$scoreBreakdown = [
+			'getScoreCountry' => 25,
+			'getScoreEmailDomain' => 10,
+		];
+		$afMessage = DonationInterfaceAntifraudFactory::create(
+			$diMessage, 12.5, $scoreBreakdown, 'process'
+		);
+
+		$this->assertEquals( 1531405322, $afMessage['date'] );
 	}
 }
