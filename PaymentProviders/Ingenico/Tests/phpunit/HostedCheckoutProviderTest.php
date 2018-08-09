@@ -108,4 +108,16 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 		];
 	}
 
+	public function testGetHostedPaymentStatusInProgress() {
+		$hostedPaymentId = '8915-28e5b79c889641c8ba770f1ba576c1fe';
+		$this->setUpResponse( __DIR__ . "/../Data/hostedPaymentStatusIN_PROGRESS.response", 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/hostedcheckouts/$hostedPaymentId" ),
+				$this->equalTo( 'GET' )
+			);
+		$response = $this->provider->getHostedPaymentStatus( $hostedPaymentId );
+		$this->assertEquals( 'IN_PROGRESS', $response['status'] );
+	}
+
 }

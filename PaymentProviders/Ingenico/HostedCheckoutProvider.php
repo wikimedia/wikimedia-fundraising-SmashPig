@@ -1,4 +1,5 @@
 <?php
+
 namespace SmashPig\PaymentProviders\Ingenico;
 
 use SmashPig\Core\SmashPigException;
@@ -47,7 +48,11 @@ class HostedCheckoutProvider extends PaymentProvider {
 	public function getHostedPaymentStatus( $hostedPaymentId ) {
 		$path = "hostedcheckouts/$hostedPaymentId";
 		$response = $this->api->makeApiCall( $path, 'GET' );
-		$this->addPaymentStatusErrorsIfPresent( $response,  $response['createdPaymentOutput']['payment'] );
+		if ( isset( $response['createdPaymentOutput'] ) ) {
+			$this->addPaymentStatusErrorsIfPresent(
+				$response, $response['createdPaymentOutput']['payment']
+			);
+		}
 		return $response;
 	}
 
