@@ -6,6 +6,7 @@ class RecurringMessage extends Message {
 
 	public static function normalizeMessage( &$message, $ipnMessage ) {
 		$message['recurring'] = '1';
+		$message['gateway'] = 'paypal_ec';
 
 		// Contact info
 		if ( $ipnMessage['txn_type'] === 'recurring_payment_profile_created' || $ipnMessage['txn_type'] === 'recurring_payment' ) {
@@ -24,6 +25,7 @@ class RecurringMessage extends Message {
 		switch ( $ipnMessage['txn_type'] ) {
 			case 'recurring_payment':
 				$message['txn_type'] = 'subscr_payment';
+				self::mergePendingDetails( $message );
 				break;
 
 			case 'recurring_payment_profile_created':
@@ -45,6 +47,7 @@ class RecurringMessage extends Message {
 						$message['date'] = strtotime( $ipnMessage['time_created'] );
 					}
 				}
+				self::mergePendingDetails( $message );
 				break;
 
 			case 'recurring_payment_profile_cancel':
@@ -64,8 +67,6 @@ class RecurringMessage extends Message {
 				break;
 
 		}
-
-		$message['gateway'] = 'paypal_ec';
 
 		if ( !isset( $message['date'] ) ) {
 			$message['date'] = time();

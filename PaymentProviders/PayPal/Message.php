@@ -1,6 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\PayPal;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\DataStores\PendingDatabase;
+use SmashPig\CrmLink\Messages\SourceFields;
 
 /**
  * abstract static inheritance? Whatamidoing?
@@ -37,9 +39,29 @@ abstract class Message {
 		}
 
 		static::normalizeMessage( $message, $ipnArray );
+
 		return $message;
 	}
 
 	static function normalizeMessage( &$message, $ipnArray ) {
+	}
+
+	protected static function mergePendingDetails( &$message ) {
+		// Add in any details left on the pending pile.
+		if ( isset( $message['order_id'] ) && isset( $message['gateway'] ) ) {
+			$pendingDb = PendingDatabase::get();
+			$pendingMessage = $pendingDb->fetchMessageByGatewayOrderId(
+				$message['gateway'], $message['order_id']
+			);
+			if ( $pendingMessage ) {
+				SourceFields::removeFromMessage( $pendingMessage );
+				unset( $pendingMessage['pending_id'] );
+				foreach ( $pendingMessage as $pendingField => $pendingValue ) {
+					if ( !isset( $message[$pendingField] ) ) {
+						$message[$pendingField] = $pendingValue;
+					}
+				}
+			}
+		}
 	}
 }
