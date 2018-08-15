@@ -1,7 +1,9 @@
 <?php
+
 namespace SmashPig\PaymentProviders\PayPal\Tests;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\GlobalConfiguration;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\CrmLink\Messages\SourceFields;
@@ -97,9 +99,11 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	protected function getCurlMock( $returnString ) {
 		$wrapper = $this->createMock( 'SmashPig\Core\Http\CurlWrapper' );
 		$wrapper->method( 'execute' )
-			->willReturn( [
-				'body' => $returnString
-			] );
+			->willReturn(
+				[
+					'body' => $returnString
+				]
+			);
 		$this->providerConfig->overrideObjectInstance( 'curl/wrapper', $wrapper );
 		return $wrapper;
 	}
@@ -114,8 +118,10 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
 		$jobMessage = $jobQueue->pop();
 
-		$this->assertEquals( $jobMessage['php-message-class'],
-			'SmashPig\PaymentProviders\PayPal\Job' );
+		$this->assertEquals(
+			$jobMessage['php-message-class'],
+			'SmashPig\PaymentProviders\PayPal\Job'
+		);
 
 		$this->assertEquals( $jobMessage['payload'], $msg['payload'] );
 	}
@@ -161,6 +167,84 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 				);
 			}
 			if ( isset( $msg['transformed'] ) ) {
+				SourceFields::removeFromMessage( $message );
+				$this->assertEquals( $msg['transformed'], $message );
+			}
+		}
+	}
+
+	/**
+	 * @dataProvider messageProvider
+	 */
+	public function testConsumeWithPending( $msg ) {
+		$this->getCurlMock( 'VERIFIED' );
+		$this->capture( $msg['payload'] );
+
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
+		$jobMessage = $jobQueue->pop();
+
+		$job = JsonSerializableObject::fromJsonProxy(
+			$jobMessage['php-message-class'],
+			json_encode( $jobMessage )
+		);
+
+		$pendingMessage = null;
+		$pdb = PendingDatabase::get();
+		// We should combine details from the pending the IF
+		// (a) there is enough info to search the pending table
+		$hasTransformedDetails = (
+			isset( $msg['transformed'] ) &&
+			isset( $msg['transformed']['gateway'] ) &&
+			isset( $msg['transformed']['order_id'] )
+		);
+		// and (b) the message is of a type that could create a new contact
+		// i.e. a new donation
+		$isPayment = ( $msg['type'] === 'donations' );
+		// ...or a new recurring subscription
+		$isNewRecurring = (
+			$msg['type'] === 'recurring' &&
+			(
+				$msg['transformed']['txn_type'] === 'subscr_signup' ||
+				$msg['transformed']['txn_type'] === 'subscr_payment'
+			)
+		);
+		if (
+			$hasTransformedDetails &&
+			( $isPayment || $isNewRecurring )
+		) {
+			$pendingMessage = [
+				'gateway' => $msg['transformed']['gateway'],
+				'order_id' => $msg['transformed']['order_id'],
+				'date' => 12345678,
+				'opt_in' => 1,
+			];
+			SourceFields::addToMessage( $pendingMessage );
+			$pdb->storeMessage( $pendingMessage );
+		}
+
+		$job->execute();
+
+		$queue = $this->config->object( 'data-store/' . $msg['type'] );
+		$message = $queue->pop();
+
+		if ( $job->is_reject() ) {
+			$this->assertEmpty( $message );
+		} else {
+			$this->assertNotEmpty( $message );
+			if ( isset( $message['contribution_tracking_id'] ) ) {
+				$this->assertEquals( $message['contribution_tracking_id'], $message['order_id'] );
+			}
+
+			if ( isset( $message['supplemental_address_1'] ) ) {
+				$this->assertNotEquals(
+					$message['supplemental_address_1'],
+					"{$message['first_name']} {$message['last_name']}"
+				);
+			}
+			if ( isset( $msg['transformed'] ) ) {
+				if ( $pendingMessage !== null ) {
+					$msg['transformed']['opt_in'] = $pendingMessage['opt_in'];
+				}
 				SourceFields::removeFromMessage( $message );
 				$this->assertEquals( $msg['transformed'], $message );
 			}

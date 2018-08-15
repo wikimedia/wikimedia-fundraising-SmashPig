@@ -6,6 +6,7 @@ class SubscriptionMessage extends Message {
 
 	public static function normalizeMessage( &$message, $ipnMessage ) {
 		$message['recurring'] = '1';
+		$message['gateway'] = 'paypal';
 
 		// Contact info
 		if ( $ipnMessage['txn_type'] === 'subscr_signup' || $ipnMessage['txn_type'] === 'subscr_payment' || $ipnMessage['txn_type'] === 'subscr_modify' ) {
@@ -54,6 +55,11 @@ class SubscriptionMessage extends Message {
 						$message['date'] = strtotime( $ipnMessage['subscr_date'] );
 					}
 				}
+				self::mergePendingDetails( $message );
+				break;
+
+			case 'subscr_payment':
+				self::mergePendingDetails( $message );
 				break;
 
 			case 'subscr_modify':
@@ -69,8 +75,6 @@ class SubscriptionMessage extends Message {
 				break;
 			default:
 		}
-
-		$message['gateway'] = 'paypal';
 
 		if ( !isset( $message['date'] ) ) {
 			$message['date'] = time();

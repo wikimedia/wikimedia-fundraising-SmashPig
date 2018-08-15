@@ -11,6 +11,6 @@ class PaymentMessage extends Message {
 			$message['gateway'] = 'paypal';
 		}
 
-		// TODO: Implement normalizeMessage() method.
+		self::mergePendingDetails( $message );
 	}
 }
