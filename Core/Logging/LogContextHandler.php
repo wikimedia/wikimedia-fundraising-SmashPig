@@ -51,7 +51,7 @@ class LogContextHandler {
 	 * @param string $name Child context name
 	 */
 	public function enterContext( $name ) {
-		Logger::info( "Entering logging context '{$name}'." );
+		Logger::debug( "Entering logging context '{$name}'." );
 
 		array_unshift( $this->contextNames, $name );
 
