@@ -22,7 +22,7 @@ class LogEvent {
 	/** @var string Serialized data attached to the event */
 	public $data;
 
-	/** @var \Exception exception object thrown coincident to the event */
+	/** @var \Throwable exception or error object thrown coincident to the event */
 	public $exception;
 
 	/**
@@ -32,11 +32,13 @@ class LogEvent {
 	 * @param string $message Human readable string about the event. Do not include sensitive information here
 	 * @param string $tag Optional descriptive tag, e.g. RawData
 	 * @param mixed $data Optional data object (should be serializable); may include sensitive information
-	 * @param \Exception $exception Optional exception object related to this event
+	 * @param \Throwable $exception Optional exception object related to this event
 	 * @param int|string $timestamp Optional Unix timestamp, or date string of event. If not given this assumes now
+	 *
+	 * @TODO: uncomment Throwable type hint when PHP 5.6 goes away
 	 */
 	public function __construct(
-		$level, $message, $tag = null, $data = null, \Exception $exception = null, $timestamp = null
+		$level, $message, $tag = null, $data = null, /*\Throwable*/ $exception = null, $timestamp = null
 	) {
 		if ( !is_int( $level ) || ( $level > LOG_DEBUG ) || ( $level < LOG_ALERT ) ) {
 			$this->level = LOG_ERR;
