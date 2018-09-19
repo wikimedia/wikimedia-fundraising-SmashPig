@@ -3,6 +3,9 @@ namespace SmashPig\PaymentProviders\Amazon\Tests;
 
 use SmashPig\PaymentProviders\Amazon\AmazonApi;
 
+/**
+ * @group Amazon
+ */
 class ApiTest extends AmazonTestCase {
 
 	public function testFindParent() {

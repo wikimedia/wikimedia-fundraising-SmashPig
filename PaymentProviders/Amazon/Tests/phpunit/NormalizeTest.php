@@ -5,6 +5,9 @@ use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted;
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
+/**
+ * @group Amazon
+ */
 class NormalizeTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * @var CaptureCompleted

@@ -6,6 +6,9 @@ use SmashPig\PaymentProviders\Amazon\Actions\RetryAuthorization;
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\AuthorizationDeclined;
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;
 
+/**
+ * @group Amazon
+ */
 class ActionsTest extends AmazonTestCase {
 
 	public function testReconstructMerchantId() {

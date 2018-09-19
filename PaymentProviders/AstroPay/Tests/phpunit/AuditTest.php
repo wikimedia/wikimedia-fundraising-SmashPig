@@ -6,6 +6,9 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * Verify AstroPay audit file processor functions
+ *
+ * @group Audit
+ * @group AstroPay
  */
 class AuditTest extends BaseSmashPigUnitTestCase {
 	/**

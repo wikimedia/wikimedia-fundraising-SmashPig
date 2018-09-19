@@ -7,6 +7,9 @@ use SmashPig\PaymentProviders\Amazon\Audit\AmazonAudit;
 
 /**
  * Verify Amazon audit file processor functions
+ *
+ * @group Amazon
+ * @group Audit
  */
 class AuditTest extends BaseSmashPigUnitTestCase {
 	public function setUp() {

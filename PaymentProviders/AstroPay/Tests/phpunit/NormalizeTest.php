@@ -4,6 +4,9 @@ namespace SmashPig\PaymentProviders\AstroPay\Test;
 use SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages\PaymentMessage;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
+/**
+ * @group AstroPay
+ */
 class NormalizeTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * @var array

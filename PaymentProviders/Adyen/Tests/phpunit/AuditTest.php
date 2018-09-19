@@ -8,6 +8,7 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
  * Verify Adyen audit file processor functions
  *
  * @group Adyen
+ * @group Audit
  */
 class AuditTest extends BaseSmashPigUnitTestCase {
 	/**
