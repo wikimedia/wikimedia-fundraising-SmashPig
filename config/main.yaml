@@ -93,6 +93,13 @@ data-store:
                 <<: *REDIS
                 queue: jobs-adyen
 
+    jobs-amazon:
+        class: PHPQueue\Backend\Predis
+        constructor-parameters:
+            -
+                <<: *REDIS
+                queue: jobs-adyen
+
     jobs-ingenico:
         class: PHPQueue\Backend\Predis
         constructor-parameters:

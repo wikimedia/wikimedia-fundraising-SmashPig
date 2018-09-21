@@ -13,10 +13,7 @@ use SmashPig\PaymentProviders\Amazon\RecordPaymentJob;
  * @group Amazon
  */
 class RecordPaymentsJobTest extends AmazonTestCase {
-	/**
-	 * @var array
-	 */
-	protected $captureCompletedValues;
+
 	/**
 	 * @var string
 	 */
@@ -28,11 +25,8 @@ class RecordPaymentsJobTest extends AmazonTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$this->captureCompletedValues = $this->loadJson(
-			__DIR__ . "/../Data/IPN/CaptureCompleted.json"
-		);
 		$this->id = 'P01-0000555-5550000-C' . mt_rand( 10000, 99999 );
-		$this->captureCompletedValues['CaptureDetails']['AmazonCaptureId'] = $this->id;
+		$this->refId = null;
 	}
 
 	/**
@@ -41,7 +35,18 @@ class RecordPaymentsJobTest extends AmazonTestCase {
 	 */
 	protected function setRandomRefId() {
 		$this->refId = mt_rand( 100000000, 1000000000 ) . mt_rand( 100000000, 1000000000 );
-		$this->captureCompletedValues['CaptureDetails']['CaptureReferenceId'] = $this->refId;
+	}
+
+	protected function getPayload() {
+		$values = $this->loadJson(
+			__DIR__ . "/../Data/IPN/CaptureCompleted.json"
+		);
+		$values['CaptureDetails']['AmazonCaptureId'] = $this->id;
+		if ( $this->refId ) {
+			$values['CaptureDetails']['CaptureReferenceId'] = $this->refId;
+		}
+		$captureCompleted = new CaptureCompleted( $values );
+		return $captureCompleted->getPayload();
 	}
 
 	public function testCreate() {
@@ -49,11 +54,6 @@ class RecordPaymentsJobTest extends AmazonTestCase {
 		$expected = [
 			'class' => '\SmashPig\PaymentProviders\Amazon\RecordPaymentJob',
 			'payload' => [
-				// FIXME: get rid of this
-				'completion_message_id' => 'amazon-' . $this->refId,
-				// FIXME: should only pass thjs along if it's actually the
-				// ct_id, not an Amazon figment
-				'contribution_tracking_id' => $this->refId,
 				'currency' => 'USD',
 				'date' => 1357002061,
 				'fee' => '0.0',
@@ -66,8 +66,9 @@ class RecordPaymentsJobTest extends AmazonTestCase {
 				'order_reference_id' => 'P01-0000555-5550000',
 			],
 		];
-		$message = new CaptureCompleted( $this->captureCompletedValues );
-		$jobMessage = RecordPaymentJob::fromAmazonMessage( $message );
+		$jobMessage = RecordPaymentJob::fromAmazonMessage(
+			$this->getPayload()
+		);
 		$this->assertEquals( $expected, $jobMessage );
 	}
 
@@ -108,9 +109,8 @@ class RecordPaymentsJobTest extends AmazonTestCase {
 			'source_enqueued_time' => 1357002061
 		];
 		$db->storeMessage( $pendingMessage );
-		$captureMessage = new CaptureCompleted( $this->captureCompletedValues );
 		$jobMessage = RecordPaymentJob::fromAmazonMessage(
-			$captureMessage
+			$this->getPayload()
 		);
 		$job = JobQueueConsumer::createJobObject(
 			$jobMessage
@@ -147,21 +147,15 @@ class RecordPaymentsJobTest extends AmazonTestCase {
 			'email' => 'jgaitan@liberals.co',
 			'first_name' => 'Jorge',
 			'last_name' => 'Gaitán',
-			// FIXMEs: see above
-			'completion_message_id' => 'amazon-' . $this->refId,
-			'contribution_tracking_id' => $this->refId,
 			'order_id' => $this->refId,
-			// FIXME: remove this
-			'order_reference_id' => 'P01-0000555-5550000',
 			'street_address' => '123 Sunset Blvd',
 			'postal_code' => '90210',
 			'state_province' => 'CA',
 			'country' => 'US',
 			'city' => 'Los Angeles'
 		];
-		$captureMessage = new CaptureCompleted( $this->captureCompletedValues );
 		$jobMessage = RecordPaymentJob::fromAmazonMessage(
-			$captureMessage
+			$this->getPayload()
 		);
 		$job = JobQueueConsumer::createJobObject(
 			$jobMessage

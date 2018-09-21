@@ -2,6 +2,6 @@
 
 class CaptureCompleted extends PaymentCapture {
 	public function getDestinationQueue() {
-		return 'donations';
+		return 'jobs-amazon';
 	}
 }

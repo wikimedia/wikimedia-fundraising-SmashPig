@@ -16,15 +16,13 @@ class RecordPaymentJob implements Runnable {
 	public $payload;
 
 	/**
-	 * @param AmazonMessage $message
+	 * @param array $message normalized for queue
 	 * @return array
 	 */
-	public static function fromAmazonMessage( AmazonMessage $message ) {
-		$payload = $message->normalizeForQueue();
-		$payload['order_reference_id'] = $message->getOrderReferenceId();
+	public static function fromAmazonMessage( array $message ) {
 		$job = [
 			'class' => '\SmashPig\PaymentProviders\Amazon\RecordPaymentJob',
-			'payload' => $payload
+			'payload' => $message
 		];
 		return $job;
 	}
@@ -74,13 +72,15 @@ class RecordPaymentJob implements Runnable {
 			$orderReferenceId = $this->payload['order_reference_id'];
 
 			$logger->info(
-				"No details in pending DB for order reference ID $orderReferenceId",
+				'No details in pending DB for order reference ID ' .
+				"$orderReferenceId, will call getOrderReferenceDetails",
 				$dbMessage
 			);
 			$api = AmazonApi::get();
 			$getDetails = $api->getOrderReferenceDetails( $orderReferenceId );
 			$donorDetails = $this->getDonorDetails( $getDetails );
 			$queueMessage = $this->payload + $donorDetails;
+			unset( $queueMessage['order_reference_id'] );
 			QueueWrapper::push( 'donations', $queueMessage );
 		}
 

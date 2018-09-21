@@ -1,4 +1,5 @@
 <?php
+
 namespace SmashPig\PaymentProviders\Amazon\Tests;
 
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted;
@@ -27,17 +28,20 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 
 	public function testNormalizeCaptureCompleted() {
 		$expected = [
-			'completion_message_id' => 'amazon-98765432-1',
-			'contribution_tracking_id' => '98765432',
-			'currency' => 'USD',
-			'date' => 1357002061,
-			'fee' => '0.0',
-			'gateway' => 'amazon',
-			'gateway_status' => 'Completed',
-			'gateway_txn_id' => 'P01-0000000-0000000-000000',
-			'gross' => '10.0',
-			'order_id' => '98765432-1',
-			'payment_method' => 'amazon',
+			'class' => '\SmashPig\PaymentProviders\Amazon\RecordPaymentJob',
+			'payload' => [
+				'contribution_tracking_id' => '98765432',
+				'currency' => 'USD',
+				'date' => 1357002061,
+				'fee' => '0.0',
+				'gateway' => 'amazon',
+				'gateway_status' => 'Completed',
+				'gateway_txn_id' => 'P01-0000000-0000000-000000',
+				'gross' => '10.0',
+				'order_id' => '98765432-1',
+				'payment_method' => 'amazon',
+				'order_reference_id' => 'P01-0000000-0000000',
+			]
 		];
 		$message = new CaptureCompleted( $this->captureCompleted );
 		$normalized = $message->normalizeForQueue();
