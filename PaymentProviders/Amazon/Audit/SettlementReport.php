@@ -37,7 +37,7 @@ class SettlementReport {
 
 	/**
 	 * @param HeadedCsvReader $csv
-	 * @throws \OutOfBoundsException
+	 * @throws DataFileException
 	 */
 	protected function parseLine( HeadedCsvReader $csv ) {
 		$type = $csv->currentCol( 'TransactionType' );
@@ -55,8 +55,14 @@ class SettlementReport {
 			// Amazon, our original order ID might be in SellerOrderId
 			$orderId = $csv->currentCol( 'SellerOrderId' );
 		}
+		$msg['order_id'] = $orderId;
 		$parts = explode( '-', $orderId );
-		$msg['contribution_tracking_id'] = $parts[0];
+		if ( count( $parts ) === 2 &&
+			is_numeric( $parts[0] ) &&
+			is_numeric( $parts[1] )
+		) {
+			$msg['contribution_tracking_id'] = $parts[0];
+		}
 		$msg['currency'] = $csv->currentCol( 'CurrencyCode' );
 		$msg['date'] = UtcDate::getUtcTimestamp(
 			$csv->currentCol( 'TransactionPostedDate' )

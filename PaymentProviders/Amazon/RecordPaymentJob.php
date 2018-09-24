@@ -44,7 +44,6 @@ class RecordPaymentJob implements Runnable {
 		$db = PendingDatabase::get();
 		$dbMessage = $db->fetchMessageByGatewayOrderId( 'amazon', $merchantReference );
 
-		// TODO: remove completion_message_id and remove invalid contribution_tracking_id
 		if ( $dbMessage && ( isset( $dbMessage['order_id'] ) ) ) {
 			$logger->debug( 'A valid message was obtained from the pending queue' );
 

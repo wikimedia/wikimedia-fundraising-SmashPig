@@ -32,11 +32,34 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'date' => 1443723034,
 			'gross' => '10.00',
 			'contribution_tracking_id' => '87654321',
+			'order_id' => '87654321-0',
 			'currency' => 'USD',
 			'gateway_txn_id' => 'P01-1488694-1234567-C034811',
 			'log_id' => '87654321-0',
 			'payment_method' => 'amazon',
 			'fee' => '0.59',
+		];
+		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
+	}
+
+	/**
+	 * Donation initiated off Payments-wiki
+	 */
+	public function testProcessOffPaymentsDonation() {
+		$processor = new AmazonAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/audit/2018-09-18-SETTLEMENT_DATA_11308757837017792.csv' );
+		$this->assertEquals( 1, count( $output ), 'Should have found one donation' );
+		$actual = $output[0];
+		$expected = [
+			'gateway' => 'amazon',
+			'date' => 1536786608,
+			'gross' => '5.00',
+			'order_id' => '8032276654432210046',
+			'currency' => 'USD',
+			'gateway_txn_id' => 'P01-5551212-4903176-C039376',
+			'log_id' => '8032276654432210046',
+			'payment_method' => 'amazon',
+			'fee' => '0.41',
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
