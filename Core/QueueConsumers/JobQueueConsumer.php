@@ -42,7 +42,7 @@ class JobQueueConsumer extends BaseQueueConsumer {
 	 * @return JsonSerializableObject|Runnable
 	 * @throws \SmashPig\Core\DataStores\DataSerializationException
 	 */
-	public function createJobObject( $jobMessage ) {
+	public static function createJobObject( $jobMessage ) {
 		// older, deprecated jobs
 		if ( isset( $jobMessage['php-message-class'] ) ) {
 			// FIXME It seems bad that these objects indiscriminately store

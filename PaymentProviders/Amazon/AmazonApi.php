@@ -107,7 +107,7 @@ class AmazonApi {
 	 *  @see https://payments.amazon.com/documentation/apireference/201752660
 	 * @throws SmashPigException
 	 */
-	protected function getOrderReferenceDetails( $orderReferenceId ) {
+	public function getOrderReferenceDetails( $orderReferenceId ) {
 		$getDetailsResult = $this->client->getOrderReferenceDetails(
 			[
 				'amazon_order_reference_id' => $orderReferenceId,

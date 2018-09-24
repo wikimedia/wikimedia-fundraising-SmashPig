@@ -63,6 +63,20 @@ data-store:
                 <<: *REDIS
                 queue: refund
 
+    unsubscribe:
+        class: PHPQueue\Backend\Predis
+        constructor-parameters:
+            -
+                <<: *REDIS
+                queue: unsubscribe
+
+    opt-in:
+        class: PHPQueue\Backend\Predis
+        constructor-parameters:
+            -
+                <<: *REDIS
+                queue: opt-in
+
     jobs-paypal:
         class: PHPQueue\Backend\Predis
         constructor-parameters:
@@ -73,6 +87,13 @@ data-store:
                 queue: jobs-paypal
 
     jobs-adyen:
+        class: PHPQueue\Backend\Predis
+        constructor-parameters:
+            -
+                <<: *REDIS
+                queue: jobs-adyen
+
+    jobs-amazon:
         class: PHPQueue\Backend\Predis
         constructor-parameters:
             -
