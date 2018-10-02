@@ -10,6 +10,7 @@ class RefundMessage extends Message {
 			'buyer_complaint',
 			'other',
 			'unauthorized_spoof',
+			'unauthorized_claim',
 			'admin_fraud_reversal'
 		];
 
