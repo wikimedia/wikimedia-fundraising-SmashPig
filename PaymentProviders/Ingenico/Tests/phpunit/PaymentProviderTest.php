@@ -107,6 +107,93 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 							'descriptor' => $params['description'],
 							'merchantReference' => $params['order_id'],
 						],
+					// FIXME: prune empty parameters in mapper
+					'customer' =>
+						[
+							'contactDetails' =>
+								[
+									'emailAddress' => null
+								],
+							'personalInformation' =>
+								[
+									'name' =>
+										[
+											'firstName' => null,
+											'surname' => null,
+										],
+								],
+						],
+				],
+		];
+
+		$this->setUpResponse( __DIR__ . '/../Data/createPayment.response', 201 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments" ),
+				$this->equalTo( 'POST' ),
+				$this->anything(),
+				$this->callback( function ( $arg ) use ( $expectedTransformedParams ) {
+					$this->assertEquals(
+						$expectedTransformedParams, json_decode( $arg, true )
+					);
+					return true;
+				} )
+			);
+		$response = $this->provider->createPayment( $params );
+		$this->assertEquals(
+			'000000850010000188130000200001',
+			$response['payment']['id']
+		);
+	}
+
+	public function testCreatePaymentWithContactDetails() {
+		$params = [
+			'recurring' => true,
+			'installment' => 'recurring',
+			'recurring_payment_token' => '229a1d6e-1b26-4c91-8e00-969a49c9d041',
+			'amount' => 10, // dollars
+			'currency' => 'USD',
+			'description' => 'Recurring donation to Wikimedia!',
+			'order_id' => '12345.1',
+			'first_name' => 'Testy',
+			'last_name' => 'McTesterson',
+			'email' => 'nobody@wikimedia.org',
+		];
+
+		$expectedTransformedParams = [
+			'cardPaymentMethodSpecificInput' =>
+				[
+					'isRecurring' => $params['recurring'],
+					'recurringPaymentSequenceIndicator' => $params['installment'],
+					'token' => $params['recurring_payment_token'],
+				],
+			'order' =>
+				[
+					'amountOfMoney' =>
+						[
+							'amount' => 1000, // cents due to AmountToCents Transformer
+							'currencyCode' => $params['currency'],
+						],
+					'references' =>
+						[
+							'descriptor' => $params['description'],
+							'merchantReference' => $params['order_id'],
+						],
+					'customer' =>
+						[
+							'contactDetails' =>
+								[
+									'emailAddress' => 'nobody@wikimedia.org'
+								],
+							'personalInformation' =>
+								[
+									'name' =>
+										[
+											'firstName' => 'Testy',
+											'surname' => 'McTesterson',
+										],
+								],
+						],
 				],
 		];
 
