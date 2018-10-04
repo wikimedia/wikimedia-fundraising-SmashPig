@@ -93,16 +93,7 @@ class IngenicoAudit implements AuditParser {
 			return;
 		}
 
-		// Hack to determine which API integration the txn came in on.
-		// Connect API transactions have EmailTypeIndicator among the
-		// CustomerData nodes, while older ones have IPAddressCustomer
-		// TODO: does this work for refunds?
-		$typeIndicator = $recordNode->getElementsByTagName( 'EmailTypeIndicator' );
-		if ( $typeIndicator->length === 0 ) {
-			$gateway = 'globalcollect';
-		} else {
-			$gateway = 'ingenico';
-		}
+		$gateway = $this->getGateway( $recordNode );
 
 		if ( $category === '-' ) {
 			$refundType = $this->recordsWeCanDealWith[$compoundType];
@@ -271,5 +262,33 @@ class IngenicoAudit implements AuditParser {
 			unset( $record['attempt_id'] );
 		}
 		return $record;
+	}
+
+	protected function getGateway( DOMElement $recordNode ) {
+		// Heuristics to determine which API integration the txn came in on.
+		// Connect API transactions have EmailTypeIndicator, if they have Email
+		$email = $recordNode->getElementsByTagName( 'Email' );
+		$typeIndicator = $recordNode->getElementsByTagName( 'EmailTypeIndicator' );
+		if ( $email->length > 0 ) {
+			if ( $typeIndicator->length > 0 ) {
+				return 'ingenico';
+			}
+			return 'globalcollect';
+		}
+		// Otherwise, we rely on the format of the AdditionalReference. It's got
+		// 5 digits after the decimal point for old-API transactions.
+		$arNode = $recordNode->getElementsByTagName( 'AdditionalReference' );
+		if ( $arNode->length > 0 ) {
+			$additionalReference = $arNode->item( 0 )->nodeValue;
+			$parts = explode( '.', $additionalReference );
+			if ( count( $parts ) === 2 ) {
+				if ( strlen( $parts[1] ) === 5 ) {
+					return 'globalcollect';
+				}
+				return 'ingenico';
+			}
+		}
+		// No idea. Default to the new thing.
+		return 'ingenico';
 	}
 }
