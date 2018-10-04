@@ -9,3 +9,10 @@ order:
     references:
         descriptor: %description%
         merchantReference: %order_id%
+    customer:
+        contactDetails:
+            emailAddress: %email%
+        personalInformation:
+            name:
+                firstName: %first_name%
+                surname: %last_name%
