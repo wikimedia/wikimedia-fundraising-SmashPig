@@ -25,7 +25,7 @@ class HttpStatusValidator implements ResponseValidator {
 
 			case Response::HTTP_FORBIDDEN:   // Hmm, forbidden? Maybe if we ask it nicely again...
 				$continue = true;
-				Logger::alert( "Request returned (403) FORBIDDEN: $body" );
+				Logger::warning( "Request returned (403) FORBIDDEN: $body" );
 				break;
 
 			default:    // No clue what happened... break out and log it
