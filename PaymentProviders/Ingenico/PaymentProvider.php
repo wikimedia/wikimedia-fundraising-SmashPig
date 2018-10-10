@@ -40,7 +40,9 @@ abstract class PaymentProvider {
 		$createPaymentParams = Mapper::map(
 			$params,
 			$mapConfig['path'],
-			$mapConfig['transformers']
+			$mapConfig['transformers'],
+			null,
+			true
 		);
 		$response = $this->api->makeApiCall( $path, 'POST', $createPaymentParams );
 		$this->addPaymentStatusErrorsIfPresent( $response, $response['payment'] );

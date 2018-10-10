@@ -107,22 +107,6 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 							'descriptor' => $params['description'],
 							'merchantReference' => $params['order_id'],
 						],
-					// FIXME: prune empty parameters in mapper
-					'customer' =>
-						[
-							'contactDetails' =>
-								[
-									'emailAddress' => null
-								],
-							'personalInformation' =>
-								[
-									'name' =>
-										[
-											'firstName' => null,
-											'surname' => null,
-										],
-								],
-						],
 				],
 		];
 
@@ -158,6 +142,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 			'first_name' => 'Testy',
 			'last_name' => 'McTesterson',
 			'email' => 'nobody@wikimedia.org',
+			'user_ip' => '11.22.33.44',
 		];
 
 		$expectedTransformedParams = [
@@ -195,6 +180,9 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 								],
 						],
 				],
+			'fraudFields' => [
+				'customerIpAddress' => '11.22.33.44',
+			]
 		];
 
 		$this->setUpResponse( __DIR__ . '/../Data/createPayment.response', 201 );
