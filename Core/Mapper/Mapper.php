@@ -79,18 +79,18 @@ class Mapper {
 	 *
 	 * @param array $input key=>value vars to overwrite map file %placeholders%
 	 * @param string $mapFilePath map file path
-	 * @param array[callable|Transformer] $transformers
+	 * @param array $transformers
 	 * @param string $outputFormat
+	 * @param bool $pruneEmpty if true, remove subtrees with no values provided
 	 *
 	 * @return mixed
-	 * @throws \Exception
-	 * @throws \SmashPig\Core\SmashPigException
 	 */
 	public static function map(
 		$input,
 		$mapFilePath,
 		$transformers = [],
-		$outputFormat = null
+		$outputFormat = null,
+		$pruneEmpty = false
 	) {
 		$mapper = new static;
 		$yaml = $mapper->loadMapFile( $mapFilePath );
@@ -102,6 +102,9 @@ class Mapper {
 		}
 
 		$output = $mapper->translatePlaceholdersToInput( $map, $input );
+		if ( $pruneEmpty ) {
+			$output = self::pruneEmptyValues( $output );
+		}
 		if ( isset( $outputFormat ) && $outputFormat != static::FORMAT_ARRAY ) {
 			$output = $mapper->formatOutput( $output, $outputFormat );
 		}
@@ -206,7 +209,7 @@ class Mapper {
 	 * @param $map
 	 * @param $input
 	 *
-	 * @return string
+	 * @return array
 	 */
 	protected function translatePlaceholdersToInput( $map, $input ) {
 		array_walk_recursive( $map, function ( &$value ) use ( $input ) {
@@ -222,6 +225,28 @@ class Mapper {
 		} );
 
 		return $map;
+	}
+
+	/**
+	 * Trim empty values or subtrees of empty values out of an array
+	 *
+	 * @param array $input the array to be pruned
+	 * @return array the input, with all empty keys removed.
+	 */
+	protected static function pruneEmptyValues( $input ) {
+		$output = [];
+		foreach ( $input as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$value = self::pruneEmptyValues( $value );
+			}
+			if ( $value !== '' && $value !== null ) {
+				$output[$key] = $value;
+			}
+		}
+		if ( count( $output ) === 0 ) {
+			return null;
+		}
+		return $output;
 	}
 
 	/**

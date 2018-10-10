@@ -95,6 +95,36 @@ class MapperTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $expected, $output );
 	}
 
+	public function testMapPrunesEmptyValues() {
+		$testMapFilePath = 'Tests/data/test_map_multi_array.yaml';
+
+		$testMapVars = [
+			'nested-array-value-three' => 'ghi',
+			'nested-array-value-four' => 'jkl',
+		];
+
+		$output = Mapper::map( $testMapVars, $testMapFilePath, [], null, true );
+
+		$expected = [
+			'test-nested-array' =>
+				[
+					'test-nested-array-two' =>
+						[
+							'test-nested-child-two' =>
+								[
+									'test-nested-child-three' =>
+										[
+											'nested-array-value-three' => 'ghi',
+											'nested-array-value-four' => 'jkl',
+										],
+								],
+						],
+				],
+		];
+
+		$this->assertEquals( $expected, $output );
+	}
+
 	public function testMapReplacesCompoundValue() {
 		$testMapFilePath = 'Tests/data/test_map_compound_value.yaml';
 		$testMapVars['test_prefix_value'] = 'Mr';
