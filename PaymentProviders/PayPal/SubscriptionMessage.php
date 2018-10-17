@@ -45,12 +45,8 @@ class SubscriptionMessage extends Message {
 				}
 
 				if ( isset( $ipnMessage['subscr_date'] ) ) {
-					if ( $ipnMessage['txn_type'] == 'subscr_signup' ) {
-						$message['create_date'] = strtotime( $ipnMessage['subscr_date'] );
-						$message['start_date'] = strtotime( $ipnMessage['subscr_date'] );
-					} elseif ( $ipnMessage['txn_type'] == 'subscr_cancel' ) {
-						$message['cancel_date'] = strtotime( $ipnMessage['subscr_date'] );
-					}
+					$message['create_date'] = strtotime( $ipnMessage['subscr_date'] );
+					$message['start_date'] = strtotime( $ipnMessage['subscr_date'] );
 					if ( !isset( $message['date'] ) ) {
 						$message['date'] = strtotime( $ipnMessage['subscr_date'] );
 					}
@@ -73,6 +69,13 @@ class SubscriptionMessage extends Message {
 					$message['failure_retry_date'] = strtotime( $ipnMessage['failure_retry_date'] );
 				}
 				break;
+			case 'subscr_cancel':
+				if ( isset( $ipnMessage['subscr_date'] ) ) {
+					$message['cancel_date'] = strtotime( $ipnMessage['subscr_date'] );
+					if ( !isset( $message['date'] ) ) {
+						$message['date'] = strtotime( $ipnMessage['subscr_date'] );
+					}
+				}
 			default:
 		}
 

@@ -26,6 +26,8 @@ var_map:
     recurring_payment_id: subscr_id
     recur_times: installments
     subscr_id: subscr_id
+    # When a message has old and new subscr_id, we will only know the old one
+    old_subscr_id: subscr_id
     # FIXME This is only true for refund messages.  Where to represent?
     #txn_id: gateway_refund_id
     mc_currency: currency
