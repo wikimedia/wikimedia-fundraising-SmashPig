@@ -16,3 +16,5 @@ order:
             name:
                 firstName: %first_name%
                 surname: %last_name%
+fraudFields:
+    customerIpAddress: %user_ip%

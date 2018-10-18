@@ -18,14 +18,23 @@ class HttpStatusValidator implements ResponseValidator {
 		$body = $parsedResponse['body'];
 
 		switch ( $statusCode ) {
-			case Response::HTTP_BAD_REQUEST:   // Oh noes! Bad request.. BAD CODE, BAD BAD CODE!
+			case Response::HTTP_BAD_REQUEST:
+				// Oh noes! Bad request.. BAD CODE, BAD BAD CODE!
 				$continue = false;
 				Logger::error( "Request returned (400) BAD REQUEST: $body" );
 				break;
 
-			case Response::HTTP_FORBIDDEN:   // Hmm, forbidden? Maybe if we ask it nicely again...
+			case Response::HTTP_FORBIDDEN:
+				// Hmm, forbidden? Maybe if we ask it nicely again...
 				$continue = true;
-				Logger::alert( "Request returned (403) FORBIDDEN: $body" );
+				Logger::warning( "Request returned (403) FORBIDDEN: $body" );
+				break;
+
+			case Response::HTTP_BAD_GATEWAY:
+				// Timed out between their front-line server and their
+				// application server. Let's try again.
+				Logger::warning( "Request returned (502) GATEWAY ERROR: $body" );
+				$continue = true;
 				break;
 
 			default:    // No clue what happened... break out and log it
