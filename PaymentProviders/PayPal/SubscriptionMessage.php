@@ -69,6 +69,7 @@ class SubscriptionMessage extends Message {
 					$message['failure_retry_date'] = strtotime( $ipnMessage['failure_retry_date'] );
 				}
 				break;
+
 			case 'subscr_cancel':
 				if ( isset( $ipnMessage['subscr_date'] ) ) {
 					$message['cancel_date'] = strtotime( $ipnMessage['subscr_date'] );
@@ -76,6 +77,8 @@ class SubscriptionMessage extends Message {
 						$message['date'] = strtotime( $ipnMessage['subscr_date'] );
 					}
 				}
+				break;
+
 			default:
 		}
 

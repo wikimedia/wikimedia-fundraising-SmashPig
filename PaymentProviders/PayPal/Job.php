@@ -18,9 +18,11 @@ class Job extends RunnableJob {
 
 	public function is_reject() {
 		foreach ( $this->providerConfiguration->val( 'rejects' ) as $key => $val ) {
-			if ( isset( $this->payload->{$key} )
-				&& $this->payload->{$key} === $val ) {
-				return true;
+			if ( isset( $this->payload->{$key} ) ) {
+				$values = (array)$val;
+				if ( in_array( $this->payload->{$key}, $values, true ) ) {
+					return true;
+				}
 			}
 		}
 		return false;

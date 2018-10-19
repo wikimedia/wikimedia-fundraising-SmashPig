@@ -272,4 +272,31 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$this->assertFalse( $validator->shouldRetry( $response ) );
 	}
 
+	/**
+	 * Test that txn_type subscr_modify is ignored
+	 */
+	public function testIgnore() {
+		$this->getCurlMock( 'VERIFIED' );
+		$payload = json_decode(
+			file_get_contents( __DIR__ . '/../Data/subscr_modify.json' ),
+			true
+		);
+		$this->capture( $payload );
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
+		$jobMessage = $jobQueue->pop();
+
+		$job = JsonSerializableObject::fromJsonProxy(
+			$jobMessage['php-message-class'],
+			json_encode( $jobMessage )
+		);
+
+		$success = $job->execute();
+		// Job should succeed
+		$this->assertTrue( $success );
+		// ...but not send any messages
+		foreach ( [ 'donations', 'recurring', 'refund' ] as $queue ) {
+			$msg = $this->config->object( "data-store/$queue" )->pop();
+			$this->assertNull( $msg );
+		}
+	}
 }
