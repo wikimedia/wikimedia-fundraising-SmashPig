@@ -59,7 +59,9 @@ var_map:
     mc_fee: fee
 
 rejects:
-    txn_type: new_case
+    txn_type:
+        - new_case
+        - subscr_modify
 
 # txn types defined here:
 # https://developer.paypal.com/docs/classic/ipn/integration-guide/IPNandPDTVariables/#id08CTB0S055Z
@@ -99,7 +101,7 @@ messages:
             - subscr_cancel
             - subscr_eot
             - subscr_failed
-            - subscr_modify
+            # - subscr_modify ignored till we make sure Civi can handle it
             - subscr_signup
             # the following mean we got money \o/
             - subscr_payment
