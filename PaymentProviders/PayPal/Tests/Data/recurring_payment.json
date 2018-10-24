@@ -28,7 +28,7 @@
   "address_country_code": "US",
   "address_status": "confirmed",
   "recurring_payment_id": "12345678",
-  "rp_invoice_id": "7373",
+  "rp_invoice_id": "7373.1",
   "product_name": "Donation to the Wikimedia Foundation",
   "product_type": "Donation",
   "period_type": "Regular",

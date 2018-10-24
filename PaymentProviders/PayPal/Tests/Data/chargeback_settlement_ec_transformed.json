@@ -6,7 +6,7 @@
 	"type": "chargeback",
 	"contribution_tracking_id": 47896777,
 	"gross": -5,
-	"order_id": 47896777,
+	"order_id": "47896777.1",
 	"gateway_refund_id": "91N12345TB8654321",
 	"gross_currency": "USD",
 	"gateway": "paypal_ec",
