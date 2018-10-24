@@ -35,8 +35,8 @@ var_map:
     # FIXME rename refund_type
     reason_code: type
     #test_ipn:  # signals test mode
-    custom: contribution_tracking_id
-    rp_invoice_id: contribution_tracking_id
+    custom: order_id
+    rp_invoice_id: order_id
     payer_email: email
     first_name: first_name
     last_name: last_name

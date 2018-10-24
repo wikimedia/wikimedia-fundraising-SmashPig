@@ -158,7 +158,11 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		} else {
 			$this->assertNotEmpty( $message );
 			if ( isset( $message['contribution_tracking_id'] ) ) {
-				$this->assertEquals( $message['contribution_tracking_id'], $message['order_id'] );
+				$ctId = $message['contribution_tracking_id'];
+				$this->assertEquals(
+					$ctId,
+					substr( $message['order_id'], 0, strlen( $ctId ) )
+				);
 			}
 
 			if ( isset( $message['supplemental_address_1'] ) ) {
@@ -232,8 +236,13 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 			$this->assertEmpty( $message );
 		} else {
 			$this->assertNotEmpty( $message );
+			// order_id should start with the ct_id
 			if ( isset( $message['contribution_tracking_id'] ) ) {
-				$this->assertEquals( $message['contribution_tracking_id'], $message['order_id'] );
+				$ctId = $message['contribution_tracking_id'];
+				$this->assertEquals(
+					$ctId,
+					substr( $message['order_id'], 0, strlen( $ctId ) )
+				);
 			}
 
 			if ( isset( $message['supplemental_address_1'] ) ) {
