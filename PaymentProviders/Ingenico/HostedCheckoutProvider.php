@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Ingenico;
 
+use BadMethodCallException;
 use SmashPig\Core\SmashPigException;
 
 /**
@@ -35,6 +36,11 @@ class HostedCheckoutProvider extends PaymentProvider {
 	 * @return mixed
 	 */
 	public function createHostedPayment( $params ) {
+		if ( empty( $params ) ) {
+			throw new BadMethodCallException(
+				'Called createHostedPayment with empty parameters'
+			);
+		}
 		$path = 'hostedcheckouts';
 		$response = $this->api->makeApiCall( $path, 'POST', $params );
 		return $response;
@@ -46,6 +52,11 @@ class HostedCheckoutProvider extends PaymentProvider {
 	 * @return mixed
 	 */
 	public function getHostedPaymentStatus( $hostedPaymentId ) {
+		if ( !$hostedPaymentId ) {
+			throw new BadMethodCallException(
+				'Called getHostedPaymentStatus with empty hostedPaymentId'
+			);
+		}
 		$path = "hostedcheckouts/$hostedPaymentId";
 		$response = $this->api->makeApiCall( $path, 'GET' );
 		if ( isset( $response['createdPaymentOutput'] ) ) {

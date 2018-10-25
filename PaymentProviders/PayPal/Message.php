@@ -2,6 +2,7 @@
 
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\PendingDatabase;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\CrmLink\Messages\SourceFields;
 
 /**
@@ -19,8 +20,12 @@ abstract class Message {
 			}
 		}
 
-		if ( isset( $message['contribution_tracking_id'] ) ) {
-			$message['order_id'] = $message['contribution_tracking_id'];
+		if (
+			isset( $message['order_id'] ) &&
+			!isset( $message['contribution_tracking_id'] )
+		) {
+			$parts = explode( '.', $message['order_id'] );
+			$message['contribution_tracking_id'] = $parts[0];
 		}
 
 		// If someone's PayPal account is set to their name we don't want
@@ -50,10 +55,15 @@ abstract class Message {
 		// Add in any details left on the pending pile.
 		if ( isset( $message['order_id'] ) && isset( $message['gateway'] ) ) {
 			$pendingDb = PendingDatabase::get();
+			Logger::debug(
+				'Searching for pending message with gateway ' .
+				"{$message['gateway']} and order id {$message['order_id']}"
+			);
 			$pendingMessage = $pendingDb->fetchMessageByGatewayOrderId(
 				$message['gateway'], $message['order_id']
 			);
 			if ( $pendingMessage ) {
+				Logger::debug( 'Found pending message' );
 				SourceFields::removeFromMessage( $pendingMessage );
 				unset( $pendingMessage['pending_id'] );
 				foreach ( $pendingMessage as $pendingField => $pendingValue ) {
@@ -61,7 +71,11 @@ abstract class Message {
 						$message[$pendingField] = $pendingValue;
 					}
 				}
+			} else {
+				Logger::debug( 'Did not find pending message' );
 			}
+		} else {
+			Logger::debug( 'Missing gateway or order id, skipping pending' );
 		}
 	}
 }
