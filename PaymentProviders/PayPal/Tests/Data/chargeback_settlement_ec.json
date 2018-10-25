@@ -9,10 +9,10 @@
 	"txn_id" : "91N12345TB8654321",
 	"parent_txn_id" : "2JP12345X654321V",
 	"payer_id" : "AA987ASDFGHUW8",
-	"invoice" : 47896777.0,
+	"invoice" : "47896777.1",
 	"payment_status" : "Completed",
 	"mc_gross" : -5.00,
-	"custom" : 47896777,
+	"custom" : "47896777.1",
 	"charset" : "UTF-8",
 	"notify_version" : 3.8,
 	"ipn_track_id" : "f008d5768b47c"

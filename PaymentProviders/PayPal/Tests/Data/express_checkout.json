@@ -1,10 +1,10 @@
 {
 	"business": "nobodysbiz@wikimedia.org",
 	"charset": "UTF-8",
-	"custom": "123456",
+	"custom": "123456.1",
 	"first_name": "Fowl",
 	"handling_amount": "0",
-	"invoice": "123456.0",
+	"invoice": "123456.1",
 	"ipn_track_id": "86fbd5b89e3b4",
 	"item_name": "Donation to the Wikimedia Foundation",
 	"item_number": "",

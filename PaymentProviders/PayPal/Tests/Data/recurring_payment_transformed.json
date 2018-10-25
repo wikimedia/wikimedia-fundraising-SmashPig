@@ -3,7 +3,7 @@
   "subscr_id": "12345678",
   "txn_type": "subscr_payment",
   "contribution_tracking_id": "7373",
-  "order_id": "7373",
+  "order_id": "7373.1",
   "email": "blarg@urgrar.com",
   "first_name": "Testy",
   "middle_name": "",
