@@ -19,8 +19,12 @@ abstract class Message {
 			}
 		}
 
-		if ( isset( $message['contribution_tracking_id'] ) ) {
-			$message['order_id'] = $message['contribution_tracking_id'];
+		if (
+			isset( $message['order_id'] ) &&
+			!isset( $message['contribution_tracking_id'] )
+		) {
+			$parts = explode( '.', $message['order_id'] );
+			$message['contribution_tracking_id'] = $parts[0];
 		}
 
 		// If someone's PayPal account is set to their name we don't want
