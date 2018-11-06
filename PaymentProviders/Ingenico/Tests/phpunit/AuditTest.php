@@ -100,6 +100,37 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	}
 
 	/**
+	 * Audit transactions relating to new ingenico connect api donations still contain
+	 * the globalcollect-style OrderID's e.g. 123456789 vs the newer (and longer)
+	 * format of 000000123401234567890000100001
+	 *
+	 * The parser detects the gateway type and transforms accordingly if needed.
+	 * @see IngenicoAudit::getConnectPaymentId()
+	 *
+	 * In this test, we confirm that transformation takes place.
+	 */
+	public function testParseIngenicoConnectRefund() {
+		$processor = new IngenicoAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/refund_ingenico_connect.xml.gz' );
+		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
+		$actual = $output[0];
+		$expected = [
+			'gateway' => 'ingenico',
+			'contribution_tracking_id' => '5551212',
+			'date' => 1500942220,
+			'gross' => 100,
+			'gateway_parent_id' => '000000123401234567890000100001',
+			'gateway_refund_id' => '000000123401234567890000100001',
+			'installment' => 1,
+			'gross_currency' => 'USD',
+			'type' => 'refund',
+			'invoice_id' => '5551212.12',
+			'merchant_id' => '1234',
+		];
+		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
+	}
+
+	/**
 	 * Now try a recurring refund of installment higher than 1
 	 */
 	public function testProcessRecurringRefund() {

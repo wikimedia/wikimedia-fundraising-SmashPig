@@ -129,23 +129,36 @@ class IngenicoAudit implements AuditParser {
 		return $record;
 	}
 
+	/**
+	 * @param \DOMElement $recordNode
+	 * @param $type
+	 * @param $gateway
+	 *
+	 * @return array
+	 *
+	 * TODO: for refunds of recurring payments, determine whether the
+	 * refund's EffortID is always the negative of the corresponding
+	 * installment's EffortID. We want to know which one we refunded.
+	 *
+	 */
 	protected function parseRefund( DOMElement $recordNode, $type, $gateway ) {
 		$record = $this->xmlToArray( $recordNode, $this->refundMap );
 		$record['type'] = $type;
-		if ( $gateway === 'globalcollect' ) {
-			if ( $record['installment'] < 0 ) {
-				// Refunds have negative EffortID. Weird.
-				// TODO: for refunds of recurring payments, determine whether the
-				// refund's EffortID is always the negative of the corresponding
-				// installment's EffortID. We want to know which one we refunded.
-				$record['installment'] = $record['installment'] * -1;
-				if ( $record['installment'] > 1 ) {
-					$record['gateway_parent_id'] .= '-' . $record['installment'];
-				}
-			}
-		} else {
 
+		// deal with negative EffortID
+		if ( !empty( $record['installment'] ) ) {
+			$record['installment'] = abs( $record['installment'] );
 		}
+
+		// determine parent_id format by gateway version
+		if ( $gateway === 'ingenico' ) {
+			$record['gateway_parent_id'] = $this->getConnectPaymentId( $record );
+		} else {
+			if ( $record['installment'] > 1 ) {
+				$record['gateway_parent_id'] .= '-' . $record['installment'];
+			}
+		}
+
 		// FIXME: Refund ID is the same as the parent transaction ID.
 		// That's not helpful...
 		$record['gateway_refund_id'] = $record['gateway_parent_id'];
