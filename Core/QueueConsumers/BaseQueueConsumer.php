@@ -3,6 +3,7 @@ namespace SmashPig\Core\QueueConsumers;
 
 use Exception;
 use InvalidArgumentException;
+use PHPQueue\Exception\JsonException;
 use PHPQueue\Interfaces\AtomicReadBuffer;
 
 use SmashPig\Core\Context;
@@ -95,9 +96,14 @@ abstract class BaseQueueConsumer {
 		$processed = 0;
 		$realCallback = [ $this, 'processMessageWithErrorHandling' ];
 		do {
-			$data = $this->backend->popAtomic( $realCallback );
-			if ( $data !== null ) {
-				$processed++;
+			try {
+				$data = $this->backend->popAtomic( $realCallback );
+				if ( $data !== null ) {
+					$processed++;
+				}
+			} catch ( JsonException $ex ) {
+				$data = false;
+				$this->sendToDamagedStore( null, $ex );
 			}
 			$timeOk = $this->timeLimit === 0 || time() <= $startTime + $this->timeLimit;
 			$countOk = $this->messageLimit === 0 || $processed < $this->messageLimit;
