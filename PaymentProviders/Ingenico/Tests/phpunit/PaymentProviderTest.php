@@ -204,4 +204,58 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 			$response['payment']['id']
 		);
 	}
+
+	public function testRefundPayment() {
+		$params = [
+			'amount' => 10, // dollars
+			'currency' => 'USD',
+			'first_name' => 'Sally',
+			'last_name' => 'Ride',
+			'order_id' => '12345.1',
+			'country' => 'US',
+		];
+
+		$expectedTransformedParams = [
+			'amountOfMoney' =>
+				[
+					'amount' => 1000, // cents due to AmountToCents Transformer
+					'currencyCode' => $params['currency'],
+				],
+			'customer' =>
+				[
+					'address' =>
+						[
+							'countryCode' => $params['country'],
+							'name' =>
+								[
+									'firstName' => $params['first_name'],
+									'surname' => $params['last_name'],
+								]
+						]
+				],
+			'refundReferences' =>
+				[
+					'merchantReference' => $params['order_id'],
+				],
+		];
+		$paymentId = '00000085001000006995000';
+		$this->setUpResponse( __DIR__ . '/../Data/createRefund.response', 201 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId/refund" ),
+				$this->equalTo( 'POST' ),
+				$this->anything(),
+				$this->callback( function ( $arg ) use ( $expectedTransformedParams ) {
+					$this->assertEquals(
+						$expectedTransformedParams, json_decode( $arg, true )
+					);
+					return true;
+				} )
+			);
+		$response = $this->provider->createRefund( $paymentId, $params );
+		$this->assertEquals(
+			"$paymentId-300001",
+			$response['id']
+		);
+	}
 }

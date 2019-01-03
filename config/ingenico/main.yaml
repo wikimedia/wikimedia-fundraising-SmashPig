@@ -55,4 +55,8 @@ maps:
         path: config/ingenico/maps/createPayment.yaml
         transformers:
             - SmashPig\Core\Mapper\Transformers\AmountToCents
+    refund-payment:
+        path: config/ingenico/maps/refundPayment.yaml
+        transformers:
+            - SmashPig\Core\Mapper\Transformers\AmountToCents
 

@@ -130,6 +130,39 @@ abstract class PaymentProvider {
 	}
 
 	/**
+	 * This is the first step in refunding a payment. You will need to use
+	 * the ID from the result of this method and call approveRefund in order
+	 * for the donor to actually get their money back.
+	 * API call is documented at
+	 * https://epayments-api.developer-ingenico.com/s2sapi/v1/en_US/java/payments/refund.html#payments-refund
+	 *
+	 * @param string $paymentId The full Ingenico payment ID
+	 * @param array $params needs these keys set:
+	 *  currency,
+	 *  amount (in major units, e.g. dollars),
+	 *  first_name,
+	 *  last_name,
+	 *  order_id,
+	 *  country
+	 * @return array
+	 * @throws \SmashPig\Core\ConfigurationKeyException
+	 */
+	public function createRefund( $paymentId, $params ) {
+		$path = "payments/$paymentId/refund";
+		$mapConfig = $this->providerConfiguration->val( 'maps/refund-payment' );
+		$createRefundParams = Mapper::map(
+			$params,
+			$mapConfig['path'],
+			$mapConfig['transformers'],
+			null,
+			true
+		);
+		$response = $this->api->makeApiCall( $path, 'POST', $createRefundParams );
+		$this->addPaymentStatusErrorsIfPresent( $response );
+		return $response;
+	}
+
+	/**
 	 * Currently we send these back verbatim to DonationInterface
 	 *
 	 * In future we might map these to
