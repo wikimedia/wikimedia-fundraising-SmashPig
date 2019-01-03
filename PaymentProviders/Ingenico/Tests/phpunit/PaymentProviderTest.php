@@ -258,4 +258,16 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 			$response['id']
 		);
 	}
+
+	public function testApproveRefund() {
+		$refundId = '00000085001000006995000-300001';
+		$this->setUpResponse( __DIR__ . '/../Data/approveRefund.response', 204 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/refunds/$refundId/approve" ),
+				$this->equalTo( 'POST' )
+			);
+		$response = $this->provider->approveRefund( $refundId );
+		$this->assertEmpty( $response );
+	}
 }
