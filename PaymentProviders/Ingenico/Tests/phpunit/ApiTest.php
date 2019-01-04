@@ -53,7 +53,8 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				$this->callback( $headerVerification ),
 				$this->equalTo( '{"foo":"bar"}' )
 			)->willReturn( [
-				'body' => '{"baz":"quux"}'
+				'status' => 200,
+				'body' => '{"baz":"quux"}',
 			] );
 
 		$this->api->makeApiCall( 'testPath', 'POST', [ 'foo' => 'bar' ] );

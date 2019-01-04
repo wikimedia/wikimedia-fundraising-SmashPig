@@ -48,7 +48,8 @@ class HttpStatusValidator implements ResponseValidator {
 	protected function getSuccessCodes() {
 		return [
 			Response::HTTP_OK, // Everything is AWESOME
-			Response::HTTP_CREATED  // Also fine, and we created a thing
+			Response::HTTP_CREATED, // Also fine, and we created a thing
+			Response::HTTP_NO_CONTENT, // No news is good news
 		];
 	}
 }

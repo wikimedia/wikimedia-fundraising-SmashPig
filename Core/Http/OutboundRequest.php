@@ -72,6 +72,9 @@ class OutboundRequest {
 
 	public function execute() {
 		$config = Context::get()->getProviderConfiguration();
+		/**
+		 * @var CurlWrapper
+		 */
 		$wrapper = $config->object( 'curl/wrapper' );
 		return $wrapper->execute(
 			$this->url,
