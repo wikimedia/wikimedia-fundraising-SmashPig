@@ -61,6 +61,15 @@ class HeadedCsvReader extends CsvReader {
 	}
 
 	/**
+	 * @return array Associative array where keys are headers and values are
+	 *  the values of the corresponding columns from the current row
+	 * @throws DataFileException
+	 */
+	public function currentArray() {
+		return array_combine( $this->headers(), $this->current() );
+	}
+
+	/**
 	 * @return string[] CSV file headers in order of columns
 	 */
 	public function headers() {
