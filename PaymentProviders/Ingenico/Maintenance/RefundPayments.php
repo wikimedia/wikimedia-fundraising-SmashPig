@@ -78,7 +78,7 @@ class RefundPayments extends IngenicoMaintenance {
 		$paramsAmount = [];
 		$transformer = new AmountToCents();
 		$transformer->transform( $params, $paramsAmount );
-		if ( $statusAmount['amount'] !== $paramsAmount['amount'] ) {
+		if ( strval( $statusAmount['amount'] ) !== strval( $paramsAmount['amount'] ) ) {
 			Logger::info(
 				"Amount from file {$paramsAmount['amount']} " .
 				"doesn't match payment amount {$statusAmount['amount']}"
