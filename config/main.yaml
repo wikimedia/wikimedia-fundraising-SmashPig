@@ -114,6 +114,13 @@ data-store:
                 <<: *REDIS
                 queue: donations
 
+    contribution-tracking-sequence:
+        class: SmashPig\Core\SequenceGenerators\PredisSequenceGenerator
+        constructor-parameters:
+            -
+                <<: *REDIS
+                sequence: contribution-tracking
+
 # Must implement Psr\Cache\CacheItemPoolInterface
 # See PSR-6: http://www.php-fig.org/psr/psr-6/
 cache:
