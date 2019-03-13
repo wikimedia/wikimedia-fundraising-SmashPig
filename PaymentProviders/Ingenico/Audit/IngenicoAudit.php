@@ -58,7 +58,8 @@ class IngenicoAudit implements AuditParser {
 		// prepaid card, ew, cash
 		'+IP' => 'donation',
 		'-CB' => 'chargeback', // Credit card chargeback
-		'-CR' => 'refund', // Credit card refund
+		'-CR' => 'refund', // Refund on collected credit card payment
+		'XCR' => 'refund', // Any old refund
 		'+AP' => 'donation', // Direct Debit collected
 	];
 
