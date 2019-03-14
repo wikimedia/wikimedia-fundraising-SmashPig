@@ -131,6 +131,31 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	}
 
 	/**
+	 * Refunds made before Ingenico collected the money from the issuing bank
+	 * have some differences in the record.
+	 */
+	public function testParseUncollectedRefund() {
+		$processor = new IngenicoAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/refund_uncollected.xml.gz' );
+		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
+		$actual = $output[0];
+		$expected = [
+			'gateway' => 'ingenico',
+			'contribution_tracking_id' => '65544422',
+			'date' => 1550002118,
+			'gross' => 3,
+			'gateway_parent_id' => '000000123440009995550000100001',
+			'gateway_refund_id' => '000000123440009995550000100001',
+			'installment' => 1,
+			'gross_currency' => 'USD',
+			'type' => 'refund',
+			'invoice_id' => '65544422.2',
+			'merchant_id' => '1234',
+		];
+		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
+	}
+
+	/**
 	 * Now try a recurring refund of installment higher than 1
 	 */
 	public function testProcessRecurringRefund() {
