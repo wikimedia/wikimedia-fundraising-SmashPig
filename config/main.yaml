@@ -114,6 +114,13 @@ data-store:
                 <<: *REDIS
                 queue: donations
 
+    contribution-tracking:
+        class: PHPQueue\Backend\Predis
+        constructor-parameters:
+            -
+                <<: *REDIS
+                queue: contribution-tracking
+
 sequence-generator:
     contribution-tracking:
         class: SmashPig\Core\SequenceGenerators\PredisSequenceGenerator
