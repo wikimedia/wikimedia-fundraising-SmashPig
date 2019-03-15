@@ -78,13 +78,6 @@ data-store:
     donations:
         <<: *QUEUE
 
-    contribution-tracking-sequence:
-        class: SmashPig\Core\SequenceGenerators\SqlSequenceGenerator
-        constructor-parameters:
-            -
-                connection_string: 'sqlite::memory:'
-                sequence: contribution_tracking
-
     pending-db:
         <<: *DB
 
@@ -93,3 +86,11 @@ data-store:
 
     fredge-db:
         <<: *DB
+
+sequence-generator:
+    contribution-tracking:
+        class: SmashPig\Core\SequenceGenerators\SqlSequenceGenerator
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                sequence: contribution_tracking

@@ -16,7 +16,7 @@ class SequenceGeneratorTest extends BaseSmashPigUnitTestCase {
 		parent::setUp();
 		$ctx = Context::get();
 		$globalConfig = $ctx->getGlobalConfiguration();
-		$this->generator = $globalConfig->object( 'data-store/contribution-tracking-sequence' );
+		$this->generator = $globalConfig->object( 'sequence-generator/contribution-tracking' );
 	}
 
 	public function testInitialize() {

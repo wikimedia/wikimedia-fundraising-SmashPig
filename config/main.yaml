@@ -114,7 +114,8 @@ data-store:
                 <<: *REDIS
                 queue: donations
 
-    contribution-tracking-sequence:
+sequence-generator:
+    contribution-tracking:
         class: SmashPig\Core\SequenceGenerators\PredisSequenceGenerator
         constructor-parameters:
             -
