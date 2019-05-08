@@ -33,10 +33,13 @@ class IngenicoAudit implements AuditParser {
 		'AttemptID' => 'attempt_id',
 		'PaymentCurrency' => 'currency',
 		'AmountLocal' => 'gross',
+		'CurrencyLocal' => 'currency',
 		'TransactionDateTime' => 'date',
 	];
 
 	protected $refundMap = [
+		'AmountLocal' => 'gross',
+		'CurrencyLocal' => 'gross_currency',
 		'DebitedAmount' => 'gross',
 		'AdditionalReference' => 'invoice_id',
 		'OrderID' => 'gateway_parent_id',
@@ -58,7 +61,8 @@ class IngenicoAudit implements AuditParser {
 		// prepaid card, ew, cash
 		'+IP' => 'donation',
 		'-CB' => 'chargeback', // Credit card chargeback
-		'-CR' => 'refund', // Credit card refund
+		'-CR' => 'refund', // Refund on collected credit card payment
+		'XCR' => 'refund', // Any old refund
 		'+AP' => 'donation', // Direct Debit collected
 	];
 
@@ -95,7 +99,7 @@ class IngenicoAudit implements AuditParser {
 
 		$gateway = $this->getGateway( $recordNode );
 
-		if ( $category === '-' ) {
+		if ( $category === '-' || $compoundType === 'XCR' ) {
 			$refundType = $this->recordsWeCanDealWith[$compoundType];
 			$record = $this->parseRefund( $recordNode, $refundType, $gateway );
 		} else {
@@ -157,6 +161,10 @@ class IngenicoAudit implements AuditParser {
 			if ( $record['installment'] > 1 ) {
 				$record['gateway_parent_id'] .= '-' . $record['installment'];
 			}
+		}
+		// XCR records give us a negative amount
+		if ( $record['gross'] < 0 ) {
+			$record['gross'] = $record['gross'] * -1;
 		}
 
 		// FIXME: Refund ID is the same as the parent transaction ID.

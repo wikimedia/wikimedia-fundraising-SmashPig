@@ -7,6 +7,7 @@ use DateTimeZone;
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\OutboundRequest;
 use SmashPig\Core\ApiException;
+use SmashPig\Core\Logging\Logger;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -60,7 +61,16 @@ class Api {
 				$path .= '?' . http_build_query( $data );
 				$data = null;
 			} else {
+				$originalData = $data;
 				$data = json_encode( $data );
+				// additional logging to catch any json_encode failures.
+				if ( $data === false ) {
+					$jsonError = json_last_error_msg();
+					Logger::debug(
+						"Unable to json_encode() request params. (" . $jsonError . ") (data: " . print_r( $originalData, true ) . ")",
+						$originalData
+					);
+				}
 			}
 		}
 		$url = $this->baseUrl . self::API_VERSION . "/{$this->merchantId}/$path";

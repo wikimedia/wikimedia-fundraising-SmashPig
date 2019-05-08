@@ -52,6 +52,9 @@ class ReferenceData {
 		'849' => [ 'payment_method' => 'ew', 'payment_submethod' => 'ew_yandex' ],
 		'856' => [ 'payment_method' => 'rtbt', 'payment_submethod' => 'rtbt_eps' ],
 		'861' => [ 'payment_method' => 'ew', 'payment_submethod' => 'ew_alipay' ],
+		// Ingenico docs say 1070 is SEPA refund. The payments we've seen this code
+		// for so far have been iDEAL bank transfers.
+		'1070' => [ 'payment_method' => 'rtbt', 'payment_submethod' => 'rtbt_ideal' ],
 		'1503' => [ 'payment_method' => 'cash', 'payment_submethod' => 'cash_boleto' ],
 	];
 
