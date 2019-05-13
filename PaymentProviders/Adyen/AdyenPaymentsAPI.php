@@ -21,7 +21,7 @@ class AdyenPaymentsAPI implements AdyenPaymentsInterface {
 		$this->soapClient = new WSDL\Payment(
 			$c->val( 'payments-wsdl' ),
 			[
-				 'cache_wsdl' => WSDL_CACHE_BOTH,
+				 'cache_wsdl' => WSDL_CACHE_NONE,
 				 'login'      => $c->val( "accounts/{$this->account}/ws-username" ),
 				 'password'   => $c->val( "accounts/{$this->account}/ws-password" ),
 			]
