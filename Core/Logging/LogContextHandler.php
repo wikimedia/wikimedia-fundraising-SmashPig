@@ -3,6 +3,7 @@
 namespace SmashPig\Core\Logging;
 
 use SmashPig\Core\Logging\LogStreams\ILogStream;
+use SmashPig\Core\ProviderConfiguration;
 
 class LogContextHandler {
 	/** @var [LogEvent[]] Stack of LogEvent arrays holding all log lines for a context */
@@ -51,7 +52,9 @@ class LogContextHandler {
 	 * @param string $name Child context name
 	 */
 	public function enterContext( $name ) {
-		Logger::debug( "Entering logging context '{$name}'." );
+		if ( $name !== ProviderConfiguration::NO_PROVIDER ) {
+			Logger::debug( "Entering logging context '{$name}'." );
+		}
 
 		array_unshift( $this->contextNames, $name );
 
