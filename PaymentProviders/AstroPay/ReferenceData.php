@@ -58,6 +58,7 @@ class ReferenceData {
 		'MD' => 'mc-debit',
 		'MG' => 'magna',
 		'ML' => 'mercadolivre',
+		'NB' => 'netbanking', // India
 		'NJ' => 'naranja',
 		'NT' => 'nativa',
 		'OA' => 'oca',
@@ -67,15 +68,18 @@ class ReferenceData {
 		'PC' => 'pse', // Columbia, "all banks"
 		'PF' => 'cash_pago_facil',
 		'PR' => 'presto',
+		'PW' => 'paytmwallet', // India
 		'RE' => 'cash_red_pagos',
 		'RL' => 'red_link',
 		'RP' => 'cash_rapipago',
+		'RU' => 'rupay', // India
 		'SB' => 'santander', // Brazil
 		'SI' => 'santander_rio', // Argentina
 		'SM' => 'cash_santander', // Mexico
 		'SP' => 'servipag',
 		'SX' => 'surtimax',
 		'TS' => 'shopping',
+		'UI' => 'upi', // India
 		'VD' => 'visa-debit',
 		'VI' => 'visa',
 		'WP' => 'webpay',
