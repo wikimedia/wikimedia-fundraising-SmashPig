@@ -24,6 +24,10 @@ class RequeueDelayedMessages extends MaintenanceBase {
 		$this->addOption(
 			'max-messages', 'At most requeue <n> messages', 500, 'm'
 		);
+		$this->addOption(
+			'date', 'Requeue messages due before this date. Will be interpreted as UTC, ' .
+			'and you may use any format accepted by the PHP DateTime constructor', 'now', 'd'
+		);
 	}
 
 	/**
@@ -31,9 +35,9 @@ class RequeueDelayedMessages extends MaintenanceBase {
 	 */
 	public function execute() {
 		$this->damagedDatabase = DamagedDatabase::get();
-
 		$messages = $this->damagedDatabase->fetchRetryMessages(
-			$this->getOption( 'max-messages' )
+			$this->getOption( 'max-messages' ),
+			$this->getOption( 'date' )
 		);
 		$stats = [];
 		foreach ( $messages as $message ) {
