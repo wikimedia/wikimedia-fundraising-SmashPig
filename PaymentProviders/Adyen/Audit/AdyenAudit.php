@@ -68,6 +68,7 @@ class AdyenAudit implements AuditParser {
 		'settlecost',
 		'paidout',
 		'paidoutreversed',
+		'reserveadjustment',
 	];
 
 	protected $fileData;
