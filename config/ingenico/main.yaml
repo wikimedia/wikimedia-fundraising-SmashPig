@@ -36,7 +36,8 @@ payment-provider:
         constructor-parameters:
             -
                 subdomain: 'payment'
-
+    test:
+        class: SmashPig\PaymentProviders\Ingenico\TestConnectionProvider
 
 ideal-status-provider:
     class: SmashPig\PaymentProviders\Ingenico\BankPaymentProvider
