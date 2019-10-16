@@ -6,7 +6,7 @@ use SmashPig\Core\Http\OutboundRequest;
 
 /**
  * Sign Ingenico requests according to instructions at
- * https://developer.globalcollect.com/documentation/api/server/#api-authentication
+ * https://epayments-api.developer-ingenico.com/s2sapi/v1/en_US/java/authentication.html
  */
 class Authenticator {
 
