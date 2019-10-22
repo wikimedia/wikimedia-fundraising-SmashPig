@@ -88,6 +88,11 @@ class ReferenceData {
 				'visaelectron' => 'visa-electron', // guessing at Adyen code
 			]
 		],
+		// Debit card issued by Visa Europe
+		'vpay' => [
+			'method' => 'cc',
+			'submethod' => 'visa-debit',
+		],
 		'visadankort' => [
 			'method' => 'cc',
 			'submethod' => 'visa',
