@@ -8,7 +8,7 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * See examples at
- * https://developer.globalcollect.com/documentation/api/server/#api-authentication
+ * https://epayments-api.developer-ingenico.com/s2sapi/v1/en_US/java/authentication.html
  *
  * @group Ingenico
  */
@@ -31,7 +31,7 @@ class AuthenticatorTest extends BaseSmashPigUnitTestCase {
 	 * Data taken from the 'minimal' example at the documentation URL in class comment
 	 */
 	public function testBasicSignature() {
-		$request = new OutboundRequest( 'https://api.globalcollect.com/v1/9991/tokens/123456789' );
+		$request = new OutboundRequest( 'https://eu.sandbox.api-ingenico.com/v1/9991/tokens/123456789' );
 		$request->setHeader( 'Date', 'Fri, 06 Jun 2014 13:39:43 GMT' );
 		$this->authenticator->signRequest( $request );
 		$headers = $request->getHeaders();
@@ -42,7 +42,7 @@ class AuthenticatorTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testEncodedQuery() {
-		$request = new OutboundRequest( 'https://api.globalcollect.com/v1/consumer/ANDR%C3%89E/?q=na%20me' );
+		$request = new OutboundRequest( 'https://eu.sandbox.api-ingenico.com/v1/consumer/ANDR%C3%89E/?q=na%20me' );
 		$request->setHeader( 'Date', 'Fri, 06 Jun 2014 13:39:43 GMT' );
 		$this->authenticator->signRequest( $request );
 		$headers = $request->getHeaders();
