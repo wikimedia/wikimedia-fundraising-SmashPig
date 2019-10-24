@@ -12,6 +12,9 @@ use SmashPig\Core\Mapper\Mapper;
  */
 abstract class PaymentProvider {
 
+	/**
+	 * @var Api
+	 */
 	protected $api;
 
 	protected $providerConfiguration;
