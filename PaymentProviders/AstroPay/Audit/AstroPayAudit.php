@@ -86,6 +86,16 @@ class AstroPayAudit implements AuditParser {
 			case 'Chargebacks': // started seeing these with the 's'
 				$this->parseRefund( $row, $msg );
 				break;
+			case 'Credit Note':
+			case 'Debit Note':
+			case 'Chargeback Reversal':
+			case 'Refund processing fee':
+			case 'Chargeback processing fee':
+				// TODO these would have to update existing refunds
+				// If they show up in the same file as the associate refund or
+				// chargeback, we could just update those rows before returning
+				// the array of transactions.
+				return;
 			default:
 				throw new OutOfBoundsException( "Unknown audit line type {$row['Type']}." );
 		}
