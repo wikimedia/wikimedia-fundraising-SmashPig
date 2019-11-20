@@ -36,8 +36,8 @@ class DataConstraints extends AbstractTransformer {
 		foreach ( $transformed as $key => $value ) {
 			if ( !empty( $constraints[$key] ) && !empty( $constraints[$key]['length'] ) ) {
 				$maxLength = $constraints[$key]['length'];
-				if ( is_string( $value ) && strlen( $value ) > $maxLength ) {
-					$transformed[$key] = substr( $transformed[$key], 0, $maxLength );
+				if ( is_string( $value ) && mb_strlen( $value ) > $maxLength ) {
+					$transformed[$key] = mb_substr( $transformed[$key], 0, $maxLength );
 				}
 			}
 		}

@@ -236,6 +236,37 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->provider->createPayment( $params );
 	}
 
+	public function testCreatePaymentTruncateMultibyte() {
+		$params = [
+			'recurring' => true,
+			'installment' => 'recurring',
+			'recurring_payment_token' => '229a1d6e-1b26-4c91-8e00-969a49c9d041',
+			'amount' => 10, // dollars
+			'currency' => 'USD',
+			'description' => 'Recurring donation to Wikimedia!',
+			'order_id' => '12345.1',
+			'first_name' => 'Супердлинноеимякогдавсечтомыможемотправитьпятнадцатьбукв',
+			'last_name' => 'McTesterson',
+			'email' => 'nobody@wikimedia.org',
+			'user_ip' => '11.22.33.44',
+		];
+
+		$this->setUpResponse( __DIR__ . '/../Data/createPayment.response', 201 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments" ),
+				$this->equalTo( 'POST' ),
+				$this->anything(),
+				$this->callback( function ( $arg ) {
+					$posted = json_decode( $arg, true );
+					$postedName = $posted['order']['customer']['personalInformation']['name'];
+					$this->assertEquals( 'Супердлинноеимя', $postedName['firstName'] );
+					return true;
+				} )
+			);
+		$this->provider->createPayment( $params );
+	}
+
 	public function testRefundPayment() {
 		$params = [
 			'amount' => 10, // dollars
