@@ -89,18 +89,18 @@ data-constraints:
     first_name:
         type: alphanumeric
         length: 15
-    # IPADDRESS: AN32
+    # IPADDRESS: AN45
     user_ip:
         type: alphanumeric
-        length: 32
-    # locale: AN5
+        length: 45
+    # locale: AN6
     language:
         type: alphanumeric
-        length: 5
-    # merchantReference: N10
+        length: 6
+    # merchantReference: AN40
     order_id:
-        type: numeric
-        length: 10
+        type: alphanumeric
+        length: 40
     # paymentProductId
     payment_product:
         type: numeric
@@ -117,10 +117,10 @@ data-constraints:
     street_address:
         type: alphanumeric
         length: 50
-    # surname: AN35
+    # surname: AN70
     last_name:
         type: alphanumeric
-        length: 35
+        length: 70
     # zip: AN10
     postal_code:
         type: alphanumeric
