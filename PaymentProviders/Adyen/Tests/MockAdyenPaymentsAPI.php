@@ -1,8 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Tests;
 
-use SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface;
+use SmashPig\PaymentProviders\PaymentProviderInterface;
 
-class MockAdyenPaymentsAPI implements AdyenPaymentsInterface {
+class MockAdyenPaymentsAPI implements PaymentProviderInterface {
 
 	protected $account = '';
 	protected $returnCode = false;
@@ -18,20 +18,25 @@ class MockAdyenPaymentsAPI implements AdyenPaymentsInterface {
 		$this->account = $account;
 	}
 
+	/*
+	 * Yet to be faked.
+	 */
+	public function createPayment( $params ) {
+		return;
+	}
+
 	/**
 	 * Fakes a Capture modification to a given Adyen transaction.
 	 *
-	 * @param string $currency Original currency of the request
-	 * @param int $amount Amount to be captured. Less than or equal to the original request
-	 * @param string $pspReference Original pspReference of the request
-	 *
-	 * @returns bool|string The return code set in the constructor.
+	 * @param string $paymentId Original pspReference of the request
+	 * @param array $params
+	 * @return bool|string The return code set in the constructor.
 	 */
-	public function capture( $currency, $amount, $pspReference ) {
+	public function approvePayment( $paymentId, $params ) {
 		$this->captured[] = [
-			'currency' => $currency,
-			'amount' => $amount,
-			'pspReference' => $pspReference,
+			'currency' => $params['currency'],
+			'amount' => $params['amount'],
+			'pspReference' => $paymentId,
 		];
 		return $this->returnCode;
 	}
@@ -40,8 +45,7 @@ class MockAdyenPaymentsAPI implements AdyenPaymentsInterface {
 	 * Pretends to cancel an Adyen authorization
 	 *
 	 * @param string $pspReference Original pspReference of the request
-	 *
-	 * @returns bool|string The return code set in the constructor.
+	 * @return bool|string The return code set in the constructor.
 	 */
 	public function cancel( $pspReference ) {
 		$this->cancelled[] = $pspReference;

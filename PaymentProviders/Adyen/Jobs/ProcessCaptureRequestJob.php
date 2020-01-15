@@ -10,7 +10,7 @@ use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\RetryableException;
 use SmashPig\CrmLink\Messages\DonationInterfaceAntifraudFactory;
 use SmashPig\CrmLink\ValidationAction;
-use SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface;
+use SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 
 /**
@@ -88,14 +88,18 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			case ValidationAction::PROCESS:
 				// Attempt to capture the payment
 				/**
-				 * @var AdyenPaymentsInterface
+				 * @var AdyenPaymentsAPI
 				 */
 				$api = $this->getApi();
 				$this->logger->info(
 					"Attempting capture API call for currency '{$this->currency}', " .
 					"amount '{$this->amount}', reference '{$this->pspReference}'."
 				);
-				$captureResult = $api->capture( $this->currency, $this->amount, $this->pspReference );
+
+				$captureResult = $api->approvePayment( $this->pspReference, [
+					'currency' => $this->currency,
+					'amount' => $this->amount
+				] );
 
 				if ( $captureResult ) {
 					// Success!
