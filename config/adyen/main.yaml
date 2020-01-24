@@ -12,7 +12,7 @@ endpoints:
         class: SmashPig\PaymentProviders\Adyen\AdyenListener
 
 api:
-    class: SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI
+    class: SmashPig\PaymentProviders\Adyen\Api
 
 payments-wsdl: https://pal-live.adyen.com/pal/Payment.wsdl
 #payments-wsdl: https://pal-test.adyen.com/pal/Payment.wsdl

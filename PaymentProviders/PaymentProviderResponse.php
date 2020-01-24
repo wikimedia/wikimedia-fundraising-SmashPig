@@ -5,8 +5,10 @@ namespace SmashPig\PaymentProviders;
 /**
  * Class PaymentProviderResponse
  * @package SmashPig\PaymentProviders
+ *
+ * Skeleton of a standard Payment Provider API response.
  */
-class PaymentProviderResponse {
+abstract class PaymentProviderResponse {
 
 	/**
 	 * array of errors returned
