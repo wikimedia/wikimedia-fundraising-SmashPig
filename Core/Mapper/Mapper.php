@@ -145,8 +145,7 @@ class Mapper {
 	 */
 	protected function convertYamlMapToArray( $yaml ) {
 		try {
-			return Yaml::parse( $yaml, true );
-
+			return Yaml::parse( $yaml, Yaml::PARSE_EXCEPTION_ON_INVALID_TYPE );
 		} catch ( ParseException $exception ) {
 			Logger::error( 'Unable to YAML parse map file :' . $exception->getMessage() );
 			throw new SmashPigException( 'Unable to YAML parse map file :' . $exception->getMessage() );
