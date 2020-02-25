@@ -2,7 +2,7 @@
 namespace SmashPig\Core\DataStores;
 
 use PDO;
-use SmashPig\CrmLink\FinalStatus;
+use SmashPig\Core\FinalStatus;
 use SmashPig\CrmLink\ValidationAction;
 
 /**

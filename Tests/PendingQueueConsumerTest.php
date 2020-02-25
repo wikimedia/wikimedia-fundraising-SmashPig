@@ -5,7 +5,7 @@ namespace SmashPig\Tests;
 use SmashPig\Core\DataStores\PaymentsInitialDatabase;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\QueueConsumers\PendingQueueConsumer;
-use SmashPig\CrmLink\FinalStatus;
+use SmashPig\Core\FinalStatus;
 use SmashPig\CrmLink\ValidationAction;
 
 class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
