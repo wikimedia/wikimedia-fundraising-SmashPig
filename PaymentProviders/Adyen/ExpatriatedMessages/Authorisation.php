@@ -39,7 +39,7 @@ class Authorisation extends AdyenMessage {
 
 		$this->reason = $msgObj->reason;
 
-		// Add AVS and CVV results from additionalData if any is provided
+		// Add AVS, CVV results, recurringProcessingModel, and recurringDetailReference from additionalData if any is provided
 		if ( is_null( $msgObj->additionalData ) || !is_array( $msgObj->additionalData->entry ) ) {
 			return;
 		}
@@ -57,6 +57,13 @@ class Authorisation extends AdyenMessage {
 				case 'avsResult':
 					$this->avsResult = $firstSegment( $entry->value );
 					break;
+				case 'recurringProcessingModel':
+					$this->recurringProcessingModel = $firstSegment( $entry->value );
+					break;
+				case 'recurring.recurringDetailReference':
+					$this->{'recurring.recurringDetailReference'} = $firstSegment( $entry->value );
+					break;
+
 			}
 		}
 	}
