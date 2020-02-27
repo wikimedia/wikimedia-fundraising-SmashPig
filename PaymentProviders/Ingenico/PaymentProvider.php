@@ -5,6 +5,7 @@ namespace SmashPig\PaymentProviders\Ingenico;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Mapper\Mapper;
+use SmashPig\PaymentProviders\CreatePaymentResponse;
 
 /**
  * Base class for Ingenico payments. Each payment product group should get
@@ -47,8 +48,43 @@ abstract class PaymentProvider {
 			null,
 			true
 		);
-		$response = $this->api->makeApiCall( $path, 'POST', $createPaymentParams );
-		$this->addPaymentStatusErrorsIfPresent( $response, $response['payment'] );
+
+		$rawResponse = $this->api->makeApiCall( $path, 'POST', $createPaymentParams );
+		$response = new CreatePaymentResponse();
+		$response->setRawResponse( $rawResponse );
+
+		if ( isset( $rawResponse["payment"] ) ) {
+			// map trxn id
+			if ( !empty( $rawResponse["payment"]["id"] ) ) {
+				$response->setGatewayTrxnId( $rawResponse["payment"]["id"] );
+			} else {
+				Logger::debug( 'Unable to map Ingenico gateway transaction ID', $rawResponse );
+			}
+			// map status
+			if ( !empty( $rawResponse["payment"]["status"] ) ) {
+				$rawStatus = $rawResponse["payment"]["status"];
+				$response->setRawStatus( $rawStatus );
+				try {
+					$status = ( new PaymentStatus() )->normalizeStatus( $rawStatus );
+					$response->setStatus( $status );
+				} catch ( \Exception $ex ) {
+					$response->addErrors( $ex->getMessage() );
+					Logger::debug( 'Unable to map Ingenico status', $rawResponse );
+				}
+			} else {
+				Logger::debug( 'Unable to map Ingenico status', $rawResponse );
+			}
+			// map errors
+			if ( !empty( $rawResponse["payment"]["statusOutput"]['errors'] ) ) {
+				$response->addErrors( $rawResponse["payment"]["statusOutput"]['errors'] );
+			}
+
+		} else {
+			$responseError = 'payment element missing from Ingenico createPayment response.';
+			$response->addErrors( $responseError );
+			Logger::debug( $responseError, $rawResponse );
+		}
+
 		return $response;
 	}
 

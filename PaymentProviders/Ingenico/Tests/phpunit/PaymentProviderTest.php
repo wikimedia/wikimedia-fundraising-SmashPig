@@ -126,7 +126,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$response = $this->provider->createPayment( $params );
 		$this->assertEquals(
 			'000000850010000188130000200001',
-			$response['payment']['id']
+			$response->getGatewayTrxnId()
 		);
 	}
 
@@ -201,7 +201,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$response = $this->provider->createPayment( $params );
 		$this->assertEquals(
 			'000000850010000188130000200001',
-			$response['payment']['id']
+			$response->getGatewayTrxnId()
 		);
 	}
 
