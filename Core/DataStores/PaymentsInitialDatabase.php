@@ -2,8 +2,8 @@
 namespace SmashPig\Core\DataStores;
 
 use PDO;
-use SmashPig\Core\FinalStatus;
-use SmashPig\CrmLink\ValidationAction;
+use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentData\ValidationAction;
 
 /**
  * Data store containing finalized messages.

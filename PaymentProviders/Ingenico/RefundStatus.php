@@ -3,7 +3,7 @@
 namespace SmashPig\PaymentProviders\Ingenico;
 
 use OutOfBoundsException;
-use SmashPig\Core\FinalStatus;
+use SmashPig\PaymentData\FinalStatus;
 
 class RefundStatus {
 

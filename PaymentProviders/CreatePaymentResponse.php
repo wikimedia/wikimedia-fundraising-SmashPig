@@ -3,7 +3,7 @@
 
 namespace SmashPig\PaymentProviders;
 
-use SmashPig\Core\FinalStatus;
+use SmashPig\PaymentData\FinalStatus;
 
 /**
  * Class CreatePaymentResponse

@@ -9,7 +9,7 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\RetryableException;
 use SmashPig\CrmLink\Messages\DonationInterfaceAntifraudFactory;
-use SmashPig\CrmLink\ValidationAction;
+use SmashPig\PaymentData\ValidationAction;
 use SmashPig\PaymentProviders\Adyen\PaymentProvider;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 

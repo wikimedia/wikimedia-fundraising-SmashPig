@@ -1,5 +1,5 @@
 <?php
-namespace SmashPig\Core;
+namespace SmashPig\PaymentData;
 
 /**
  * Allowed values for final status of a payment attempt

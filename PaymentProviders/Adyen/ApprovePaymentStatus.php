@@ -2,7 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Adyen;
 
-use SmashPig\Core\FinalStatus;
+use SmashPig\PaymentData\FinalStatus;
 use OutOfBoundsException;
 
 class ApprovePaymentStatus extends FinalStatus {
