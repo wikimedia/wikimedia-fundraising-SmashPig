@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Adyen\Tests\phpunit;
 
 use SmashPig\Core\Context;
+use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentProviders\Adyen\PaymentProvider;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
@@ -29,11 +30,11 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
 		$mockApi->expects( $this->once() )
 			->method( 'approvePayment' )
-			->willReturn( json_decode( json_encode( [ 'captureResult' => [
+			->willReturn( (object)[ 'captureResult' => (object)[
 				'response' => '[capture-received]',
 				'pspReference' => '00000000000000AB'
 			]
-			] ) ) );
+			] );
 
 		$reflection = new \ReflectionObject( $this->provider );
 		$reflection_property = $reflection->getProperty( 'api' );
@@ -84,9 +85,11 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 			$approvePaymentResponse );
 		$this->assertFalse( $approvePaymentResponse->isSuccessful() );
 		$this->assertTrue( $approvePaymentResponse->hasErrors() );
+		$firstError = $approvePaymentResponse->getErrors()[0];
+		$this->assertEquals( ErrorCode::MISSING_REQUIRED_DATA, $firstError->getErrorCode() );
 		$this->assertEquals(
 			'captureResult element missing from Adyen approvePayment response.',
-			$approvePaymentResponse->getErrors()[0]
+			$firstError->getDebugMessage()
 		);
 	}
 
@@ -94,11 +97,11 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
 		$mockApi->expects( $this->once() )
 			->method( 'approvePayment' )
-			->willReturn( json_decode( json_encode( [ 'captureResult' => [
+			->willReturn( (object)[ 'captureResult' => (object)[
 				'response' => '[unknown-status]',
 				'pspReference' => '00000000000000AB'
 			]
-			] ) ) );
+			] );
 
 		$reflection = new \ReflectionObject( $this->provider );
 		$reflection_property = $reflection->getProperty( 'api' );
@@ -116,8 +119,11 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 			$approvePaymentResponse );
 		$this->assertFalse( $approvePaymentResponse->isSuccessful() );
 		$this->assertTrue( $approvePaymentResponse->hasErrors() );
-		$this->assertEquals( 'Unknown Adyen status [unknown-status]',
-			$approvePaymentResponse->getErrors()[0]
+		$firstError = $approvePaymentResponse->getErrors()[0];
+		$this->assertEquals( ErrorCode::UNEXPECTED_VALUE, $firstError->getErrorCode() );
+		$this->assertEquals(
+			'Unknown Adyen status [unknown-status]',
+			$firstError->getDebugMessage()
 		);
 	}
 
@@ -125,11 +131,11 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
 		$mockApi->expects( $this->once() )
 			->method( 'cancel' )
-			->willReturn( json_decode( json_encode( [ 'cancelResult' => [
+			->willReturn( (object)[ 'cancelResult' => (object)[
 				'response' => '[cancel-received]',
 				'pspReference' => '00000000000000AB'
 			]
-			] ) ) );
+			] );
 
 		$reflection = new \ReflectionObject( $this->provider );
 		$reflection_property = $reflection->getProperty( 'api' );
@@ -179,10 +185,12 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$this->assertInstanceOf( '\SmashPig\PaymentProviders\CancelPaymentResponse',
 			$cancelPaymentResponse );
 		$this->assertFalse( $cancelPaymentResponse->isSuccessful() );
-		$this->assertTrue( $cancelPaymentResponse->hasErrors() );
+
+		$firstError = $cancelPaymentResponse->getErrors()[0];
+		$this->assertEquals( ErrorCode::MISSING_REQUIRED_DATA, $firstError->getErrorCode() );
 		$this->assertEquals(
 			'cancelResult element missing from Adyen cancel response.',
-			$cancelPaymentResponse->getErrors()[0]
+			$firstError->getDebugMessage()
 		);
 	}
 }
