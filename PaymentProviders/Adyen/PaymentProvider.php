@@ -3,8 +3,11 @@
 
 namespace SmashPig\PaymentProviders\Adyen;
 
+use Psr\Log\LogLevel;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\PaymentError;
+use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
@@ -46,7 +49,13 @@ class PaymentProvider implements IPaymentProvider {
 			if ( !empty( $rawResponse->paymentResult->pspReference ) ) {
 				$response->setGatewayTrxnId( $rawResponse->paymentResult->pspReference );
 			} else {
-				Logger::debug( 'Unable to map Adyen Gateway Transaction ID', $rawResponse );
+				$message = 'Unable to map Adyen Gateway Transaction ID';
+				$response->addErrors( new PaymentError(
+					ErrorCode::MISSING_TRANSACTION_ID,
+					$message,
+					LogLevel::ERROR
+				) );
+				Logger::debug( $message, $rawResponse );
 			}
 			// map status
 			if ( !empty( $rawResponse->paymentResult->resultCode ) ) {
@@ -56,19 +65,39 @@ class PaymentProvider implements IPaymentProvider {
 					$status = ( new CreatePaymentStatus() )->normalizeStatus( $rawStatus );
 					$response->setStatus( $status );
 				} catch ( \Exception $ex ) {
-					$response->addErrors( $ex->getMessage() );
-					Logger::debug( 'Unable to map Adyen Status', $rawResponse );
+					$response->addErrors( new PaymentError(
+						ErrorCode::UNEXPECTED_VALUE,
+						$ex->getMessage(),
+						LogLevel::ERROR
+					) );
+					Logger::debug( 'Unable to map Adyen status', $rawResponse );
 				}
 			} else {
-				Logger::debug( 'Unable to map Adyen Status', $rawResponse );
+				$message = 'Missing Adyen status';
+				$response->addErrors( new PaymentError(
+					ErrorCode::MISSING_REQUIRED_DATA,
+					$message,
+					LogLevel::ERROR
+				) );
+				Logger::debug( $message, $rawResponse );
 			}
 			// map errors
 			if ( !empty( $rawResponse->paymentResult->refusalReason ) ) {
-				$response->addErrors( $rawResponse->paymentResult->refusalReason );
+				if ( !$this->canRetryRefusalReason( $rawResponse->paymentResult->refusalReason ) ) {
+					$response->addErrors( new PaymentError(
+						ErrorCode::DECLINED_DO_NOT_RETRY,
+						$rawResponse->paymentResult->refusalReason,
+						LogLevel::INFO
+					) );
+				}
 			}
 		} else {
-			$responseError = 'paymentResult element missing from Adyen createPayment response. ';
-			$response->addErrors( $responseError );
+			$responseError = 'paymentResult element missing from Adyen createPayment response.';
+			$response->addErrors( new PaymentError(
+				ErrorCode::MISSING_REQUIRED_DATA,
+				$responseError,
+				LogLevel::ERROR
+			) );
 			Logger::debug( $responseError, $rawResponse );
 		}
 
@@ -89,7 +118,13 @@ class PaymentProvider implements IPaymentProvider {
 			if ( !empty( $rawResponse->captureResult->pspReference ) ) {
 				$response->setGatewayTrxnId( $rawResponse->captureResult->pspReference );
 			} else {
-				Logger::debug( 'Unable to map Adyen Gateway Transaction ID', $rawResponse );
+				$message = 'Unable to map Adyen Gateway Transaction ID';
+				$response->addErrors( new PaymentError(
+					ErrorCode::MISSING_TRANSACTION_ID,
+					$message,
+					LogLevel::ERROR
+				) );
+				Logger::debug( $message, $rawResponse );
 			}
 			// map status
 			if ( !empty( $rawResponse->captureResult->response ) ) {
@@ -99,19 +134,39 @@ class PaymentProvider implements IPaymentProvider {
 					$status = ( new ApprovePaymentStatus() )->normalizeStatus( $rawStatus );
 					$response->setStatus( $status );
 				} catch ( \Exception $ex ) {
-					$response->addErrors( $ex->getMessage() );
-					Logger::debug( 'Unable to map Adyen Status', $rawResponse );
+					$response->addErrors( new PaymentError(
+						ErrorCode::UNEXPECTED_VALUE,
+						$ex->getMessage(),
+						LogLevel::ERROR
+					) );
+					Logger::debug( 'Unable to map Adyen status', $rawResponse );
 				}
 			} else {
-				Logger::debug( 'Unable to map Adyen Status', $rawResponse );
+				$message = 'Missing Adyen status';
+				$response->addErrors( new PaymentError(
+					ErrorCode::MISSING_REQUIRED_DATA,
+					$message,
+					LogLevel::ERROR
+				) );
+				Logger::debug( $message, $rawResponse );
 			}
 			// map errors
 			if ( !empty( $rawResponse->captureResult->refusalReason ) ) {
-				$response->addErrors( $rawResponse->captureResult->refusalReason );
+				if ( !$this->canRetryRefusalReason( $rawResponse->paymentResult->refusalReason ) ) {
+					$response->addErrors( new PaymentError(
+						ErrorCode::DECLINED_DO_NOT_RETRY,
+						$rawResponse->paymentResult->refusalReason,
+						LogLevel::INFO
+					) );
+				}
 			}
 		} else {
 			$responseError = 'captureResult element missing from Adyen approvePayment response.';
-			$response->addErrors( $responseError );
+			$response->addErrors( new PaymentError(
+				ErrorCode::MISSING_REQUIRED_DATA,
+				$responseError,
+				LogLevel::ERROR
+			) );
 			Logger::debug( $responseError, $rawResponse );
 		}
 
@@ -132,7 +187,13 @@ class PaymentProvider implements IPaymentProvider {
 			if ( !empty( $rawResponse->cancelResult->pspReference ) ) {
 				$response->setGatewayTrxnId( $rawResponse->cancelResult->pspReference );
 			} else {
-				Logger::debug( 'Unable to map Adyen Gateway Transaction ID', $rawResponse );
+				$message = 'Unable to map Adyen Gateway Transaction ID';
+				$response->addErrors( new PaymentError(
+					ErrorCode::MISSING_TRANSACTION_ID,
+					$message,
+					LogLevel::ERROR
+				) );
+				Logger::debug( $message, $rawResponse );
 			}
 			// map status
 			if ( !empty( $rawResponse->cancelResult->response ) ) {
@@ -146,18 +207,60 @@ class PaymentProvider implements IPaymentProvider {
 					Logger::debug( 'Unable to map Adyen Status', $rawResponse );
 				}
 			} else {
-				Logger::debug( 'Unable to map Adyen Status', $rawResponse );
+				$message = 'Missing Adyen status';
+				$response->addErrors( new PaymentError(
+					ErrorCode::MISSING_REQUIRED_DATA,
+					$message,
+					LogLevel::ERROR
+				) );
+				Logger::debug( $message, $rawResponse );
 			}
-			// map errors
 			if ( !empty( $rawResponse->cancelResult->refusalReason ) ) {
-				$response->addErrors( $rawResponse->cancelResult->refusalReason );
+				// Weird, these are mostly for auth and capture declines!
+				$response->addErrors( new PaymentError(
+					ErrorCode::UNEXPECTED_VALUE,
+					"Cancel yielded refusal reason '{$rawResponse->cancelResult->refusalReason}'",
+					LogLevel::ERROR
+				) );
 			}
 		} else {
 			$responseError = 'cancelResult element missing from Adyen cancel response.';
-			$response->addErrors( $responseError );
+			$response->addErrors( new PaymentError(
+				ErrorCode::MISSING_REQUIRED_DATA,
+				$responseError,
+				LogLevel::ERROR
+			) );
 			Logger::debug( $responseError, $rawResponse );
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Documented at
+	 * https://docs.adyen.com/development-resources/refusal-reasons#page-introduction
+	 *
+	 * @param string $refusalReason
+	 * @return bool
+	 */
+	private function canRetryRefusalReason( $refusalReason ) {
+		$noRetryReasons = [
+			'800 No Contract Found',
+			'Acquirer Fraud',
+			'Blocked Card',
+			'FRAUD',
+			'FRAUD-CANCELLED',
+			'Invalid Amount',
+			'Invalid Card Number',
+			'Invalid Pin',
+			'Pin validation not possible',
+			'Referral',
+			'Restricted Card',
+			'Revocation Of Auth',
+		];
+		if ( in_array( $refusalReason, $noRetryReasons ) ) {
+			return false;
+		}
+		return true;
 	}
 }
