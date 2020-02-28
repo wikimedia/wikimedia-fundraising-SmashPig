@@ -7,6 +7,7 @@ require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\Adyen\PaymentProvider;
+use SmashPig\PaymentProviders\PaymentProviderFactory;
 
 $maintClass = 'SmashPig\PaymentProviders\Adyen\Maintenance\TestAdyenRecurring';
 
@@ -28,7 +29,7 @@ class TestAdyenRecurring extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 */
 	public function execute() {
-		$adyen = new PaymentProvider();
+		$adyen = PaymentProviderFactory::getProviderForMethod( 'cc' );
 
 		// it feels like we should tell createPayment this a recurring authorise call in the event that
 		// we add in the option to make non-recurring authorise calls in the future.

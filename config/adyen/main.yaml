@@ -37,6 +37,10 @@ accounts: {}
     #   report-password: ""
     #   report-location: "/tmp"
 
+payment-provider:
+    cc:
+        class: SmashPig\PaymentProviders\Adyen\PaymentProvider
+
 fraud-filters:
     # Automatically capture authorizations under this score
     review-threshold: 75
