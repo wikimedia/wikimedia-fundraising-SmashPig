@@ -2,6 +2,8 @@
 
 namespace SmashPig\PaymentProviders;
 
+use SmashPig\Core\PaymentError;
+
 /**
  * Class PaymentProviderResponse
  * @package SmashPig\PaymentProviders
@@ -12,7 +14,7 @@ abstract class PaymentProviderResponse {
 
 	/**
 	 * array of errors returned
-	 * @var array
+	 * @var PaymentError[]
 	 */
 	protected $errors = [];
 
@@ -31,23 +33,27 @@ abstract class PaymentProviderResponse {
 
 	/**
 	 * @param mixed $rawResponse
+	 * @return $this
 	 */
 	public function setRawResponse( $rawResponse ) {
 		$this->rawResponse = $rawResponse;
+		return $this;
 	}
 
 	/**
-	 * @return array
+	 * @return PaymentError[]
 	 */
 	public function getErrors() {
 		return $this->errors;
 	}
 
 	/**
-	 * @param array $errors
+	 * @param PaymentError[] $errors
+	 * @return $this
 	 */
 	public function setErrors( $errors ) {
 		$this->errors = $errors;
+		return $this;
 	}
 
 	/**
@@ -58,8 +64,24 @@ abstract class PaymentProviderResponse {
 	}
 
 	/**
-	 * Add error(s) message(s) to the stack
-	 * @param $errors
+	 * Convenience function to check for a specific error code
+	 *
+	 * @param string $errorCode one of the ErrorCode constants
+	 * @return bool
+	 */
+	public function hasError( $errorCode ) {
+		foreach ( $this->getErrors() as $error ) {
+			if ( $error->getErrorCode() === $errorCode ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Add error(s) to the stack
+	 *
+	 * @param PaymentError[]|PaymentError $errors
 	 * @return $this
 	 */
 	public function addErrors( $errors ) {
@@ -68,6 +90,7 @@ abstract class PaymentProviderResponse {
 		} else {
 			array_push( $this->errors, $errors );
 		}
+		return $this;
 	}
 
 }
