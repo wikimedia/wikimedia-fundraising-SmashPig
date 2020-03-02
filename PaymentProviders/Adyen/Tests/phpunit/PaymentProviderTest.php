@@ -120,6 +120,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$this->assertFalse( $approvePaymentResponse->isSuccessful() );
 		$this->assertTrue( $approvePaymentResponse->hasErrors() );
 		$firstError = $approvePaymentResponse->getErrors()[0];
+		$this->assertInstanceOf( 'SmashPig\Core\PaymentError', $firstError );
 		$this->assertEquals( ErrorCode::UNEXPECTED_VALUE, $firstError->getErrorCode() );
 		$this->assertEquals(
 			'Unknown Adyen status [unknown-status]',
@@ -187,6 +188,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$this->assertFalse( $cancelPaymentResponse->isSuccessful() );
 
 		$firstError = $cancelPaymentResponse->getErrors()[0];
+		$this->assertInstanceOf( 'SmashPig\Core\PaymentError', $firstError );
 		$this->assertEquals( ErrorCode::MISSING_REQUIRED_DATA, $firstError->getErrorCode() );
 		$this->assertEquals(
 			'cancelResult element missing from Adyen cancel response.',
