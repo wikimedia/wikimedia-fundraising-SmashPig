@@ -3,6 +3,8 @@
 namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
 use PHPUnit_Framework_MockObject_MockObject;
+use SmashPig\PaymentData\ErrorCode;
+use SmashPig\PaymentProviders\CreatePaymentResponse;
 use SmashPig\PaymentProviders\Ingenico\PaymentProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -48,6 +50,25 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 			);
 		$response = $this->provider->approvePayment( $paymentId, $params );
 		$this->assertEquals( $paymentId, $response['payment']['id'] );
+	}
+
+	/**
+	 * @expectedException \SmashPig\Core\ApiException
+	 * @expectedExceptionMessage Ingenico error id 1105db54-9c91-4a97-baa7-3c4182458047 : Error code 410110: UNKNOWN ORDER OR NOT PENDING
+	 */
+	public function testApprovePaymentTopLevelErrorThrowsApiException() {
+		$paymentId = '000000850010000188180000200001';
+		$params = [
+			"directDebitPaymentMethodSpecificInput" => [
+				"dateCollect" => Date( "Ymd" ),
+			],
+		];
+
+		$this->setUpResponse( __DIR__ . '/../Data/approvePaymentError.response', 402 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' );
+
+		$this->provider->approvePayment( $paymentId, $params );
 	}
 
 	public function testCancelPayment() {
@@ -265,6 +286,54 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 				} )
 			);
 		$this->provider->createPayment( $params );
+	}
+
+	/**
+	 * @expectedException \SmashPig\Core\ApiException
+	 * @expectedExceptionMessage Ingenico error id 657b10da-d2f9-4088-a948-bf190ef516b1-000002c5 : Error code 430285: Not authorised
+	 */
+	public function testCreatePaymentTopLevelErrorThrowsApiException() {
+		$params = [
+			'recurring' => true,
+			'installment' => 'recurring',
+			'recurring_payment_token' => '229a1d6e-1b26-4c91-8e00-969a49c9d041',
+			'amount' => 10, // dollars
+			'currency' => 'USD',
+			'description' => 'Recurring donation to Wikimedia!',
+			'order_id' => '12345.1',
+		];
+
+		$this->setUpResponse( __DIR__ . '/../Data/createPaymentError.response', 402 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' );
+
+		$this->provider->createPayment( $params );
+	}
+
+	public function testCreatePaymentUnknownStatusErrorIsHandled() {
+		$params = [
+			'recurring' => true,
+			'installment' => 'recurring',
+			'recurring_payment_token' => '229a1d6e-1b26-4c91-8e00-969a49c9d041',
+			'amount' => 10, // dollars
+			'currency' => 'USD',
+			'description' => 'Recurring donation to Wikimedia!',
+			'order_id' => '12345.1',
+		];
+
+		$this->setUpResponse( __DIR__ . '/../Data/createPaymentErrorUnknownStatus.response', 201 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' );
+
+		/** @var $response CreatePaymentResponse */
+		$response = $this->provider->createPayment( $params );
+		$this->assertFalse( $response->isSuccessful() );
+		$this->assertTrue( $response->hasErrors() );
+
+		$firstError = $response->getErrors()[0];
+		$this->assertInstanceOf( 'SmashPig\Core\PaymentError', $firstError );
+		$this->assertEquals( 'Unknown Ingenico status code UNKNOWN_STATUS', $firstError->getDebugMessage() );
+		$this->assertEquals( ErrorCode::UNEXPECTED_VALUE, $firstError->getErrorCode() );
 	}
 
 	public function testRefundPayment() {
