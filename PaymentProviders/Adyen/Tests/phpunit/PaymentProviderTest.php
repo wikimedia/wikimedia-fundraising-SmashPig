@@ -42,7 +42,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
-		$params['payment_id'] = "CAPTURE-TEST-" . rand( 0, 100 );
+		$params['gateway_txn_id'] = "CAPTURE-TEST-" . rand( 0, 100 );
 		$params['currency'] = 'USD';
 		$params['currency'] = '9.99';
 
@@ -75,7 +75,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
-		$params['payment_id'] = "INVALID-ID-0000";
+		$params['gateway_txn_id'] = "INVALID-ID-0000";
 		$params['currency'] = 'USD';
 		$params['currency'] = '9.99';
 
@@ -109,7 +109,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
-		$params['payment_id'] = "CAPTURE-TEST-" . rand( 0, 100 );
+		$params['gateway_txn_id'] = "CAPTURE-TEST-" . rand( 0, 100 );
 		$params['currency'] = 'USD';
 		$params['currency'] = '9.99';
 
@@ -144,7 +144,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
-		$params['payment_id'] = "CANCEL-TEST-" . rand( 0, 100 );
+		$params['gateway_txn_id'] = "CANCEL-TEST-" . rand( 0, 100 );
 		$params['currency'] = 'USD';
 		$params['currency'] = '9.99';
 
@@ -177,7 +177,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
-		$params['payment_id'] = "INVALID-ID-0000";
+		$params['gateway_txn_id'] = "INVALID-ID-0000";
 		$params['currency'] = 'USD';
 		$params['currency'] = '9.99';
 

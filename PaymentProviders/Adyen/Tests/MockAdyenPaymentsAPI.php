@@ -39,13 +39,13 @@ class MockAdyenPaymentsAPI implements IPaymentProvider {
 		$this->captured[] = [
 			'currency' => $params['currency'],
 			'amount' => $params['amount'],
-			'pspReference' => $params['payment_id'],
+			'pspReference' => $params['gateway_txn_id'],
 		];
 
 		$response = json_decode( json_encode(
 			[ 'captureResult' => [
 				'response' => $this->captureReturnCode,
-				'pspReference' => $params['payment_id']
+				'pspReference' => $params['gateway_txn_id']
 			] ] ) );
 
 		return $response;

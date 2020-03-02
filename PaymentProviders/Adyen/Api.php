@@ -89,7 +89,7 @@ class Api {
 		$data->modificationRequest->merchantAccount = $this->account;
 		$data->modificationRequest->modificationAmount->currency = $params['currency'];
 		$data->modificationRequest->modificationAmount->value = $params['amount'] * 100; // Todo: Make this CLDR aware
-		$data->modificationRequest->originalReference = $params['payment_id'];
+		$data->modificationRequest->originalReference = $params['gateway_txn_id'];
 
 		$tl = new TaggedLogger( 'RawData' );
 		$tl->info( 'Launching SOAP capture request', $data );

@@ -9,12 +9,14 @@ use SmashPig\Core\Mapper\Mapper;
 use SmashPig\Core\PaymentError;
 use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
+use SmashPig\PaymentProviders\ApprovePaymentResponse;
+use SmashPig\PaymentProviders\IPaymentProvider;
 
 /**
  * Base class for Ingenico payments. Each payment product group should get
  * a concrete subclass implementing PaymentProvider
  */
-abstract class PaymentProvider {
+abstract class PaymentProvider implements IPaymentProvider {
 
 	/**
 	 * @var Api
@@ -39,7 +41,7 @@ abstract class PaymentProvider {
 	/**
 	 * @param array $params
 	 *
-	 * @return mixed
+	 * @return CreatePaymentResponse
 	 */
 	public function createPayment( $params ) {
 		$path = "payments";
@@ -56,56 +58,7 @@ abstract class PaymentProvider {
 		$response = new CreatePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 
-		if ( isset( $rawResponse['payment'] ) ) {
-			// map trxn id
-			if ( !empty( $rawResponse['payment']['id'] ) ) {
-				$response->setGatewayTrxnId( $rawResponse['payment']['id'] );
-			} else {
-				$message = 'Unable to map Ingenico gateway transaction ID';
-				$response->addErrors(
-					new PaymentError(
-						ErrorCode::MISSING_TRANSACTION_ID,
-						$message,
-						LogLevel::ERROR
-					)
-				);
-				Logger::debug( $message, $rawResponse );
-			}
-			// map status
-			if ( !empty( $rawResponse['payment']['status'] ) ) {
-				$rawStatus = $rawResponse['payment']['status'];
-				$response->setRawStatus( $rawStatus );
-				try {
-					$status = ( new PaymentStatus() )->normalizeStatus( $rawStatus );
-					$response->setStatus( $status );
-				} catch ( \Exception $ex ) {
-					$response->addErrors(
-						new PaymentError(
-							ErrorCode::UNEXPECTED_VALUE,
-							$ex->getMessage(),
-							LogLevel::ERROR
-						)
-					);
-					Logger::debug( 'Unable to map Ingenico status', $rawResponse );
-				}
-			} else {
-				Logger::debug( 'Unable to map Ingenico status', $rawResponse );
-			}
-			// map errors
-			if ( !empty( $rawResponse['payment']['statusOutput']['errors'] ) ) {
-				$response->addErrors( $this->mapErrors( $rawResponse['payment']['statusOutput']['errors'] ) );
-			}
-		} else {
-			$responseError = 'payment element missing from Ingenico createPayment response.';
-			$response->addErrors(
-				new PaymentError(
-					ErrorCode::MISSING_REQUIRED_DATA,
-					$responseError,
-					LogLevel::ERROR
-				)
-			);
-			Logger::debug( $responseError, $rawResponse );
-		}
+		$this->processErrorsForResponseObject( $response, $rawResponse );
 
 		return $response;
 	}
@@ -115,8 +68,9 @@ abstract class PaymentProvider {
 	 *
 	 * @return mixed
 	 */
-	public function getPaymentStatus( $paymentId ) {
-		$path = "payments/$paymentId";
+	public function getPaymentStatus( $gatewayTxnId ) {
+		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
+		$path = "payments/$gatewayTxnId";
 		$response = $this->api->makeApiCall( $path, 'GET' );
 		$this->addPaymentStatusErrorsIfPresent( $response );
 		return $response;
@@ -126,12 +80,19 @@ abstract class PaymentProvider {
 	 * @param $paymentId
 	 * @param $params
 	 *
-	 * @return mixed
+	 * @return ApprovePaymentResponse
 	 */
-	public function approvePayment( $paymentId, $params ) {
-		$path = "payments/$paymentId/approve";
-		$response = $this->api->makeApiCall( $path, 'POST', $params );
-		$this->addPaymentStatusErrorsIfPresent( $response, $response['payment'] );
+	public function approvePayment( $params ) {
+		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
+		$gatewayTxnId = $params[ 'gateway_txn_id' ];
+		$path = "payments/$gatewayTxnId/approve";
+		$rawResponse = $this->api->makeApiCall( $path, 'POST', $params );
+
+		$response = new ApprovePaymentResponse();
+		$response->setRawResponse( $rawResponse );
+
+		$this->processErrorsForResponseObject( $response, $rawResponse );
+
 		return $response;
 	}
 
@@ -140,8 +101,9 @@ abstract class PaymentProvider {
 	 *
 	 * @return mixed
 	 */
-	public function cancelPayment( $paymentId ) {
-		$path = "payments/$paymentId/cancel";
+	public function cancelPayment( $gatewayTxnId ) {
+		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
+		$path = "payments/$gatewayTxnId/cancel";
 		$response = $this->api->makeApiCall( $path, 'POST' );
 		$this->addPaymentStatusErrorsIfPresent( $response, $response['payment'] );
 		return $response;
@@ -152,8 +114,9 @@ abstract class PaymentProvider {
 	 *
 	 * @return mixed
 	 */
-	public function tokenizePayment( $paymentId ) {
-		$path = "payments/$paymentId/tokenize";
+	public function tokenizePayment( $gatewayTxnId ) {
+		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
+		$path = "payments/$gatewayTxnId/tokenize";
 		$response = $this->api->makeApiCall( $path, 'POST' );
 		return $response;
 	}
@@ -208,8 +171,9 @@ abstract class PaymentProvider {
 	 * @return array
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
-	public function createRefund( $paymentId, $params ) {
-		$path = "payments/$paymentId/refund";
+	public function createRefund( $gatewayTxnId, $params ) {
+		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
+		$path = "payments/$gatewayTxnId/refund";
 		$mapConfig = $this->providerConfiguration->val( 'maps/refund-payment' );
 		$createRefundParams = Mapper::map(
 			$params,
@@ -266,6 +230,59 @@ abstract class PaymentProvider {
 		foreach ( $errors as $error ) {
 			$logMessage = "Error code {$error['code']}: {$error['message']}.";
 			Logger::warning( $logMessage );
+		}
+	}
+
+	protected function processErrorsForResponseObject( $response, $rawResponse ) {
+		if ( isset( $rawResponse['payment'] ) ) {
+			// map trxn id
+			if ( !empty( $rawResponse['payment']['id'] ) ) {
+				$response->setGatewayTrxnId( $rawResponse['payment']['id'] );
+			} else {
+				$message = 'Unable to map Ingenico gateway transaction ID';
+				$response->addErrors(
+					new PaymentError(
+						ErrorCode::MISSING_TRANSACTION_ID,
+						$message,
+						LogLevel::ERROR
+					)
+				);
+				Logger::debug( $message, $rawResponse );
+			}
+			// map status
+			if ( !empty( $rawResponse['payment']['status'] ) ) {
+				$rawStatus = $rawResponse['payment']['status'];
+				$response->setRawStatus( $rawStatus );
+				try {
+					$status = ( new PaymentStatus() )->normalizeStatus( $rawStatus );
+					$response->setStatus( $status );
+				} catch ( \Exception $ex ) {
+					$response->addErrors(
+						new PaymentError(
+							ErrorCode::UNEXPECTED_VALUE,
+							$ex->getMessage(),
+							LogLevel::ERROR
+						)
+					);
+					Logger::debug( 'Unable to map Ingenico status', $rawResponse );
+				}
+			} else {
+				Logger::debug( 'Unable to map Ingenico status', $rawResponse );
+			}
+			// map errors
+			if ( !empty( $rawResponse['payment']['statusOutput']['errors'] ) ) {
+				$response->addErrors( $this->mapErrors( $rawResponse['payment']['statusOutput']['errors'] ) );
+			}
+		} else {
+			$responseError = 'payment element missing from Ingenico createPayment response.';
+			$response->addErrors(
+				new PaymentError(
+					ErrorCode::MISSING_REQUIRED_DATA,
+					$responseError,
+					LogLevel::ERROR
+				)
+			);
+			Logger::debug( $responseError, $rawResponse );
 		}
 	}
 

@@ -94,7 +94,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				);
 
 				$captureResult = $provider->approvePayment( [
-					'payment_id' => $this->pspReference,
+					'gateway_txn_id' => $this->pspReference,
 					'currency' => $this->currency,
 					'amount' => $this->amount
 				] );

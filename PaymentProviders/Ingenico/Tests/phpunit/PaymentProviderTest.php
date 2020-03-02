@@ -24,32 +24,33 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testGetPaymentStatus() {
-		$paymentId = '000000850010000188180000200001';
+		$gatewayTxnId = '000000850010000188180000200001';
 		$this->setUpResponse( __DIR__ . '/../Data/paymentStatus.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$gatewayTxnId" ),
 				$this->equalTo( 'GET' )
 			);
-		$response = $this->provider->getPaymentStatus( $paymentId );
-		$this->assertEquals( $paymentId, $response['id'] );
+		$response = $this->provider->getPaymentStatus( $gatewayTxnId );
+		$this->assertEquals( $gatewayTxnId, $response['id'] );
 	}
 
 	public function testApprovePayment() {
-		$paymentId = '000000850010000188180000200001';
+		$gatewayTxnId = '000000850010000188180000200001';
 		$params = [
-			"directDebitPaymentMethodSpecificInput" => [
-				"dateCollect" => Date( "Ymd" ),
+			'gateway_txn_id' => $gatewayTxnId,
+			'directDebitPaymentMethodSpecificInput' => [
+				'dateCollect' => Date( 'Ymd' ),
 			],
 		];
 		$this->setUpResponse( __DIR__ . '/../Data/paymentApproved.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId/approve" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$gatewayTxnId/approve" ),
 				$this->equalTo( 'POST' )
 			);
-		$response = $this->provider->approvePayment( $paymentId, $params );
-		$this->assertEquals( $paymentId, $response['payment']['id'] );
+		$response = $this->provider->approvePayment( $params );
+		$this->assertEquals( $gatewayTxnId, $response->getGatewayTrxnId() );
 	}
 
 	/**
@@ -57,10 +58,10 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 	 * @expectedExceptionMessage Ingenico error id 1105db54-9c91-4a97-baa7-3c4182458047 : Error code 410110: UNKNOWN ORDER OR NOT PENDING
 	 */
 	public function testApprovePaymentTopLevelErrorThrowsApiException() {
-		$paymentId = '000000850010000188180000200001';
 		$params = [
-			"directDebitPaymentMethodSpecificInput" => [
-				"dateCollect" => Date( "Ymd" ),
+			'gateway_txn_id' => '000000850010000188180000200001',
+			'directDebitPaymentMethodSpecificInput' => [
+				'dateCollect' => Date( 'Ymd' ),
 			],
 		];
 
@@ -68,30 +69,30 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 
-		$this->provider->approvePayment( $paymentId, $params );
+		$this->provider->approvePayment( $params );
 	}
 
 	public function testCancelPayment() {
-		$paymentId = '000000850010000188180000200001';
+		$gatewayTxnId = '000000850010000188180000200001';
 		$this->setUpResponse( __DIR__ . '/../Data/paymentCanceled.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId/cancel" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$gatewayTxnId/cancel" ),
 				$this->equalTo( 'POST' )
 			);
-		$response = $this->provider->cancelPayment( $paymentId );
-		$this->assertEquals( $paymentId, $response['payment']['id'] );
+		$response = $this->provider->cancelPayment( $gatewayTxnId );
+		$this->assertEquals( $gatewayTxnId, $response['payment']['id'] );
 	}
 
 	public function testTokenizePayment() {
-		$paymentId = '000000850010000188180000200001';
+		$gatewayTxnId = '000000850010000188180000200001';
 		$this->setUpResponse( __DIR__ . '/../Data/paymentToken.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId/tokenize" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$gatewayTxnId/tokenize" ),
 				$this->equalTo( 'POST' )
 			);
-		$response = $this->provider->tokenizePayment( $paymentId );
+		$response = $this->provider->tokenizePayment( $gatewayTxnId );
 		$this->assertEquals(
 			'bfa8a7e4-4530-455a-858d-204ba2afb77e',
 			$response['token']
@@ -369,11 +370,11 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 					'merchantReference' => $params['order_id'],
 				],
 		];
-		$paymentId = '00000085001000006995000';
+		$gatewayTxnId = '00000085001000006995000';
 		$this->setUpResponse( __DIR__ . '/../Data/createRefund.response', 201 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )->with(
-				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$paymentId/refund" ),
+				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/payments/$gatewayTxnId/refund" ),
 				$this->equalTo( 'POST' ),
 				$this->anything(),
 				$this->callback( function ( $arg ) use ( $expectedTransformedParams ) {
@@ -383,9 +384,9 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 					return true;
 				} )
 			);
-		$response = $this->provider->createRefund( $paymentId, $params );
+		$response = $this->provider->createRefund( $gatewayTxnId, $params );
 		$this->assertEquals(
-			"$paymentId-300001",
+			"$gatewayTxnId-300001",
 			$response['id']
 		);
 	}
