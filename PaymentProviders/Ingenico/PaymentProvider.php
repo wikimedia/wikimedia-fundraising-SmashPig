@@ -2,9 +2,12 @@
 
 namespace SmashPig\PaymentProviders\Ingenico;
 
+use Psr\Log\LogLevel;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Mapper\Mapper;
+use SmashPig\Core\PaymentError;
+use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
 
 /**
@@ -53,35 +56,54 @@ abstract class PaymentProvider {
 		$response = new CreatePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 
-		if ( isset( $rawResponse["payment"] ) ) {
+		if ( isset( $rawResponse['payment'] ) ) {
 			// map trxn id
-			if ( !empty( $rawResponse["payment"]["id"] ) ) {
-				$response->setGatewayTrxnId( $rawResponse["payment"]["id"] );
+			if ( !empty( $rawResponse['payment']['id'] ) ) {
+				$response->setGatewayTrxnId( $rawResponse['payment']['id'] );
 			} else {
-				Logger::debug( 'Unable to map Ingenico gateway transaction ID', $rawResponse );
+				$message = 'Unable to map Ingenico gateway transaction ID';
+				$response->addErrors(
+					new PaymentError(
+						ErrorCode::MISSING_TRANSACTION_ID,
+						$message,
+						LogLevel::ERROR
+					)
+				);
+				Logger::debug( $message, $rawResponse );
 			}
 			// map status
-			if ( !empty( $rawResponse["payment"]["status"] ) ) {
-				$rawStatus = $rawResponse["payment"]["status"];
+			if ( !empty( $rawResponse['payment']['status'] ) ) {
+				$rawStatus = $rawResponse['payment']['status'];
 				$response->setRawStatus( $rawStatus );
 				try {
 					$status = ( new PaymentStatus() )->normalizeStatus( $rawStatus );
 					$response->setStatus( $status );
 				} catch ( \Exception $ex ) {
-					$response->addErrors( $ex->getMessage() );
+					$response->addErrors(
+						new PaymentError(
+							ErrorCode::UNEXPECTED_VALUE,
+							$ex->getMessage(),
+							LogLevel::ERROR
+						)
+					);
 					Logger::debug( 'Unable to map Ingenico status', $rawResponse );
 				}
 			} else {
 				Logger::debug( 'Unable to map Ingenico status', $rawResponse );
 			}
 			// map errors
-			if ( !empty( $rawResponse["payment"]["statusOutput"]['errors'] ) ) {
-				$response->addErrors( $rawResponse["payment"]["statusOutput"]['errors'] );
+			if ( !empty( $rawResponse['payment']['statusOutput']['errors'] ) ) {
+				$response->addErrors( $this->mapErrors( $rawResponse['payment']['statusOutput']['errors'] ) );
 			}
-
 		} else {
 			$responseError = 'payment element missing from Ingenico createPayment response.';
-			$response->addErrors( $responseError );
+			$response->addErrors(
+				new PaymentError(
+					ErrorCode::MISSING_REQUIRED_DATA,
+					$responseError,
+					LogLevel::ERROR
+				)
+			);
 			Logger::debug( $responseError, $rawResponse );
 		}
 
@@ -143,7 +165,7 @@ abstract class PaymentProvider {
 	 * @param $paymentResponse
 	 * @param $response
 	 */
-	protected function addPaymentStatusErrorsIfPresent( &$response, $paymentResponse=null ) {
+	protected function addPaymentStatusErrorsIfPresent( &$response, $paymentResponse = null ) {
 		if ( $paymentResponse === null ) {
 			$paymentResponse = $response;
 		}
@@ -245,5 +267,55 @@ abstract class PaymentProvider {
 			$logMessage = "Error code {$error['code']}: {$error['message']}.";
 			Logger::warning( $logMessage );
 		}
+	}
+
+	/**
+	 * @param array $errors
+	 * @return PaymentError[]
+	 */
+	protected function mapErrors( $errors ) {
+		$errorMap = [
+			'20000000' => ErrorCode::MISSING_REQUIRED_DATA,
+			// TODO: handle 400120 which is ErrorCode::DUPLICATE_ORDER_ID when the TXN is INSERT_ORDERWITHPAYMENT
+			'400490' => ErrorCode::DUPLICATE_ORDER_ID,
+			'300620' => ErrorCode::DUPLICATE_ORDER_ID,
+			'430260' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430349' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430357' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430410' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430415' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430418' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430421' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430697' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'485020' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'4360022' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'4360023' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430306' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430330' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430354' => ErrorCode::DECLINED_DO_NOT_RETRY,
+			'430285' => ErrorCode::DECLINED,
+			'430396' => ErrorCode::DECLINED,
+			'430409' => ErrorCode::DECLINED,
+			'430424' => ErrorCode::DECLINED,
+			'430692' => ErrorCode::DECLINED,
+			'11000400' => ErrorCode::SERVER_TIMEOUT,
+			// TODO: handle 20001000 and 21000050 validation problems
+		];
+		$mappedErrors = [];
+		foreach ( $errors as $error ) {
+			if ( isset( $errorMap[$error['code']] ) ) {
+				$mappedCode = $errorMap[$error['code']];
+				$logLevel = LogLevel::INFO;
+			} else {
+				$mappedCode = ErrorCode::UNKNOWN;
+				$logLevel = LogLevel::ERROR;
+			}
+			$mappedErrors[] = new PaymentError(
+				$mappedCode,
+				json_encode( $error ),
+				$logLevel
+			);
+		}
+		return $mappedErrors;
 	}
 }
