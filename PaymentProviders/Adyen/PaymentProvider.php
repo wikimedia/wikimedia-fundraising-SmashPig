@@ -83,13 +83,16 @@ class PaymentProvider implements IPaymentProvider {
 			}
 			// map errors
 			if ( !empty( $rawResponse->paymentResult->refusalReason ) ) {
-				if ( !$this->canRetryRefusalReason( $rawResponse->paymentResult->refusalReason ) ) {
-					$response->addErrors( new PaymentError(
-						ErrorCode::DECLINED_DO_NOT_RETRY,
-						$rawResponse->paymentResult->refusalReason,
-						LogLevel::INFO
-					) );
+				if ( $this->canRetryRefusalReason( $rawResponse->paymentResult->refusalReason ) ) {
+					$errorCode = ErrorCode::DECLINED;
+				} else {
+					$errorCode = ErrorCode::DECLINED_DO_NOT_RETRY;
 				}
+				$response->addErrors( new PaymentError(
+					$errorCode,
+					$rawResponse->paymentResult->refusalReason,
+					LogLevel::INFO
+				) );
 			}
 		} else {
 			$responseError = 'paymentResult element missing from Adyen createPayment response.';
@@ -152,13 +155,16 @@ class PaymentProvider implements IPaymentProvider {
 			}
 			// map errors
 			if ( !empty( $rawResponse->captureResult->refusalReason ) ) {
-				if ( !$this->canRetryRefusalReason( $rawResponse->paymentResult->refusalReason ) ) {
-					$response->addErrors( new PaymentError(
-						ErrorCode::DECLINED_DO_NOT_RETRY,
-						$rawResponse->paymentResult->refusalReason,
-						LogLevel::INFO
-					) );
+				if ( $this->canRetryRefusalReason( $rawResponse->captureResult->refusalReason ) ) {
+					$errorCode = ErrorCode::DECLINED;
+				} else {
+					$errorCode = ErrorCode::DECLINED_DO_NOT_RETRY;
 				}
+				$response->addErrors( new PaymentError(
+					$errorCode,
+					$rawResponse->paymentResult->refusalReason,
+					LogLevel::INFO
+				) );
 			}
 		} else {
 			$responseError = 'captureResult element missing from Adyen approvePayment response.';
@@ -238,14 +244,15 @@ class PaymentProvider implements IPaymentProvider {
 
 	/**
 	 * Documented at
-	 * https://docs.adyen.com/development-resources/refusal-reasons#page-introduction
+	 * https://docs.adyen.com/development-resources/refusal-reasons
 	 *
 	 * @param string $refusalReason
 	 * @return bool
 	 */
 	private function canRetryRefusalReason( $refusalReason ) {
+		// They may prefix the refusal reason with a numeric code
+		$trimmedReason = preg_replace( '/^[0-9:]+ /', '', $refusalReason );
 		$noRetryReasons = [
-			'800 No Contract Found',
 			'Acquirer Fraud',
 			'Blocked Card',
 			'FRAUD',
@@ -253,12 +260,13 @@ class PaymentProvider implements IPaymentProvider {
 			'Invalid Amount',
 			'Invalid Card Number',
 			'Invalid Pin',
+			'No Contract Found',
 			'Pin validation not possible',
 			'Referral',
 			'Restricted Card',
 			'Revocation Of Auth',
 		];
-		if ( in_array( $refusalReason, $noRetryReasons ) ) {
+		if ( in_array( $trimmedReason, $noRetryReasons ) ) {
 			return false;
 		}
 		return true;
