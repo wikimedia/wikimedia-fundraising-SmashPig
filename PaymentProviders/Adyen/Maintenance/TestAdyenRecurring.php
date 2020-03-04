@@ -37,7 +37,7 @@ class TestAdyenRecurring extends MaintenanceBase {
 		// this is a required field for Adyen createPayment calls so we put something testy in here for now
 		$params['reference'] = "RECURRING-TEST-" . rand( 0, 10000 );
 
-		$params['token'] = $this->getOption( 'token' );
+		$params['recurring_payment_token'] = $this->getOption( 'token' );
 		$params['currency'] = $this->getOption( 'currency' );
 		$params['amount'] = $this->getOption( 'amount' );
 

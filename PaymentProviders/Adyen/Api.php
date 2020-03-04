@@ -57,7 +57,7 @@ class Api {
 			$data->paymentRequest->recurring->contract = static::RECURRING_CONTRACT;
 			$data->paymentRequest->shopperInteraction = static::RECURRING_SHOPPER_INTERACTION;
 			$data->paymentRequest->selectedRecurringDetailReference = static::RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE;
-			$data->paymentRequest->shopperReference = $params['token'];
+			$data->paymentRequest->shopperReference = $params['recurring_payment_token'];
 		}
 
 		// additional required fields that aren't listed in the docs as being required
