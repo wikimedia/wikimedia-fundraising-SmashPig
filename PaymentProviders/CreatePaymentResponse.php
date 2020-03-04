@@ -13,13 +13,14 @@ class CreatePaymentResponse extends PaymentProviderResponse {
 	/**
 	 * Payment provider transaction ID
 	 *
-	 * Note: We should probably call this 'provider_trxn_id' but we already have enough
-	 * transaction IDs across the stack.
 	 * https://www.mediawiki.org/wiki/Fundraising_tech/Transaction_IDs
+	 * Also note the spelling: gateway_txn_id has no 'r' in txn. This is to maintain
+	 * consistency with our queue messages and wmf_contribution_extra.gateway_txn_id
+	 * column. Maybe one day we'll add the R.
 	 *
-	 * @var mixed
+	 * @var string
 	 */
-	protected $gateway_trxn_id;
+	protected $gateway_txn_id;
 
 	/**
 	 * mapped PaymentStatus status for the providers transaction status
@@ -34,18 +35,18 @@ class CreatePaymentResponse extends PaymentProviderResponse {
 	protected $rawStatus;
 
 	/**
-	 * @return mixed
+	 * @return string
 	 */
-	public function getGatewayTrxnId() {
-		return $this->gateway_trxn_id;
+	public function getGatewayTxnId() {
+		return $this->gateway_txn_id;
 	}
 
 	/**
-	 * @param mixed $gateway_trxn_id
+	 * @param string $gateway_txn_id
 	 * @return CreatePaymentResponse
 	 */
-	public function setGatewayTrxnId( $gateway_trxn_id ) {
-		$this->gateway_trxn_id = $gateway_trxn_id;
+	public function setGatewayTxnId( $gateway_txn_id ) {
+		$this->gateway_txn_id = $gateway_txn_id;
 		return $this;
 	}
 

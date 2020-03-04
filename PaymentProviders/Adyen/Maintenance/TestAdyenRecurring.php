@@ -50,7 +50,7 @@ class TestAdyenRecurring extends MaintenanceBase {
 		}
 
 		// this is the Capture call
-		$params['gateway_txn_id'] = $createPaymentResponse->getGatewayTrxnId();
+		$params['gateway_txn_id'] = $createPaymentResponse->getGatewayTxnId();
 		$approvePaymentResponse = $adyen->approvePayment( $params );
 		if ( $approvePaymentResponse->isSuccessful() ) {
 			Logger::info( "Recurring Payment Captured: " . json_encode( $approvePaymentResponse->getRawResponse() ) );

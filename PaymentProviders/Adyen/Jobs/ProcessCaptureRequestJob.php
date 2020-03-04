@@ -102,7 +102,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				if ( $captureResult->isSuccessful() ) {
 					// Success!
 					$this->logger->info(
-						"Successfully captured payment! Returned reference: '{$captureResult->getGatewayTrxnId()}'. " .
+						"Successfully captured payment! Returned reference: '{$captureResult->getGatewayTxnId()}'. " .
 							'Marking pending database message as captured.'
 					);
 

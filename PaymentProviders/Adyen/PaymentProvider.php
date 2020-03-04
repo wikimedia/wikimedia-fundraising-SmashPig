@@ -47,7 +47,7 @@ class PaymentProvider implements IPaymentProvider {
 		if ( !empty( $rawResponse->paymentResult ) ) {
 			// map trxn id
 			if ( !empty( $rawResponse->paymentResult->pspReference ) ) {
-				$response->setGatewayTrxnId( $rawResponse->paymentResult->pspReference );
+				$response->setGatewayTxnId( $rawResponse->paymentResult->pspReference );
 			} else {
 				$message = 'Unable to map Adyen Gateway Transaction ID';
 				$response->addErrors( new PaymentError(
@@ -116,7 +116,7 @@ class PaymentProvider implements IPaymentProvider {
 		if ( !empty( $rawResponse->captureResult ) ) {
 			// map trxn id
 			if ( !empty( $rawResponse->captureResult->pspReference ) ) {
-				$response->setGatewayTrxnId( $rawResponse->captureResult->pspReference );
+				$response->setGatewayTxnId( $rawResponse->captureResult->pspReference );
 			} else {
 				$message = 'Unable to map Adyen Gateway Transaction ID';
 				$response->addErrors( new PaymentError(
@@ -185,7 +185,7 @@ class PaymentProvider implements IPaymentProvider {
 		if ( !empty( $rawResponse->cancelResult ) ) {
 			// map trxn id
 			if ( !empty( $rawResponse->cancelResult->pspReference ) ) {
-				$response->setGatewayTrxnId( $rawResponse->cancelResult->pspReference );
+				$response->setGatewayTxnId( $rawResponse->cancelResult->pspReference );
 			} else {
 				$message = 'Unable to map Adyen Gateway Transaction ID';
 				$response->addErrors( new PaymentError(

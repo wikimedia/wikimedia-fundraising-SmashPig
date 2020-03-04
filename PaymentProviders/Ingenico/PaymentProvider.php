@@ -237,7 +237,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 		if ( isset( $rawResponse['payment'] ) ) {
 			// map trxn id
 			if ( !empty( $rawResponse['payment']['id'] ) ) {
-				$response->setGatewayTrxnId( $rawResponse['payment']['id'] );
+				$response->setGatewayTxnId( $rawResponse['payment']['id'] );
 			} else {
 				$message = 'Unable to map Ingenico gateway transaction ID';
 				$response->addErrors(

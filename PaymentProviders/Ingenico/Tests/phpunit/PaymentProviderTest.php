@@ -50,7 +50,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 				$this->equalTo( 'POST' )
 			);
 		$response = $this->provider->approvePayment( $params );
-		$this->assertEquals( $gatewayTxnId, $response->getGatewayTrxnId() );
+		$this->assertEquals( $gatewayTxnId, $response->getGatewayTxnId() );
 	}
 
 	/**
@@ -148,7 +148,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$response = $this->provider->createPayment( $params );
 		$this->assertEquals(
 			'000000850010000188130000200001',
-			$response->getGatewayTrxnId()
+			$response->getGatewayTxnId()
 		);
 	}
 
@@ -223,7 +223,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$response = $this->provider->createPayment( $params );
 		$this->assertEquals(
 			'000000850010000188130000200001',
-			$response->getGatewayTrxnId()
+			$response->getGatewayTxnId()
 		);
 	}
 
