@@ -24,6 +24,7 @@ class IngenicoAudit implements AuditParser {
 		'BillingEmail' => 'email',
 		'AdditionalReference' => 'invoice_id',
 		'PaymentProductId' => 'gc_product_id',
+		'PaymentReference' => 'gc_payment_reference',
 		'OrderID' => 'order_id',
 		'MerchantID' => 'merchant_id',
 		// Ingenico recurring donations all have the same OrderID
@@ -34,6 +35,8 @@ class IngenicoAudit implements AuditParser {
 		'PaymentCurrency' => 'currency',
 		'AmountLocal' => 'gross',
 		'CurrencyLocal' => 'currency',
+		'DateDue' => 'date',
+		// Order matters. Prefer TransactionDateTime if it is present.
 		'TransactionDateTime' => 'date',
 	];
 
@@ -113,6 +116,10 @@ class IngenicoAudit implements AuditParser {
 
 	protected function parseDonation( DOMElement $recordNode, $gateway ) {
 		$record = $this->xmlToArray( $recordNode, $this->donationMap );
+		if ( $record['order_id'] === '0' && !empty( $record['gc_payment_reference'] ) ) {
+			$record['order_id'] = $record['gc_payment_reference'];
+		}
+		unset( $record['gc_payment_reference'] );
 		if ( $gateway === 'globalcollect' ) {
 			$record['gateway_txn_id'] = $record['order_id'];
 		} else {
@@ -287,6 +294,17 @@ class IngenicoAudit implements AuditParser {
 
 	protected function getGateway( DOMElement $recordNode ) {
 		// Heuristics to determine which API integration the txn came in on.
+		$paymentProductNode = $recordNode->getElementsByTagName( 'PaymentProductId' );
+		if ( $paymentProductNode->length > 0 ) {
+			// Some products were only ever offered through the legacy integration
+			$legacyOnlyProducts = [
+				'500' // bpay
+			];
+			$paymentProductId = $paymentProductNode->item( 0 )->nodeValue;
+			if ( in_array( $paymentProductId, $legacyOnlyProducts ) ) {
+				return 'globalcollect';
+			}
+		}
 		// Connect API transactions have EmailTypeIndicator, if they have Email
 		$email = $recordNode->getElementsByTagName( 'Email' );
 		$typeIndicator = $recordNode->getElementsByTagName( 'EmailTypeIndicator' );

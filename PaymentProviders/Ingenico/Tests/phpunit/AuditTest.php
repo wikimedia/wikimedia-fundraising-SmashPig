@@ -43,6 +43,31 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	}
 
 	/**
+	 * Normal donation
+	 */
+	public function testProcessBPayDonation() {
+		$processor = new IngenicoAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/donation_bpay.xml.gz' );
+		$this->assertEquals( 1, count( $output ), 'Should have found one donation' );
+		$actual = $output[0];
+		$expected = [
+			'gateway' => 'globalcollect',
+			'gross' => 10,
+			'contribution_tracking_id' => '255777921',
+			'currency' => 'AUD',
+			'order_id' => '657000777333',
+			'installment' => 1,
+			'gateway_txn_id' => '657000777333',
+			'payment_method' => 'obt',
+			'payment_submethod' => 'bpay',
+			'date' => 1582070400,
+			'invoice_id' => '255777921',
+			'merchant_id' => '1234',
+		];
+		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
+	}
+
+	/**
 	 * Recurring donation
 	 */
 	public function testProcessRecurring() {
