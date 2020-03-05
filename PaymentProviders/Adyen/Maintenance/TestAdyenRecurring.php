@@ -35,7 +35,7 @@ class TestAdyenRecurring extends MaintenanceBase {
 		// we add in the option to make non-recurring authorise calls in the future.
 		$params['recurring'] = true;
 		// this is a required field for Adyen createPayment calls so we put something testy in here for now
-		$params['reference'] = "RECURRING-TEST-" . rand( 0, 10000 );
+		$params['order_id'] = "RECURRING-TEST-" . rand( 0, 10000 );
 
 		$params['recurring_payment_token'] = $this->getOption( 'token' );
 		$params['currency'] = $this->getOption( 'currency' );

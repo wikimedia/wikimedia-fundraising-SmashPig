@@ -44,7 +44,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 
 		// test params
 		$params['recurring'] = true;
-		$params['reference'] = "RECURRING-TEST-" . rand( 0, 10000 );
+		$params['order_id'] = "RECURRING-TEST-" . rand( 0, 10000 );
 		$params['recurring_payment_token'] = 'TEST-TOKEN-123';
 		$params['currency'] = 'USD';
 		$params['amount'] = '9.99';
@@ -79,7 +79,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 
 		// test params
 		$params['recurring'] = true;
-		$params['reference'] = "RECURRING-TEST-" . rand( 0, 10000 );
+		$params['order_id'] = "RECURRING-TEST-" . rand( 0, 10000 );
 		$params['recurring_payment_token'] = 'TEST-TOKEN-123';
 		$params['currency'] = 'USD';
 		$params['amount'] = '9.99';
@@ -116,7 +116,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 
 		// test params
 		$params['recurring'] = true;
-		$params['reference'] = "RECURRING-TEST-" . rand( 0, 10000 );
+		$params['order_id'] = "RECURRING-TEST-" . rand( 0, 10000 );
 		$params['recurring_payment_token'] = 'TEST-TOKEN-123';
 		$params['currency'] = 'USD';
 		$params['amount'] = '9.99';

@@ -61,7 +61,7 @@ class Api {
 		}
 
 		// additional required fields that aren't listed in the docs as being required
-		$data->paymentRequest->reference = $params['reference'];
+		$data->paymentRequest->reference = $params['order_id'];
 		$data->paymentRequest->merchantAccount = $this->account;
 
 		$tl = new TaggedLogger( 'RawData' );
