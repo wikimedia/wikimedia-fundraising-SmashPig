@@ -13,7 +13,7 @@ class AstroPayAudit implements AuditParser {
 		'Type', // 'Payment' or 'Refund'
 		'Creation date', // YYYY-MM-dd HH:mm:ss
 		'Settlement date', // same format
-		'Reference', // gateway_trxn_id
+		'Reference', // gateway_txn_id
 		'Invoice', // ct_id.attempt_num
 		'Country',
 		'Payment Method', // corresponds to our payment_submethod

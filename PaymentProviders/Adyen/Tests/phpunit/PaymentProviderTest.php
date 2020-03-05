@@ -51,7 +51,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$this->assertInstanceOf( '\SmashPig\PaymentProviders\ApprovePaymentResponse',
 			$approvePaymentResponse );
 		$this->assertEquals( '[capture-received]', $approvePaymentResponse->getRawStatus() );
-		$this->assertEquals( '00000000000000AB', $approvePaymentResponse->getGatewayTrxnId() );
+		$this->assertEquals( '00000000000000AB', $approvePaymentResponse->getGatewayTxnId() );
 		$this->assertTrue( $approvePaymentResponse->isSuccessful() );
 		$this->assertTrue( count( $approvePaymentResponse->getErrors() ) == 0 );
 	}
@@ -153,7 +153,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$this->assertInstanceOf( '\SmashPig\PaymentProviders\CancelPaymentResponse',
 			$cancelPaymentResponse );
 		$this->assertEquals( '[cancel-received]', $cancelPaymentResponse->getRawStatus() );
-		$this->assertEquals( '00000000000000AB', $cancelPaymentResponse->getGatewayTrxnId() );
+		$this->assertEquals( '00000000000000AB', $cancelPaymentResponse->getGatewayTxnId() );
 		$this->assertTrue( $cancelPaymentResponse->isSuccessful() );
 		$this->assertTrue( count( $cancelPaymentResponse->getErrors() ) == 0 );
 	}
