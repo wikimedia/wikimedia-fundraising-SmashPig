@@ -265,6 +265,7 @@ class PaymentProvider implements IPaymentProvider {
 			'Referral',
 			'Restricted Card',
 			'Revocation Of Auth',
+			'Issuer Suspected Fraud',
 		];
 		if ( in_array( $trimmedReason, $noRetryReasons ) ) {
 			return false;
