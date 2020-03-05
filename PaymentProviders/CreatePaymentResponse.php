@@ -66,8 +66,19 @@ class CreatePaymentResponse extends PaymentProviderResponse {
 		return $this;
 	}
 
+	/**
+	 * A successfully created payment should be in COMPLETE or PENDING_POKE status
+	 *
+	 * @return bool
+	 */
 	public function isSuccessful() {
-		return $this->status === FinalStatus::COMPLETE;
+		return in_array(
+			$this->status,
+			[
+				FinalStatus::PENDING_POKE,
+				FinalStatus::COMPLETE
+			]
+		);
 	}
 
 	/**
