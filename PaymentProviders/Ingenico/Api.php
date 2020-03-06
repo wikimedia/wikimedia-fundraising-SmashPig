@@ -34,7 +34,7 @@ class Api {
 	 *
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
-	public function __construct( $baseUrl, $merchantId ) {
+	public function __construct( string $baseUrl, string $merchantId ) {
 		// Ensure trailing slash
 		if ( substr( $baseUrl, -1 ) !== '/' ) {
 			$baseUrl .= '/';
@@ -54,7 +54,7 @@ class Api {
 	 * @return array|null
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function makeApiCall( $path, $method = 'POST', $data = null ) {
+	public function makeApiCall( string $path, string $method = 'POST', array $data = null ) {
 		if ( is_array( $data ) ) {
 			// FIXME: this is weird, maybe OutboundRequest should handle this part
 			if ( $method === 'GET' ) {

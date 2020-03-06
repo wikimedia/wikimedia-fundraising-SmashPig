@@ -44,7 +44,7 @@ class RefundStatus {
 		]
 	];
 
-	public function normalizeStatus( $ingenicoStatus ) {
+	public function normalizeStatus( string $ingenicoStatus ) : string {
 		foreach ( self::$statusMap as $finalStatus => $ingenicoStatuses ) {
 			if ( array_search( $ingenicoStatus, $ingenicoStatuses, true ) !== false ) {
 				return $finalStatus;

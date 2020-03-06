@@ -9,7 +9,7 @@ namespace SmashPig\PaymentProviders\Ingenico;
  * @package SmashPig\PaymentProviders\Ingenico
  */
 class TestConnectionProvider extends PaymentProvider {
-	public function testConnection() {
+	public function testConnection() : array {
 		$path = "services/testconnection";
 		return $this->api->makeApiCall( $path, 'GET' );
 	}
