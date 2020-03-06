@@ -57,6 +57,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 		$rawResponse = $this->api->makeApiCall( $path, 'POST', $createPaymentParams );
 		$response = new CreatePaymentResponse();
 		$this->prepareResponseObject( $response, $rawResponse );
+
 		return $response;
 	}
 
@@ -81,12 +82,13 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 */
 	public function approvePayment( $params ) {
 		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
-		$gatewayTxnId = $params[ 'gateway_txn_id' ];
+		$gatewayTxnId = $params['gateway_txn_id'];
 		$path = "payments/$gatewayTxnId/approve";
 		$rawResponse = $this->api->makeApiCall( $path, 'POST', $params );
 
 		$response = new ApprovePaymentResponse();
 		$this->prepareResponseObject( $response, $rawResponse );
+
 		return $response;
 	}
 
@@ -227,49 +229,28 @@ abstract class PaymentProvider implements IPaymentProvider {
 		}
 	}
 
-	protected function prepareResponseObject( $response, $rawResponse ) {
+	/**
+	 * @param CreatePaymentResponse $response
+	 * @param array $rawResponse
+	 */
+	protected function prepareResponseObject( CreatePaymentResponse $response, $rawResponse ) {
 		$response->setRawResponse( $rawResponse );
+		if ( isset( $rawResponse['errors'] ) ) {
+			$response->addErrors(
+				$this->mapErrors( $rawResponse['errors'] )
+			);
+		}
 
 		if ( isset( $rawResponse['payment'] ) ) {
-			// map trxn id
-			if ( !empty( $rawResponse['payment']['id'] ) ) {
-				$response->setGatewayTxnId( $rawResponse['payment']['id'] );
-			} else {
-				$message = 'Unable to map Ingenico gateway transaction ID';
-				$response->addErrors(
-					new PaymentError(
-						ErrorCode::MISSING_TRANSACTION_ID,
-						$message,
-						LogLevel::ERROR
-					)
-				);
-				Logger::debug( $message, $rawResponse );
-			}
-			// map status
-			if ( !empty( $rawResponse['payment']['status'] ) ) {
-				$rawStatus = $rawResponse['payment']['status'];
-				$response->setRawStatus( $rawStatus );
-				try {
-					$status = ( new PaymentStatus() )->normalizeStatus( $rawStatus );
-					$response->setStatus( $status );
-				} catch ( \Exception $ex ) {
-					$response->addErrors(
-						new PaymentError(
-							ErrorCode::UNEXPECTED_VALUE,
-							$ex->getMessage(),
-							LogLevel::ERROR
-						)
-					);
-					Logger::debug( 'Unable to map Ingenico status', $rawResponse );
-				}
-			} else {
-				Logger::debug( 'Unable to map Ingenico status', $rawResponse );
-			}
-			// map errors
-			if ( !empty( $rawResponse['payment']['statusOutput']['errors'] ) ) {
-				$response->addErrors( $this->mapErrors( $rawResponse['payment']['statusOutput']['errors'] ) );
-			}
+			$rootPaymentNode = $rawResponse['payment'];
+		} elseif ( isset( $rawResponse['paymentResult']['payment'] ) ) {
+			$rootPaymentNode = $rawResponse['paymentResult']['payment'];
 		} else {
+			if ( $response->hasErrors() ) {
+				// There is already a top-level error code which may have prevented
+				// any payment creation. No need to add another error.
+				return;
+			}
 			$responseError = 'payment element missing from Ingenico response.';
 			$response->addErrors(
 				new PaymentError(
@@ -279,6 +260,45 @@ abstract class PaymentProvider implements IPaymentProvider {
 				)
 			);
 			Logger::debug( $responseError, $rawResponse );
+			return;
+		}
+		// map trxn id
+		if ( !empty( $rootPaymentNode['id'] ) ) {
+			$response->setGatewayTxnId( $rootPaymentNode['id'] );
+		} else {
+			$message = 'Unable to map Ingenico gateway transaction ID';
+			$response->addErrors(
+				new PaymentError(
+					ErrorCode::MISSING_TRANSACTION_ID,
+					$message,
+					LogLevel::ERROR
+				)
+			);
+			Logger::debug( $message, $rawResponse );
+		}
+		// map status
+		if ( !empty( $rootPaymentNode['status'] ) ) {
+			$rawStatus = $rootPaymentNode['status'];
+			$response->setRawStatus( $rawStatus );
+			try {
+				$status = ( new PaymentStatus() )->normalizeStatus( $rawStatus );
+				$response->setStatus( $status );
+			} catch ( \Exception $ex ) {
+				$response->addErrors(
+					new PaymentError(
+						ErrorCode::UNEXPECTED_VALUE,
+						$ex->getMessage(),
+						LogLevel::ERROR
+					)
+				);
+				Logger::debug( 'Unable to map Ingenico status', $rawResponse );
+			}
+		} else {
+			Logger::debug( 'Unable to map Ingenico status', $rawResponse );
+		}
+		// map errors
+		if ( !empty( $rootPaymentNode['statusOutput']['errors'] ) ) {
+			$response->addErrors( $this->mapErrors( $rootPaymentNode['statusOutput']['errors'] ) );
 		}
 	}
 

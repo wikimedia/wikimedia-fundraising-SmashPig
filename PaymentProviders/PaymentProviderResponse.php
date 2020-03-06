@@ -85,10 +85,13 @@ abstract class PaymentProviderResponse {
 	 * @return $this
 	 */
 	public function addErrors( $errors ) {
-		if ( is_array( $errors ) ) {
-			$this->errors = array_merge( $this->errors, $errors );
-		} else {
-			array_push( $this->errors, $errors );
+		if ( !is_array( $errors ) ) {
+			$errors = [ $errors ];
+		}
+		foreach ( $errors as $error ) {
+			if ( !$this->hasError( $error->getErrorCode() ) ) {
+				array_push( $this->errors, $error );
+			}
 		}
 		return $this;
 	}

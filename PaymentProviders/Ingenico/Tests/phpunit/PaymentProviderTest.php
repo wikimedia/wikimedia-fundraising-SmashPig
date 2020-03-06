@@ -53,11 +53,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $gatewayTxnId, $response->getGatewayTxnId() );
 	}
 
-	/**
-	 * @expectedException \SmashPig\Core\ApiException
-	 * @expectedExceptionMessage Ingenico error id 1105db54-9c91-4a97-baa7-3c4182458047 : Error code 410110: UNKNOWN ORDER OR NOT PENDING
-	 */
-	public function testApprovePaymentTopLevelErrorThrowsApiException() {
+	public function testApprovePaymentTopLevelError() {
 		$params = [
 			'gateway_txn_id' => '000000850010000188180000200001',
 			'directDebitPaymentMethodSpecificInput' => [
@@ -69,7 +65,13 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 
-		$this->provider->approvePayment( $params );
+		$response = $this->provider->approvePayment( $params );
+		$this->assertTrue( $response->hasErrors() );
+		$this->assertEquals( ErrorCode::UNKNOWN, $response->getErrors()[0]->getErrorCode() );
+		$this->assertEquals(
+			'{"code":"410110","requestId":"3927859","message":"UNKNOWN ORDER OR NOT PENDING"}',
+			$response->getErrors()[0]->getDebugMessage()
+		);
 	}
 
 	public function testCancelPayment() {
@@ -289,11 +291,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->provider->createPayment( $params );
 	}
 
-	/**
-	 * @expectedException \SmashPig\Core\ApiException
-	 * @expectedExceptionMessage Ingenico error id 657b10da-d2f9-4088-a948-bf190ef516b1-000002c5 : Error code 430285: Not authorised
-	 */
-	public function testCreatePaymentTopLevelErrorThrowsApiException() {
+	public function testCreatePaymentTopLevelError() {
 		$params = [
 			'recurring' => true,
 			'installment' => 'recurring',
@@ -308,7 +306,13 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 
-		$this->provider->createPayment( $params );
+		$response = $this->provider->createPayment( $params );
+		$this->assertTrue( $response->hasErrors() );
+		$this->assertEquals( ErrorCode::DECLINED, $response->getErrors()[0]->getErrorCode() );
+		$this->assertEquals(
+			'{"code":"430285","message":"Not authorised"}',
+			$response->getErrors()[0]->getDebugMessage()
+		);
 	}
 
 	public function testCreatePaymentUnknownStatusErrorIsHandled() {

@@ -41,6 +41,7 @@ class BankPaymentProvider extends PaymentProvider {
 	 *  listing banks for. Defaults to the code for iDEAL, the only product
 	 *  supported as of early 2017
 	 * @return array Keys are bank codes, values are names
+	 * @throws ApiException
 	 */
 	public function getBankList( $country, $currency, $productId = 809 ) {
 		$cacheKey = $this->makeCacheKey( $country, $currency, $productId );
@@ -54,19 +55,13 @@ class BankPaymentProvider extends PaymentProvider {
 			$path = "products/$productId/directory";
 			$banks = [];
 
-			try {
-				$response = $this->api->makeApiCall( $path, 'GET', $query );
+			$response = $this->api->makeApiCall( $path, 'GET', $query );
+			$this->checkForErrors( $response );
 
+			if ( !empty( $response['entries'] ) ) {
 				foreach ( $response['entries'] as $entry ) {
 					$banks[$entry['issuerId']] = $entry['issuerName'];
 				}
-			} catch ( ApiException $ex ) {
-				$errors = $ex->getRawErrors();
-				if ( empty( $errors ) || $errors[0]['httpStatusCode'] !== Response::HTTP_NOT_FOUND ) {
-					throw $ex;
-				}
-				// If there is a single 404 error, that means there is no directory info for
-				// the country/currency/product. That's legitimate, so cache the empty array
 			}
 			$duration = $this->cacheParameters['duration'];
 			$cacheItem->set( [
@@ -101,5 +96,23 @@ class BankPaymentProvider extends PaymentProvider {
 		}
 		$expiration = $value['expiration'];
 		return $expiration < time();
+	}
+
+	protected function checkForErrors( array $response ) {
+		if ( empty( $response['errors'] ) ) {
+			return;
+		}
+		$errors = $response['errors'];
+		if ( count( $errors ) === 1 && $errors[0]['httpStatusCode'] === Response::HTTP_NOT_FOUND ) {
+			// If there is a single 404 error, that means there is no directory info for the
+			// country/currency/product. That's legitimate, so return and cache the empty array
+			return;
+		}
+		$stringified = json_encode( $errors );
+		$apiException = new ApiException(
+			"Ingenico Error {$response['error_id']}: $stringified"
+		);
+		$apiException->setRawErrors( $errors );
+		throw $apiException;
 	}
 }
