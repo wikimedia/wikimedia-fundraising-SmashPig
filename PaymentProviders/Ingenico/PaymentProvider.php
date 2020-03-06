@@ -56,10 +56,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 
 		$rawResponse = $this->api->makeApiCall( $path, 'POST', $createPaymentParams );
 		$response = new CreatePaymentResponse();
-		$response->setRawResponse( $rawResponse );
-
-		$this->processErrorsForResponseObject( $response, $rawResponse );
-
+		$this->prepareResponseObject( $response, $rawResponse );
 		return $response;
 	}
 
@@ -89,10 +86,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 		$rawResponse = $this->api->makeApiCall( $path, 'POST', $params );
 
 		$response = new ApprovePaymentResponse();
-		$response->setRawResponse( $rawResponse );
-
-		$this->processErrorsForResponseObject( $response, $rawResponse );
-
+		$this->prepareResponseObject( $response, $rawResponse );
 		return $response;
 	}
 
@@ -233,7 +227,9 @@ abstract class PaymentProvider implements IPaymentProvider {
 		}
 	}
 
-	protected function processErrorsForResponseObject( $response, $rawResponse ) {
+	protected function prepareResponseObject( $response, $rawResponse ) {
+		$response->setRawResponse( $rawResponse );
+
 		if ( isset( $rawResponse['payment'] ) ) {
 			// map trxn id
 			if ( !empty( $rawResponse['payment']['id'] ) ) {
@@ -274,7 +270,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 				$response->addErrors( $this->mapErrors( $rawResponse['payment']['statusOutput']['errors'] ) );
 			}
 		} else {
-			$responseError = 'payment element missing from Ingenico createPayment response.';
+			$responseError = 'payment element missing from Ingenico response.';
 			$response->addErrors(
 				new PaymentError(
 					ErrorCode::MISSING_REQUIRED_DATA,
