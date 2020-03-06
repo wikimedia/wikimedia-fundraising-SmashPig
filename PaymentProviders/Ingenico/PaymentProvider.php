@@ -88,8 +88,9 @@ abstract class PaymentProvider implements IPaymentProvider {
 	public function approvePayment( $params ) {
 		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
 		$gatewayTxnId = $params['gateway_txn_id'];
+
 		$path = "payments/$gatewayTxnId/approve";
-		$rawResponse = $this->api->makeApiCall( $path, 'POST', $params );
+		$rawResponse = $this->api->makeApiCall( $path, 'POST', [] );
 
 		$response = new ApprovePaymentResponse();
 		$this->prepareResponseObject( $response, $rawResponse );
