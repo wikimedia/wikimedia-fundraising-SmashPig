@@ -2,11 +2,11 @@
 namespace SmashPig\Tests;
 
 use PHPUnit_Framework_MockObject_MockObject;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\CurlWrapper;
 
-class BaseSmashPigUnitTestCase extends PHPUnit_Framework_TestCase {
+class BaseSmashPigUnitTestCase extends TestCase {
 	/**
 	 * @var PHPUnit_Framework_MockObject_MockObject
 	 */
