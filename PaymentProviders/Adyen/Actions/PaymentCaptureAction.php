@@ -26,6 +26,11 @@ class PaymentCaptureAction implements IListenerMessageAction {
 				return true;
 			}
 
+			// Ignore ipn messages from ideal
+			if ( isset( $msg->paymentMethod ) && $msg->paymentMethod == 'ideal' ) {
+				return true;
+			}
+
 			if ( $msg->success ) {
 				// Here we need to capture the payment, the job runner will collect the
 				// orphan message
