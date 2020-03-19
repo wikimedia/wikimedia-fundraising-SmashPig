@@ -1,16 +1,13 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Test;
 
 use PHPQueue\Backend\PDO;
-use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\JsonSerializableObject;
 use SmashPig\Core\DataStores\PaymentsFraudDatabase;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\DataStores\QueueWrapper;
-use SmashPig\Core\ProviderConfiguration;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
-use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * Verify Adyen Capture job functions
@@ -49,12 +46,19 @@ class CaptureJobTest extends BaseAdyenTestCase {
 	 * in the pending database, add an antifraud message, and return true.
 	 */
 	public function testSuccessfulCapture() {
-		$api = $this->config->object( 'api', true );
-
 		$auth = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
 		);
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'approvePayment' )
+			->with( [
+				'amount' => 10,
+				'currency' => 'USD',
+				'gateway_txn_id' => '762895314225'
+			] )
+			->willReturn( AdyenTestConfiguration::getSuccessfulApproveResult() );
 
 		$job = ProcessCaptureRequestJob::factory( $auth );
 		$this->assertTrue( $job->execute() );
@@ -70,16 +74,6 @@ class CaptureJobTest extends BaseAdyenTestCase {
 		$this->assertTrue(
 			$donorData['captured'],
 			'RequestCaptureJob did not mark donor data as captured'
-		);
-
-		$this->assertEquals(
-			[
-				'currency' => 'USD',
-				'amount' => 10,
-				'pspReference' => '762895314225',
-			],
-			$api->captured[0],
-			'RequestCaptureJob did not make the right capture call'
 		);
 
 		$antifraudMessage = $this->antifraudQueue->pop();
@@ -99,14 +93,15 @@ class CaptureJobTest extends BaseAdyenTestCase {
 	 * we should not capture the payment, but leave the donor details.
 	 */
 	public function testReviewThreshold() {
-		$api = $this->config->object( 'api', true );
-
 		$auth = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
 		);
 
 		$auth->avsResult = '1'; // Bad zip code pushes us over review
+
+		$this->mockApi->expects( $this->never() )
+			->method( 'approvePayment' );
 
 		$job = ProcessCaptureRequestJob::factory( $auth );
 		$this->assertTrue( $job->execute() );
@@ -121,11 +116,6 @@ class CaptureJobTest extends BaseAdyenTestCase {
 		$this->assertTrue(
 			empty( $donorData['captured'] ),
 			'RequestCaptureJob marked donor data above review threshold as captured'
-		);
-
-		$this->assertEmpty(
-			$api->captured,
-			'RequestCaptureJob tried to capture above review threshold'
 		);
 
 		$antifraudMessage = $this->antifraudQueue->pop();
@@ -145,8 +135,6 @@ class CaptureJobTest extends BaseAdyenTestCase {
 	 * we should cancel the authorization and delete the donor details.
 	 */
 	public function testRejectThreshold() {
-		$api = $this->config->object( 'api', true );
-
 		$auth = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
@@ -154,6 +142,14 @@ class CaptureJobTest extends BaseAdyenTestCase {
 
 		$auth->avsResult = '2'; // No match at all
 		$auth->cvvResult = '2'; // CVV is also wrong
+
+		$this->mockApi->expects( $this->never() )
+			->method( 'approvePayment' );
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'cancel' )
+			->with( $auth->pspReference )
+			->willReturn( AdyenTestConfiguration::getSuccessfulCancelResult() );
 
 		$job = ProcessCaptureRequestJob::factory( $auth );
 		$this->assertTrue( $job->execute() );
@@ -164,16 +160,6 @@ class CaptureJobTest extends BaseAdyenTestCase {
 		$this->assertNull(
 			$donorData,
 			'RequestCaptureJob should delete fraudy donor data'
-		);
-
-		$this->assertEmpty(
-			$api->captured,
-			'RequestCaptureJob tried to capture above reject threshold'
-		);
-		$this->assertEquals(
-			$auth->pspReference,
-			$api->cancelled[0],
-			'Did not cancel the fraudulent authorization'
 		);
 
 		$antifraudMessage = $this->antifraudQueue->pop();
@@ -193,33 +179,33 @@ class CaptureJobTest extends BaseAdyenTestCase {
 	 * should cancel the second one and leave the donor details in pending.
 	 */
 	public function testDuplicateAuthorisation() {
-		$api = $this->config->object( 'api', true );
-
 		$auth1 = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
 		);
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'approvePayment' )
+			->willReturn( AdyenTestConfiguration::getSuccessfulApproveResult() );
+
 		$job1 = ProcessCaptureRequestJob::factory( $auth1 );
 		$job1->execute();
-
-		$this->assertEquals( 1, count( $api->captured ), 'Set up failed' );
 
 		$auth2 = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
 		);
 		$auth2->pspReference = mt_rand( 1000000000, 10000000000 );
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'cancel' )
+			->with( $auth2->pspReference )
+			->willReturn( AdyenTestConfiguration::getSuccessfulCancelResult() );
+
 		$job2 = ProcessCaptureRequestJob::factory( $auth2 );
 		$this->assertTrue(
 			$job2->execute(),
 			'Duplicate auths should not clutter damage queue'
-		);
-
-		$this->assertEquals( 1, count( $api->captured ), 'Captured a duplicate!' );
-		$this->assertEquals(
-			$auth2->pspReference,
-			$api->cancelled[0],
-			'Did not cancel the right authorization'
 		);
 
 		$this->assertNotNull(
@@ -235,8 +221,6 @@ class CaptureJobTest extends BaseAdyenTestCase {
 	 * fredge to decide whether to capture.
 	 */
 	public function testFredgeFallback() {
-		$api = $this->config->object( 'api', true );
-
 		$auth = JsonSerializableObject::fromJsonProxy(
 			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/auth.json' )
@@ -259,18 +243,17 @@ class CaptureJobTest extends BaseAdyenTestCase {
 			'date' => 1458060070,
 		] );
 
+		$this->mockApi->expects( $this->once() )
+			->method( 'approvePayment' )
+			->with( [
+				'amount' => 10,
+				'currency' => 'USD',
+				'gateway_txn_id' => '762895314225'
+			] )
+			->willReturn( AdyenTestConfiguration::getSuccessfulApproveResult() );
+
 		$job = ProcessCaptureRequestJob::factory( $auth );
 		$this->assertTrue( $job->execute() );
-
-		$this->assertEquals(
-			[
-				'currency' => 'USD',
-				'amount' => 10,
-				'pspReference' => '762895314225',
-			],
-			$api->captured[0],
-			'RequestCaptureJob did not make the right capture call'
-		);
 
 		$antifraudMessage = $this->antifraudQueue->pop();
 		$this->assertNotNull(

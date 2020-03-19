@@ -5,7 +5,6 @@ use PHPQueue\Interfaces\FifoQueueStore;
 use SmashPig\Core\Context;
 use SmashPig\PaymentProviders\Adyen\Actions\CaptureResponseAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
-use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * @group Adyen

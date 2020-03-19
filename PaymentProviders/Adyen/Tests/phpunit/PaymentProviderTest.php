@@ -2,7 +2,6 @@
 
 namespace SmashPig\PaymentProviders\Adyen\Tests\phpunit;
 
-use SmashPig\Core\Context;
 use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentProviders\Adyen\PaymentProvider;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
@@ -20,26 +19,13 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$ctx = Context::get();
-		$this->config = AdyenTestConfiguration::instance( [], $ctx->getGlobalConfiguration() );
 		$this->provider = new PaymentProvider();
-		$ctx->setProviderConfiguration( $this->config );
 	}
 
 	public function testGoodApprovePayment() {
-		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
-		$mockApi->expects( $this->once() )
+		$this->mockApi->expects( $this->once() )
 			->method( 'approvePayment' )
-			->willReturn( (object)[ 'captureResult' => (object)[
-				'response' => '[capture-received]',
-				'pspReference' => '00000000000000AB'
-			]
-			] );
-
-		$reflection = new \ReflectionObject( $this->provider );
-		$reflection_property = $reflection->getProperty( 'api' );
-		$reflection_property->setAccessible( true );
-		$reflection_property->setValue( $this->provider, $mockApi );
+			->willReturn( AdyenTestConfiguration::getSuccessfulApproveResult() );
 
 		// test params
 		$params['gateway_txn_id'] = "CAPTURE-TEST-" . rand( 0, 100 );
@@ -64,15 +50,9 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 	 *
 	 */
 	public function testBadApprovePayment() {
-		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
-		$mockApi->expects( $this->once() )
+		$this->mockApi->expects( $this->once() )
 			->method( 'approvePayment' )
 			->willReturn( false );
-
-		$reflection = new \ReflectionObject( $this->provider );
-		$reflection_property = $reflection->getProperty( 'api' );
-		$reflection_property->setAccessible( true );
-		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
 		$params['gateway_txn_id'] = "INVALID-ID-0000";
@@ -94,19 +74,13 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 	}
 
 	public function testUnknownStatusReturnedForApprovePayment() {
-		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
-		$mockApi->expects( $this->once() )
+		$this->mockApi->expects( $this->once() )
 			->method( 'approvePayment' )
 			->willReturn( (object)[ 'captureResult' => (object)[
 				'response' => '[unknown-status]',
 				'pspReference' => '00000000000000AB'
 			]
 			] );
-
-		$reflection = new \ReflectionObject( $this->provider );
-		$reflection_property = $reflection->getProperty( 'api' );
-		$reflection_property->setAccessible( true );
-		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
 		$params['gateway_txn_id'] = "CAPTURE-TEST-" . rand( 0, 100 );
@@ -129,19 +103,9 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 	}
 
 	public function testGoodCancelPayment() {
-		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
-		$mockApi->expects( $this->once() )
+		$this->mockApi->expects( $this->once() )
 			->method( 'cancel' )
-			->willReturn( (object)[ 'cancelResult' => (object)[
-				'response' => '[cancel-received]',
-				'pspReference' => '00000000000000AB'
-			]
-			] );
-
-		$reflection = new \ReflectionObject( $this->provider );
-		$reflection_property = $reflection->getProperty( 'api' );
-		$reflection_property->setAccessible( true );
-		$reflection_property->setValue( $this->provider, $mockApi );
+			->willReturn( AdyenTestConfiguration::getSuccessfulCancelResult() );
 
 		// test params
 		$params['gateway_txn_id'] = "CANCEL-TEST-" . rand( 0, 100 );
@@ -166,15 +130,9 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 	 *
 	 */
 	public function testBadCancelPayment() {
-		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
-		$mockApi->expects( $this->once() )
+		$this->mockApi->expects( $this->once() )
 			->method( 'cancel' )
 			->willReturn( false );
-
-		$reflection = new \ReflectionObject( $this->provider );
-		$reflection_property = $reflection->getProperty( 'api' );
-		$reflection_property->setAccessible( true );
-		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
 		$params['gateway_txn_id'] = "INVALID-ID-0000";

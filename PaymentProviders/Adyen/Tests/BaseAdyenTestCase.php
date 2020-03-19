@@ -13,12 +13,16 @@ class BaseAdyenTestCase extends BaseSmashPigUnitTestCase {
 	 */
 	public $config;
 
+	/**
+	 * @var \PHPUnit_Framework_MockObject_MockObject
+	 */
+	protected $mockApi;
+
 	public function setUp() {
 		parent::setUp();
+		$this->mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
 		$ctx = Context::get();
-		$this->config = AdyenTestConfiguration::createWithSuccessfulApi(
-			$ctx->getGlobalConfiguration()
-		);
+		$this->config = AdyenTestConfiguration::instance( $this->mockApi, $ctx->getGlobalConfiguration() );
 		$ctx->setProviderConfiguration( $this->config );
 	}
 }

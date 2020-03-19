@@ -2,11 +2,9 @@
 
 namespace SmashPig\PaymentProviders\Adyen\Test;
 
-use SmashPig\Core\Context;
 use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentProviders\Adyen\PaymentProvider;
 use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
-use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 
 /**
  * @group Adyen
@@ -21,26 +19,17 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$ctx = Context::get();
-		$this->config = AdyenTestConfiguration::instance( [], $ctx->getGlobalConfiguration() );
 		$this->provider = new PaymentProvider();
-		$ctx->setProviderConfiguration( $this->config );
 	}
 
 	public function testGoodRecurringCreatePaymentCall() {
-		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
-		$mockApi->expects( $this->once() )
+		$this->mockApi->expects( $this->once() )
 			->method( 'createPayment' )
 			->willReturn( (object)[ 'paymentResult' => (object)[
 				'resultCode' => 'Authorised',
 				'pspReference' => '00000000000000AB'
 			]
 			] );
-
-		$reflection = new \ReflectionObject( $this->provider );
-		$reflection_property = $reflection->getProperty( 'api' );
-		$reflection_property->setAccessible( true );
-		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
 		$params['recurring'] = true;
@@ -62,8 +51,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 	 * @dataProvider cannotRetryRefusalReasons
 	 */
 	public function testNonRetryableFailedRecurringCreatePaymentCall( $refusalReason ) {
-		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
-		$mockApi->expects( $this->once() )
+		$this->mockApi->expects( $this->once() )
 			->method( 'createPayment' )
 			->willReturn( (object)[ 'paymentResult' => (object)[
 				'resultCode' => 'Refused',
@@ -71,11 +59,6 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 				'pspReference' => '00000000000000AB'
 			]
 			] );
-
-		$reflection = new \ReflectionObject( $this->provider );
-		$reflection_property = $reflection->getProperty( 'api' );
-		$reflection_property->setAccessible( true );
-		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
 		$params['recurring'] = true;
@@ -99,8 +82,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 	 * @dataProvider canRetryRefusalReasons
 	 */
 	public function testRetryableFailedRecurringCreatePaymentCall( $refusalReason ) {
-		$mockApi = $this->createMock( 'SmashPig\PaymentProviders\Adyen\Api' );
-		$mockApi->expects( $this->once() )
+		$this->mockApi->expects( $this->once() )
 			->method( 'createPayment' )
 			->willReturn( (object)[ 'paymentResult' => (object)[
 				'resultCode' => 'Refused',
@@ -108,11 +90,6 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 				'pspReference' => '00000000000000AB'
 			]
 			] );
-
-		$reflection = new \ReflectionObject( $this->provider );
-		$reflection_property = $reflection->getProperty( 'api' );
-		$reflection_property->setAccessible( true );
-		$reflection_property->setValue( $this->provider, $mockApi );
 
 		// test params
 		$params['recurring'] = true;

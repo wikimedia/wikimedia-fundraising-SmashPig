@@ -1,12 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Test;
 
-use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\JsonSerializableObject;
-use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
-use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
-use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
  * Make sure a message that arrives before the pending databases entry gets
