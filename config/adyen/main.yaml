@@ -39,7 +39,13 @@ accounts: {}
 
 payment-provider:
     cc:
-        class: SmashPig\PaymentProviders\Adyen\PaymentProvider
+        class: SmashPig\PaymentProviders\Adyen\CardPaymentProvider
+    dd:
+        class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
+    rtbt:
+        # For now we only handle recurring rtbt, which is treated
+        # as direct debit under the hood.
+        class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
 
 fraud-filters:
     # Automatically capture authorizations under this score

@@ -20,7 +20,7 @@ use SmashPig\PaymentProviders\IPaymentProvider;
  *
  *
  */
-class PaymentProvider implements IPaymentProvider {
+abstract class PaymentProvider implements IPaymentProvider {
 	/**
 	 * @var Api
 	 */
@@ -37,36 +37,10 @@ class PaymentProvider implements IPaymentProvider {
 	}
 
 	/**
-	 * @param $params
-	 * @return CreatePaymentResponse
-	 */
-	public function createPayment( $params ) {
-		$rawResponse = $this->api->createPayment( $params );
-		$response = new CreatePaymentResponse();
-		$response->setRawResponse( $rawResponse );
-
-		if ( !empty( $rawResponse->paymentResult ) ) {
-			$rawStatus = $rawResponse->paymentResult->resultCode ?? null;
-			$this->prepareResponseObject(
-				$response,
-				$rawResponse->paymentResult,
-				new CreatePaymentStatus(),
-				$rawStatus
-			);
-		} else {
-			$responseError = 'paymentResult element missing from Adyen createPayment response.';
-			$response->addErrors( new PaymentError(
-				ErrorCode::MISSING_REQUIRED_DATA,
-				$responseError,
-				LogLevel::ERROR
-			) );
-			Logger::debug( $responseError, $rawResponse );
-		}
-
-		return $response;
-	}
-
-	/**
+	 * FIXME: leaving this on the base class for now since subclasses need
+	 * an implementation and DirectDebit doesn't have one. Should probably
+	 * put this on a separate interface from IPaymentProvider
+	 *
 	 * @param $params
 	 * @return CreatePaymentResponse
 	 */

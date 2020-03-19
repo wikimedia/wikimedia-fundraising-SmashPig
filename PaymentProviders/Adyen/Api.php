@@ -46,15 +46,11 @@ class Api {
 	public function createPayment( $params ) {
 		$data = new WSDL\authorise();
 		$data->paymentRequest = new WSDL\PaymentRequest();
-
-		$data->paymentRequest->amount = new WSDL\Amount();
-		$data->paymentRequest->amount->currency = $params['currency'];
-		$data->paymentRequest->amount->value = $params['amount'] * 100;
+		$data->paymentRequest->amount = $this->getAmount( $params );
 
 		$isRecurring = $params['recurring'] ?? false;
 		if ( $isRecurring ) {
-			$data->paymentRequest->recurring = new WSDL\Recurring();
-			$data->paymentRequest->recurring->contract = static::RECURRING_CONTRACT;
+			$data->paymentRequest->recurring = $this->getRecurring();
 			$data->paymentRequest->shopperInteraction = static::RECURRING_SHOPPER_INTERACTION;
 			$data->paymentRequest->selectedRecurringDetailReference = static::RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE;
 			$data->paymentRequest->shopperReference = $params['recurring_payment_token'];
@@ -75,6 +71,60 @@ class Api {
 		}
 
 		return $response;
+	}
+
+	/**
+	 * @param array $params
+	 * @return bool|WSDL\directdebitFuncResponse
+	 */
+	public function createDirectDebitPayment( $params ) {
+		$data = new WSDL\directdebit();
+		$data->request = new WSDL\DirectDebitRequest();
+		$data->request->amount = $this->getAmount( $params );
+
+		$isRecurring = $params['recurring'] ?? false;
+		if ( $isRecurring ) {
+			$data->request->recurring = $this->getRecurring();
+			$data->request->shopperInteraction = self::RECURRING_SHOPPER_INTERACTION;
+			$data->request->selectedRecurringDetailReference = self::RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE;
+			$data->request->shopperReference = $params['recurring_payment_token'];
+		}
+
+		$data->request->reference = $params['order_id'];
+		$data->request->merchantAccount = $this->account;
+
+		$tl = new TaggedLogger( 'RawData' );
+		$tl->info( 'Launching SOAP directdebit request', $data );
+
+		try {
+			$response = $this->soapClient->directdebit( $data );
+			Logger::debug( $this->soapClient->__getLastRequest() );
+		} catch ( \Exception $ex ) {
+			Logger::error( 'SOAP directdebit request threw exception!', null, $ex );
+			return false;
+		}
+
+		return $response;
+	}
+
+	/**
+	 * @param array $params
+	 * @return WSDL\Amount
+	 */
+	private function getAmount( $params ) {
+		$amount = new WSDL\Amount();
+		$amount->currency = $params['currency'];
+		$amount->value = $params['amount'] * 100;
+		return $amount;
+	}
+
+	/**
+	 * @return WSDL\Recurring
+	 */
+	private function getRecurring() {
+		$recurring = new WSDL\Recurring();
+		$recurring->contract = static::RECURRING_CONTRACT;
+		return $recurring;
 	}
 
 	/**

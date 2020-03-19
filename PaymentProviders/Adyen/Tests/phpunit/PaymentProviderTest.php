@@ -3,7 +3,7 @@
 namespace SmashPig\PaymentProviders\Adyen\Tests\phpunit;
 
 use SmashPig\PaymentData\ErrorCode;
-use SmashPig\PaymentProviders\Adyen\PaymentProvider;
+use SmashPig\PaymentProviders\Adyen\CardPaymentProvider;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
 
@@ -13,13 +13,13 @@ use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
 class PaymentProviderTest extends BaseAdyenTestCase {
 
 	/**
-	 * @var PaymentProvider
+	 * @var CardPaymentProvider
 	 */
 	public $provider;
 
 	public function setUp() {
 		parent::setUp();
-		$this->provider = new PaymentProvider();
+		$this->provider = new CardPaymentProvider();
 	}
 
 	public function testGoodApprovePayment() {

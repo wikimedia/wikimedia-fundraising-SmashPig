@@ -6,7 +6,7 @@ require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\PaymentProviders\Adyen\PaymentProvider;
+use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\PaymentProviderFactory;
 
 $maintClass = 'SmashPig\PaymentProviders\Adyen\Maintenance\TestAdyenRecurring';
@@ -21,6 +21,7 @@ class TestAdyenRecurring extends MaintenanceBase {
 		$this->addOption( 'token', 'recurring payment token', false );
 		$this->addOption( 'currency', 'recurring payment currency', false );
 		$this->addOption( 'amount', 'recurring payment amount', false );
+		$this->addOption( 'method', 'payment method', 'cc' );
 
 		$this->desiredOptions['config-node']['default'] = 'adyen';
 	}
@@ -29,7 +30,7 @@ class TestAdyenRecurring extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 */
 	public function execute() {
-		$adyen = PaymentProviderFactory::getProviderForMethod( 'cc' );
+		$adyen = PaymentProviderFactory::getProviderForMethod( $this->getOption( 'method' ) );
 
 		// it feels like we should tell createPayment this a recurring authorise call in the event that
 		// we add in the option to make non-recurring authorise calls in the future.
@@ -47,15 +48,22 @@ class TestAdyenRecurring extends MaintenanceBase {
 			Logger::info( "Recurring Payment Authorised: " . json_encode( $createPaymentResponse->getRawResponse() ) );
 		} else {
 			Logger::info( "Recurring Payment Attempt Failed: " . json_encode( $createPaymentResponse->getRawResponse() ) );
+			return;
 		}
 
-		// this is the Capture call
-		$params['gateway_txn_id'] = $createPaymentResponse->getGatewayTxnId();
-		$approvePaymentResponse = $adyen->approvePayment( $params );
-		if ( $approvePaymentResponse->isSuccessful() ) {
-			Logger::info( "Recurring Payment Captured: " . json_encode( $approvePaymentResponse->getRawResponse() ) );
-		} else {
-			Logger::info( "Recurring Payment Attempt Failed: " . json_encode( $approvePaymentResponse->getRawResponse() ) );
+		if ( $createPaymentResponse->getStatus() === FinalStatus::PENDING_POKE ) {
+			// this is the Capture call
+			$params['gateway_txn_id'] = $createPaymentResponse->getGatewayTxnId();
+			$approvePaymentResponse = $adyen->approvePayment( $params );
+			if ( $approvePaymentResponse->isSuccessful() ) {
+				Logger::info(
+					"Recurring Payment Captured: " . json_encode( $approvePaymentResponse->getRawResponse() )
+				);
+			} else {
+				Logger::info(
+					"Recurring Payment Attempt Failed: " . json_encode( $approvePaymentResponse->getRawResponse() )
+				);
+			}
 		}
 	}
 }

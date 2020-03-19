@@ -3,6 +3,8 @@
 namespace SmashPig\PaymentProviders\Adyen\Test;
 
 use SmashPig\PaymentData\ErrorCode;
+use SmashPig\PaymentProviders\Adyen\CardPaymentProvider;
+use SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider;
 use SmashPig\PaymentProviders\Adyen\PaymentProvider;
 use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
 
@@ -19,7 +21,17 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 
 	public function setUp() {
 		parent::setUp();
-		$this->provider = new PaymentProvider();
+		$this->provider = new CardPaymentProvider();
+	}
+
+	protected function getTestParams() {
+		return [
+			'recurring' => true,
+			'order_id' => 'RECURRING-TEST-' . rand( 0, 10000 ),
+			'recurring_payment_token' => 'TEST-TOKEN-123',
+			'currency' => 'USD',
+			'amount' => '9.99',
+		];
 	}
 
 	public function testGoodRecurringCreatePaymentCall() {
@@ -31,12 +43,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 			]
 			] );
 
-		// test params
-		$params['recurring'] = true;
-		$params['order_id'] = "RECURRING-TEST-" . rand( 0, 10000 );
-		$params['recurring_payment_token'] = 'TEST-TOKEN-123';
-		$params['currency'] = 'USD';
-		$params['amount'] = '9.99';
+		$params = $this->getTestParams();
 
 		$createPaymentResponse = $this->provider->createPayment( $params );
 
@@ -60,12 +67,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 			]
 			] );
 
-		// test params
-		$params['recurring'] = true;
-		$params['order_id'] = "RECURRING-TEST-" . rand( 0, 10000 );
-		$params['recurring_payment_token'] = 'TEST-TOKEN-123';
-		$params['currency'] = 'USD';
-		$params['amount'] = '9.99';
+		$params = $this->getTestParams();
 
 		$createPaymentResponse = $this->provider->createPayment( $params );
 
@@ -91,12 +93,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 			]
 			] );
 
-		// test params
-		$params['recurring'] = true;
-		$params['order_id'] = "RECURRING-TEST-" . rand( 0, 10000 );
-		$params['recurring_payment_token'] = 'TEST-TOKEN-123';
-		$params['currency'] = 'USD';
-		$params['amount'] = '9.99';
+		$params = $this->getTestParams();
 
 		$createPaymentResponse = $this->provider->createPayment( $params );
 
@@ -164,4 +161,53 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 			[ 'Issuer Suspected Fraud' ]
 		];
 	}
+
+	public function testGoodRecurringCreateDirectDebitPaymentCall() {
+		$this->provider = new DirectDebitPaymentProvider();
+		$params = $this->getTestParams();
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'createDirectDebitPayment' )
+			->willReturn( (object)[ 'response' => (object)[
+				'resultCode' => 'Received',
+				'pspReference' => '00000000000000AB'
+			] ] );
+
+		$createPaymentResponse = $this->provider->createPayment( $params );
+
+		$this->assertInstanceOf(
+			'\SmashPig\PaymentProviders\CreatePaymentResponse',
+			$createPaymentResponse
+		);
+		$this->assertEquals( 0, count( $createPaymentResponse->getErrors() ) );
+		$this->assertTrue( $createPaymentResponse->isSuccessful() );
+	}
+
+	public function testBadRecurringCreateDirectDebitPaymentCall() {
+		$this->provider = new DirectDebitPaymentProvider();
+		$params = $this->getTestParams();
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'createDirectDebitPayment' )
+			->willReturn( (object)[ 'response' => (object)[
+				'additionalData' => null,
+				'fraudResult' => null,
+				'refusalReason' => '800 Contract not found',
+				'resultCode' => 'Refused',
+				'pspReference' => '851584732543280B'
+			] ] );
+
+		$createPaymentResponse = $this->provider->createPayment( $params );
+
+		$this->assertInstanceOf(
+			'\SmashPig\PaymentProviders\CreatePaymentResponse',
+			$createPaymentResponse
+		);
+		$this->assertFalse( $createPaymentResponse->isSuccessful() );
+		$this->assertEquals( 1, count( $createPaymentResponse->getErrors() ) );
+		$firstError = $createPaymentResponse->getErrors()[0];
+		$this->assertEquals( ErrorCode::DECLINED, $firstError->getErrorCode() );
+		$this->assertEquals( '800 Contract not found', $firstError->getDebugMessage() );
+	}
+
 }
