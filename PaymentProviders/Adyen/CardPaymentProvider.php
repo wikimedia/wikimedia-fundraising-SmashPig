@@ -22,12 +22,15 @@ class CardPaymentProvider extends PaymentProvider {
 		$response->setRawResponse( $rawResponse );
 
 		if ( !empty( $rawResponse->paymentResult ) ) {
-			$rawStatus = $rawResponse->paymentResult->resultCode ?? null;
-			$this->prepareResponseObject(
+			$this->mapTxnIdAndErrors(
 				$response,
-				$rawResponse->paymentResult,
+				$rawResponse->paymentResult
+			);
+			$this->mapStatus(
+				$response,
+				$rawResponse,
 				new CreatePaymentStatus(),
-				$rawStatus
+				$rawResponse->paymentResult->resultCode ?? null
 			);
 		} else {
 			$responseError = 'paymentResult element missing from Adyen createPayment response.';
