@@ -220,7 +220,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected function cancelAuthorization() {
 		$this->logger->debug( "Cancelling authorization with reference '{$this->pspReference}'" );
 		$provider = $this->getProvider();
-		$result = $provider->cancel( $this->pspReference );
+		$result = $provider->cancelPayment( $this->pspReference );
 		if ( $result->isSuccessful() ) {
 			$this->logger->debug( "Successfully cancelled authorization" );
 		} else {

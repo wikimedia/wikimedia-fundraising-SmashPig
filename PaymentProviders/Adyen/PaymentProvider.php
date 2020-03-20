@@ -71,11 +71,13 @@ abstract class PaymentProvider implements IPaymentProvider {
 	}
 
 	/**
-	 * @param $params
+	 * Cancels a payment
+	 *
+	 * @param string $gatewayTxnId
 	 * @return CreatePaymentResponse
 	 */
-	public function cancel( $params ) {
-		$rawResponse = $this->api->cancel( $params );
+	public function cancelPayment( $gatewayTxnId ) {
+		$rawResponse = $this->api->cancel( $gatewayTxnId );
 		$response = new CancelPaymentResponse();
 		$response->setRawResponse( $rawResponse );
 

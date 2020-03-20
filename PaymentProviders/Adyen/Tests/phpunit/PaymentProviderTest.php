@@ -103,16 +103,14 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 	}
 
 	public function testGoodCancelPayment() {
+		$gatewayTxnId = 'CANCEL-TEST-' . rand( 0, 100 );
+
 		$this->mockApi->expects( $this->once() )
 			->method( 'cancel' )
+			->with( $gatewayTxnId )
 			->willReturn( AdyenTestConfiguration::getSuccessfulCancelResult() );
 
-		// test params
-		$params['gateway_txn_id'] = "CANCEL-TEST-" . rand( 0, 100 );
-		$params['currency'] = 'USD';
-		$params['currency'] = '9.99';
-
-		$cancelPaymentResponse = $this->provider->cancel( $params );
+		$cancelPaymentResponse = $this->provider->cancelPayment( $gatewayTxnId );
 
 		$this->assertInstanceOf( '\SmashPig\PaymentProviders\CancelPaymentResponse',
 			$cancelPaymentResponse );
@@ -130,16 +128,14 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 	 *
 	 */
 	public function testBadCancelPayment() {
+		$gatewayTxnId = 'CANCEL-TEST-' . rand( 0, 100 );
+
 		$this->mockApi->expects( $this->once() )
 			->method( 'cancel' )
+			->with( $gatewayTxnId )
 			->willReturn( false );
 
-		// test params
-		$params['gateway_txn_id'] = "INVALID-ID-0000";
-		$params['currency'] = 'USD';
-		$params['currency'] = '9.99';
-
-		$cancelPaymentResponse = $this->provider->cancel( $params );
+		$cancelPaymentResponse = $this->provider->cancelPayment( $gatewayTxnId );
 
 		$this->assertInstanceOf( '\SmashPig\PaymentProviders\CancelPaymentResponse',
 			$cancelPaymentResponse );
