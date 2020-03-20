@@ -11,7 +11,9 @@ use SmashPig\PaymentProviders\CreatePaymentResponse;
 class CardPaymentProvider extends PaymentProvider {
 
 	/**
-	 * @param $params
+	 * Request authorization of a credit card payment
+	 *
+	 * @param array $params needs 'recurring_payment_token', 'order_id', 'recurring', 'amount', and 'currency'
 	 * @return CreatePaymentResponse
 	 */
 	public function createPayment( $params ) {

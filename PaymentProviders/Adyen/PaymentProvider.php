@@ -37,12 +37,13 @@ abstract class PaymentProvider implements IPaymentProvider {
 	}
 
 	/**
-	 * FIXME: leaving this on the base class for now since subclasses need
-	 * an implementation and DirectDebit doesn't have one. Should probably
-	 * put this on a separate interface from IPaymentProvider
+	 * Approves a payment
+	 * FIXME: Should probably put this on a separate interface from IPaymentProvider.
+	 * Leaving this on the base class for now since subclasses need
+	 * an implementation and DirectDebit doesn't have one.
 	 *
 	 * @param $params
-	 * @return CreatePaymentResponse
+	 * @return ApprovePaymentResponse
 	 */
 	public function approvePayment( $params ) {
 		$rawResponse = $this->api->approvePayment( $params );
@@ -106,11 +107,11 @@ abstract class PaymentProvider implements IPaymentProvider {
 	/**
 	 * Maps errors and other properties from $rawResponse to $response
 	 *
-	 * @param CreatePaymentResponse $response
-	 * @param object $rawResponse
-	 * @param FinalStatus $statusObject
-	 * @param string $rawStatus
-	 * @param bool $checkForRetry
+	 * @param CreatePaymentResponse $response An instance of a CreatePaymentResponse subclass to be populated
+	 * @param object $rawResponse The bit of the API response that has pspReference and refusalReason
+	 * @param FinalStatus $statusObject One of our status mapper objects FIXME: should have an interface
+	 * @param string $rawStatus The status string from the API response, either from 'resultCode' or 'response'
+	 * @param bool $checkForRetry Whether to test the rawStatus against a list of retryable status codes.
 	 */
 	protected function prepareResponseObject(
 		CreatePaymentResponse $response,
