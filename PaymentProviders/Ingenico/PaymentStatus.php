@@ -4,12 +4,13 @@ namespace SmashPig\PaymentProviders\Ingenico;
 
 use OutOfBoundsException;
 use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentData\StatusNormalizer;
 
 /**
  * Documented at:
  * https://epayments-api.developer-ingenico.com/s2sapi/v1/en_US/java/statuses.html
  */
-class PaymentStatus {
+class PaymentStatus implements StatusNormalizer {
 
 	// Initial state, before donor has entered anything
 	const CREATED = 'CREATED';
@@ -75,7 +76,7 @@ class PaymentStatus {
 		]
 	];
 
-	public function normalizeStatus( $ingenicoStatus ) {
+	public function normalizeStatus( string $ingenicoStatus ) : string {
 		foreach ( self::$statusMap as $finalStatus => $ingenicoStatuses ) {
 			if ( array_search( $ingenicoStatus, $ingenicoStatuses, true ) !== false ) {
 				return $finalStatus;

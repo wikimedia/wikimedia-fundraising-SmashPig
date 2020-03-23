@@ -4,20 +4,21 @@ namespace SmashPig\PaymentProviders\Adyen;
 
 use SmashPig\PaymentData\FinalStatus;
 use OutOfBoundsException;
+use SmashPig\PaymentData\StatusNormalizer;
 
-class CreatePaymentStatus extends FinalStatus {
+class CreatePaymentStatus implements StatusNormalizer {
 
 	/**
 	 * @param $adyenStatus
 	 * @return string
 	 */
-	public function normalizeStatus( $adyenStatus ) {
+	public function normalizeStatus( string $adyenStatus ) : string {
 		switch ( $adyenStatus ) {
 			case 'Authorised':
-				$status = static::COMPLETE;
+				$status = FinalStatus::COMPLETE;
 				break;
 			case 'Refused':
-				$status = static::FAILED;
+				$status = FinalStatus::FAILED;
 				break;
 			default:
 				throw new OutOfBoundsException( "Unknown Adyen status $adyenStatus" );

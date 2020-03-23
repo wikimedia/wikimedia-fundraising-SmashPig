@@ -8,7 +8,7 @@ use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\PaymentError;
 use SmashPig\PaymentData\ErrorCode;
-use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
@@ -109,7 +109,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 *
 	 * @param CreatePaymentResponse $response An instance of a CreatePaymentResponse subclass to be populated
 	 * @param object $rawResponse The bit of the API response that has pspReference and refusalReason
-	 * @param FinalStatus $statusObject One of our status mapper objects FIXME: should have an interface
+	 * @param StatusNormalizer $statusObject An instance of the appropriate status mapper class
 	 * @param string $rawStatus The status string from the API response, either from 'resultCode' or 'response'
 	 * @param bool $checkForRetry Whether to test the rawStatus against a list of retryable status codes.
 	 */
