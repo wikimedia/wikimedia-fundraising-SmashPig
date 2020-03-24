@@ -69,7 +69,7 @@ class IngenicoAudit implements AuditParser {
 		'+AP' => 'donation', // Direct Debit collected
 	];
 
-	public function parseFile( $path ) {
+	public function parseFile( string $path ) : array {
 		$this->fileData = [];
 		$unzippedFullPath = $this->getUnzippedFile( $path );
 
@@ -114,7 +114,7 @@ class IngenicoAudit implements AuditParser {
 		$this->fileData[] = $record;
 	}
 
-	protected function parseDonation( DOMElement $recordNode, $gateway ) {
+	protected function parseDonation( DOMElement $recordNode, string $gateway ) : array {
 		$record = $this->xmlToArray( $recordNode, $this->donationMap );
 		if ( $record['order_id'] === '0' && !empty( $record['gc_payment_reference'] ) ) {
 			$record['order_id'] = $record['gc_payment_reference'];
@@ -152,7 +152,7 @@ class IngenicoAudit implements AuditParser {
 	 * installment's EffortID. We want to know which one we refunded.
 	 *
 	 */
-	protected function parseRefund( DOMElement $recordNode, $type, $gateway ) {
+	protected function parseRefund( DOMElement $recordNode, string $type, string $gateway ) : array {
 		$record = $this->xmlToArray( $recordNode, $this->refundMap );
 		$record['type'] = $type;
 
@@ -180,7 +180,7 @@ class IngenicoAudit implements AuditParser {
 		return $record;
 	}
 
-	protected function xmlToArray( DOMElement $recordNode, $map ) {
+	protected function xmlToArray( DOMElement $recordNode, array $map ) : array {
 		$record = [];
 		foreach ( $map as $theirs => $ours ) {
 			foreach ( $recordNode->getElementsByTagName( $theirs ) as $recordItem ) {
@@ -197,7 +197,7 @@ class IngenicoAudit implements AuditParser {
 	 * @param array $record The record from the wx file, in array format
 	 * @return array The $record param with our normal keys appended
 	 */
-	function addPaymentMethod( $record ) {
+	function addPaymentMethod( array $record ) : array {
 		$normalized = ReferenceData::decodePaymentMethod(
 			$record['gc_product_id']
 		);
@@ -211,7 +211,7 @@ class IngenicoAudit implements AuditParser {
 	 * @param string $path Path to original zipped file
 	 * @return string Path to unzipped file in working directory
 	 */
-	protected function getUnzippedFile( $path ) {
+	protected function getUnzippedFile( string $path ) : string {
 		$zippedParts = explode( DIRECTORY_SEPARATOR, $path );
 		$zippedFilename = array_pop( $zippedParts );
 		// TODO keep unzipped files around?
@@ -249,7 +249,7 @@ class IngenicoAudit implements AuditParser {
 		return $unzippedFullPath;
 	}
 
-	protected function getConnectPaymentId( $record ) {
+	protected function getConnectPaymentId( array $record ) : string {
 		$merchantId = str_pad(
 			$record['merchant_id'], 10, '0', STR_PAD_LEFT
 		);
@@ -274,7 +274,7 @@ class IngenicoAudit implements AuditParser {
 	 * @param array $record
 	 * @return array The record, with values normalized
 	 */
-	protected function normalizeValues( $record ) {
+	protected function normalizeValues( array $record ) : array {
 		if ( isset( $record['gross'] ) ) {
 			$record['gross'] = $record['gross'] / 100;
 		}
@@ -292,7 +292,7 @@ class IngenicoAudit implements AuditParser {
 		return $record;
 	}
 
-	protected function getGateway( DOMElement $recordNode ) {
+	protected function getGateway( DOMElement $recordNode ) : string {
 		// Heuristics to determine which API integration the txn came in on.
 		$paymentProductNode = $recordNode->getElementsByTagName( 'PaymentProductId' );
 		if ( $paymentProductNode->length > 0 ) {

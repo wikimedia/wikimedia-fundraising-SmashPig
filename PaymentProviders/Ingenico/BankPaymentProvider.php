@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Ingenico;
 
+use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use SmashPig\Core\Context;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,8 +43,9 @@ class BankPaymentProvider extends PaymentProvider {
 	 *  supported as of early 2017
 	 * @return array Keys are bank codes, values are names
 	 * @throws ApiException
+	 * @throws \Psr\Cache\InvalidArgumentException
 	 */
-	public function getBankList( $country, $currency, $productId = 809 ) {
+	public function getBankList( string $country, string $currency, int $productId = 809 ) : array {
 		$cacheKey = $this->makeCacheKey( $country, $currency, $productId );
 		$cacheItem = $this->cache->getItem( $cacheKey );
 
@@ -75,7 +77,7 @@ class BankPaymentProvider extends PaymentProvider {
 		return $cached['value'];
 	}
 
-	protected function makeCacheKey( $country, $currency, $productId ) {
+	protected function makeCacheKey( string $country, string $currency, int $productId ) : string {
 		$base = $this->cacheParameters['key-base'];
 		return "{$base}_{$country}_{$currency}_{$productId}";
 	}
@@ -86,10 +88,10 @@ class BankPaymentProvider extends PaymentProvider {
 	 * TODO: move to Core if we need to use this elsewhere. Though another
 	 * layer of cache wrapping seems unfun.
 	 *
-	 * @param \Psr\Cache\CacheItemInterface $cacheItem
+	 * @param CacheItemInterface $cacheItem
 	 * @return bool True if the item should have been dropped by Memcache
 	 */
-	protected function shouldBeExpired( $cacheItem ) {
+	protected function shouldBeExpired( CacheItemInterface $cacheItem ) : bool {
 		$value = $cacheItem->get();
 		if ( !isset( $value['expiration'] ) ) {
 			return true;

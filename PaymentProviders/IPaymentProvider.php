@@ -8,11 +8,11 @@ interface IPaymentProvider {
 	 * @param $params
 	 * @return CreatePaymentResponse
 	 */
-	public function createPayment( $params );
+	public function createPayment( array $params ) : CreatePaymentResponse;
 
 	/**
 	 * @param $params
 	 * @return ApprovePaymentResponse
 	 */
-	public function approvePayment( $params );
+	public function approvePayment( array $params ) : ApprovePaymentResponse;
 }

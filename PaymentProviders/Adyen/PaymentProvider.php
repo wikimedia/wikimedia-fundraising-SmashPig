@@ -45,7 +45,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * @param $params
 	 * @return ApprovePaymentResponse
 	 */
-	public function approvePayment( $params ) {
+	public function approvePayment( array $params ) : ApprovePaymentResponse {
 		$rawResponse = $this->api->approvePayment( $params );
 		$response = new ApprovePaymentResponse();
 		$response->setRawResponse( $rawResponse );

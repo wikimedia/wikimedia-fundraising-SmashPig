@@ -16,7 +16,7 @@ class CardPaymentProvider extends PaymentProvider {
 	 * @param array $params needs 'recurring_payment_token', 'order_id', 'recurring', 'amount', and 'currency'
 	 * @return CreatePaymentResponse
 	 */
-	public function createPayment( $params ) {
+	public function createPayment( array $params ) : CreatePaymentResponse {
 		$rawResponse = $this->api->createPayment( $params );
 		$response = new CreatePaymentResponse();
 		$response->setRawResponse( $rawResponse );

@@ -45,7 +45,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * @throws \SmashPig\Core\ApiException
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
-	public function createPayment( $params ) {
+	public function createPayment( array $params ) : CreatePaymentResponse {
 		$path = "payments";
 		$mapConfig = $this->providerConfiguration->val( 'maps/create-payment' );
 		$createPaymentParams = Mapper::map(
@@ -85,7 +85,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * @return ApprovePaymentResponse
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function approvePayment( $params ) {
+	public function approvePayment( array $params ) : ApprovePaymentResponse {
 		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
 		$gatewayTxnId = $params['gateway_txn_id'];
 
@@ -216,7 +216,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 *
 	 * @param array $paymentResponse
 	 *
-	 * @return bool
+	 * @return array|bool
 	 */
 	protected function getPaymentStatusErrors( $paymentResponse ) {
 		if ( isset( $paymentResponse['statusOutput'] ) &&

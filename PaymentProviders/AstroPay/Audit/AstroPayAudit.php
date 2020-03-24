@@ -40,7 +40,7 @@ class AstroPayAudit implements AuditParser {
 
 	protected $fileData;
 
-	public function parseFile( $path ) {
+	public function parseFile( string $path ) : array {
 		$this->fileData = [];
 		$file = fopen( $path, 'r' );
 

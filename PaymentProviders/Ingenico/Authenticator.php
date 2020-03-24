@@ -13,7 +13,7 @@ class Authenticator {
 	protected $keyId;
 	protected $secret;
 
-	public function __construct( $keyId, $secret ) {
+	public function __construct( string $keyId, string $secret ) {
 		$this->keyId = $keyId;
 		$this->secret = $secret;
 	}
@@ -34,7 +34,7 @@ class Authenticator {
 		$request->setHeader( 'Authorization', $authHeader );
 	}
 
-	protected function getStringToSign( OutboundRequest $request ) {
+	protected function getStringToSign( OutboundRequest $request ) : string {
 		$headers = $request->getHeaders();
 
 		if ( empty( $headers['Content-Type'] ) ) {
