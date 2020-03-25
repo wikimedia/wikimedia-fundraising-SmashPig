@@ -11,6 +11,7 @@ use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\IPaymentProvider;
+use SmashPig\PaymentProviders\PaymentProviderResponse;
 
 /**
  * Base class for Ingenico payments. Each payment product group should get
@@ -99,6 +100,9 @@ abstract class PaymentProvider implements IPaymentProvider {
 	}
 
 	/**
+	 * TODO: This should return a normalized CancelPaymentResponse (and cancelPayment
+	 * should part of IPaymentProvider or a related interface)
+	 *
 	 * @param string $gatewayTxnId
 	 * @return mixed
 	 * @throws \SmashPig\Core\ApiException
@@ -240,10 +244,10 @@ abstract class PaymentProvider implements IPaymentProvider {
 	/**
 	 * Maps errors and other properties from $rawResponse to $response
 	 *
-	 * @param CreatePaymentResponse $response
+	 * @param PaymentProviderResponse $response
 	 * @param array $rawResponse
 	 */
-	protected function prepareResponseObject( CreatePaymentResponse $response, $rawResponse ) {
+	protected function prepareResponseObject( PaymentProviderResponse $response, $rawResponse ) {
 		$response->setRawResponse( $rawResponse );
 		if ( isset( $rawResponse['errors'] ) ) {
 			$response->addErrors(

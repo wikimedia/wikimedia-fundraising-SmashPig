@@ -11,7 +11,7 @@ use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
-use SmashPig\PaymentProviders\CreatePaymentResponse;
+use SmashPig\PaymentProviders\PaymentProviderResponse;
 use SmashPig\PaymentProviders\IPaymentProvider;
 
 /**
@@ -78,7 +78,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * Cancels a payment
 	 *
 	 * @param string $gatewayTxnId
-	 * @return CreatePaymentResponse
+	 * @return CancelPaymentResponse
 	 */
 	public function cancelPayment( $gatewayTxnId ) {
 		$rawResponse = $this->api->cancel( $gatewayTxnId );
@@ -115,12 +115,12 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * Adyen API have a section with 'pspReference' and 'refusalReason' properties. Exactly where this section
 	 * is depends on the API call, but we map them all the same way.
 	 *
-	 * @param CreatePaymentResponse $response An instance of a CreatePaymentResponse subclass to be populated
+	 * @param PaymentProviderResponse $response An instance of a PaymentProviderResponse subclass to be populated
 	 * @param object $rawResponse The bit of the API response that has pspReference and refusalReason
 	 * @param bool $checkForRetry Whether to test the refusalReason against a list of retryable reasons.
 	 */
 	protected function mapTxnIdAndErrors(
-		CreatePaymentResponse $response,
+		PaymentProviderResponse $response,
 		$rawResponse,
 		$checkForRetry = true
 	) {
@@ -159,16 +159,16 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * Normalize the raw status or add appropriate errors to our response object. We have a group of classes
 	 * whose function is normalizing raw status codes for specific API calls. We expect SOME status code back
 	 * from any API call, so when that is missing we always add a MISSING_REQUIRED_DATA error. Otherwise we
-	 * call the mapper and set the appropriate status on our PaymentProviderReponse object. Errors in
-	 * normalization result in adding an UNEXPECTED_VALUE error to the PaymentProviderReponse.
+	 * call the mapper and set the appropriate status on our PaymentProviderResponse object. Errors in
+	 * normalization result in adding an UNEXPECTED_VALUE error to the PaymentProviderResponse.
 	 *
-	 * @param CreatePaymentResponse $response An instance of a CreatePaymentResponse subclass to be populated
+	 * @param PaymentProviderResponse $response An instance of a PaymentProviderResponse subclass to be populated
 	 * @param object $rawResponse The raw API response object, used to log errors.
 	 * @param StatusNormalizer $statusMapper An instance of the appropriate status mapper class
 	 * @param string $rawStatus The status string from the API response, either from 'resultCode' or 'response'
 	 */
 	protected function mapStatus(
-		CreatePaymentResponse $response,
+		PaymentProviderResponse $response,
 		$rawResponse,
 		StatusNormalizer $statusMapper,
 		$rawStatus
