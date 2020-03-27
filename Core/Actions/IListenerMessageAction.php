@@ -12,5 +12,5 @@ interface IListenerMessageAction {
 	 *
 	 * @return bool True if action was successful
 	 */
-	public function execute( ListenerMessage $msg );
+	public function execute( ListenerMessage $msg ): bool;
 }

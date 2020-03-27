@@ -9,7 +9,7 @@ use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\ChargebackReversed;
  * Action to fire when an iniated chargeback is canceled.
  */
 class ChargebackReversedAction implements IListenerMessageAction {
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		$tl = new TaggedLogger( 'ChargebackInitiatedAction' );
 
 		if ( $msg instanceof ChargebackReversed ) {

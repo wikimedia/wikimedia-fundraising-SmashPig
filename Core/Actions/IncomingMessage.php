@@ -5,7 +5,7 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
 
 class IncomingMessage implements IListenerMessageAction {
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		$destinationQueue = $msg->getDestinationQueue();
 
 		if ( $destinationQueue ) {

@@ -11,7 +11,7 @@ use SmashPig\PaymentProviders\Amazon\ReasonCode;
 
 class RetryAuthorization implements IListenerMessageAction {
 
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		// only retry declined authorizations
 		if ( !( $msg instanceof AuthorizationDeclined ) ) {
 			return true;

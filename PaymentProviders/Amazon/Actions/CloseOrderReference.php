@@ -9,7 +9,7 @@ use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;
 
 class CloseOrderReference implements IListenerMessageAction {
 
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		// only close after successful capture
 		if ( !( $msg instanceof CaptureCompleted ) ) {
 			return true;
