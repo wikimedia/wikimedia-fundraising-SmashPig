@@ -14,12 +14,14 @@ class PaymentsFraudDatabase extends SmashPigDatabase {
 	 * Return fraud record for a (gateway, order_id), or null if none is found
 	 * TODO: option to also return score breakdown
 	 *
-	 * @param $gatewayName string
-	 * @param $orderId string
+	 * @param string $gatewayName
+	 * @param string $orderId
 	 * @return array|null Fraud record for a transaction, or null if nothing matches
+	 * @throws DataStoreException
 	 */
 	public function fetchMessageByGatewayOrderId(
-		$gatewayName, $orderId
+		string $gatewayName,
+		string $orderId
 	) {
 		$sql = 'SELECT * FROM payments_fraud
 			WHERE gateway = :gateway
@@ -41,8 +43,9 @@ class PaymentsFraudDatabase extends SmashPigDatabase {
 	 * FIXME: only good for tests as is, need to insert breakdown rows
 	 *
 	 * @param array $message
+	 * @throws DataStoreException
 	 */
-	public function storeMessage( $message ) {
+	public function storeMessage( array $message ) {
 		list( $fieldList, $paramList ) = self::formatInsertParameters(
 			$message
 		);
@@ -51,11 +54,11 @@ class PaymentsFraudDatabase extends SmashPigDatabase {
 		$this->prepareAndExecute( $sql, $message );
 	}
 
-	protected function getConfigKey() {
+	protected function getConfigKey(): string {
 		return 'data-store/fredge-db';
 	}
 
-	protected function getTableScriptFile() {
+	protected function getTableScriptFile(): string {
 		return '005_CreatePaymentsFraudTable.sql';
 	}
 }
