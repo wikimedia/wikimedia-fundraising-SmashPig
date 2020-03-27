@@ -51,7 +51,7 @@ class CurrencyRoundingHelper {
 	 *
 	 * @return string rounded amount
 	 */
-	public static function round( $amount, $currencyCode ) {
+	public static function round( float $amount, string $currencyCode ): string {
 		$amount = floatval( $amount );
 		if ( self::isFractionalCurrency( $currencyCode ) ) {
 			$precision = 2;
@@ -69,7 +69,7 @@ class CurrencyRoundingHelper {
 	 *
 	 * @return bool
 	 */
-	public static function isFractionalCurrency( $currency_code ) {
+	public static function isFractionalCurrency( string $currency_code ): bool {
 		if ( in_array( strtoupper( $currency_code ),
 			static::$non_fractional_currencies ) ) {
 			return false;
@@ -86,7 +86,7 @@ class CurrencyRoundingHelper {
 	 *
 	 * @return bool
 	 */
-	public static function isExponent3Currency( $currency_code ) {
+	public static function isExponent3Currency( string $currency_code ): bool {
 		if ( in_array( strtoupper( $currency_code ),
 			static::$exponent3_currencies ) ) {
 			return true;

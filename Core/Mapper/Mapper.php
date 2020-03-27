@@ -84,13 +84,14 @@ class Mapper {
 	 * @param bool $pruneEmpty if true, remove subtrees with no values provided
 	 *
 	 * @return mixed
+	 * @throws SmashPigException
 	 */
 	public static function map(
-		$input,
-		$mapFilePath,
-		$transformers = [],
-		$outputFormat = null,
-		$pruneEmpty = false
+		array $input,
+		string $mapFilePath,
+		array $transformers = [],
+		string $outputFormat = null,
+		bool $pruneEmpty = false
 	) {
 		$mapper = new static;
 		$yaml = $mapper->loadMapFile( $mapFilePath );
@@ -115,12 +116,12 @@ class Mapper {
 	/**
 	 * Load YAML map file
 	 *
-	 * @param $mapFilePath
+	 * @param string $mapFilePath
 	 *
 	 * @return bool|string
 	 * @throws \SmashPig\Core\SmashPigException
 	 */
-	protected function loadMapFile( $mapFilePath ) {
+	protected function loadMapFile( string $mapFilePath ) {
 		$fullMapFilePath = __DIR__ . "/../../" . $mapFilePath;
 		if ( !is_file( $fullMapFilePath ) ) {
 			Logger::error( "File $fullMapFilePath does not exist." );
@@ -143,7 +144,7 @@ class Mapper {
 	 * @return array
 	 * @throws \SmashPig\Core\SmashPigException
 	 */
-	protected function convertYamlMapToArray( $yaml ) {
+	protected function convertYamlMapToArray( string $yaml ): array {
 		try {
 			return Yaml::parse( $yaml, Yaml::PARSE_EXCEPTION_ON_INVALID_TYPE );
 		} catch ( ParseException $exception ) {
@@ -155,9 +156,9 @@ class Mapper {
 	/**
 	 * Convert transformer paths to classes if necessary
 	 *
-	 * @param $transformers
+	 * @param array $transformers
 	 */
-	protected function setupInputTransformers( &$transformers ) {
+	protected function setupInputTransformers( array &$transformers ) {
 		foreach ( $transformers as $i => $transformer ) {
 			if ( is_callable( $transformer ) ) {
 				// All good, we have a Transformer class or callable Closure.
@@ -183,12 +184,12 @@ class Mapper {
 	 * use $original['field'] when you want to know the original value prior to
 	 * any Transformations being applied.
 	 *
-	 * @param $input
-	 * @param $transformers
+	 * @param array $input
+	 * @param array $transformers
 	 *
-	 * @return mixed
+	 * @return array
 	 */
-	protected function applyInputTransformers( $input, $transformers ) {
+	protected function applyInputTransformers( array $input, array $transformers ): array {
 		$transformed = $original = $input;
 		foreach ( $transformers as $transformer ) {
 			// $transformed passed by reference
@@ -205,12 +206,12 @@ class Mapper {
 	 * e.g. 'Miss %first_name% %second_name%' will generate the expected output
 	 * if both keys exists within $input.
 	 *
-	 * @param $map
-	 * @param $input
+	 * @param array $map
+	 * @param array $input
 	 *
 	 * @return array
 	 */
-	protected function translatePlaceholdersToInput( $map, $input ) {
+	protected function translatePlaceholdersToInput( array $map, array $input ): array {
 		array_walk_recursive( $map, function ( &$value ) use ( $input ) {
 			$replacements = [];
 			// this is ugly php but it works, preg_match_all return values are horrible.
@@ -230,9 +231,9 @@ class Mapper {
 	 * Trim empty values or subtrees of empty values out of an array
 	 *
 	 * @param array $input the array to be pruned
-	 * @return array the input, with all empty keys removed.
+	 * @return array|null the input, with all empty keys removed.
 	 */
-	protected static function pruneEmptyValues( $input ) {
+	protected static function pruneEmptyValues( array $input ) {
 		$output = [];
 		foreach ( $input as $key => $value ) {
 			if ( is_array( $value ) ) {
@@ -254,11 +255,10 @@ class Mapper {
 	 * @param $output
 	 * @param $format
 	 *
-	 * @return mixed
+	 * @return string
 	 * @throws \InvalidArgumentException
-	 * @throws \Symfony\Component\Yaml\Exception\ParseException
 	 */
-	protected function formatOutput( $output, $format ) {
+	protected function formatOutput( array $output, string $format ): string {
 		switch ( $format ) {
 			case static::FORMAT_JSON:
 				return json_encode( $output );

@@ -16,7 +16,7 @@ abstract class ListenerMessage extends JsonSerializableObject {
 	 *
 	 * @return bool True if the message was complete and can be processed
 	 */
-	abstract public function validate();
+	abstract public function validate(): bool;
 
 	/**
 	 * Will run all the actions that are loaded (from the 'actions' configuration

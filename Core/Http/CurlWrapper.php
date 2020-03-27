@@ -17,7 +17,16 @@ class CurlWrapper {
 		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 	}
 
-	public function execute( $url, $method, $responseHeaders, $data ) {
+	/**
+	 * @param string $url
+	 * @param string $method
+	 * @param array $responseHeaders
+	 * @param array|string $data
+	 * @return array|null
+	 * @throws HttpException
+	 * @throws \SmashPig\Core\ConfigurationKeyException
+	 */
+	public function execute( string $url, string $method, array $responseHeaders, $data ) {
 		if ( is_array( $data ) ) {
 			$data = http_build_query( $data );
 		}
@@ -140,7 +149,7 @@ class CurlWrapper {
 		return $options;
 	}
 
-	public static function parseResponse( $response, $curlInfo ) {
+	public static function parseResponse( string $response, array $curlInfo ): array {
 		$header_size = $curlInfo['header_size'];
 		$header = substr( $response, 0, $header_size );
 		$body = substr( $response, $header_size );

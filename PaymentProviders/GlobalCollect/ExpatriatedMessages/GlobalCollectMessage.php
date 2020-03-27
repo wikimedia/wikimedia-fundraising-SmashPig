@@ -51,7 +51,7 @@ abstract class GlobalCollectMessage extends ListenerMessage {
 		return $queueMsg;
 	}
 
-	public function validate() {
+	public function validate(): bool {
 		return !empty( $this->order_id );
 	}
 

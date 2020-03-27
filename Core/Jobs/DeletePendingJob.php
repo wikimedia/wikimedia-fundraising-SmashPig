@@ -17,7 +17,7 @@ class DeletePendingJob implements Runnable {
 	 * @param string $orderId Payment order ID
 	 * @return array
 	 */
-	public static function factory( $gateway, $orderId ) {
+	public static function factory( string $gateway, string $orderId ): array {
 		return [
 			'class' => 'SmashPig\Core\Jobs\DeletePendingJob',
 			'payload' => [
