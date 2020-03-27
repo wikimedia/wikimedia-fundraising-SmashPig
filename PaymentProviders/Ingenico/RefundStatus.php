@@ -3,9 +3,10 @@
 namespace SmashPig\PaymentProviders\Ingenico;
 
 use OutOfBoundsException;
-use SmashPig\CrmLink\FinalStatus;
+use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentData\StatusNormalizer;
 
-class RefundStatus {
+class RefundStatus implements StatusNormalizer {
 
 	// Refund created
 	const CREATED = 'CREATED';
@@ -44,7 +45,7 @@ class RefundStatus {
 		]
 	];
 
-	public function normalizeStatus( $ingenicoStatus ) {
+	public function normalizeStatus( string $ingenicoStatus ) : string {
 		foreach ( self::$statusMap as $finalStatus => $ingenicoStatuses ) {
 			if ( array_search( $ingenicoStatus, $ingenicoStatuses, true ) !== false ) {
 				return $finalStatus;

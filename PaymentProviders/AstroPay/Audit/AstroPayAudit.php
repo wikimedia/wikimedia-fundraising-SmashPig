@@ -13,7 +13,7 @@ class AstroPayAudit implements AuditParser {
 		'Type', // 'Payment' or 'Refund'
 		'Creation date', // YYYY-MM-dd HH:mm:ss
 		'Settlement date', // same format
-		'Reference', // gateway_trxn_id
+		'Reference', // gateway_txn_id
 		'Invoice', // ct_id.attempt_num
 		'Country',
 		'Payment Method', // corresponds to our payment_submethod
@@ -40,7 +40,7 @@ class AstroPayAudit implements AuditParser {
 
 	protected $fileData;
 
-	public function parseFile( $path ) {
+	public function parseFile( string $path ) : array {
 		$this->fileData = [];
 		$file = fopen( $path, 'r' );
 
@@ -86,6 +86,16 @@ class AstroPayAudit implements AuditParser {
 			case 'Chargebacks': // started seeing these with the 's'
 				$this->parseRefund( $row, $msg );
 				break;
+			case 'Credit Note':
+			case 'Debit Note':
+			case 'Chargeback Reversal':
+			case 'Refund processing fee':
+			case 'Chargeback processing fee':
+				// TODO these would have to update existing refunds
+				// If they show up in the same file as the associate refund or
+				// chargeback, we could just update those rows before returning
+				// the array of transactions.
+				return;
 			default:
 				throw new OutOfBoundsException( "Unknown audit line type {$row['Type']}." );
 		}

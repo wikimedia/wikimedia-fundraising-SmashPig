@@ -9,8 +9,8 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\RetryableException;
 use SmashPig\CrmLink\Messages\DonationInterfaceAntifraudFactory;
-use SmashPig\CrmLink\ValidationAction;
-use SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface;
+use SmashPig\PaymentData\ValidationAction;
+use SmashPig\PaymentProviders\Adyen\CardPaymentProvider;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 
 /**
@@ -87,20 +87,22 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		switch ( $action ) {
 			case ValidationAction::PROCESS:
 				// Attempt to capture the payment
-				/**
-				 * @var AdyenPaymentsInterface
-				 */
-				$api = $this->getApi();
+				$provider = $this->getProvider();
 				$this->logger->info(
 					"Attempting capture API call for currency '{$this->currency}', " .
 					"amount '{$this->amount}', reference '{$this->pspReference}'."
 				);
-				$captureResult = $api->capture( $this->currency, $this->amount, $this->pspReference );
 
-				if ( $captureResult ) {
+				$captureResult = $provider->approvePayment( [
+					'gateway_txn_id' => $this->pspReference,
+					'currency' => $this->currency,
+					'amount' => $this->amount
+				] );
+
+				if ( $captureResult->isSuccessful() ) {
 					// Success!
 					$this->logger->info(
-						"Successfully captured payment! Returned reference: '{$captureResult}'. " .
+						"Successfully captured payment! Returned reference: '{$captureResult->getGatewayTxnId()}'. " .
 							'Marking pending database message as captured.'
 					);
 
@@ -209,19 +211,17 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	}
 
 	/**
-	 * @return \SmashPig\PaymentProviders\Adyen\AdyenPaymentsInterface
+	 * @return CardPaymentProvider
 	 */
-	protected function getApi() {
-		$api = Context::get()->getProviderConfiguration()->object( 'api' );
-		$api->setAccount( $this->account );
-		return $api;
+	protected function getProvider() {
+		return new CardPaymentProvider();
 	}
 
 	protected function cancelAuthorization() {
 		$this->logger->debug( "Cancelling authorization with reference '{$this->pspReference}'" );
-		$api = $this->getApi();
-		$result = $api->cancel( $this->pspReference );
-		if ( $result ) {
+		$provider = $this->getProvider();
+		$result = $provider->cancelPayment( $this->pspReference );
+		if ( $result->isSuccessful() ) {
 			$this->logger->debug( "Successfully cancelled authorization" );
 		} else {
 			// Not a big deal

@@ -8,7 +8,7 @@ use SmashPig\Core\DataFiles\AuditParser;
  */
 class AmazonAudit implements AuditParser {
 
-	public function parseFile( $path ) {
+	public function parseFile( string $path ) : array {
 		$config = Context::get()->getProviderConfiguration();
 		$fileTypes = $config->val( 'audit/file-types' );
 

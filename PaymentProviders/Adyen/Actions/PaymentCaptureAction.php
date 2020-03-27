@@ -18,6 +18,19 @@ class PaymentCaptureAction implements IListenerMessageAction {
 		$tl = new TaggedLogger( 'PaymentCaptureAction' );
 
 		if ( $msg instanceof Authorisation ) {
+			// Ignore messages from recurring charges.
+			// Subsequent charges will not return the recurring.recurringDetailReference
+			if ( isset( $msg->recurringProcessingModel )
+					 && $msg->recurringProcessingModel == 'Subscription'
+					 && !isset( $msg->{'recurring.recurringDetailReference'} ) ) {
+				return true;
+			}
+
+			// Ignore ipn messages from ideal
+			if ( isset( $msg->paymentMethod ) && $msg->paymentMethod == 'ideal' ) {
+				return true;
+			}
+
 			if ( $msg->success ) {
 				// Here we need to capture the payment, the job runner will collect the
 				// orphan message

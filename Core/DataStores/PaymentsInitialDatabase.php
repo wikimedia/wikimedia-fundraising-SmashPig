@@ -2,8 +2,8 @@
 namespace SmashPig\Core\DataStores;
 
 use PDO;
-use SmashPig\CrmLink\FinalStatus;
-use SmashPig\CrmLink\ValidationAction;
+use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentData\ValidationAction;
 
 /**
  * Data store containing finalized messages.
@@ -35,7 +35,10 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 	 */
 	public static function isMessageFailed( $message ) {
 		if (
-			$message['payments_final_status'] === FinalStatus::FAILED &&
+			(
+				$message['payments_final_status'] === FinalStatus::FAILED ||
+				$message['payments_final_status'] === FinalStatus::CANCELLED
+			) &&
 			$message['validation_action'] !== ValidationAction::REVIEW
 		) {
 			return true;

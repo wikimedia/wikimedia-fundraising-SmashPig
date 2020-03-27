@@ -101,16 +101,18 @@ class DamagedDatabase extends SmashPigDatabase {
 	 * Return messages ready to be retried
 	 *
 	 * @param int $limit number of records to return
+	 * @param mixed $date a date in any format accepted by the DateTime constructor, default 'now'
+	 *
 	 * @return array|null Records with retry_date prior to now
 	 */
-	public function fetchRetryMessages( $limit ) {
+	public function fetchRetryMessages( $limit, $date = 'now' ) {
 		$sql = 'SELECT * FROM damaged
 			WHERE retry_date <= :now
 			ORDER BY retry_date ASC
 			LIMIT ' . $limit;
 
 		$params = [
-			'now' => UtcDate::getUtcDatabaseString()
+			'now' => UtcDate::getUtcDatabaseString( $date )
 		];
 
 		$executed = $this->prepareAndExecute( $sql, $params );

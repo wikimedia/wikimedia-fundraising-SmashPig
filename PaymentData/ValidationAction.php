@@ -1,5 +1,5 @@
 <?php
-namespace SmashPig\CrmLink;
+namespace SmashPig\PaymentData;
 
 /**
  * Allowed values for the action taken after validating

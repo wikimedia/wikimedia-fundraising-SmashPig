@@ -1,0 +1,22 @@
+<?php
+
+
+namespace SmashPig\PaymentProviders;
+
+use SmashPig\PaymentData\FinalStatus;
+
+/**
+ * Class ApprovePaymentResponse
+ * @package SmashPig\PaymentProviders
+ */
+class ApprovePaymentResponse extends CreatePaymentResponse {
+
+	/**
+	 * A successfully approved payment should be in COMPLETE status.
+	 *
+	 * @return bool
+	 */
+	public function isSuccessful() {
+		return $this->getStatus() === FinalStatus::COMPLETE;
+	}
+}

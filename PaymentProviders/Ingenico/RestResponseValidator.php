@@ -5,7 +5,7 @@ use SmashPig\Core\Http\HttpStatusValidator;
 use Symfony\Component\HttpFoundation\Response;
 
 class RestResponseValidator extends HttpStatusValidator {
-	protected function getSuccessCodes() {
+	protected function getSuccessCodes() : array {
 		$codes = parent::getSuccessCodes();
 		// 404 is also a valid response in REST-ese
 		$codes[] = Response::HTTP_NOT_FOUND;

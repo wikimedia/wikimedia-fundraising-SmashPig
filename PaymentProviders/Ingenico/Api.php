@@ -34,7 +34,7 @@ class Api {
 	 *
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
-	public function __construct( $baseUrl, $merchantId ) {
+	public function __construct( string $baseUrl, string $merchantId ) {
 		// Ensure trailing slash
 		if ( substr( $baseUrl, -1 ) !== '/' ) {
 			$baseUrl .= '/';
@@ -54,7 +54,7 @@ class Api {
 	 * @return array|null
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function makeApiCall( $path, $method = 'POST', $data = null ) {
+	public function makeApiCall( string $path, string $method = 'POST', array $data = null ) {
 		if ( is_array( $data ) ) {
 			// FIXME: this is weird, maybe OutboundRequest should handle this part
 			if ( $method === 'GET' ) {
@@ -90,65 +90,13 @@ class Api {
 		$decodedResponseBody = json_decode( $response['body'], true );
 		$expectedEmptyBody = ( $response['status'] === Response::HTTP_NO_CONTENT );
 
-		if ( !( $expectedEmptyBody && empty( $decodedResponseBody ) ) ) {
-			if ( $this->responseBodyHasError( $decodedResponseBody ) ) {
-				$this->throwApiException( $response, $decodedResponseBody );
-			}
+		if ( !$expectedEmptyBody && empty( $decodedResponseBody ) ) {
+			throw new ApiException(
+				"Response body is empty or not valid JSON: '{$response['body']}'"
+			);
 		}
 
 		return $decodedResponseBody;
-	}
-
-	/**
-	 * @param array $decodedResponseBody
-	 *
-	 * @return bool
-	 */
-	protected function responseBodyHasError( $decodedResponseBody ) {
-		if ( !isset( $decodedResponseBody ) ) {
-			return true;
-		} elseif ( !empty( $decodedResponseBody['errorId'] )
-			&& !empty( $decodedResponseBody['errors'] ) ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * @param $response
-	 * @param $decodedResponse
-	 *
-	 * @throws \SmashPig\Core\ApiException
-	 */
-	protected function throwApiException( $response, $decodedResponse ) {
-		$ex = new ApiException();
-		if ( $decodedResponse === null ) {
-			$message = "Response body is not valid JSON: '{$response['body']}'";
-		} else {
-			$message = $this->getApiExceptionMessage(
-				$decodedResponse['errorId'],
-				$decodedResponse['errors']
-			);
-			$ex->setRawErrors( $decodedResponse['errors'] );
-		}
-
-		$ex->setMessage( $message );
-		throw $ex;
-	}
-
-	/**
-	 * @param $errorId
-	 * @param $errors
-	 *
-	 * @return bool|string
-	 */
-	protected function getApiExceptionMessage( $errorId, $errors ) {
-		$message = "Ingenico error id {$errorId} : ";
-		foreach ( $errors as $error ) {
-			$message .= "Error code {$error['code']}: {$error['message']}. ";
-		}
-		return substr( $message, 0, -1 );
 	}
 
 }

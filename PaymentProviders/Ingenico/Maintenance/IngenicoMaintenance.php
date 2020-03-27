@@ -5,7 +5,6 @@ namespace SmashPig\PaymentProviders\Ingenico\Maintenance;
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
 use SmashPig\Maintenance\MaintenanceBase;
-use SmashPig\PaymentProviders\Ingenico\PaymentProvider;
 use SmashPig\PaymentProviders\PaymentProviderFactory;
 
 /**

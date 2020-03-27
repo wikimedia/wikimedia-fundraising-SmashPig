@@ -12,7 +12,7 @@ endpoints:
         class: SmashPig\PaymentProviders\Adyen\AdyenListener
 
 api:
-    class: SmashPig\PaymentProviders\Adyen\AdyenPaymentsAPI
+    class: SmashPig\PaymentProviders\Adyen\Api
 
 payments-wsdl: https://pal-live.adyen.com/pal/Payment.wsdl
 #payments-wsdl: https://pal-test.adyen.com/pal/Payment.wsdl
@@ -36,6 +36,16 @@ accounts: {}
     #   report-username: ""
     #   report-password: ""
     #   report-location: "/tmp"
+
+payment-provider:
+    cc:
+        class: SmashPig\PaymentProviders\Adyen\CardPaymentProvider
+    dd:
+        class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
+    rtbt:
+        # For now we only handle recurring rtbt, which is treated
+        # as direct debit under the hood.
+        class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
 
 fraud-filters:
     # Automatically capture authorizations under this score

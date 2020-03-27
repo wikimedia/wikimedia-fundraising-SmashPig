@@ -12,6 +12,7 @@
 		<exclude name="MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures"/>
 		<exclude name="MediaWiki.NamingConventions.LowerCamelFunctionsName.FunctionName"/>
 		<exclude name="MediaWiki.Commenting.FunctionComment.WrongStyle"/>
+		<exclude name="MediaWiki.Usage.ScalarTypeHintUsage.Found"/>
 		<exclude name="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
 		<exclude name="MediaWiki.Commenting.FunctionComment.MissingParamName"/>
 		<exclude name="Squiz.Operators.ValidLogicalOperators.NotAllowed"/>
