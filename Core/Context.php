@@ -38,7 +38,7 @@ class Context {
 	 * Obtains the current context object
 	 * @return static
 	 */
-	public static function get() {
+	public static function get(): Context {
 		return self::$instance;
 	}
 
@@ -69,7 +69,7 @@ class Context {
 	 * Sets the version string to the contents of a file, if it exists
 	 * @param string $versionStampPath
 	 */
-	public function setVersionFromFile( $versionStampPath ) {
+	public function setVersionFromFile( string $versionStampPath ) {
 		if ( file_exists( $versionStampPath ) ) {
 			$versionId = file_get_contents( $versionStampPath );
 			if ( $versionId !== false ) {
@@ -109,14 +109,14 @@ class Context {
 	 *
 	 * @return GlobalConfiguration
 	 */
-	public function getGlobalConfiguration() {
+	public function getGlobalConfiguration(): GlobalConfiguration {
 		return $this->globalConfiguration;
 	}
 
 	/**
 	 * @return ProviderConfiguration
 	 */
-	public function getProviderConfiguration() {
+	public function getProviderConfiguration(): ProviderConfiguration {
 		return $this->providerConfiguration;
 	}
 
@@ -137,7 +137,7 @@ class Context {
 	 *
 	 * @return string
 	 */
-	public function getSourceRevision() {
+	public function getSourceRevision(): string {
 		return $this->sourceRevision;
 	}
 
@@ -146,7 +146,7 @@ class Context {
 	 *
 	 * @return string
 	 */
-	public function getSourceName() {
+	public function getSourceName(): string {
 		return $this->sourceName;
 	}
 
@@ -155,7 +155,7 @@ class Context {
 	 *
 	 * @param string $sourceName
 	 */
-	public function setSourceName( $sourceName ) {
+	public function setSourceName( string $sourceName ) {
 		$this->sourceName = $sourceName;
 	}
 
@@ -164,7 +164,7 @@ class Context {
 	 *
 	 * @return string
 	 */
-	public function getSourceType() {
+	public function getSourceType(): string {
 		return $this->sourceType;
 	}
 
@@ -173,7 +173,7 @@ class Context {
 	 *
 	 * @param string $sourceType
 	 */
-	public function setSourceType( $sourceType ) {
+	public function setSourceType( string $sourceType ) {
 		$this->sourceType = $sourceType;
 	}
 }

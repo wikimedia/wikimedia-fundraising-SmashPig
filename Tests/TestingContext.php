@@ -5,6 +5,7 @@ namespace SmashPig\Tests;
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\GlobalConfiguration;
+use SmashPig\Core\ProviderConfiguration;
 
 class TestingContext extends Context {
 	public $providerConfigurationOverride;
@@ -41,7 +42,7 @@ class TestingContext extends Context {
 		}
 	}
 
-	public function getProviderConfiguration() {
+	public function getProviderConfiguration(): ProviderConfiguration {
 		if ( $this->providerConfigurationOverride ) {
 			return $this->providerConfigurationOverride;
 		}

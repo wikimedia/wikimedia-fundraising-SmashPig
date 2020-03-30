@@ -14,14 +14,14 @@ class TestingGlobalConfiguration extends GlobalConfiguration {
 	 *
 	 * @implements Configuration::getDefaultSearchPath
 	 */
-	protected function getDefaultSearchPath() {
+	protected function getDefaultSearchPath(): array {
 		$searchPath = [];
 		$searchPath[] = __DIR__ . '/data/test_global.yaml';
 		$searchPath[] = __DIR__ . '/../config/main.yaml';
 		return $searchPath;
 	}
 
-	public static function loadConfigWithLiteralOverrides( $data ) {
+	public static function loadConfigWithLiteralOverrides( array $data ): GlobalConfiguration {
 		$config = static::create();
 		$config->override( $data );
 		return $config;
