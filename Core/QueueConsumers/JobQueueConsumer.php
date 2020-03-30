@@ -16,7 +16,7 @@ class JobQueueConsumer extends BaseQueueConsumer {
 	 * @param array $jobMessage
 	 * @throws \SmashPig\Core\DataStores\DataSerializationException
 	 */
-	public function processMessage( $jobMessage ) {
+	public function processMessage( array $jobMessage ) {
 		$jobObj = $this->createJobObject( $jobMessage );
 		if ( $jobObj instanceof Runnable ) {
 			Logger::info( 'Running job' );
