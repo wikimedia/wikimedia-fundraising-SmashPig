@@ -15,7 +15,7 @@ class CreatePaymentStatus implements StatusNormalizer {
 	public function normalizeStatus( string $adyenStatus ) : string {
 		switch ( $adyenStatus ) {
 			case 'Authorised':
-				$status = FinalStatus::COMPLETE;
+				$status = FinalStatus::PENDING_POKE;
 				break;
 			case 'Refused':
 				$status = FinalStatus::FAILED;

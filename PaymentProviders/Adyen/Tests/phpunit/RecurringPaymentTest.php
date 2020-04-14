@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Adyen\Test;
 
 use SmashPig\PaymentData\ErrorCode;
+use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Adyen\CardPaymentProvider;
 use SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider;
 use SmashPig\PaymentProviders\Adyen\PaymentProvider;
@@ -49,8 +50,9 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 
 		$this->assertInstanceOf( '\SmashPig\PaymentProviders\CreatePaymentResponse',
 			$createPaymentResponse );
-		$this->assertTrue( count( $createPaymentResponse->getErrors() ) == 0 );
+		$this->assertEmpty( $createPaymentResponse->getErrors() );
 		$this->assertTrue( $createPaymentResponse->isSuccessful() );
+		$this->assertEquals( FinalStatus::PENDING_POKE, $createPaymentResponse->getStatus() );
 	}
 
 	/**
