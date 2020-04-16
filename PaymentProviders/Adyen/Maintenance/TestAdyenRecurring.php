@@ -6,7 +6,7 @@ require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentProviders\Adyen\PaymentProvider;
 use SmashPig\PaymentProviders\PaymentProviderFactory;
 
 $maintClass = 'SmashPig\PaymentProviders\Adyen\Maintenance\TestAdyenRecurring';
@@ -30,6 +30,9 @@ class TestAdyenRecurring extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 */
 	public function execute() {
+		/**
+		 * @var PaymentProvider
+		 */
 		$adyen = PaymentProviderFactory::getProviderForMethod( $this->getOption( 'method' ) );
 
 		// it feels like we should tell createPayment this a recurring authorise call in the event that
@@ -51,7 +54,7 @@ class TestAdyenRecurring extends MaintenanceBase {
 			return;
 		}
 
-		if ( $createPaymentResponse->getStatus() === FinalStatus::PENDING_POKE ) {
+		if ( $createPaymentResponse->requiresApproval() ) {
 			// this is the Capture call
 			$params['gateway_txn_id'] = $createPaymentResponse->getGatewayTxnId();
 			$approvePaymentResponse = $adyen->approvePayment( $params );

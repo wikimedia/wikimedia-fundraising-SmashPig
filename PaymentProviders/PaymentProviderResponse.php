@@ -25,6 +25,30 @@ abstract class PaymentProviderResponse {
 	protected $rawResponse;
 
 	/**
+	 * Payment provider transaction ID
+	 *
+	 * https://www.mediawiki.org/wiki/Fundraising_tech/Transaction_IDs
+	 * Also note the spelling: gateway_txn_id has no 'r' in txn. This is to maintain
+	 * consistency with our queue messages and wmf_contribution_extra.gateway_txn_id
+	 * column. Maybe one day we'll add the R.
+	 *
+	 * @var string
+	 */
+	protected $gateway_txn_id;
+
+	/**
+	 * mapped PaymentStatus status for the providers transaction status
+	 * @var string
+	 */
+	protected $status;
+
+	/**
+	 * raw provider status in its original form.
+	 * @var string
+	 */
+	protected $rawStatus;
+
+	/**
 	 * @return mixed
 	 */
 	public function getRawResponse() {
@@ -96,4 +120,60 @@ abstract class PaymentProviderResponse {
 		return $this;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getGatewayTxnId() {
+		return $this->gateway_txn_id;
+	}
+
+	/**
+	 * @param string $gateway_txn_id
+	 * @return static
+	 */
+	public function setGatewayTxnId( $gateway_txn_id ) {
+		$this->gateway_txn_id = $gateway_txn_id;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getStatus() {
+		return $this->status;
+	}
+
+	/**
+	 * @param string $status
+	 * @return static
+	 */
+	public function setStatus( $status ) {
+		$this->status = $status;
+		return $this;
+	}
+
+	/**
+	 * Subclasses should implement this with appropriate logic to determine
+	 * whether the API call completed successfully. This might be a check on
+	 * the status code or just checking whether any errors exist.
+	 *
+	 * @return bool
+	 */
+	abstract public function isSuccessful();
+
+	/**
+	 * @return string
+	 */
+	public function getRawStatus() {
+		return $this->rawStatus;
+	}
+
+	/**
+	 * @param string $rawStatus
+	 * @return static
+	 */
+	public function setRawStatus( $rawStatus ) {
+		$this->rawStatus = $rawStatus;
+		return $this;
+	}
 }
