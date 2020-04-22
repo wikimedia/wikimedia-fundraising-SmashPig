@@ -45,7 +45,7 @@ class BankPaymentProvider extends PaymentProvider {
 	 * @throws ApiException
 	 * @throws \Psr\Cache\InvalidArgumentException
 	 */
-	public function getBankList( string $country, string $currency, int $productId = 809 ) : array {
+	public function getBankList( string $country, string $currency, int $productId = 809 ): array {
 		$cacheKey = $this->makeCacheKey( $country, $currency, $productId );
 		$cacheItem = $this->cache->getItem( $cacheKey );
 
@@ -77,7 +77,7 @@ class BankPaymentProvider extends PaymentProvider {
 		return $cached['value'];
 	}
 
-	protected function makeCacheKey( string $country, string $currency, int $productId ) : string {
+	protected function makeCacheKey( string $country, string $currency, int $productId ): string {
 		$base = $this->cacheParameters['key-base'];
 		return "{$base}_{$country}_{$currency}_{$productId}";
 	}
@@ -91,7 +91,7 @@ class BankPaymentProvider extends PaymentProvider {
 	 * @param CacheItemInterface $cacheItem
 	 * @return bool True if the item should have been dropped by Memcache
 	 */
-	protected function shouldBeExpired( CacheItemInterface $cacheItem ) : bool {
+	protected function shouldBeExpired( CacheItemInterface $cacheItem ): bool {
 		$value = $cacheItem->get();
 		if ( !isset( $value['expiration'] ) ) {
 			return true;

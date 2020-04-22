@@ -73,7 +73,7 @@ class AdyenAudit implements AuditParser {
 
 	protected $fileData;
 
-	public function parseFile( string $path ) : array {
+	public function parseFile( string $path ): array {
 		$this->fileData = [];
 		$file = fopen( $path, 'r' );
 

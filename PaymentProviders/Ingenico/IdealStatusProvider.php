@@ -40,7 +40,7 @@ class IdealStatusProvider {
 	 * @return array Keys are bank codes, values are names
 	 * @throws \Psr\Cache\InvalidArgumentException
 	 */
-	public function getBankStatus() : array {
+	public function getBankStatus(): array {
 		$cacheKey = $this->cacheParameters['key'];
 		$cacheItem = $this->cache->getItem( $cacheKey );
 

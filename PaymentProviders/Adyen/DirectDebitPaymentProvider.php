@@ -18,7 +18,7 @@ class DirectDebitPaymentProvider extends PaymentProvider {
 	 * @param array $params
 	 * @return CreatePaymentResponse
 	 */
-	public function createPayment( array $params ) : CreatePaymentResponse {
+	public function createPayment( array $params ): CreatePaymentResponse {
 		$rawResponse = $this->api->createDirectDebitPayment( $params );
 		$response = new CreatePaymentResponse();
 		$response->setRawResponse( $rawResponse );

@@ -34,7 +34,7 @@ class Authenticator {
 		$request->setHeader( 'Authorization', $authHeader );
 	}
 
-	protected function getStringToSign( OutboundRequest $request ) : string {
+	protected function getStringToSign( OutboundRequest $request ): string {
 		$headers = $request->getHeaders();
 
 		if ( empty( $headers['Content-Type'] ) ) {

@@ -13,7 +13,7 @@ class TokenizeRecurringJob implements Runnable {
 	 */
 	public $payload;
 
-	public static function fromDonationMessage( array $message ) : array {
+	public static function fromDonationMessage( array $message ): array {
 		$job = [
 			'class' => '\SmashPig\PaymentProviders\Ingenico\TokenizeRecurringJob',
 			'payload' => $message
@@ -21,7 +21,7 @@ class TokenizeRecurringJob implements Runnable {
 		return $job;
 	}
 
-	public static function donationNeedsTokenizing( array $donationMessage ) : bool {
+	public static function donationNeedsTokenizing( array $donationMessage ): bool {
 		$isRecurring = isset( $donationMessage['recurring'] ) && $donationMessage['recurring'];
 		$needsToken = empty( $donationMessage['recurring_payment_token'] );
 		return $isRecurring && $needsToken;

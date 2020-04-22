@@ -12,7 +12,7 @@ class CancelPaymentStatus implements StatusNormalizer {
 	 * @param $adyenStatus
 	 * @return string
 	 */
-	public function normalizeStatus( string $adyenStatus ) : string {
+	public function normalizeStatus( string $adyenStatus ): string {
 		switch ( $adyenStatus ) {
 			case '[cancel-received]':
 				$status = FinalStatus::CANCELLED;

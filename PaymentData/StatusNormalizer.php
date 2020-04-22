@@ -14,5 +14,5 @@ interface StatusNormalizer {
 	 * @param string $paymentProcessorStatus
 	 * @return string One of the constants defined in FinalStatus
 	 */
-	public function normalizeStatus( string $paymentProcessorStatus ) : string;
+	public function normalizeStatus( string $paymentProcessorStatus ): string;
 }
