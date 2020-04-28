@@ -4,7 +4,7 @@ use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Capture;
+use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\AdyenMessage;
 
 /**
  * Job that merges a capture IPN message from Adyen with donor info from the
@@ -19,17 +19,17 @@ class RecordCaptureJob extends RunnableJob {
 	protected $account;
 	protected $currency;
 	protected $amount;
-	protected $originalReference;
+	protected $gatewayTxnId;
 	protected $merchantReference;
 
-	public static function factory( Capture $captureMessage ) {
+	public static function factory( AdyenMessage $ipnMessage ) {
 		$obj = new RecordCaptureJob();
 
-		$obj->account = $captureMessage->merchantAccountCode;
-		$obj->currency = $captureMessage->currency;
-		$obj->amount = $captureMessage->amount;
-		$obj->originalReference = $captureMessage->originalReference;
-		$obj->merchantReference = $captureMessage->merchantReference;
+		$obj->account = $ipnMessage->merchantAccountCode;
+		$obj->currency = $ipnMessage->currency;
+		$obj->amount = $ipnMessage->amount;
+		$obj->gatewayTxnId = $ipnMessage->getGatewayTxnId();
+		$obj->merchantReference = $ipnMessage->merchantReference;
 
 		return $obj;
 	}
@@ -38,7 +38,7 @@ class RecordCaptureJob extends RunnableJob {
 		$logger = Logger::getTaggedLogger( "corr_id-adyen-{$this->merchantReference}" );
 		$logger->info(
 			"Recording successful capture on account '{$this->account}' with authorization reference " .
-				"'{$this->originalReference}' and order ID '{$this->merchantReference}'."
+				"'{$this->gatewayTxnId}' and order ID '{$this->merchantReference}'."
 		);
 
 		// Find the details from the payment site in the pending database.
@@ -50,7 +50,7 @@ class RecordCaptureJob extends RunnableJob {
 			$logger->debug( 'A valid message was obtained from the pending queue' );
 
 			// Add the gateway transaction ID and send it to the completed queue
-			$dbMessage['gateway_txn_id'] = $this->originalReference;
+			$dbMessage['gateway_txn_id'] = $this->gatewayTxnId;
 
 			QueueWrapper::push( 'donations', $dbMessage );
 
@@ -65,7 +65,7 @@ class RecordCaptureJob extends RunnableJob {
 			// we'll eventually get the donor details from the payments log
 			// when we parse the audit.
 			$logger->warning(
-				"Could not find donor details for authorization Reference '{$this->originalReference}' " .
+				"Could not find donor details for authorization Reference '{$this->gatewayTxnId}' " .
 					"and order ID '{$this->merchantReference}'.",
 				$dbMessage
 			);

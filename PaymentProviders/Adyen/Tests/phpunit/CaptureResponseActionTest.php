@@ -42,7 +42,7 @@ class CaptureResponseActionTest extends BaseAdyenTestCase {
 			$job['php-message-class']
 		);
 		$sameProps = [
-			'currency', 'amount', 'originalReference', 'merchantReference'
+			'currency', 'amount', 'merchantReference'
 		];
 		foreach ( $sameProps as $prop ) {
 			$this->assertEquals(
@@ -51,6 +51,7 @@ class CaptureResponseActionTest extends BaseAdyenTestCase {
 				"Job property $prop does not match capture"
 			);
 		}
+		$this->assertEquals( $capture->originalReference, $job['gatewayTxnId'] );
 	}
 
 	public function testFailedCapture() {

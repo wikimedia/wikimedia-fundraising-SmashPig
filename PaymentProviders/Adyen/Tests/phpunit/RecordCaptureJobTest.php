@@ -66,7 +66,7 @@ class RecordCaptureJobTest extends BaseAdyenTestCase {
 		foreach ( $sameKeys as $key ) {
 			if ( $key === 'gateway_txn_id' ) {
 				$this->assertEquals(
-					$capture->originalReference, $donationMessage[$key],
+					$capture->getGatewayTxnId(), $donationMessage[$key],
 					'RecordCaptureJob should have set gateway_txn_id'
 				);
 			} else {

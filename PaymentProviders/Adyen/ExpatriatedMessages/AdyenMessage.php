@@ -105,4 +105,15 @@ abstract class AdyenMessage extends ListenerMessage {
 
 		return true;
 	}
+
+	/**
+	 * Returns the gateway-side ID we record for this transaction. In the
+	 * case of a card payment where we get different IDs for the auth and
+	 * capture, we record the ID of the authorization.
+	 *
+	 * @return string
+	 */
+	public function getGatewayTxnId() {
+		return $this->pspReference;
+	}
 }
