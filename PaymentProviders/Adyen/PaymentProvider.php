@@ -11,7 +11,7 @@ use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
-use SmashPig\PaymentProviders\CreatePaymentResponse;
+use SmashPig\PaymentProviders\PaymentProviderResponse;
 use SmashPig\PaymentProviders\IPaymentProvider;
 
 /**
@@ -42,21 +42,24 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * Leaving this on the base class for now since subclasses need
 	 * an implementation and DirectDebit doesn't have one.
 	 *
-	 * @param $params
+	 * @param array $params
 	 * @return ApprovePaymentResponse
 	 */
-	public function approvePayment( array $params ) : ApprovePaymentResponse {
+	public function approvePayment( array $params ): ApprovePaymentResponse {
 		$rawResponse = $this->api->approvePayment( $params );
 		$response = new ApprovePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 
 		if ( !empty( $rawResponse->captureResult ) ) {
-			$rawStatus = $rawResponse->captureResult->response ?? null;
-			$this->prepareResponseObject(
+			$this->mapTxnIdAndErrors(
 				$response,
-				$rawResponse->captureResult,
+				$rawResponse->captureResult
+			);
+			$this->mapStatus(
+				$response,
+				$rawResponse,
 				new ApprovePaymentStatus(),
-				$rawStatus
+				$rawResponse->captureResult->response ?? null
 			);
 		} else {
 			$responseError = 'captureResult element missing from Adyen approvePayment response.';
@@ -75,7 +78,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * Cancels a payment
 	 *
 	 * @param string $gatewayTxnId
-	 * @return CreatePaymentResponse
+	 * @return CancelPaymentResponse
 	 */
 	public function cancelPayment( $gatewayTxnId ) {
 		$rawResponse = $this->api->cancel( $gatewayTxnId );
@@ -83,13 +86,16 @@ abstract class PaymentProvider implements IPaymentProvider {
 		$response->setRawResponse( $rawResponse );
 
 		if ( !empty( $rawResponse->cancelResult ) ) {
-			$rawStatus = $rawResponse->cancelResult->response ?? null;
-			$this->prepareResponseObject(
+			$this->mapTxnIdAndErrors(
 				$response,
 				$rawResponse->cancelResult,
-				new CancelPaymentStatus(),
-				$rawStatus,
 				false
+			);
+			$this->mapStatus(
+				$response,
+				$rawResponse,
+				new CancelPaymentStatus(),
+				$rawResponse->cancelResult->response ?? null
 			);
 		} else {
 			$responseError = 'cancelResult element missing from Adyen cancel response.';
@@ -105,19 +111,17 @@ abstract class PaymentProvider implements IPaymentProvider {
 	}
 
 	/**
-	 * Maps errors and other properties from $rawResponse to $response
+	 * Maps gateway transaction ID and errors from $rawResponse to $response. The replies we get back from the
+	 * Adyen API have a section with 'pspReference' and 'refusalReason' properties. Exactly where this section
+	 * is depends on the API call, but we map them all the same way.
 	 *
-	 * @param CreatePaymentResponse $response An instance of a CreatePaymentResponse subclass to be populated
+	 * @param PaymentProviderResponse $response An instance of a PaymentProviderResponse subclass to be populated
 	 * @param object $rawResponse The bit of the API response that has pspReference and refusalReason
-	 * @param StatusNormalizer $statusObject An instance of the appropriate status mapper class
-	 * @param string $rawStatus The status string from the API response, either from 'resultCode' or 'response'
-	 * @param bool $checkForRetry Whether to test the rawStatus against a list of retryable status codes.
+	 * @param bool $checkForRetry Whether to test the refusalReason against a list of retryable reasons.
 	 */
-	protected function prepareResponseObject(
-		CreatePaymentResponse $response,
+	protected function mapTxnIdAndErrors(
+		PaymentProviderResponse $response,
 		$rawResponse,
-		$statusObject,
-		$rawStatus,
 		$checkForRetry = true
 	) {
 		// map trxn id
@@ -127,29 +131,6 @@ abstract class PaymentProvider implements IPaymentProvider {
 			$message = 'Unable to map Adyen Gateway Transaction ID';
 			$response->addErrors( new PaymentError(
 				ErrorCode::MISSING_TRANSACTION_ID,
-				$message,
-				LogLevel::ERROR
-			) );
-			Logger::debug( $message, $rawResponse );
-		}
-		// map status
-		if ( !empty( $rawStatus ) ) {
-			$response->setRawStatus( $rawStatus );
-			try {
-				$status = $statusObject->normalizeStatus( $rawStatus );
-				$response->setStatus( $status );
-			} catch ( \Exception $ex ) {
-				$response->addErrors( new PaymentError(
-					ErrorCode::UNEXPECTED_VALUE,
-					$ex->getMessage(),
-					LogLevel::ERROR
-				) );
-				Logger::debug( 'Unable to map Adyen status', $rawResponse );
-			}
-		} else {
-			$message = 'Missing Adyen status';
-			$response->addErrors( new PaymentError(
-				ErrorCode::MISSING_REQUIRED_DATA,
 				$message,
 				LogLevel::ERROR
 			) );
@@ -171,6 +152,48 @@ abstract class PaymentProvider implements IPaymentProvider {
 				$rawResponse->refusalReason,
 				LogLevel::INFO
 			) );
+		}
+	}
+
+	/**
+	 * Normalize the raw status or add appropriate errors to our response object. We have a group of classes
+	 * whose function is normalizing raw status codes for specific API calls. We expect SOME status code back
+	 * from any API call, so when that is missing we always add a MISSING_REQUIRED_DATA error. Otherwise we
+	 * call the mapper and set the appropriate status on our PaymentProviderResponse object. Errors in
+	 * normalization result in adding an UNEXPECTED_VALUE error to the PaymentProviderResponse.
+	 *
+	 * @param PaymentProviderResponse $response An instance of a PaymentProviderResponse subclass to be populated
+	 * @param object $rawResponse The raw API response object, used to log errors.
+	 * @param StatusNormalizer $statusMapper An instance of the appropriate status mapper class
+	 * @param string $rawStatus The status string from the API response, either from 'resultCode' or 'response'
+	 */
+	protected function mapStatus(
+		PaymentProviderResponse $response,
+		$rawResponse,
+		StatusNormalizer $statusMapper,
+		$rawStatus
+	) {
+		if ( !empty( $rawStatus ) ) {
+			$response->setRawStatus( $rawStatus );
+			try {
+				$status = $statusMapper->normalizeStatus( $rawStatus );
+				$response->setStatus( $status );
+			} catch ( \Exception $ex ) {
+				$response->addErrors( new PaymentError(
+					ErrorCode::UNEXPECTED_VALUE,
+					$ex->getMessage(),
+					LogLevel::ERROR
+				) );
+				Logger::debug( 'Unable to map Adyen status', $rawResponse );
+			}
+		} else {
+			$message = 'Missing Adyen status';
+			$response->addErrors( new PaymentError(
+				ErrorCode::MISSING_REQUIRED_DATA,
+				$message,
+				LogLevel::ERROR
+			) );
+			Logger::debug( $message, $rawResponse );
 		}
 	}
 

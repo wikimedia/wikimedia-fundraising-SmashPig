@@ -76,7 +76,7 @@ class PaymentStatus implements StatusNormalizer {
 		]
 	];
 
-	public function normalizeStatus( string $ingenicoStatus ) : string {
+	public function normalizeStatus( string $ingenicoStatus ): string {
 		foreach ( self::$statusMap as $finalStatus => $ingenicoStatuses ) {
 			if ( array_search( $ingenicoStatus, $ingenicoStatuses, true ) !== false ) {
 				return $finalStatus;

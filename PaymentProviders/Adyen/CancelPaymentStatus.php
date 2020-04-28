@@ -12,10 +12,10 @@ class CancelPaymentStatus implements StatusNormalizer {
 	 * @param $adyenStatus
 	 * @return string
 	 */
-	public function normalizeStatus( string $adyenStatus ) : string {
+	public function normalizeStatus( string $adyenStatus ): string {
 		switch ( $adyenStatus ) {
 			case '[cancel-received]':
-				$status = FinalStatus::COMPLETE;
+				$status = FinalStatus::CANCELLED;
 				break;
 			default:
 				throw new OutOfBoundsException( "Unknown Adyen status $adyenStatus" );

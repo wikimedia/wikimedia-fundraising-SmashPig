@@ -73,7 +73,7 @@ class AdyenAudit implements AuditParser {
 
 	protected $fileData;
 
-	public function parseFile( string $path ) : array {
+	public function parseFile( string $path ): array {
 		$this->fileData = [];
 		$file = fopen( $path, 'r' );
 
@@ -104,7 +104,7 @@ class AdyenAudit implements AuditParser {
 
 		$msg = [
 			'gateway' => 'adyen',
-			'log_id' => $row['Merchant Reference'],
+			'invoice_id' => $row['Merchant Reference'],
 			'date' => $this->getDate( $row ),
 		];
 		$parts = explode( '.', $row['Merchant Reference'] );

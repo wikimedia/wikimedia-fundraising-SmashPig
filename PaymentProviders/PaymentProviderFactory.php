@@ -13,7 +13,7 @@ use SmashPig\Core\Context;
  */
 class PaymentProviderFactory {
 
-	public static function getProviderForMethod( $paymentMethod ) {
+	public static function getProviderForMethod( $paymentMethod ): IPaymentProvider {
 		$config = Context::get()->getProviderConfiguration();
 		$node = "payment-provider/$paymentMethod";
 		return $config->object( $node );

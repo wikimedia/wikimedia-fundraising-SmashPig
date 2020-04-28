@@ -7,6 +7,7 @@ use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
+use SmashPig\PaymentProviders\Adyen\Jobs\RecordCaptureJob;
 
 /**
  * When an authorization message from Adyen comes in, we need to either place
@@ -26,23 +27,31 @@ class PaymentCaptureAction implements IListenerMessageAction {
 				return true;
 			}
 
-			// Ignore ipn messages from ideal
-			if ( isset( $msg->paymentMethod ) && $msg->paymentMethod == 'ideal' ) {
-				return true;
-			}
-
 			if ( $msg->success ) {
-				// Here we need to capture the payment, the job runner will collect the
-				// orphan message
-				$tl->info(
-					"Adding Adyen capture job for {$msg->currency} {$msg->amount} " .
-					"with psp reference {$msg->pspReference}."
-				);
-				$job = ProcessCaptureRequestJob::factory( $msg );
-				QueueWrapper::push( 'jobs-adyen', $job );
-
+				// For iDEAL, treat this as the final notification of success. We don't
+				// need to make any more API calls, just record it in Civi.
+				if ( isset( $msg->paymentMethod ) && $msg->paymentMethod == 'ideal' ) {
+					$tl->info(
+						"Adding Adyen record capture job for {$msg->currency} {$msg->amount} " .
+						"with psp reference {$msg->pspReference}."
+					);
+					$job = RecordCaptureJob::factory( $msg );
+					QueueWrapper::push( 'jobs-adyen', $job );
+				} else {
+					// Here we need to capture the payment, the job runner will collect the
+					// orphan message
+					$tl->info(
+						"Adding Adyen capture job for {$msg->currency} {$msg->amount} " .
+						"with psp reference {$msg->pspReference}."
+					);
+					$job = ProcessCaptureRequestJob::factory( $msg );
+					QueueWrapper::push( 'jobs-adyen', $job );
+				}
 			} else {
 				// And here we just need to destroy the orphan
+				// FIXME: should we really delete these details, if donors can
+				// potentially re-use a merchant reference by reloading an Adyen
+				// full-redirect page?
 				$tl->info(
 					"Adyen payment with psp reference {$msg->pspReference} " .
 					"reported status failed: '{$msg->reason}'. " .

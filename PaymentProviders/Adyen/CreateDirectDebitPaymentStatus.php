@@ -12,7 +12,7 @@ class CreateDirectDebitPaymentStatus  implements StatusNormalizer {
 	 * @param $adyenStatus
 	 * @return string
 	 */
-	public function normalizeStatus( string $adyenStatus ) : string {
+	public function normalizeStatus( string $adyenStatus ): string {
 		switch ( $adyenStatus ) {
 			case 'Received':
 				$status = FinalStatus::COMPLETE;

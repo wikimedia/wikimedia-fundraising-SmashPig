@@ -36,7 +36,7 @@ class HostedCheckoutProvider extends PaymentProvider {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function createHostedPayment( array $params ) : array {
+	public function createHostedPayment( array $params ): array {
 		if ( empty( $params ) ) {
 			throw new BadMethodCallException(
 				'Called createHostedPayment with empty parameters'
@@ -53,7 +53,7 @@ class HostedCheckoutProvider extends PaymentProvider {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function getHostedPaymentStatus( string $hostedPaymentId ) : array {
+	public function getHostedPaymentStatus( string $hostedPaymentId ): array {
 		if ( !$hostedPaymentId ) {
 			throw new BadMethodCallException(
 				'Called getHostedPaymentStatus with empty hostedPaymentId'
@@ -74,7 +74,7 @@ class HostedCheckoutProvider extends PaymentProvider {
 	 *
 	 * @return string
 	 */
-	public function getHostedPaymentUrl( string $partialRedirectUrl ) : string {
+	public function getHostedPaymentUrl( string $partialRedirectUrl ): string {
 		return "https://{$this->subdomain}.$partialRedirectUrl";
 	}
 }

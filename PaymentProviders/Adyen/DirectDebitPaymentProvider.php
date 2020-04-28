@@ -18,18 +18,21 @@ class DirectDebitPaymentProvider extends PaymentProvider {
 	 * @param array $params
 	 * @return CreatePaymentResponse
 	 */
-	public function createPayment( array $params ) : CreatePaymentResponse {
+	public function createPayment( array $params ): CreatePaymentResponse {
 		$rawResponse = $this->api->createDirectDebitPayment( $params );
 		$response = new CreatePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 
 		if ( !empty( $rawResponse->response ) ) {
-			$rawStatus = $rawResponse->response->resultCode ?? null;
-			$this->prepareResponseObject(
+			$this->mapTxnIdAndErrors(
 				$response,
-				$rawResponse->response,
+				$rawResponse->response
+			);
+			$this->mapStatus(
+				$response,
+				$rawResponse,
 				new CreateDirectDebitPaymentStatus(),
-				$rawStatus
+				$rawResponse->response->resultCode ?? null
 			);
 		} else {
 			$responseError = 'response element missing from Adyen createPayment response.';

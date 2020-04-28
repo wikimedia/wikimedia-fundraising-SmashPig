@@ -16,18 +16,21 @@ class CardPaymentProvider extends PaymentProvider {
 	 * @param array $params needs 'recurring_payment_token', 'order_id', 'recurring', 'amount', and 'currency'
 	 * @return CreatePaymentResponse
 	 */
-	public function createPayment( array $params ) : CreatePaymentResponse {
+	public function createPayment( array $params ): CreatePaymentResponse {
 		$rawResponse = $this->api->createPayment( $params );
 		$response = new CreatePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 
 		if ( !empty( $rawResponse->paymentResult ) ) {
-			$rawStatus = $rawResponse->paymentResult->resultCode ?? null;
-			$this->prepareResponseObject(
+			$this->mapTxnIdAndErrors(
 				$response,
-				$rawResponse->paymentResult,
+				$rawResponse->paymentResult
+			);
+			$this->mapStatus(
+				$response,
+				$rawResponse,
 				new CreatePaymentStatus(),
-				$rawStatus
+				$rawResponse->paymentResult->resultCode ?? null
 			);
 		} else {
 			$responseError = 'paymentResult element missing from Adyen createPayment response.';

@@ -65,7 +65,7 @@ class ReferenceData {
 	 * @param string $paymentProductId
 	 * @return array containing payment_method and payment_submethod
 	 */
-	public static function decodePaymentMethod( string $paymentProductId ) : array {
+	public static function decodePaymentMethod( string $paymentProductId ): array {
 		if ( !array_key_exists( $paymentProductId, self::$methods ) ) {
 			throw new OutOfBoundsException( "Unknown Payment Product ID $paymentProductId " );
 		}

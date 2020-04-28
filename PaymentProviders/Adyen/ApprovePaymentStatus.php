@@ -12,7 +12,7 @@ class ApprovePaymentStatus implements StatusNormalizer {
 	 * @param $adyenStatus
 	 * @return string
 	 */
-	public function normalizeStatus( string $adyenStatus ) : string {
+	public function normalizeStatus( string $adyenStatus ): string {
 		switch ( $adyenStatus ) {
 			case '[capture-received]':
 				$status = FinalStatus::COMPLETE;

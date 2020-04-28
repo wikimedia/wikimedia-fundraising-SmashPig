@@ -52,4 +52,14 @@ class Capture extends AdyenMessage {
 			return false;
 		}
 	}
+
+	/**
+	 * We want to record the payment under the authorization reference, not the
+	 * capture reference.
+	 *
+	 * @return string
+	 */
+	public function getGatewayTxnId() {
+		return $this->originalReference;
+	}
 }

@@ -40,7 +40,7 @@ class AstroPayAudit implements AuditParser {
 
 	protected $fileData;
 
-	public function parseFile( string $path ) : array {
+	public function parseFile( string $path ): array {
 		$this->fileData = [];
 		$file = fopen( $path, 'r' );
 
@@ -108,7 +108,7 @@ class AstroPayAudit implements AuditParser {
 		$msg['gateway_parent_id'] = $row['Transaction Reference'];
 		$msg['gateway_refund_id'] = $row['Reference'];
 		$msg['gross_currency'] = $row['currency'];
-		$msg['log_id'] = $row['Transaction Invoice'];
+		$msg['invoice_id'] = $row['Transaction Invoice'];
 		$msg['type'] = strtolower( $row['Type'] );
 		if ( $msg['type'] === 'chargebacks' ) {
 			// deal with stray plural form, but don't break if they fix it
@@ -123,7 +123,7 @@ class AstroPayAudit implements AuditParser {
 		$msg['email'] = $row['User Mail'];
 		$msg['settled_fee'] = $row['Fee']; // settled_fee since it's given in USD
 		$msg['gateway_txn_id'] = $row['Reference'];
-		$msg['log_id'] = $row['Invoice'];
+		$msg['invoice_id'] = $row['Invoice'];
 		list( $method, $submethod ) = ReferenceData::decodePaymentMethod(
 			$row['Payment Method Type'],
 			$row['Payment Method']
