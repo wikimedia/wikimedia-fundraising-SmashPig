@@ -12,7 +12,7 @@ use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\PaymentCapture;
  */
 class ReconstructMerchantReference implements IListenerMessageAction {
 
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		// Bail out if not a PaymentCapture
 		if ( !( $msg instanceof PaymentCapture ) ) {
 			return true;

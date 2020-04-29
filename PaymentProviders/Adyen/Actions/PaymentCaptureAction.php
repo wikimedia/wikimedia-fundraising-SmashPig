@@ -15,7 +15,7 @@ use SmashPig\PaymentProviders\Adyen\Jobs\RecordCaptureJob;
  * the transaction failed.
  */
 class PaymentCaptureAction implements IListenerMessageAction {
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		$tl = new TaggedLogger( 'PaymentCaptureAction' );
 
 		if ( $msg instanceof Authorisation ) {

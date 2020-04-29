@@ -9,7 +9,7 @@ use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\RefundWithData;
  * Action for a refund! whoo!
  */
 class RefundInitiatedAction implements IListenerMessageAction {
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		$tl = new TaggedLogger( 'RefundInitiatedAction' );
 
 		if ( $msg instanceof RefundWithData ) {

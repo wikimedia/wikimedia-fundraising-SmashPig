@@ -12,7 +12,7 @@ use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted;
  */
 class AssociateRefundParent implements IListenerMessageAction {
 
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		// Bail out if not a refund
 		if ( !( $msg instanceof RefundCompleted ) ) {
 			return true;
