@@ -57,12 +57,12 @@ abstract class SmashPigDatabase {
 	/**
 	 * @return string Key in configuration pointing to backing PDO object
 	 */
-	abstract protected function getConfigKey();
+	abstract protected function getConfigKey(): string;
 
 	/**
 	 * @return string Name of file (no directory) containing table creation SQL
 	 */
-	abstract protected function getTableScriptFile();
+	abstract protected function getTableScriptFile(): string;
 
 	/**
 	 * Build components of a parameterized insert statement
@@ -71,7 +71,7 @@ abstract class SmashPigDatabase {
 	 * @return array with two string members, first a concatenated field list,
 	 *  then a concatenated list of parameters.
 	 */
-	protected static function formatInsertParameters( $record ) {
+	protected static function formatInsertParameters( array $record ): array {
 		$fields = array_keys( $record );
 		$fieldList = implode( ',', $fields );
 
@@ -89,7 +89,7 @@ abstract class SmashPigDatabase {
 	 * @return PDOStatement the executed statement for any fetching
 	 * @throws DataStoreException
 	 */
-	protected function prepareAndExecute( $sql, $dbRecord ) {
+	protected function prepareAndExecute( string $sql, array $dbRecord ): PDOStatement {
 		$prepared = $this->getDatabase()->prepare( $sql );
 
 		foreach ( $dbRecord as $field => $value ) {

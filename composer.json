@@ -41,6 +41,7 @@
     "require": {
         "coderkungfu/php-queue": "^1.0",
         "ext-json": "*",
+        "ext-pdo": "*",
         "php": ">=7.0",
         "phpmailer/phpmailer": "^5.2",
         "predis/predis": "^1.1",

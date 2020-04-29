@@ -15,11 +15,12 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 	 * is marked as having failed, and is not up for review.
 	 *
 	 * @param array $message Payments initial message
-	 *	FIXME: Or pass ID parameters explicitly and call this
-	 *	isTransactionFinalizedByGatewayOrderId??
+	 *    FIXME: Or pass ID parameters explicitly and call this
+	 *    isTransactionFinalizedByGatewayOrderId??
 	 * @return bool
+	 * @throws DataStoreException
 	 */
-	public function isTransactionFailed( $message ) {
+	public function isTransactionFailed( array $message ): bool {
 		$message = $this->fetchMessageByGatewayOrderId(
 			$message['gateway'], $message['order_id'] );
 		if ( $message === null ) {
@@ -33,7 +34,7 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 	 * @return bool true if the message indicates that the payment has been
 	 *  definitively failed and won't come up again
 	 */
-	public static function isMessageFailed( $message ) {
+	public static function isMessageFailed( array $message ): bool {
 		if (
 			(
 				$message['payments_final_status'] === FinalStatus::FAILED ||
@@ -49,11 +50,12 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 	/**
 	 * Return record matching a (gateway, order_id), or null if none is found
 	 *
-	 * @param $gatewayName string
-	 * @param $orderId string
+	 * @param string $gatewayName
+	 * @param string $orderId
 	 * @return array|null Record related to a transaction, or null if nothing matches
+	 * @throws DataStoreException
 	 */
-	public function fetchMessageByGatewayOrderId( $gatewayName, $orderId ) {
+	public function fetchMessageByGatewayOrderId( string $gatewayName, string $orderId ) {
 		$sql = 'select * from payments_initial
 			where gateway = :gateway
 				and order_id = :order_id
@@ -70,7 +72,12 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 		return $row;
 	}
 
-	public function storeMessage( $message ) {
+	/**
+	 * @param array $message
+	 * @return string The ID of the inserted row
+	 * @throws DataStoreException
+	 */
+	public function storeMessage( array $message ): string {
 		list( $fieldList, $paramList ) = self::formatInsertParameters(
 			$message
 		);
@@ -81,11 +88,11 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 		return $this->getDatabase()->lastInsertId();
 	}
 
-	protected function getConfigKey() {
+	protected function getConfigKey(): string {
 		return 'data-store/fredge-db';
 	}
 
-	protected function getTableScriptFile() {
+	protected function getTableScriptFile(): string {
 		return '003_CreatePaymentsInitialTable.sql';
 	}
 }

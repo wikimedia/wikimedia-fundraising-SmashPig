@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3d5e9509597f87212291dfecf2954b16",
+    "content-hash": "cdff99d35d43efa83cf35fa6f8d02613",
     "packages": [
         {
             "name": "amzn/login-and-pay-with-amazon-sdk-php",
@@ -1044,6 +1044,7 @@
             ],
             "description": "This tool check syntax of PHP files about 20x faster than serial check.",
             "homepage": "https://github.com/JakubOnderka/PHP-Parallel-Lint",
+            "abandoned": "php-parallel-lint/php-parallel-lint",
             "time": "2015-12-15T10:42:16+00:00"
         },
         {
@@ -2396,6 +2397,7 @@
     "prefer-lowest": false,
     "platform": {
         "ext-json": "*",
+        "ext-pdo": "*",
         "php": ">=7.0"
     },
     "platform-dev": {

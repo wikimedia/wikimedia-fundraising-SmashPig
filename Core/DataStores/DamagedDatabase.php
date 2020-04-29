@@ -21,14 +21,15 @@ class DamagedDatabase extends SmashPigDatabase {
 	 * @param int|null $retryDate When provided, re-process message after
 	 *  this timestamp
 	 * @return int ID of message in damaged database
+	 * @throws DataStoreException
 	 */
 	public function storeMessage(
-		$message,
-		$originalQueue,
-		$error = '',
-		$trace = '',
+		array $message,
+		string $originalQueue,
+		string $error = '',
+		string $trace = '',
 		$retryDate = null
-	) {
+	): int {
 		$now = UtcDate::getUtcTimestamp();
 		$originalDate = UtcDate::getUtcDatabaseString(
 			DateFields::getOriginalDateOrDefault( $message, $now )
@@ -75,11 +76,12 @@ class DamagedDatabase extends SmashPigDatabase {
 	/**
 	 * Return record matching a (gateway, order_id), or null
 	 *
-	 * @param $gatewayName string
-	 * @param $orderId string
+	 * @param string $gatewayName
+	 * @param string $orderId
 	 * @return array|null Record related to a transaction, or null if nothing matches
+	 * @throws DataStoreException
 	 */
-	public function fetchMessageByGatewayOrderId( $gatewayName, $orderId ) {
+	public function fetchMessageByGatewayOrderId( string $gatewayName, string $orderId ) {
 		$sql = 'select * from damaged
 			where gateway = :gateway
 				and order_id = :order_id
@@ -104,8 +106,9 @@ class DamagedDatabase extends SmashPigDatabase {
 	 * @param mixed $date a date in any format accepted by the DateTime constructor, default 'now'
 	 *
 	 * @return array|null Records with retry_date prior to now
+	 * @throws DataStoreException
 	 */
-	public function fetchRetryMessages( $limit, $date = 'now' ) {
+	public function fetchRetryMessages( int $limit, $date = 'now' ) {
 		$sql = 'SELECT * FROM damaged
 			WHERE retry_date <= :now
 			ORDER BY retry_date ASC
@@ -127,9 +130,10 @@ class DamagedDatabase extends SmashPigDatabase {
 	/**
 	 * Delete a message from the database
 	 *
-	 * @param array $message
+	 * @param array $message With 'damaged_id' key set
+	 * @throws DataStoreException
 	 */
-	public function deleteMessage( $message ) {
+	public function deleteMessage( array $message ) {
 		$sql = 'DELETE FROM damaged
 			WHERE id = :id';
 		$params = [
@@ -143,8 +147,9 @@ class DamagedDatabase extends SmashPigDatabase {
 	 *
 	 * @param int $originalDate Oldest original timestamp to keep
 	 * @param string|null $queue
+	 * @throws DataStoreException
 	 */
-	public function deleteOldMessages( $originalDate, $queue = null ) {
+	public function deleteOldMessages( int $originalDate, $queue = null ) {
 		$sql = 'DELETE FROM damaged WHERE original_date < :date';
 		if ( $queue ) {
 			$sql .= ' AND original_queue = :queue';
@@ -163,18 +168,18 @@ class DamagedDatabase extends SmashPigDatabase {
 	 * @param array $row
 	 * @return array
 	 */
-	protected function messageFromDbRow( $row ) {
+	protected function messageFromDbRow( array $row ): array {
 		$message = json_decode( $row['message'], true );
 		$message['damaged_id'] = $row['id'];
 		$message['original_queue'] = $row['original_queue'];
 		return $message;
 	}
 
-	protected function getConfigKey() {
+	protected function getConfigKey(): string {
 		return 'data-store/damaged-db';
 	}
 
-	protected function getTableScriptFile() {
+	protected function getTableScriptFile(): string {
 		return '002_CreateDamagedTable.sql';
 	}
 }
