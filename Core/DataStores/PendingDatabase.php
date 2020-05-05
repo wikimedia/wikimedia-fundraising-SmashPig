@@ -11,7 +11,13 @@ use SmashPig\Core\UtcDate;
  */
 class PendingDatabase extends SmashPigDatabase {
 
-	protected function validateMessage( $message ) {
+	/**
+	 * Check that all required fields exist on a message
+	 *
+	 * @param array $message
+	 * @throws SmashPigException
+	 */
+	protected function validateMessage( array $message ) {
 		if (
 			empty( $message['date'] ) ||
 			empty( $message['gateway'] ) ||
@@ -28,9 +34,11 @@ class PendingDatabase extends SmashPigDatabase {
 	 * Build and insert a database record from a pending queue message
 	 *
 	 * @param array $message
-	 * @return int ID of message in pending database
+	 * @return string ID of message in pending database
+	 * @throws DataStoreException
+	 * @throws SmashPigException
 	 */
-	public function storeMessage( $message ) {
+	public function storeMessage( array $message ): string {
 		$this->validateMessage( $message );
 
 		$dbRecord = [];
@@ -65,11 +73,12 @@ class PendingDatabase extends SmashPigDatabase {
 	/**
 	 * Return record matching a (gateway, order_id), or null
 	 *
-	 * @param $gatewayName string
-	 * @param $orderId string
+	 * @param string $gatewayName
+	 * @param string $orderId
 	 * @return array|null Record related to a transaction, or null if nothing matches
+	 * @throws DataStoreException
 	 */
-	public function fetchMessageByGatewayOrderId( $gatewayName, $orderId ) {
+	public function fetchMessageByGatewayOrderId( string $gatewayName, string $orderId ) {
 		$sql = 'select * from pending
 			where gateway = :gateway
 				and order_id = :order_id
@@ -90,10 +99,11 @@ class PendingDatabase extends SmashPigDatabase {
 	/**
 	 * Get the oldest message for a given gateway, by date
 	 *
-	 * @param $gatewayName string
+	 * @param string $gatewayName
 	 * @return array|null Message or null if nothing is found.
+	 * @throws DataStoreException
 	 */
-	public function fetchMessageByGatewayOldest( $gatewayName ) {
+	public function fetchMessageByGatewayOldest( string $gatewayName ) {
 		$sql = 'select * from pending
 			where gateway = :gateway
 			order by date asc
@@ -114,8 +124,9 @@ class PendingDatabase extends SmashPigDatabase {
 	 * @param string $gatewayName
 	 * @param int $limit fetch at most this many messages
 	 * @return array|null Messages or null if nothing is found.
+	 * @throws DataStoreException
 	 */
-	public function fetchMessagesByGatewayNewest( $gatewayName, $limit = 1 ) {
+	public function fetchMessagesByGatewayNewest( string $gatewayName, int $limit = 1 ) {
 		$sql = "
 			select * from pending
 			where gateway = :gateway
@@ -140,8 +151,9 @@ class PendingDatabase extends SmashPigDatabase {
 	 * Note that we delete by (gateway, order_id) internally.
 	 *
 	 * @param array $message
+	 * @throws DataStoreException
 	 */
-	public function deleteMessage( $message ) {
+	public function deleteMessage( array $message ) {
 		if ( !isset( $message['order_id'] ) ) {
 			$json = json_encode( $message );
 			Logger::warning( "Trying to delete pending message with no order id: $json" );
@@ -163,11 +175,12 @@ class PendingDatabase extends SmashPigDatabase {
 	/**
 	 * Delete expired messages, optionally by gateway
 	 *
-	 * @param int $originalDate Oldest date to keep
+	 * @param int $originalDate Oldest date to keep as unix timestamp
 	 * @param string|null $gateway
 	 * @return int Number of rows deleted
+	 * @throws DataStoreException
 	 */
-	public function deleteOldMessages( $originalDate, $gateway = null ) {
+	public function deleteOldMessages( int $originalDate, string $gateway = null ) {
 		$sql = 'DELETE FROM pending WHERE date < :date';
 		$params = [
 			'date' => UtcDate::getUtcDatabaseString( $originalDate ),
@@ -182,8 +195,11 @@ class PendingDatabase extends SmashPigDatabase {
 
 	/**
 	 * Parse a database row and return the normalized message.
+	 *
+	 * @param array $row An associative array whose keys are raw pending table columns
+	 * @return array The decoded message from the `message` column, plus pending_id from `id`
 	 */
-	protected function messageFromDbRow( $row ) {
+	protected function messageFromDbRow( array $row ): array {
 		$message = json_decode( $row['message'], true );
 		$message['pending_id'] = $row['id'];
 		return $message;
@@ -193,7 +209,7 @@ class PendingDatabase extends SmashPigDatabase {
 	 * @param array $record
 	 * @return string SQL to insert a pending record, with parameters
 	 */
-	protected function getInsertStatement( $record ) {
+	protected function getInsertStatement( array $record ): string {
 		list( $fieldList, $paramList ) = self::formatInsertParameters(
 			$record
 		);
@@ -206,7 +222,7 @@ class PendingDatabase extends SmashPigDatabase {
 	 * @param array $record
 	 * @return string SQL to update a pending record, with parameters
 	 */
-	protected function getUpdateStatement( $record ) {
+	protected function getUpdateStatement( array $record ): string {
 		$sets = [];
 		foreach ( array_keys( $record ) as $field ) {
 			$sets[] = "$field = :$field";
@@ -217,11 +233,11 @@ class PendingDatabase extends SmashPigDatabase {
 		return $update;
 	}
 
-	protected function getConfigKey() {
+	protected function getConfigKey(): string {
 		return 'data-store/pending-db';
 	}
 
-	protected function getTableScriptFile() {
+	protected function getTableScriptFile(): string {
 		return '001_CreatePendingTable.sql';
 	}
 }

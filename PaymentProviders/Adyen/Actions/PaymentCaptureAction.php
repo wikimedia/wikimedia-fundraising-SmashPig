@@ -15,18 +15,10 @@ use SmashPig\PaymentProviders\Adyen\Jobs\RecordCaptureJob;
  * the transaction failed.
  */
 class PaymentCaptureAction implements IListenerMessageAction {
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		$tl = new TaggedLogger( 'PaymentCaptureAction' );
 
 		if ( $msg instanceof Authorisation ) {
-			// Ignore messages from recurring charges.
-			// Subsequent charges will not return the recurring.recurringDetailReference
-			if ( isset( $msg->recurringProcessingModel )
-					 && $msg->recurringProcessingModel == 'Subscription'
-					 && !isset( $msg->{'recurring.recurringDetailReference'} ) ) {
-				return true;
-			}
-
 			if ( $msg->success ) {
 				// For iDEAL, treat this as the final notification of success. We don't
 				// need to make any more API calls, just record it in Civi.

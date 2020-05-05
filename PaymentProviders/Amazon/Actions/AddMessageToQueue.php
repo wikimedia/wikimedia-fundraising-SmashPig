@@ -6,7 +6,7 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Messages\ListenerMessage;
 
 class AddMessageToQueue implements IListenerMessageAction {
-	public function execute( ListenerMessage $msg ) {
+	public function execute( ListenerMessage $msg ): bool {
 		// FIXME: I don't like this dispatch style
 		$destinationQueue = $msg->getDestinationQueue();
 
