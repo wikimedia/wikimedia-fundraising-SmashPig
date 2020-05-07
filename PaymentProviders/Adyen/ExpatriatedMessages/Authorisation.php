@@ -19,6 +19,8 @@ class Authorisation extends AdyenMessage {
 
 	public $cvvResult = '';
 	public $avsResult = '';
+	public $recurringProcessingModel = '';
+	public $recurringDetailReference = '';
 
 	/**
 	 * Overloads the generic Adyen method adding fields specific to the Authorization message
@@ -61,7 +63,7 @@ class Authorisation extends AdyenMessage {
 					$this->recurringProcessingModel = $firstSegment( $entry->value );
 					break;
 				case 'recurring.recurringDetailReference':
-					$this->{'recurring.recurringDetailReference'} = $firstSegment( $entry->value );
+					$this->recurringDetailReference = $firstSegment( $entry->value );
 					break;
 
 			}
