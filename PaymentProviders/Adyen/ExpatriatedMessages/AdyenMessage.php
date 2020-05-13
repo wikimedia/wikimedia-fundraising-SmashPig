@@ -99,7 +99,7 @@ abstract class AdyenMessage extends ListenerMessage {
 	 *
 	 * @return bool True if the message was complete and can be processed
 	 */
-	public function validate() {
+	public function validate(): bool {
 		// Not sure if there's any validation we can do that hasn't already been done
 		// by the WSDL processor.
 

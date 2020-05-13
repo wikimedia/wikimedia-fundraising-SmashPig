@@ -11,8 +11,10 @@ class QueueWrapper {
 	/**
 	 * @param string $queueName
 	 * @param array|JsonSerializableObject $message
+	 * @throws \SmashPig\Core\ConfigurationKeyException
+	 * @throws \Exception
 	 */
-	public static function push( $queueName, $message ) {
+	public static function push( string $queueName, $message ) {
 		if ( $message instanceof JsonSerializableObject ) {
 			$message = json_decode( $message->toJson(), true );
 		}
@@ -24,8 +26,9 @@ class QueueWrapper {
 	/**
 	 * @param string $queueName
 	 * @return FifoQueueStore
+	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
-	public static function getQueue( $queueName ) {
+	public static function getQueue( string $queueName ): FifoQueueStore {
 		$config = Context::get()->getGlobalConfiguration();
 		$key = "data-store/$queueName";
 

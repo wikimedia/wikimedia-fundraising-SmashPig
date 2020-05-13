@@ -7,5 +7,5 @@ interface ResponseValidator {
 	 * @param array $parsedResponse with keys 'status', 'headers', and 'body'
 	 * @return bool Whether to retry the request
 	 */
-	public function shouldRetry( $parsedResponse );
+	public function shouldRetry( array $parsedResponse ): bool;
 }

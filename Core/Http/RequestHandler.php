@@ -19,11 +19,9 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 class RequestHandler {
 	/**
 	 * @return Response
+	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
-	public static function process() {
-		// Can go away once we require PHP 5.6
-		ini_set( 'default_charset', 'UTF-8' );
-
+	public static function process(): Response {
 		// --- Get the request and response objects
 		$request = Request::createFromGlobals();
 		$response = new Response();

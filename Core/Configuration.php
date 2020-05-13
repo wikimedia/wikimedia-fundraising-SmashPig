@@ -29,7 +29,7 @@ abstract class Configuration {
 	 *
 	 * @param array $searchPath
 	 */
-	public function loadConfigFromPaths( $searchPath ) {
+	public function loadConfigFromPaths( array $searchPath ) {
 		$paths = $this->expandSearchPathToActual( $searchPath );
 
 		// Reset to empty set.
@@ -63,7 +63,7 @@ abstract class Configuration {
 	 * @param array $searchPath File paths or globs
 	 * @return array Actual files discovered in the path.
 	 */
-	protected function expandSearchPathToActual( $searchPath ) {
+	protected function expandSearchPathToActual( array $searchPath ) {
 		$paths = array_reduce( $searchPath, function ( $carry, $pattern ) {
 			$matchingPaths = glob( $pattern );
 			if ( $matchingPaths === false ) {
@@ -82,9 +82,10 @@ abstract class Configuration {
 	 * so any usage outside of this class or tests will be subverting the
 	 * expected cascading priority.
 	 *
-	 * @param $data array
+	 * @param array $data
+	 * @throws SmashPigException
 	 */
-	public function override( $data ) {
+	public function override( array $data ) {
 		static::treeMerge( $this->options, $data );
 	}
 
@@ -96,7 +97,7 @@ abstract class Configuration {
 	 * @param $node string
 	 * @param $object object
 	 */
-	public function overrideObjectInstance( $node, $object ) {
+	public function overrideObjectInstance( string $node, $object ) {
 		$this->objects[$node] = $object;
 	}
 
@@ -109,7 +110,7 @@ abstract class Configuration {
 	 * @return mixed
 	 * @throws ConfigurationKeyException
 	 */
-	public function val( $path ) {
+	public function val( string $path ) {
 		/*
 		 * Magic "/" returns the entire configuration tree.
 		 *
@@ -157,8 +158,9 @@ abstract class Configuration {
 	 * @param bool $persistent If true the object is saved for future calls.
 	 * @return mixed|object
 	 * @throws ConfigurationKeyException
+	 * @throws \ReflectionException
 	 */
-	public function object( $node, $persistent = true ) {
+	public function object( string $node, bool $persistent = true ) {
 		// First look and see if we already have a $persistent object.
 		if ( array_key_exists( $node, $this->objects ) ) {
 			return $this->objects[$node];
@@ -191,7 +193,7 @@ abstract class Configuration {
 	 *
 	 * @return bool True if the node exists
 	 */
-	public function nodeExists( $node ) {
+	public function nodeExists( string $node ): bool {
 		try {
 			$this->val( $node );
 			return true;
@@ -212,7 +214,7 @@ abstract class Configuration {
 	 * or empty string to begin.
 	 * @throws SmashPigException
 	 */
-	protected static function treeMerge( &$base, $graft, $myRoot = '' ) {
+	protected static function treeMerge( array &$base, array $graft, string $myRoot = '' ) {
 		foreach ( $graft as $graftNodeName => $graftNodeValue ) {
 			$node = ( $myRoot ? "{$myRoot}/{$graftNodeName}" : $graftNodeName );
 

@@ -30,7 +30,7 @@ abstract class AmazonMessage extends ListenerMessage {
 		return null;
 	}
 
-	public function validate() {
+	public function validate(): bool {
 		return true;
 	}
 

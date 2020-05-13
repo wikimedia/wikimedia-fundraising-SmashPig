@@ -19,9 +19,9 @@ class ProviderConfiguration extends Configuration {
 	 * @return static
 	 */
 	public static function createForProvider(
-		$provider,
+		string $provider,
 		GlobalConfiguration $globalConfig
-	) {
+	): ProviderConfiguration {
 		// FIXME: transitional code, remove when everything points to new names
 		$provider = self::remapProvider( $provider );
 
@@ -39,10 +39,10 @@ class ProviderConfiguration extends Configuration {
 	 * @return static
 	 */
 	public static function createForProviderWithOverrideFile(
-		$provider,
+		string $provider,
 		$overridePath,
 		GlobalConfiguration $globalConfig
-	) {
+	): ProviderConfiguration {
 		// FIXME: transitional code, remove when everything points to new names
 		$provider = self::remapProvider( $provider );
 
@@ -56,7 +56,7 @@ class ProviderConfiguration extends Configuration {
 		return $config;
 	}
 
-	protected static function remapProvider( $provider ) {
+	protected static function remapProvider( string $provider ): string {
 		$remap = [
 			'astropay' => 'dlocal',
 			'globalcollect' => 'ingenico'
@@ -74,7 +74,7 @@ class ProviderConfiguration extends Configuration {
 	 * @param GlobalConfiguration $globalConfig
 	 * @return static
 	 */
-	public static function createDefault( GlobalConfiguration $globalConfig ) {
+	public static function createDefault( GlobalConfiguration $globalConfig ): ProviderConfiguration {
 		$config = new static( $globalConfig );
 		$config->provider = self::NO_PROVIDER;
 		$config->loadDefaultConfig();
@@ -82,7 +82,7 @@ class ProviderConfiguration extends Configuration {
 		return $config;
 	}
 
-	protected function getDefaultSearchPath() {
+	protected function getDefaultSearchPath(): array {
 		if ( $this->provider !== self::NO_PROVIDER ) {
 			if ( isset( $_SERVER['HOME'] ) ) {
 				$searchPath[] = "{$_SERVER['HOME']}/.smashpig/{$this->provider}/main.yaml";
@@ -98,7 +98,7 @@ class ProviderConfiguration extends Configuration {
 		return $searchPath;
 	}
 
-	public function getProviderName() {
+	public function getProviderName(): string {
 		return $this->provider;
 	}
 }

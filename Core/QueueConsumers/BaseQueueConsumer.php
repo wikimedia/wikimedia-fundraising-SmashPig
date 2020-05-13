@@ -47,7 +47,7 @@ abstract class BaseQueueConsumer {
 	 *
 	 * @param array $message
 	 */
-	abstract public function processMessage( $message );
+	abstract public function processMessage( array $message );
 
 	/**
 	 * Gets a fresh QueueConsumer
@@ -59,9 +59,9 @@ abstract class BaseQueueConsumer {
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
 	public function __construct(
-		$queueName,
-		$timeLimit = 0,
-		$messageLimit = 0
+		string $queueName,
+		int $timeLimit = 0,
+		int $messageLimit = 0
 	) {
 		if ( !is_numeric( $timeLimit ) ) {
 			throw new InvalidArgumentException( 'timeLimit must be numeric' );
@@ -90,8 +90,9 @@ abstract class BaseQueueConsumer {
 	 * reached, or till queue is empty.
 	 *
 	 * @return int number of messages processed
+	 * @throws Exception
 	 */
-	public function dequeueMessages() {
+	public function dequeueMessages(): int {
 		$startTime = time();
 		$processed = 0;
 		$realCallback = [ $this, 'processMessageWithErrorHandling' ];
@@ -130,7 +131,7 @@ abstract class BaseQueueConsumer {
 	 *
 	 * @param array $message
 	 */
-	public function processMessageWithErrorHandling( $message ) {
+	public function processMessageWithErrorHandling( array $message ) {
 		try {
 			$this->processMessage( $message );
 		} catch ( Exception $ex ) {
@@ -144,8 +145,9 @@ abstract class BaseQueueConsumer {
 	 *
 	 * @param array $message
 	 * @param Exception $ex
+	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
-	protected function handleError( $message, Exception $ex ) {
+	protected function handleError( array $message, Exception $ex ) {
 		if ( $ex instanceof RetryableException ) {
 			$now = UtcDate::getUtcTimestamp();
 			$config = Context::get()->getGlobalConfiguration();
@@ -168,11 +170,12 @@ abstract class BaseQueueConsumer {
 	/**
 	 * @param array $message The data
 	 * @param Exception $ex The problem
-	 * @param int| null $retryDate If provided, retry after this timestamp
+	 * @param int|null $retryDate If provided, retry after this timestamp
 	 * @return int ID of message in damaged database
+	 * @throws \SmashPig\Core\DataStores\DataStoreException
 	 */
 	protected function sendToDamagedStore(
-		$message, Exception $ex, $retryDate = null
+		array $message, Exception $ex, $retryDate = null
 	) {
 		if ( $retryDate ) {
 			Logger::notice(

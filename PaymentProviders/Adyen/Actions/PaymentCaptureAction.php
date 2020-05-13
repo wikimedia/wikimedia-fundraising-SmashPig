@@ -20,6 +20,13 @@ class PaymentCaptureAction implements IListenerMessageAction {
 
 		if ( $msg instanceof Authorisation ) {
 			if ( $msg->success ) {
+				// Ignore messages from recurring charges.
+				// Subsequent charges will not return the recurring.recurringDetailReference
+				if ( isset( $msg->recurringProcessingModel )
+						 && $msg->recurringProcessingModel == 'Subscription'
+						 && $msg->recurringDetailReference == '' ) {
+					return true;
+				}
 				// For iDEAL, treat this as the final notification of success. We don't
 				// need to make any more API calls, just record it in Civi.
 				if ( isset( $msg->paymentMethod ) && $msg->paymentMethod == 'ideal' ) {

@@ -31,7 +31,7 @@ abstract class AstroPayMessage extends ListenerMessage {
 	protected $x_control;
 	protected $x_currency;
 
-	public function validate() {
+	public function validate(): bool {
 		return true;
 	}
 

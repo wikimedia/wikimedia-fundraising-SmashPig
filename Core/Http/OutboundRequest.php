@@ -34,24 +34,24 @@ class OutboundRequest {
 		$this->method = $method;
 	}
 
-	public function setHeader( $name, $value ) {
+	public function setHeader( string $name, string $value ): OutboundRequest {
 		$this->headers[$name] = $value;
 		return $this;
 	}
 
-	public function getHeaders() {
+	public function getHeaders(): array {
 		return $this->headers;
 	}
 
-	public function getUrl() {
+	public function getUrl(): string {
 		return $this->url;
 	}
 
-	public function getMethod() {
+	public function getMethod(): string {
 		return $this->method;
 	}
 
-	public function setBody( $data ) {
+	public function setBody( $data ): OutboundRequest {
 		if ( is_array( $data ) ) {
 			$this->body = http_build_query( $data );
 		} else {
@@ -64,13 +64,14 @@ class OutboundRequest {
 		} else {
 			$this->setHeader( 'Content-Length', strlen( $this->body ) );
 		}
+		return $this;
 	}
 
-	public function getBody() {
+	public function getBody(): string {
 		return $this->body;
 	}
 
-	public function execute() {
+	public function execute(): array {
 		$config = Context::get()->getProviderConfiguration();
 		/**
 		 * @var CurlWrapper

@@ -25,7 +25,7 @@ class GlobalConfiguration extends Configuration {
 	 *
 	 * @return GlobalConfiguration or subclass
 	 */
-	public static function createWithOverrideFile( $overridePath ) {
+	public static function createWithOverrideFile( $overridePath ): GlobalConfiguration {
 		$config = new static();
 
 		$searchPath = array_merge(
@@ -36,7 +36,7 @@ class GlobalConfiguration extends Configuration {
 		return $config;
 	}
 
-	protected function getDefaultSearchPath() {
+	protected function getDefaultSearchPath(): array {
 		$searchPath = [];
 
 		if ( isset( $_SERVER['HOME'] ) ) {
@@ -48,7 +48,7 @@ class GlobalConfiguration extends Configuration {
 		return $searchPath;
 	}
 
-	protected function getDefaultOptions() {
+	protected function getDefaultOptions(): array {
 		return [];
 	}
 }

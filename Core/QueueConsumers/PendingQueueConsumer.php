@@ -16,13 +16,13 @@ class PendingQueueConsumer extends BaseQueueConsumer {
 	 */
 	protected $paymentsInitialDatabase;
 
-	public function __construct( $queueName, $timeLimit, $messageLimit ) {
+	public function __construct( string $queueName, int $timeLimit, int $messageLimit ) {
 		parent::__construct( $queueName, $timeLimit, $messageLimit );
 		$this->pendingDatabase = PendingDatabase::get();
 		$this->paymentsInitialDatabase = PaymentsInitialDatabase::get();
 	}
 
-	public function processMessage( $message ) {
+	public function processMessage( array $message ) {
 		$logIdentifier = "message with gateway {$message['gateway']}" .
 			" and order ID {$message['order_id']}";
 

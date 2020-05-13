@@ -24,7 +24,7 @@ class QueueFileDumper extends BaseQueueConsumer {
 	 * @param array $conditions
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
-	public function __construct( $queueName, $messageLimit, $filename, $conditions = [] ) {
+	public function __construct( string $queueName, int $messageLimit, string $filename, array $conditions = [] ) {
 		parent::__construct( $queueName, 0, $messageLimit );
 		$this->file = fopen( $filename, 'a' );
 		$this->conditions = $conditions;
@@ -33,7 +33,7 @@ class QueueFileDumper extends BaseQueueConsumer {
 		}
 	}
 
-	public function processMessage( $message ) {
+	public function processMessage( array $message ) {
 		if ( !empty( $this->conditions ) ) {
 			foreach ( $this->conditions as $field => $value ) {
 				if (
