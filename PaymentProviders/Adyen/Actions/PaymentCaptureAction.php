@@ -20,11 +20,8 @@ class PaymentCaptureAction implements IListenerMessageAction {
 
 		if ( $msg instanceof Authorisation ) {
 			if ( $msg->success ) {
-				// Ignore messages from recurring charges.
-				// Subsequent charges will not return the recurring.recurringDetailReference
-				if ( isset( $msg->recurringProcessingModel )
-						 && $msg->recurringProcessingModel == 'Subscription'
-						 && $msg->recurringDetailReference == '' ) {
+				// Ignore subsequent recurring IPNs
+				if ( $msg->isRecurringInstallment() ) {
 					return true;
 				}
 				// For iDEAL, treat this as the final notification of success. We don't
