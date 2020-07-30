@@ -68,6 +68,10 @@ class Logger {
 		self::$context->enterContext( $prefix );
 	}
 
+	public static function removeLogStreamByType( string $className ) {
+		self::$context->removeLogStreamByType( $className );
+	}
+
 	/* --- CONTEXT HELPER METHODS --- */
 	/**
 	 * Obtain the logging context. Only one context will be present in an
