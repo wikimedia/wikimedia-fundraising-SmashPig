@@ -36,9 +36,9 @@ class Context {
 
 	/**
 	 * Obtains the current context object
-	 * @return static
+	 * @return static|null
 	 */
-	public static function get(): Context {
+	public static function get() {
 		return self::$instance;
 	}
 
