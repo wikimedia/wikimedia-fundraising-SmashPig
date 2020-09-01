@@ -62,7 +62,8 @@ class Api {
 				$data = null;
 			} else {
 				$originalData = $data;
-				$data = json_encode( $data );
+				// No need to use \u00e1 escaping which might expand data elements past limits.
+				$data = json_encode( $data, JSON_UNESCAPED_UNICODE );
 				// additional logging to catch any json_encode failures.
 				if ( $data === false ) {
 					$jsonError = json_last_error_msg();
