@@ -22,6 +22,10 @@ class ReferenceData {
 			'method' => 'bt',
 			'submethod' => 'iban',
 		],
+		'cartebancaire' => [
+			'method' => 'cc',
+			'submethod' => 'cb',
+		],
 		// China Union Pay
 		'cup' => [
 			'method' => 'cc',
