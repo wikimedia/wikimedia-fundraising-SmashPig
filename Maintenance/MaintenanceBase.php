@@ -520,8 +520,8 @@ abstract class MaintenanceBase {
 					$str .= ' <' . $opt['default'] . '>';
 				}
 
-				$str = str_pad( $str, $nameWidth - count( $str ), ' ' );
-				if ( count( $str ) > $nameWidth ) {
+				$str = str_pad( $str, $nameWidth - strlen( $str ), ' ' );
+				if ( strlen( $str ) > $nameWidth ) {
 					$str .= "\n" . str_pad( '', $nameWidth, ' ' );
 				}
 				$str .= wordwrap( $opt['desc'], $descWidth, "\n$namePad", true );
