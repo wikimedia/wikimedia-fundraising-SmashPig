@@ -63,6 +63,10 @@ class ReferenceData {
 				'mcdebit' => 'mc-debit',
 			],
 		],
+		'maestro' => [
+			'method' => 'cc',
+			'submethod' => 'maestro',
+		],
 		'multibanco' => [
 			'method' => 'rtbt',
 			'submethod' => 'rtbt_multibanco',
