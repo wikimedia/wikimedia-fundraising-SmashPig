@@ -50,6 +50,7 @@ class Logger {
 	}
 
 	/* === HELPER METHODS === */
+
 	/**
 	 * Creates and returns a logger that is capable of adding tags to log lines for the
 	 * purposes of differentiating log line output/sources beyond the context.
@@ -73,6 +74,7 @@ class Logger {
 	}
 
 	/* --- CONTEXT HELPER METHODS --- */
+
 	/**
 	 * Obtain the logging context. Only one context will be present in an
 	 * instantiation of Logger (which implies only one per process.)
@@ -88,6 +90,7 @@ class Logger {
 	}
 
 	/* === EVENT HANDLING === */
+
 	/**
 	 * Log an immediate/critical failure. Will be immediately forwarded to the designated
 	 * error contact. Use this for things like database failures, top of PHP error stack

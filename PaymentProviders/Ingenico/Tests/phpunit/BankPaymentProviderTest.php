@@ -22,7 +22,7 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $cache;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 
 		$this->setProviderConfiguration( 'ingenico' );
@@ -51,7 +51,7 @@ class BankPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testCacheBankList() {
-		$this->setUpResponse( __DIR__  . '/../Data/productDirectory.response', 200 );
+		$this->setUpResponse( __DIR__ . '/../Data/productDirectory.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' );
 		$results = $this->provider->getBankList( 'NL', 'EUR' );

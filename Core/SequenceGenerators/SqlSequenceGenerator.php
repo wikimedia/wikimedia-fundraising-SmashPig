@@ -2,8 +2,8 @@
 
 namespace SmashPig\Core\SequenceGenerators;
 
+use PDO;
 use SmashPig\Core\SmashPigException;
-use \PDO;
 
 class SqlSequenceGenerator implements ISequenceGenerator {
 

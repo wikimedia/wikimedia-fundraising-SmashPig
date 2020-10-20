@@ -13,7 +13,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $db;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->db = DamagedDatabase::get();
 	}
@@ -48,7 +48,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 			WHERE gateway='test'
 			AND order_id = '{$message['order_id']}'" );
 		$rows = $result->fetchAll( PDO::FETCH_ASSOC );
-		$this->assertEquals( 1, count( $rows ),
+		$this->assertSame( 1, count( $rows ),
 			'One row stored and retrieved.' );
 		$expected = [
 			'id' => $damagedId,
@@ -122,7 +122,7 @@ class DamagedDatabaseTest extends BaseSmashPigUnitTestCase {
 			WHERE gateway='test'
 				AND order_id = '{$message1['order_id']}'" );
 		$rowsAfter = $result->fetchAll( PDO::FETCH_ASSOC );
-		$this->assertEquals( 1, count( $rowsAfter ),
+		$this->assertSame( 1, count( $rowsAfter ),
 			'Not only one row deleted.' );
 		$this->assertEquals( $rowsAfter[0]['id'], $rows[0]['id'],
 			'Deleted the wrong row.' );

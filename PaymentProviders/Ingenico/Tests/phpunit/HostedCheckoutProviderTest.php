@@ -14,7 +14,7 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $provider;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->setProviderConfiguration( 'ingenico' );
 		$this->provider = new HostedCheckoutProvider( [ 'subdomain' => 'payments.test' ] );

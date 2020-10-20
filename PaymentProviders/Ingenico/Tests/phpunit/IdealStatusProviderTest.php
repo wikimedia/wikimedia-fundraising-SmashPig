@@ -21,7 +21,7 @@ class IdealStatusProviderTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $cache;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 
 		$providerConfiguration = $this->setProviderConfiguration( 'ingenico' );

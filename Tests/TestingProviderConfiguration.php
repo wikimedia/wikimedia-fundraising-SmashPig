@@ -10,8 +10,6 @@ use SmashPig\Core\ProviderConfiguration;
 class TestingProviderConfiguration extends ProviderConfiguration {
 	/**
 	 * Set default search path to skip actual installed configuration like /etc
-	 *
-	 * @implements Configuration::getDefaultSearchPath
 	 */
 	protected function getDefaultSearchPath(): array {
 		$searchPaths = [];

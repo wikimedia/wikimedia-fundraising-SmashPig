@@ -1,6 +1,5 @@
 <?php
 
-
 namespace SmashPig\PaymentProviders\Adyen;
 
 use Psr\Log\LogLevel;
@@ -11,8 +10,8 @@ use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
-use SmashPig\PaymentProviders\PaymentProviderResponse;
 use SmashPig\PaymentProviders\IPaymentProvider;
+use SmashPig\PaymentProviders\PaymentProviderResponse;
 
 /**
  * Class PaymentProvider

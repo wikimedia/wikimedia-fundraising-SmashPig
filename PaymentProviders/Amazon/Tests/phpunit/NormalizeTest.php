@@ -2,8 +2,8 @@
 
 namespace SmashPig\PaymentProviders\Amazon\Tests;
 
-use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted;
 use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\CaptureCompleted;
+use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\RefundCompleted;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
@@ -20,7 +20,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $refundCompleted;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->captureCompleted = $this->loadJson( __DIR__ . "/../Data/IPN/CaptureCompleted.json" );
 		$this->refundCompleted = $this->loadJson( __DIR__ . "/../Data/IPN/RefundCompleted.json" );

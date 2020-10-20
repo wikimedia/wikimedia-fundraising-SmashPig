@@ -48,7 +48,7 @@ abstract class Message {
 		return $message;
 	}
 
-	static function normalizeMessage( &$message, $ipnArray ) {
+	public static function normalizeMessage( &$message, $ipnArray ) {
 	}
 
 	protected static function mergePendingDetails( &$message ) {

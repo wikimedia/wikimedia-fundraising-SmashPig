@@ -1,11 +1,11 @@
 <?php namespace SmashPig\PaymentProviders\AstroPay;
 
 use SmashPig\Core\Http\Request;
-use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\Core\Listeners\ListenerSecurityException;
 use SmashPig\Core\Listeners\ListenerDataException;
+use SmashPig\Core\Listeners\ListenerSecurityException;
 use SmashPig\Core\Listeners\RestListener;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\Messages\ListenerMessage;
 
 /**
  * Responds to payment messages from AstroPay

@@ -13,7 +13,7 @@ class NormalizeTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $paymentSuccess;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->paymentSuccess = $this->loadJson( __DIR__ . "/../Data/paid.json" );
 	}

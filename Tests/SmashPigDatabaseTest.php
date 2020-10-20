@@ -17,7 +17,7 @@ class SmashPigDatabaseTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $paymentsInitialDb;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 
 		$this->pendingDb = PendingDatabase::get();

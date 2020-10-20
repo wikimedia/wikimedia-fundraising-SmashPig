@@ -10,12 +10,12 @@ class FileDumperTest extends BaseSmashPigUnitTestCase {
 
 	protected $filename;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->filename = tempnam( '/tmp', 'sptest' );
 	}
 
-	public function tearDown() {
+	public function tearDown() : void {
 		parent::tearDown();
 		if ( file_exists( $this->filename ) ) {
 			unlink( $this->filename );

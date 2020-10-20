@@ -8,7 +8,8 @@ use SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem;
 abstract class AdyenMessage extends ListenerMessage {
 
 	/** @var string If this message is a notification for a modification request this will by the pspReference
-	 * that was originally assigned to the authorization. For a payment it will be blank. */
+	 * that was originally assigned to the authorization. For a payment it will be blank.
+	 */
 	public $parentPspReference;
 
 	/** @var string The reference Adyen assigned to the payment or modification order */
@@ -30,7 +31,8 @@ abstract class AdyenMessage extends ListenerMessage {
 	public $eventDate;
 
 	/** @var bool True if the event was successfully processed -- if this is a response to a request it does not
-	 * necessarily mean that the request itself was successful. IE: refund request received but not yet accepted. */
+	 * necessarily mean that the request itself was successful. IE: refund request received but not yet accepted.
+	 */
 	public $success;
 
 	/** @var string|null Reason for event */

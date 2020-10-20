@@ -1,8 +1,8 @@
 <?php namespace SmashPig\Core\Listeners;
 
-use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
+use SmashPig\Core\Http\Response;
+use SmashPig\Core\Logging\Logger;
 
 abstract class SoapListener extends ListenerBase {
 

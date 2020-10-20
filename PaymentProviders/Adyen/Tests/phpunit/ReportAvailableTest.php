@@ -16,7 +16,7 @@ class ReportAvailableTest extends BaseAdyenTestCase {
 	 */
 	protected $jobQueue;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->jobQueue = QueueWrapper::getQueue( 'jobs-adyen' );
 	}

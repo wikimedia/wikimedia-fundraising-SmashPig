@@ -11,8 +11,6 @@ use SmashPig\Core\GlobalConfiguration;
 class TestingGlobalConfiguration extends GlobalConfiguration {
 	/**
 	 * Set default search path to skip actual installed configuration like /etc
-	 *
-	 * @implements Configuration::getDefaultSearchPath
 	 */
 	protected function getDefaultSearchPath(): array {
 		$searchPath = [];

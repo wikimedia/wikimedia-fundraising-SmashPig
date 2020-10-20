@@ -2,14 +2,14 @@
 
 namespace SmashPig\PaymentProviders\Adyen;
 
-use SmashPig\PaymentData\FinalStatus;
 use OutOfBoundsException;
+use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\StatusNormalizer;
 
 class CreatePaymentStatus implements StatusNormalizer {
 
 	/**
-	 * @param $adyenStatus
+	 * @param string $adyenStatus
 	 * @return string
 	 */
 	public function normalizeStatus( string $adyenStatus ): string {

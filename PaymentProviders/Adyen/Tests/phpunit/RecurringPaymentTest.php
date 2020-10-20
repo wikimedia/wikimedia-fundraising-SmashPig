@@ -20,7 +20,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 	 */
 	public $provider;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->provider = new CardPaymentProvider();
 	}
@@ -181,7 +181,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 			'\SmashPig\PaymentProviders\CreatePaymentResponse',
 			$createPaymentResponse
 		);
-		$this->assertEquals( 0, count( $createPaymentResponse->getErrors() ) );
+		$this->assertSame( 0, count( $createPaymentResponse->getErrors() ) );
 		$this->assertTrue( $createPaymentResponse->isSuccessful() );
 	}
 
@@ -206,7 +206,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 			$createPaymentResponse
 		);
 		$this->assertFalse( $createPaymentResponse->isSuccessful() );
-		$this->assertEquals( 1, count( $createPaymentResponse->getErrors() ) );
+		$this->assertSame( 1, count( $createPaymentResponse->getErrors() ) );
 		$firstError = $createPaymentResponse->getErrors()[0];
 		$this->assertEquals( ErrorCode::DECLINED, $firstError->getErrorCode() );
 		$this->assertEquals( '800 Contract not found', $firstError->getDebugMessage() );

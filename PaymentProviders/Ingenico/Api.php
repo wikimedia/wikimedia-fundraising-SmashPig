@@ -4,9 +4,9 @@ namespace SmashPig\PaymentProviders\Ingenico;
 
 use DateTime;
 use DateTimeZone;
+use SmashPig\Core\ApiException;
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\OutboundRequest;
-use SmashPig\Core\ApiException;
 use SmashPig\Core\Logging\Logger;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -29,8 +29,8 @@ class Api {
 	/**
 	 * Api constructor.
 	 *
-	 * @param $baseUrl
-	 * @param $merchantId
+	 * @param string $baseUrl
+	 * @param string $merchantId
 	 *
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */

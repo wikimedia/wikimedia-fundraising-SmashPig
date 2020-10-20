@@ -2,8 +2,8 @@
 
 namespace SmashPig\Core\Http;
 
-use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Core\Context;
+use SmashPig\Core\ProviderConfiguration;
 
 /**
  * Uses dependency injection to execute cURL requests

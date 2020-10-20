@@ -4,8 +4,8 @@ namespace SmashPig\PaymentProviders\Adyen\Maintenance;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
-use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Adyen\PaymentProvider;
 use SmashPig\PaymentProviders\PaymentProviderFactory;
 

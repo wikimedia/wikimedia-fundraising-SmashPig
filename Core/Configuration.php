@@ -94,8 +94,8 @@ abstract class Configuration {
 	 * for a specific node. Helpful when using test library mocks that you can't
 	 * declaratively configure with constructor parameters.
 	 *
-	 * @param $node string
-	 * @param $object object
+	 * @param string $node
+	 * @param object $object
 	 */
 	public function overrideObjectInstance( string $node, $object ) {
 		$this->objects[$node] = $object;
@@ -207,7 +207,7 @@ abstract class Configuration {
 	 * array where the $base array does not have an array at that node. If it does have an
 	 * array the merge will continue recursively.
 	 *
-	 * @param array $base The base array to merge into
+	 * @param array &$base The base array to merge into
 	 * @param array $graft Values to merge into the $base
 	 *
 	 * @param string $myRoot Internal recursion state: parent node path so far,
@@ -262,23 +262,5 @@ abstract class Configuration {
 
 		// Feeling lucky.
 		return true;
-	}
-}
-
-/**
- * Exception thrown on generic configuration error.
- */
-class ConfigurationException extends SmashPigException {
-}
-
-/**
- * Exception thrown when a configuration key is not valid or has some other problem.
- */
-class ConfigurationKeyException extends ConfigurationException {
-	public $key;
-
-	public function __construct( $message = null, $key = null, $previous = null ) {
-		parent::__construct( $message, 0, $previous );
-		$this->key = $key;
 	}
 }

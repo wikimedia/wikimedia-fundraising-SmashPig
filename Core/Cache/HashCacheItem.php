@@ -12,9 +12,9 @@ class HashCacheItem implements CacheItemInterface {
 
 	/**
 	 * HashCacheItem constructor.
-	 * @param $key
-	 * @param $value
-	 * @param $hit
+	 * @param string $key
+	 * @param mixed $value
+	 * @param bool $hit
 	 */
 	public function __construct( $key, $value, $hit ) {
 		$this->key = $key;

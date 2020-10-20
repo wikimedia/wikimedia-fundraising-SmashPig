@@ -2,11 +2,11 @@
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\IHttpActionHandler;
-use SmashPig\Core\Http\Response;
 use SmashPig\Core\Http\Request;
+use SmashPig\Core\Http\Response;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Core\Messages\ListenerMessage;
+use SmashPig\Core\ProviderConfiguration;
 
 abstract class ListenerBase implements IHttpActionHandler {
 

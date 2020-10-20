@@ -18,7 +18,7 @@ class CurrencyRoundingHelperTest extends BaseSmashPigUnitTestCase {
 
 		$rounded = CurrencyRoundingHelper::round( $amountToRound, $currencyCode );
 
-		$this->assertEquals( '47.23', $rounded );
+		$this->assertSame( '47.23', $rounded );
 	}
 
 	public function testRoundNonFractionalCurrencyAmount() {
@@ -27,7 +27,7 @@ class CurrencyRoundingHelperTest extends BaseSmashPigUnitTestCase {
 
 		$rounded = CurrencyRoundingHelper::round( $amountToRound, $currencyCode );
 
-		$this->assertEquals( '1000', $rounded );
+		$this->assertSame( '1000', $rounded );
 	}
 
 	public function testRoundExponent3CurrencyAmount() {
@@ -36,6 +36,6 @@ class CurrencyRoundingHelperTest extends BaseSmashPigUnitTestCase {
 
 		$rounded = CurrencyRoundingHelper::round( $amountToRound, $iraqiDinarCurrencyCode );
 
-		$this->assertEquals( '74.699', $rounded );
+		$this->assertSame( '74.699', $rounded );
 	}
 }

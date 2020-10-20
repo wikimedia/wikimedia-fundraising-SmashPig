@@ -1,8 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
+use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Chargeback;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\NotificationOfChargeback;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\RequestForInformation;

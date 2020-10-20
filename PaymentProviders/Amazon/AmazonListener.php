@@ -1,12 +1,11 @@
 <?php namespace SmashPig\PaymentProviders\Amazon;
 
 use SmashPig\Core\Http\Request;
-use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\Core\Listeners\ListenerSecurityException;
 use SmashPig\Core\Listeners\ListenerDataException;
+use SmashPig\Core\Listeners\ListenerSecurityException;
 use SmashPig\Core\Listeners\RestListener;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Maintenance\TestFailMail;
+use SmashPig\Core\Messages\ListenerMessage;
 
 /**
  * Uses the Amazon SDK to parse incoming IPN messages

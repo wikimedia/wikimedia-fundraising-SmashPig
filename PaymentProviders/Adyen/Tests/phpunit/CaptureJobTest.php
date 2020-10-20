@@ -29,7 +29,7 @@ class CaptureJobTest extends BaseAdyenTestCase {
 	 */
 	protected $fraudDatabase;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 
 		$this->pendingDatabase = PendingDatabase::get();

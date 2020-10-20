@@ -4,8 +4,6 @@ namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
 use PHPUnit_Framework_MockObject_MockObject;
 use SmashPig\PaymentData\ErrorCode;
-use SmashPig\PaymentProviders\CreatePaymentResponse;
-use SmashPig\PaymentProviders\Ingenico\PaymentProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
@@ -17,7 +15,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $provider;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->setProviderConfiguration( 'ingenico' );
 		$this->provider = $this->getMockForAbstractClass( '\SmashPig\PaymentProviders\Ingenico\PaymentProvider' );
@@ -148,7 +146,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 				} )
 			);
 		$response = $this->provider->createPayment( $params );
-		$this->assertEquals(
+		$this->assertSame(
 			'000000850010000188130000200001',
 			$response->getGatewayTxnId()
 		);
@@ -223,7 +221,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 				} )
 			);
 		$response = $this->provider->createPayment( $params );
-		$this->assertEquals(
+		$this->assertSame(
 			'000000850010000188130000200001',
 			$response->getGatewayTxnId()
 		);

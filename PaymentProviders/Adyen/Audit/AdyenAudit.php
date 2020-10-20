@@ -149,10 +149,10 @@ class AdyenAudit implements AuditParser {
 		// fee is given in settlement currency
 		// but queue consumer expects it in original
 		$exchange = $row['Exchange Rate'];
-		$fee = doubleval( $row['Commission (NC)'] ) +
-			doubleval( $row['Markup (NC)'] ) +
-			doubleval( $row['Scheme Fees (NC)'] ) +
-			doubleval( $row['Interchange (NC)'] );
+		$fee = floatval( $row['Commission (NC)'] ) +
+			floatval( $row['Markup (NC)'] ) +
+			floatval( $row['Scheme Fees (NC)'] ) +
+			floatval( $row['Interchange (NC)'] );
 		$msg['fee'] = round( $fee / $exchange, 2 );
 
 		// shouldn't this be settled_net or settled_amount?

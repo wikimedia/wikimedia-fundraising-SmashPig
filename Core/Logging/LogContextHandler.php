@@ -144,7 +144,7 @@ class LogContextHandler {
 	 *
 	 * @param int $n From 0 to the number of contexts - 1. 0 being the current context.
 	 *
-	 * @returns array[{message, data, exception}]
+	 * @return array[{message data, exception}]
 	 */
 	public function getContextEntries( $n ) {
 		if ( isset( $this->contextData[ $n ] ) ) {

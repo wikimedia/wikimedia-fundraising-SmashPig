@@ -8,15 +8,14 @@
  * at the bottom of the script, and set $maintClass to the class name of the script.
  */
 
+use GetOptionKit\OptionCollection;
+use GetOptionKit\OptionParser;
 use SmashPig\Core\Context;
 use SmashPig\Core\GlobalConfiguration;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\LogStreams\ConsoleLogStream;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Core\SmashPigException;
-
-use GetOptionKit\OptionCollection;
-use GetOptionKit\OptionParser;
 
 /** Help scripts find the postscript required for maintenance scripts */
 define( 'RUN_MAINTENANCE_IF_MAIN', __DIR__ . '/doMaintenance.php' );
@@ -37,7 +36,7 @@ if ( !defined( "SMASHPIG_ENTRY_POINT" ) ) {
  * Only the execute() method need be defined for a maintenance script to run.
  */
 abstract class MaintenanceBase {
-	/** Const for getStdin() **/
+	/** Const for getStdin() */
 	const STDIN_ALL = 'all';
 
 	/** @var array Desired parameters. Keys are long names, values are arrays
@@ -262,7 +261,7 @@ abstract class MaintenanceBase {
 	 * will return the default set when the option was created.
 	 *
 	 * @param string $name Name of the option to retrieve
-	 * @param string $defaultNode	Config node holding override for the option
+	 * @param string $defaultNode Config node holding override for the option
 	 *
 	 * @return mixed Value of the option or null if no default was provided
 	 */
@@ -311,7 +310,7 @@ abstract class MaintenanceBase {
 	 * @param int|string $id If an integer, 0 will return the first unnamed argument given. If
 	 * 							a string, will return that named argument.
 	 *
-	 * @returns bool True if there is an argument in that position
+	 * @return bool True if there is an argument in that position
 	 */
 	protected function hasArgument( $id = 0 ) {
 		return isset( $this->args[$id] );
@@ -322,7 +321,7 @@ abstract class MaintenanceBase {
 	 *
 	 * @param int|string $id If an integer, 0 will return the first unnamed argument given. If
 	 * 							a string, will return that named argument.
-	 * @param mixed	$default	Default value to return if argument does not exist.
+	 * @param mixed $default Default value to return if argument does not exist.
 	 *
 	 * @return mixed
 	 * @throws SmashPigException
@@ -395,7 +394,7 @@ abstract class MaintenanceBase {
 	/**
 	 * Return input from standard input.
 	 *
-	 * @param int $len The number of bytes to read from the stream. If null, this will return a handle
+	 * @param int|null $len The number of bytes to read from the stream. If null, this will return a handle
 	 * 					to stdin. Maintenance::STDIN_ALL reads to the end of the stream.
 	 * @return Mixed
 	 */
@@ -414,12 +413,12 @@ abstract class MaintenanceBase {
 
 	/**
 	 * Prompt the console for input
-	 * @param $prompt String what to begin the line with, like '> '
-	 * @return String|bool response if given, false if terminated
+	 * @param string $prompt what to begin the line with, like '> '
+	 * @return string|bool response if given, false if terminated
 	 */
 	public static function readConsole( $prompt = '> ' ) {
 		static $isatty = null;
-		if ( is_null( $isatty ) ) {
+		if ( $isatty === null ) {
 			$isatty = self::posix_isatty( 0 /*STDIN*/ );
 		}
 
@@ -463,7 +462,7 @@ abstract class MaintenanceBase {
 	/**
 	 * --help -h
 	 * Maybe show the help.
-	 * @param $force boolean Whether to force the help to show, default false
+	 * @param bool $force Whether to force the help to show, default false
 	 */
 	protected function helpIfRequested( $force = false ) {
 		if ( !$force && !$this->getOption( 'help' ) ) {
@@ -487,7 +486,7 @@ abstract class MaintenanceBase {
 		print ( "Usage {$this->scriptName} [OPTIONS] " );
 		foreach ( $this->expectedArguments as $arg ) {
 			if ( $arg['required'] ) {
-				print ( "<" . $arg['name'] ."> " );
+				print ( "<" . $arg['name'] . "> " );
 			} else {
 				print ( "[" . $arg['name'] . "] " );
 			}
@@ -563,7 +562,7 @@ abstract class MaintenanceBase {
 	 * We default as considering stdin a tty (for nice readline methods)
 	 * but treating stout as not a tty to avoid color codes
 	 *
-	 * @param $fd int File descriptor
+	 * @param int $fd File descriptor
 	 * @return bool
 	 */
 	public static function posix_isatty( $fd ) {

@@ -9,7 +9,7 @@ class NationalCurrencies {
 	 * @param string $country Two letter ISO country code
 	 * @return string|null
 	 */
-	static function getNationalCurrency( $country ) {
+	public static function getNationalCurrency( string $country ) {
 		$country = substr( $country, 0, 2 );
 		$country = strtoupper( $country );
 		$nationalCurrencies = self::getNationalCurrencies();
@@ -20,7 +20,7 @@ class NationalCurrencies {
 		}
 	}
 
-	static function getNationalCurrencies() {
+	public static function getNationalCurrencies() {
 		$nationalCurrencies = [
 			'AD' => 'EUR',
 			'AE' => 'AED',

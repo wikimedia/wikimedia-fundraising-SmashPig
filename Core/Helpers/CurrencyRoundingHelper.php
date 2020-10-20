@@ -1,6 +1,5 @@
 <?php
 
-
 namespace SmashPig\Core\Helpers;
 
 class CurrencyRoundingHelper {

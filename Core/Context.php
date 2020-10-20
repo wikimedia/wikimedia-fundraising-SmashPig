@@ -44,7 +44,7 @@ class Context {
 
 	/**
 	 * Sets the current context, returning the displaced context
-	 * @param Context $c
+	 * @param Context|null $c
 	 * @return Context
 	 */
 	public static function set( Context $c = null ) {

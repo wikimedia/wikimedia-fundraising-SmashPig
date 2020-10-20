@@ -23,6 +23,7 @@ class TaggedLogger {
 	}
 
 	/* === EVENT HANDLING === */
+
 	/**
 	 * Log an immediate/critical failure. Will be immediately forwarded to the designated
 	 * error contact. Use this for things like database failures, top of PHP error stack

@@ -20,7 +20,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $damaged;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->queue = QueueWrapper::getQueue( 'test' );
 		$damagedDb = DamagedDatabase::get();
@@ -30,7 +30,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 	public function testEmptyQueue() {
 		$consumer = new TestingQueueConsumer( 'test' );
 		$count = $consumer->dequeueMessages();
-		$this->assertEquals( 0, $count, 'Should report 0 messages processed' );
+		$this->assertSame( 0, $count, 'Should report 0 messages processed' );
 	}
 
 	public function testOneMessage() {
@@ -41,7 +41,7 @@ class QueueConsumerTest extends BaseSmashPigUnitTestCase {
 		];
 		$this->queue->push( $payload );
 		$count = $consumer->dequeueMessages();
-		$this->assertEquals( 1, $count, 'Should report 1 message processed' );
+		$this->assertSame( 1, $count, 'Should report 1 message processed' );
 		$this->assertEquals( [ $payload ], $consumer->processed, 'Bad message' );
 		$this->assertNull( $this->queue->pop(),
 			'Should delete message when processing is successful'

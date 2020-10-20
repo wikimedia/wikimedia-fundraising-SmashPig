@@ -3,16 +3,15 @@
 namespace SmashPig\PaymentProviders\PayPal\Tests;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\DataStores\JsonSerializableObject;
 use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\GlobalConfiguration;
+use SmashPig\Core\Http\Request;
+use SmashPig\Core\Http\Response;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\PayPal\Listener;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
-use SmashPig\Core\Http\Response;
-use SmashPig\Core\Http\Request;
-use SmashPig\Core\DataStores\JsonSerializableObject;
-use SmashPig\Tests\TestingProviderConfiguration;
 
 /**
  * Test the IPN listener which receives messages, stores and processes them.
@@ -34,7 +33,7 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	 * @var array
 	 */
 	// filename and the queue it should get dropped in
-	static $message_data = [
+	public static $message_data = [
 		'web_accept.json' => 'donations',
 		'express_checkout.json' => 'donations',
 		'recurring_payment_profile_created.json' => 'recurring',
@@ -56,13 +55,13 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		// TODO 'new_case.json' => 'no-op',
 	];
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$this->config = Context::get()->getGlobalConfiguration();
 		$this->providerConfig = $this->setProviderConfiguration( 'paypal' );
 	}
 
-	public function tearDown() {
+	public function tearDown() : void {
 		$this->providerConfig->overrideObjectInstance( 'curl/wrapper', null );
 		parent::tearDown();
 	}

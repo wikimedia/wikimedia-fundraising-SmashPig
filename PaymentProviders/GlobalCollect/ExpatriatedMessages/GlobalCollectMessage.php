@@ -1,7 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\GlobalCollect\ExpatriatedMessages;
 
 use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\PaymentProviders\GlobalCollect\Messages\NormalizedMessage;
 
 abstract class GlobalCollectMessage extends ListenerMessage {
 

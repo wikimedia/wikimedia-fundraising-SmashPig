@@ -4,9 +4,9 @@ namespace SmashPig\PaymentProviders\Ingenico\Tests\Manual;
 
 require __DIR__ . '/../../../../Maintenance/MaintenanceBase.php';
 
-use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
+use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\PaymentProviderFactory;
 
 $maintClass = '\SmashPig\PaymentProviders\Ingenico\Tests\Manual\TestCreatePayment';

@@ -17,7 +17,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	public function testProcessDonation() {
 		$processor = new AstroPayAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/donation.csv' );
-		$this->assertEquals( 1, count( $output ), 'Should have found one donation' );
+		$this->assertSame( 1, count( $output ), 'Should have found one donation' );
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'astropay',
@@ -45,7 +45,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	public function testProcessRefund() {
 		$processor = new AstroPayAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/refund.csv' );
-		$this->assertEquals( 1, count( $output ), 'Should have found one refund' );
+		$this->assertSame( 1, count( $output ), 'Should have found one refund' );
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'astropay',
@@ -67,7 +67,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	public function testProcessChargeback() {
 		$processor = new AstroPayAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/chargebacks.csv' );
-		$this->assertEquals( 1, count( $output ), 'Should have found one chargeback' );
+		$this->assertSame( 1, count( $output ), 'Should have found one chargeback' );
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'astropay',

@@ -12,7 +12,7 @@ class SequenceGeneratorTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $generator;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$ctx = Context::get();
 		$globalConfig = $ctx->getGlobalConfiguration();
@@ -28,7 +28,7 @@ class SequenceGeneratorTest extends BaseSmashPigUnitTestCase {
 	public function testGetNext() {
 		$this->generator->initializeSequence( 0 );
 		$id = $this->generator->getNext();
-		$this->assertEquals( 1, $id );
+		$this->assertSame( 1, $id );
 		$id = $this->generator->getNext();
 		$this->assertEquals( 2, $id );
 	}

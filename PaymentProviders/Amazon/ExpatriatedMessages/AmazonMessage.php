@@ -1,7 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\ExpatriatedMessages;
 
 use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\PaymentProviders\Amazon\Messages\NormalizedMessage;
 
 abstract class AmazonMessage extends ListenerMessage {
 

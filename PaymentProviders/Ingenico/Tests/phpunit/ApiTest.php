@@ -22,7 +22,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 	 */
 	protected $api;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$providerConfiguration = $this->setProviderConfiguration( 'ingenico' );
 		$this->curlWrapper = $this->createMock( '\SmashPig\Core\Http\CurlWrapper' );
@@ -71,7 +71,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals(
 			'460d9c9c-098c-4d84-b1e5-ee27ec601757', $response['errorId']
 		);
-		$this->assertEquals(
+		$this->assertSame(
 			'9002', $response['errors'][0]['code']
 		);
 	}

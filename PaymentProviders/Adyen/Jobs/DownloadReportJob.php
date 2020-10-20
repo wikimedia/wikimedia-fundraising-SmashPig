@@ -1,9 +1,9 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Jobs;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\Jobs\RunnableJob;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\SmashPigException;
-use SmashPig\Core\Jobs\RunnableJob;
 
 /**
  * Download Adyen settlement detail reports. These reports are named

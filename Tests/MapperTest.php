@@ -3,7 +3,6 @@
 namespace SmashPig\Tests;
 
 use SmashPig\Core\Mapper\Mapper;
-use Symfony\Component\Yaml\Exception\ParseException;
 use SmashPig\Core\SmashPigException;
 
 /**

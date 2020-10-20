@@ -1,9 +1,9 @@
 <?php namespace SmashPig\PaymentProviders\Adyen;
 
-use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\Core\Listeners\SoapListener;
 use SmashPig\Core\Listeners\ListenerSecurityException;
+use SmashPig\Core\Listeners\SoapListener;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\AdyenMessage;
 
 class AdyenListener extends SoapListener {
@@ -52,7 +52,7 @@ class AdyenListener extends SoapListener {
 		return true;
 	}
 
-	/** === WSDL Handling Methods === **/
+	/** === WSDL Handling Methods === */
 
 	/**
 	 * @param WSDL\sendNotification $var

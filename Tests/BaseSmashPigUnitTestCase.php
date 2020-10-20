@@ -1,8 +1,8 @@
 <?php
 namespace SmashPig\Tests;
 
-use PHPUnit_Framework_MockObject_MockObject;
 use PHPUnit\Framework\TestCase;
+use PHPUnit_Framework_MockObject_MockObject;
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\CurlWrapper;
 
@@ -12,14 +12,14 @@ class BaseSmashPigUnitTestCase extends TestCase {
 	 */
 	protected $curlWrapper;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 		$globalConfig = TestingGlobalConfiguration::create();
 		TestingContext::init( $globalConfig );
 		$this->curlWrapper = $this->createMock( '\SmashPig\Core\Http\CurlWrapper' );
 	}
 
-	public function tearDown() {
+	public function tearDown() : void {
 		TestingDatabase::clearStatics();
 		Context::set(); // Nullify the context for next run.
 	}
@@ -44,10 +44,10 @@ class BaseSmashPigUnitTestCase extends TestCase {
 	}
 
 	/**
-	 * @param $provider
+	 * @param string $provider
 	 * @return TestingProviderConfiguration
 	 */
-	protected function setProviderConfiguration( $provider ) {
+	protected function setProviderConfiguration( string $provider ) {
 		$ctx = Context::get();
 		$globalConfig = $ctx->getGlobalConfiguration();
 		$config = TestingProviderConfiguration::createForProvider( $provider, $globalConfig );

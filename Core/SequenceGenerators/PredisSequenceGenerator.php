@@ -2,8 +2,8 @@
 
 namespace SmashPig\Core\SequenceGenerators;
 
-use SmashPig\Core\SmashPigException;
 use Predis\Client;
+use SmashPig\Core\SmashPigException;
 
 class PredisSequenceGenerator implements ISequenceGenerator {
 
