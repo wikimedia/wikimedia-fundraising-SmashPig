@@ -2,8 +2,8 @@
 
 require 'MaintenanceBase.php';
 
-use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\QueueWrapper;
+use SmashPig\Core\Logging\Logger;
 
 $maintClass = '\SmashPig\Maintenance\PopulateQueueFromDump';
 

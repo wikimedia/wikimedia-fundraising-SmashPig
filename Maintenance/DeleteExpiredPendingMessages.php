@@ -3,8 +3,8 @@ namespace SmashPig\Maintenance;
 
 require 'MaintenanceBase.php';
 
-use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\PendingDatabase;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\UtcDate;
 
 $maintClass = '\SmashPig\Maintenance\DeleteExpiredPendingMessages';

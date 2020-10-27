@@ -1,6 +1,5 @@
 <?php
 
-
 namespace SmashPig\PaymentProviders;
 
 use SmashPig\PaymentData\FinalStatus;

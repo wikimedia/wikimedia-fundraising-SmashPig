@@ -1,10 +1,10 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
+use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Jobs\DeletePendingJob;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\Core\Actions\IListenerMessageAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 use SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob;
 use SmashPig\PaymentProviders\Adyen\Jobs\RecordCaptureJob;

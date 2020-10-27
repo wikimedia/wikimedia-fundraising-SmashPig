@@ -3,9 +3,9 @@ namespace SmashPig\Maintenance;
 
 require 'MaintenanceBase.php';
 
+use SmashPig\Core\DataStores\DamagedDatabase;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\DataStores\DamagedDatabase;
 
 $maintClass = '\SmashPig\Maintenance\RequeueDelayedMessages';
 

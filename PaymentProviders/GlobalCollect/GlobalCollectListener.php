@@ -1,9 +1,8 @@
 <?php namespace SmashPig\PaymentProviders\GlobalCollect;
 
 use SmashPig\Core\Http\Request;
-use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\Core\Listeners\RestListener;
-
+use SmashPig\Core\Messages\ListenerMessage;
 use SmashPig\PaymentProviders\GlobalCollect\ExpatriatedMessages\PaymentMessage;
 
 /**

@@ -46,6 +46,18 @@ class LogContextHandler {
 		$logStream->enterContext( $this->contextNames );
 	}
 
+	public function removeLogStreamByType( string $className ) {
+		$newLogStreams = [];
+		foreach ( $this->logStreams as $existingStream ) {
+			if ( $existingStream instanceof $className ) {
+				$existingStream->shutdown();
+			} else {
+				$newLogStreams[] = $existingStream;
+			}
+		}
+		$this->logStreams = $newLogStreams;
+	}
+
 	/**
 	 * Enters a new context with the current context as its parent.
 	 *
@@ -132,7 +144,7 @@ class LogContextHandler {
 	 *
 	 * @param int $n From 0 to the number of contexts - 1. 0 being the current context.
 	 *
-	 * @returns array[{message, data, exception}]
+	 * @return array[{message data, exception}]
 	 */
 	public function getContextEntries( $n ) {
 		if ( isset( $this->contextData[ $n ] ) ) {

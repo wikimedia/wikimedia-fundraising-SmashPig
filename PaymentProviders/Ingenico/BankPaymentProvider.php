@@ -4,9 +4,9 @@ namespace SmashPig\PaymentProviders\Ingenico;
 
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Smashpig\Core\ApiException;
 use SmashPig\Core\Context;
 use Symfony\Component\HttpFoundation\Response;
-use Smashpig\Core\ApiException;
 
 /**
  * Handle bank payments via Ingenico

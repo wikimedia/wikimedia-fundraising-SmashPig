@@ -1,12 +1,11 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\Audit;
 
-use SmashPig\Core\Context;
-use SmashPig\Core\Logging\Logger;
-
 use DateTime;
 use DateTimeZone;
 use PayWithAmazon\ReportsClient;
 use PayWithAmazon\ReportsClientInterface;
+use SmashPig\Core\Context;
+use SmashPig\Core\Logging\Logger;
 
 /**
  * Downloads transaction reports via MWS

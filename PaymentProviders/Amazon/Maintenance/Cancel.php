@@ -3,8 +3,6 @@
 namespace SmashPig\PaymentProviders\Amazon\Maintenance;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
-
-use SmashPig\Core\DataFiles\CsvReader;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Amazon\AmazonApi;
 

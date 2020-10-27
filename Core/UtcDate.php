@@ -20,7 +20,7 @@ class UtcDate {
 
 	/**
 	 * Format a UTC timestamp for database insertion
-	 * @param string|int|null $timestamp, defaults to time()
+	 * @param string|int|null $timestamp defaults to time()
 	 * @param string $format optional time format
 	 * @return string
 	 * @throws Exception

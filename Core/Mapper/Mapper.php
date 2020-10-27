@@ -2,10 +2,10 @@
 
 namespace SmashPig\Core\Mapper;
 
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Yaml\Exception\ParseException;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\SmashPigException;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Transform YAML map files containing %placeholders% to output.
@@ -80,7 +80,7 @@ class Mapper {
 	 * @param array $input key=>value vars to overwrite map file %placeholders%
 	 * @param string $mapFilePath map file path
 	 * @param array $transformers
-	 * @param string $outputFormat
+	 * @param string|null $outputFormat
 	 * @param bool $pruneEmpty if true, remove subtrees with no values provided
 	 *
 	 * @return mixed
@@ -156,7 +156,7 @@ class Mapper {
 	/**
 	 * Convert transformer paths to classes if necessary
 	 *
-	 * @param array $transformers
+	 * @param array &$transformers
 	 */
 	protected function setupInputTransformers( array &$transformers ) {
 		foreach ( $transformers as $i => $transformer ) {
@@ -252,8 +252,8 @@ class Mapper {
 	/**
 	 * Transform output to desired format.
 	 *
-	 * @param $output
-	 * @param $format
+	 * @param array $output
+	 * @param string $format
 	 *
 	 * @return string
 	 * @throws \InvalidArgumentException
@@ -262,7 +262,6 @@ class Mapper {
 		switch ( $format ) {
 			case static::FORMAT_JSON:
 				return json_encode( $output );
-				break;
 			default:
 				Logger::error( "Invalid Mapper output format supplied: " . $format );
 				throw new \InvalidArgumentException( "Invalid Mapper output format supplied: " . $format );

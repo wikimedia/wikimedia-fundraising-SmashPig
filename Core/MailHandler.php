@@ -48,7 +48,7 @@ class MailHandler {
 	 *                                     instead of strict true. In either case, '$1' will be replaced by the
 	 *                                     first $to address, RFC-3986 encoded.
 	 *
-	 * @returns bool True if successfully sent. False if a PHPMailer exception occurred. Exceptions are logged at the
+	 * @return bool True if successfully sent. False if a PHPMailer exception occurred. Exceptions are logged at the
 	 * warning level.
 	 */
 	public static function sendEmail( $to, $subject, $textBody, $from = null, $replyTo = null, $htmlBody = null,

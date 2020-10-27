@@ -151,7 +151,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			$this->logger->debug( 'Found a valid message.' );
 		} else {
 			$errMessage = "Could not find a processable message for " .
-				"PSP Reference '{$this->pspReference}' and ".
+				"PSP Reference '{$this->pspReference}' and " .
 				"order ID '{$this->merchantReference}'.";
 			$this->logger->warning(
 				$errMessage,

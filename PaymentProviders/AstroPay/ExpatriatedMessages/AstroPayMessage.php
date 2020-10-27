@@ -1,7 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\AstroPay\ExpatriatedMessages;
 
 use SmashPig\Core\Messages\ListenerMessage;
-use SmashPig\PaymentProviders\AstroPay\Messages\NormalizedMessage;
 
 abstract class AstroPayMessage extends ListenerMessage {
 
@@ -49,7 +48,7 @@ abstract class AstroPayMessage extends ListenerMessage {
 		}
 	}
 
-	abstract function getDestinationQueue();
+	abstract public function getDestinationQueue();
 
 	/**
 	 * Map AstroPay's fields to ours

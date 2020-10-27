@@ -8,8 +8,8 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Mapper\Mapper;
 use SmashPig\Core\PaymentError;
 use SmashPig\PaymentData\ErrorCode;
-use SmashPig\PaymentProviders\CreatePaymentResponse;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
+use SmashPig\PaymentProviders\CreatePaymentResponse;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\PaymentProviderResponse;
 
@@ -131,8 +131,8 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * Check for the presence of payment status response errors and if present
 	 * log and add them to the top-level response.
 	 *
-	 * @param $paymentResponse
-	 * @param $response
+	 * @param array &$response
+	 * @param array|null $paymentResponse
 	 */
 	protected function addPaymentStatusErrorsIfPresent( &$response, $paymentResponse = null ) {
 		if ( $paymentResponse === null ) {

@@ -56,9 +56,9 @@
     },
 	"require-dev": {
 		"jakub-onderka/php-parallel-lint": "^0.9",
-		"mediawiki/mediawiki-codesniffer": "0.11.0",
 		"phpunit/phpunit": "^6",
-		"ext-sqlite3": "*"
+		"ext-sqlite3": "*",
+		"mediawiki/mediawiki-codesniffer": "^31.0"
 	},
 	"scripts": {
 		"fix": "phpcbf",
@@ -81,7 +81,7 @@
     ],
     "config": {
       "platform": {
-        "php": "7.0.33"
+        "php": "7.3.19"
       }
     }
 }

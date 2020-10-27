@@ -21,6 +21,7 @@ class RecordCaptureJob extends RunnableJob {
 	protected $amount;
 	protected $gatewayTxnId;
 	protected $merchantReference;
+	protected $eventDate;
 
 	public static function factory( AdyenMessage $ipnMessage ) {
 		$obj = new RecordCaptureJob();
@@ -30,6 +31,7 @@ class RecordCaptureJob extends RunnableJob {
 		$obj->amount = $ipnMessage->amount;
 		$obj->gatewayTxnId = $ipnMessage->getGatewayTxnId();
 		$obj->merchantReference = $ipnMessage->merchantReference;
+		$obj->eventDate = $ipnMessage->eventDate;
 
 		return $obj;
 	}
@@ -51,6 +53,8 @@ class RecordCaptureJob extends RunnableJob {
 
 			// Add the gateway transaction ID and send it to the completed queue
 			$dbMessage['gateway_txn_id'] = $this->gatewayTxnId;
+			// Use the eventDate from the capture as the date
+			$dbMessage['date'] = strtotime( $this->eventDate );
 
 			QueueWrapper::push( 'donations', $dbMessage );
 

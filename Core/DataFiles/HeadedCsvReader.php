@@ -34,8 +34,8 @@ class HeadedCsvReader extends CsvReader {
 	 * This is slightly backwards because it did not seem worth the effort
 	 * to create a fully functional ArrayObject class to return from current()
 	 *
-	 * @param $colName string Name of the column to extract
-	 * @param $row string[] A row returned from current() **FROM THIS FILE**
+	 * @param string $colName Name of the column to extract
+	 * @param string[] &$row A row returned from current() **FROM THIS FILE**
 	 *
 	 * @throws DataFileException if the column name does not exist.
 	 * @return string Contents of the column

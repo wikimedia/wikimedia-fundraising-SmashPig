@@ -21,14 +21,14 @@ class DateFields {
 		if ( isset( $message['date'] ) ) {
 			// This field is sometimes not a timestamp
 			// FIXME: normalize PayPal recurring before queueing!
-			if ( is_integer( $message['date'] ) ) {
+			if ( is_int( $message['date'] ) ) {
 				return $message['date'];
 			}
 			// Try parsing non-numeric things
 			$parsedTimestamp = UtcDate::getUtcTimestamp(
 				$message['date']
 			);
-			if ( !is_null( $parsedTimestamp ) ) {
+			if ( $parsedTimestamp !== null ) {
 				return $parsedTimestamp;
 			}
 		}

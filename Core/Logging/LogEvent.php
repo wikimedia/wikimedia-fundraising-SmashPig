@@ -30,12 +30,12 @@ class LogEvent {
 	 *
 	 * @param int $level The RFC log level, e.g. LOG_ALERT
 	 * @param string $message Human readable string about the event. Do not include sensitive information here
-	 * @param string $tag Optional descriptive tag, e.g. RawData
+	 * @param string|null $tag Optional descriptive tag, e.g. RawData
 	 * @param mixed $data Optional data object (should be serializable); may include sensitive information
-	 * @param \Throwable $exception Optional exception object related to this event
-	 * @param int|string $timestamp Optional Unix timestamp, or date string of event. If not given this assumes now
+	 * @param \Throwable|null $exception Optional exception object related to this event
+	 * @param int|string|null $timestamp Optional Unix timestamp, or date string of event. If not given this assumes now
 	 *
-	 * @TODO: uncomment Throwable type hint when PHP 5.6 goes away
+	 * @todo uncomment Throwable type hint when PHP 5.6 goes away
 	 */
 	public function __construct(
 		$level, $message, $tag = null, $data = null, /*\Throwable*/ $exception = null, $timestamp = null
@@ -50,7 +50,7 @@ class LogEvent {
 		$this->tag = $tag;
 		$this->exception = $exception;
 
-		if ( !is_null( $data ) ) {
+		if ( $data !== null ) {
 			$jdata = false;
 			if ( $data instanceof JsonSerializableObject ) {
 				try {

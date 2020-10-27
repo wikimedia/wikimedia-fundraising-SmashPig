@@ -16,7 +16,7 @@ class TaggedFileLogStream implements ILogStream {
 		$this->directory = realpath( $directory );
 		if ( !$this->directory ) {
 			throw new SmashPigException( "Directory '$directory' does not exist for log stream files!" );
-		} elseif ( !is_writeable( $this->directory ) ) {
+		} elseif ( !is_writable( $this->directory ) ) {
 			throw new SmashPigException( "Directory '$directory' is not writeable!" );
 		}
 

@@ -40,6 +40,10 @@ class CurlWrapper {
 		// Always capture the cURL output
 		$curlDebugLog = fopen( 'php://temp', 'r+' );
 
+		// add stream filter to filter out extraneous curl verbose log lines
+		stream_filter_register( 'CurlDebugLogFilter', 'SmashPig\Core\Http\CurlDebugLogFilter' );
+		stream_filter_append( $curlDebugLog, "CurlDebugLogFilter", STREAM_FILTER_WRITE );
+
 		$curlOptions = $this->getCurlOptions( $url, $method, $responseHeaders, $data, $curlDebugLog );
 		curl_setopt_array( $ch, $curlOptions );
 

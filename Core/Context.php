@@ -36,15 +36,15 @@ class Context {
 
 	/**
 	 * Obtains the current context object
-	 * @return static
+	 * @return static|null
 	 */
-	public static function get(): Context {
+	public static function get() {
 		return self::$instance;
 	}
 
 	/**
 	 * Sets the current context, returning the displaced context
-	 * @param Context $c
+	 * @param Context|null $c
 	 * @return Context
 	 */
 	public static function set( Context $c = null ) {

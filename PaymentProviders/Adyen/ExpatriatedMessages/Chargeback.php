@@ -19,7 +19,7 @@ class Chargeback extends AdyenMessage {
 	 * means that the message will be re-queued if any action fails. Therefore
 	 * all actions need to be idempotent.
 	 *
-	 * @returns bool True if all actions were successful. False otherwise.
+	 * @return bool True if all actions were successful. False otherwise.
 	 */
 	public function runActionChain() {
 		$action = new PaymentCaptureAction();

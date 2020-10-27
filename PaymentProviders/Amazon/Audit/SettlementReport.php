@@ -1,7 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Amazon\Audit;
 
-use SmashPig\Core\DataFiles\HeadedCsvReader;
 use SmashPig\Core\DataFiles\DataFileException;
+use SmashPig\Core\DataFiles\HeadedCsvReader;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\Amazon\AmazonApi;

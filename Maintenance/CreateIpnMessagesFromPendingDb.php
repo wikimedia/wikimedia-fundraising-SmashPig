@@ -4,8 +4,8 @@ namespace SmashPig\Maintenance;
 require 'MaintenanceBase.php';
 
 use SmashPig\Core\Context;
-use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\DataStores\PendingDatabase;
+use SmashPig\Core\Logging\Logger;
 
 $maintClass = '\SmashPig\Maintenance\CreateIpnMessagesFromPendingDb';
 

@@ -142,8 +142,8 @@ class IngenicoAudit implements AuditParser {
 
 	/**
 	 * @param \DOMElement $recordNode
-	 * @param $type
-	 * @param $gateway
+	 * @param string $type
+	 * @param string $gateway
 	 *
 	 * @return array
 	 *
@@ -197,7 +197,7 @@ class IngenicoAudit implements AuditParser {
 	 * @param array $record The record from the wx file, in array format
 	 * @return array The $record param with our normal keys appended
 	 */
-	function addPaymentMethod( array $record ): array {
+	public function addPaymentMethod( array $record ): array {
 		$normalized = ReferenceData::decodePaymentMethod(
 			$record['gc_product_id']
 		);

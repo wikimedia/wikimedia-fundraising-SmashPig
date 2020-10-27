@@ -4,9 +4,9 @@ namespace SmashPig\PaymentProviders\Ingenico;
 
 use DateTime;
 use DateTimeZone;
+use SmashPig\Core\ApiException;
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\OutboundRequest;
-use SmashPig\Core\ApiException;
 use SmashPig\Core\Logging\Logger;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -29,8 +29,8 @@ class Api {
 	/**
 	 * Api constructor.
 	 *
-	 * @param $baseUrl
-	 * @param $merchantId
+	 * @param string $baseUrl
+	 * @param string $merchantId
 	 *
 	 * @throws \SmashPig\Core\ConfigurationKeyException
 	 */
@@ -62,7 +62,8 @@ class Api {
 				$data = null;
 			} else {
 				$originalData = $data;
-				$data = json_encode( $data );
+				// No need to use \u00e1 escaping which might expand data elements past limits.
+				$data = json_encode( $data, JSON_UNESCAPED_UNICODE );
 				// additional logging to catch any json_encode failures.
 				if ( $data === false ) {
 					$jsonError = json_last_error_msg();

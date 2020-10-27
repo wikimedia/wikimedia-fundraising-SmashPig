@@ -6,7 +6,6 @@ use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Runnable;
-use SmashPig\PaymentProviders\Amazon\ExpatriatedMessages\AmazonMessage;
 
 class RecordPaymentJob implements Runnable {
 
