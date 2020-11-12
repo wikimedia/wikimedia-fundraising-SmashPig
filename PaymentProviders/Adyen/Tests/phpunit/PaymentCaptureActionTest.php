@@ -101,14 +101,6 @@ class PaymentCaptureActionTest extends BaseAdyenTestCase {
 
 		$job = $this->jobQueue->pop();
 
-		$this->assertEquals(
-			'SmashPig\Core\Jobs\DeletePendingJob',
-			$job['class']
-		);
-		$this->assertEquals(
-			$auth->merchantReference,
-			$job['payload']['order_id']
-		);
-		$this->assertEquals( 'adyen', $job['payload']['gateway'] );
+		$this->assertNull( $job );
 	}
 }
