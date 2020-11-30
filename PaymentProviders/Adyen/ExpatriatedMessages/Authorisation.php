@@ -23,6 +23,7 @@ class Authorisation extends AdyenMessage {
 	public $avsResult = '';
 	public $recurringProcessingModel = '';
 	public $recurringDetailReference = '';
+	public $shopperReference = '';
 
 	/**
 	 * Overloads the generic Adyen method adding fields specific to the Authorization message
@@ -67,6 +68,9 @@ class Authorisation extends AdyenMessage {
 				case 'recurring.recurringDetailReference':
 					$this->recurringDetailReference = $firstSegment( $entry->value );
 					break;
+				case 'recurring.shopperReference':
+					$this->shopperReference = $firstSegment( $entry->value );
+					break;
 			}
 		}
 	}
@@ -105,11 +109,18 @@ class Authorisation extends AdyenMessage {
 				 && $this->recurringProcessingModel == 'Subscription'
 				 && $this->recurringDetailReference == '' ) {
 			return true;
-		// Check for sepa direct debit recurring
-		} elseif ( $this->paymentMethod == 'sepadirectdebit' ) {
-			return true;
-		} else {
-			return false;
 		}
+		// If the shopper reference is set and is not the same as the
+		// merchant reference for the current payment, this is recurring.
+		if ( $this->shopperReference !== ''
+			&& $this->shopperReference !== $this->merchantReference
+		) {
+			return true;
+		}
+		// Check for sepa direct debit recurring
+		if ( $this->paymentMethod == 'sepadirectdebit' ) {
+			return true;
+		}
+		return false;
 	}
 }
