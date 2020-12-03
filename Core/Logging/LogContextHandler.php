@@ -15,9 +15,13 @@ class LogContextHandler {
 	/** @var ILogStream[] */
 	protected $logStreams;
 
-	public function __construct( $rootName, $logStreams ) {
+	/** @var int The log level must be greater than this to be processed. */
+	protected $threshold = LOG_DEBUG;
+
+	public function __construct( $rootName, $logStreams, $threshold ) {
 		$this->contextNames = [ $rootName ];
 		$this->contextString = self::createQualifiedContextName( $this->contextNames );
+		$this->threshold = $threshold;
 
 		$this->logStreams = $logStreams;
 		foreach ( $this->logStreams as $stream ) {
@@ -108,6 +112,9 @@ class LogContextHandler {
 	 * @param LogEvent $event Event to add
 	 */
 	public function addEventToContext( LogEvent $event ) {
+		if ( $event->level > $this->threshold ) {
+			return;
+		}
 		$this->contextData[ 0 ][ ] = $event;
 		foreach ( $this->logStreams as $stream ) {
 			$stream->processEvent( $event );
