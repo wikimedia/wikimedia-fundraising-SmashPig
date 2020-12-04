@@ -47,6 +47,14 @@ payment-provider:
         # as direct debit under the hood.
         class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
 
+# Number of job queues to use in parallel for capture jobs. If this is left
+# at the default 1, all jobs go to jobs-adyen. If this is anything greater,
+# you must ALSO define queues in the global main.yaml for
+# data-store/jobs-adyen-1 .. data-store/jobs-adyen-N (where N is this number)
+# You will also need to run QueueJobRunner for each of these queues plus the
+# un-suffixed jobs-adyen.
+capture-job-queue-count: 1
+
 fraud-filters:
     # Automatically capture authorizations under this score
     review-threshold: 75
