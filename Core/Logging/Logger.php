@@ -8,9 +8,6 @@ class Logger {
 	/** @var LogContextHandler */
 	protected static $context = null;
 
-	/** @var int The log level must be greater than this to be processed. */
-	protected static $threshold = LOG_DEBUG;
-
 	/**
 	 * Initialize the logging framework.
 	 *
@@ -44,9 +41,8 @@ class Logger {
 			die();
 		}
 
-		self::$context = new LogContextHandler( $name, $streamObjs );
+		self::$context = new LogContextHandler( $name, $streamObjs, $threshold );
 		self::$context->enterContext( $prefix );
-		self::$threshold = $threshold;
 	}
 
 	/* === HELPER METHODS === */

@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Actions;
 
 use SmashPig\Core\Actions\IListenerMessageAction;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Core\Messages\ListenerMessage;
@@ -40,7 +41,15 @@ class PaymentCaptureAction implements IListenerMessageAction {
 						"with psp reference {$msg->pspReference}."
 					);
 					$job = ProcessCaptureRequestJob::factory( $msg );
-					QueueWrapper::push( 'jobs-adyen', $job );
+					$queueName = 'jobs-adyen';
+					$jobQueueCount = Context::get()->getProviderConfiguration()->val(
+						'capture-job-queue-count'
+					);
+					if ( $jobQueueCount > 1 ) {
+						$queueNum = rand( 0, $jobQueueCount ) + 1;
+						$queueName .= "-$queueNum";
+					}
+					QueueWrapper::push( $queueName, $job );
 				}
 			} else {
 				// Here we could decide to delete the data from the pending
