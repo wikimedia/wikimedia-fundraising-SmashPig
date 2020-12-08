@@ -46,7 +46,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 						'capture-job-queue-count'
 					);
 					if ( $jobQueueCount > 1 ) {
-						$queueNum = rand( 0, $jobQueueCount ) + 1;
+						$queueNum = rand( 1, $jobQueueCount );
 						$queueName .= "-$queueNum";
 					}
 					QueueWrapper::push( $queueName, $job );
