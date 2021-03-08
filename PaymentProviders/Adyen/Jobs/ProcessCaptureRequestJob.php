@@ -31,6 +31,10 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected $avsResult;
 	protected $cvvResult;
 	/**
+	 * @var string Adyen-side code for the card type
+	 */
+	protected $paymentMethod;
+	/**
 	 * @var TaggedLogger
 	 */
 	protected $logger;
@@ -49,6 +53,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$obj->pspReference = $authMessage->pspReference;
 		$obj->cvvResult = $authMessage->cvvResult;
 		$obj->avsResult = $authMessage->avsResult;
+		$obj->paymentMethod = $authMessage->paymentMethod;
 
 		return $obj;
 	}
@@ -139,8 +144,10 @@ class ProcessCaptureRequestJob extends RunnableJob {
 				// the pending database in case the authorization is captured via the console.
 				break;
 			case self::ACTION_MISSING:
-				// Missing donor details - retry later
-				throw new RetryableException( 'Missing donor details' );
+				// Missing donor details - retry later, unless this is a likely recurring installment
+				if ( !$this->isLikelyRecurring() ) {
+					throw new RetryableException( 'Missing donor details' );
+				}
 		}
 
 		return $success;
@@ -227,5 +234,24 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			// Not a big deal
 			$this->logger->warning( "Failed to cancel authorization, it will remain in the payment console" );
 		}
+	}
+
+	/**
+	 * Amex and Discover recurring installment IPNs don't come in with all the
+	 * markings we expect. If the payment method is one of those and the
+	 * sequential bit of the merchant ref is greater than one, we can probably
+	 * skip sending a failmail when there are no donor details in the queue.
+	 */
+	protected function isLikelyRecurring() {
+		$merchantReferenceParts = explode( '.', $this->merchantReference );
+		$sequenceNumber = (int)$merchantReferenceParts[1];
+		return (
+			in_array(
+				$this->paymentMethod,
+				[ 'amex', 'discover' ],
+				true
+			) &&
+			$sequenceNumber > 1
+		);
 	}
 }
