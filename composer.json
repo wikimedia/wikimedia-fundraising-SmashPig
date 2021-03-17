@@ -47,15 +47,15 @@
         "phpmailer/phpmailer": "^5.2.28",
         "predis/predis": "^1.1",
         "symfony/event-dispatcher": "^2.1",
-        "symfony/http-foundation": "^2.8.2",
+        "symfony/http-foundation": "^2.8.52",
         "symfony/yaml": "^3",
-        "amzn/login-and-pay-with-amazon-sdk-php": "dev-master",
+        "amzn/login-and-pay-with-amazon-sdk-php": "^2.5",
         "psr/cache": "^1.0",
         "psr/log": "^1.0",
         "corneltek/getoptionkit": "^2.5"
     },
 	"require-dev": {
-		"jakub-onderka/php-parallel-lint": "^0.9",
+		"php-parallel-lint/php-parallel-lint": "^1.2",
 		"phpunit/phpunit": "^9.5",
 		"ext-sqlite3": "*",
 		"mediawiki/mediawiki-codesniffer": "^31.0"
