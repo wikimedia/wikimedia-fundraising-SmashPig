@@ -77,6 +77,13 @@ data-store:
                 <<: *REDIS
                 queue: opt-in
 
+    email-preferences:
+        class: PHPQueue\Backend\Predis
+        constructor-parameters:
+            -
+                <<: *REDIS
+                queue: email-preferences
+
     jobs-paypal:
         class: PHPQueue\Backend\Predis
         constructor-parameters:

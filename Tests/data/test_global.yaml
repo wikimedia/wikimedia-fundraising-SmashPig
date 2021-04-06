@@ -47,6 +47,13 @@ data-store:
                 connection_string: 'sqlite::memory:'
                 queue: opt_in
 
+    email-preferences:
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: email_preferences
+
     jobs-paypal:
         class: PHPQueue\Backend\PDO
         constructor-parameters:
