@@ -1,5 +1,7 @@
 <?php namespace SmashPig\Core;
 
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
 use SmashPig\Core\Logging\Logger;
 
 /**
@@ -11,11 +13,11 @@ class MailHandler {
 	/**
 	 * Load a new instance of PHPMailer
 	 *
-	 * @return \PHPMailer
+	 * @return PHPMailer
 	 */
 	protected static function mailbaseFactory() {
-		$mailer = new \PHPMailer( true );
-		$mailer->IsSendmail();
+		$mailer = new PHPMailer( true );
+		$mailer->isSendmail();
 
 		return $mailer;
 	}
@@ -66,32 +68,32 @@ class MailHandler {
 			array_walk(
 				$to,
 				function ( $value, $key ) use ( $mailer ) {
-					$mailer->AddAddress( $value );
+					$mailer->addAddress( $value );
 				}
 			);
 			array_walk(
 				$cc,
 				function ( $value, $key ) use ( $mailer ) {
-					$mailer->AddCC( $value );
+					$mailer->addCC( $value );
 				}
 			);
 			array_walk(
 				$bcc,
 				function ( $value, $key ) use ( $mailer ) {
-					$mailer->AddBCC( $value );
+					$mailer->addBCC( $value );
 				}
 			);
 			array_walk(
 				$archives,
 				function ( $value, $key ) use ( $mailer ) {
-					$mailer->AddBCC( $value );
+					$mailer->addBCC( $value );
 				}
 			);
 
 			array_walk(
 				$attach,
 				function ( $value, $key ) use ( $mailer ) {
-					$mailer->AddAttachment( $value );
+					$mailer->addAttachment( $value );
 				}
 			);
 
@@ -100,20 +102,20 @@ class MailHandler {
 				$from = $config->val( 'email/from-address' );
 			}
 			if ( is_array( $from ) ) {
-				$mailer->SetFrom( $from[ 0 ], $from[ 1 ] );
+				$mailer->setFrom( $from[ 0 ], $from[ 1 ] );
 			} else {
-				$mailer->SetFrom( (string)$from );
+				$mailer->setFrom( (string)$from );
 			}
 
 			// Only add reply to manually if requested, otherwise it's set when we call SetFrom
 			if ( $replyTo ) {
-				$mailer->AddReplyTo( $replyTo );
+				$mailer->addReplyTo( $replyTo );
 			}
 
 			// Set subject and body
 			$mailer->Subject = $subject;
 			if ( $htmlBody ) {
-				$mailer->MsgHTML( $htmlBody );
+				$mailer->msgHTML( $htmlBody );
 				$mailer->AltBody = $textBody;
 			} else {
 				$mailer->Body = $textBody;
@@ -135,9 +137,9 @@ class MailHandler {
 				$mailer->Sender = $bounceAddr;
 			}
 
-			$mailer->Send();
+			$mailer->send();
 
-		} catch ( \phpmailerException $ex ) {
+		} catch ( Exception $ex ) {
 			$toStr = implode( ", ", $to );
 			Logger::warning( "Could not send email to {$toStr}. PHP Mailer had exception.", null, $ex );
 			return false;
