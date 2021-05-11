@@ -1,6 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 
@@ -171,8 +172,19 @@ class Api {
 	 */
 	private function getAmount( $params ) {
 		$amount = new WSDL\Amount();
+		$amount_value = $params['amount'];
+		// Adyen requires amounts to be passed as an integer representing the value
+		// in minor units for that currency. Currencies that lack a minor unit
+		// (such as JPY) are simply passed as is.
+		// For example: USD 10.50 would be changed to 1050, JPY 150 would be passed as 150.
+		if ( CurrencyRoundingHelper::isExponent3Currency( $params['currency'] ) ) {
+			$amount_value = $params['amount'] * 1000;
+		} elseif ( CurrencyRoundingHelper::isFractionalCurrency( $params['currency'] ) ) {
+			$amount_value = $params['amount'] * 100;
+		}
+
+		$amount->value = (int)$amount_value;
 		$amount->currency = $params['currency'];
-		$amount->value = $params['amount'] * 100;
 		return $amount;
 	}
 
