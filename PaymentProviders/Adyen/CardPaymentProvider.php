@@ -13,33 +13,62 @@ class CardPaymentProvider extends PaymentProvider {
 	/**
 	 * Request authorization of a credit card payment
 	 *
-	 * @param array $params needs 'recurring_payment_token', 'order_id', 'recurring', 'amount', and 'currency'
+	 * @param array $params
+	 *  for a recurring installment, needs
+	 *  * 'recurring_payment_token'
+	 *  * 'order_id'
+	 *  * 'recurring'
+	 *  * 'amount'
+	 *  * 'currency'
+	 * for a payment from encrypted card details, needs
+	 *  * 'encrypted_payment_data' with subkeys from Checkout UI
+	 *  * 'order_id'
+	 *  * 'amount'
+	 *  * 'currency'
 	 * @return CreatePaymentResponse
 	 */
 	public function createPayment( array $params ): CreatePaymentResponse {
-		$rawResponse = $this->api->createPayment( $params );
-		$response = new CreatePaymentResponse();
-		$response->setRawResponse( $rawResponse );
-
-		if ( !empty( $rawResponse->paymentResult ) ) {
-			$this->mapTxnIdAndErrors(
-				$response,
-				$rawResponse->paymentResult
+		if ( !empty( $params['encrypted_payment_data'] ) ) {
+			$rawResponse = $this->api->createPaymentFromEncryptedDetails(
+				$params
 			);
+			$response = new CreatePaymentResponse();
+			$response->setRawResponse( $rawResponse );
 			$this->mapStatus(
 				$response,
 				$rawResponse,
 				new CreatePaymentStatus(),
-				$rawResponse->paymentResult->resultCode ?? null
+				$rawResponse['resultCode']
 			);
+			// TODO: mapTxnIdAndErrors for REST results
+			$response->setGatewayTxnId( $rawResponse['pspReference'] );
 		} else {
-			$responseError = 'paymentResult element missing from Adyen createPayment response.';
-			$response->addErrors( new PaymentError(
-				ErrorCode::MISSING_REQUIRED_DATA,
-				$responseError,
-				LogLevel::ERROR
-			) );
-			Logger::debug( $responseError, $rawResponse );
+			$rawResponse = $this->api->createPayment( $params );
+			$response = new CreatePaymentResponse();
+			$response->setRawResponse( $rawResponse );
+
+			if ( !empty( $rawResponse->paymentResult ) ) {
+				$this->mapTxnIdAndErrors(
+					$response,
+					$rawResponse->paymentResult
+				);
+				$this->mapStatus(
+					$response,
+					$rawResponse,
+					new CreatePaymentStatus(),
+					$rawResponse->paymentResult->resultCode ?? null
+				);
+			} else {
+				$responseError = 'paymentResult element missing from Adyen createPayment response.';
+				$response->addErrors(
+					new PaymentError(
+						ErrorCode::MISSING_REQUIRED_DATA,
+						$responseError,
+						LogLevel::ERROR
+					)
+				);
+				Logger::debug( $responseError, $rawResponse );
+			}
 		}
 
 		return $response;

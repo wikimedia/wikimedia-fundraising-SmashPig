@@ -17,6 +17,8 @@ api:
 payments-wsdl: https://pal-live.adyen.com/pal/Payment.wsdl
 #payments-wsdl: https://pal-test.adyen.com/pal/Payment.wsdl
 
+rest-base-url: https://checkout-test.adyen.com/v67
+
 accounts: {}
     # FIXME: Provide sample account config more consistently.  The
     # empty map above is easy to overlook.
@@ -31,6 +33,7 @@ accounts: {}
     # At least one account and all subkeys are required.
     #
     # example-account-name:
+    #   ws-api-key: ""
     #   ws-username: ""
     #   ws-password: ""
     #   report-username: ""

@@ -2,6 +2,7 @@
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Helpers\CurrencyRoundingHelper;
+use SmashPig\Core\Http\OutboundRequest;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 
@@ -19,7 +20,21 @@ class Api {
 	 * @var WSDL\Payment
 	 */
 	protected $soapClient;
+
+	/**
+	 * @var string Name of the merchant account
+	 */
 	protected $account;
+
+	/**
+	 * @var string REST API key
+	 */
+	protected $apiKey;
+
+	/**
+	 * @var string
+	 */
+	protected $restBaseUrl;
 
 	public function __construct() {
 		$c = Context::get()->getProviderConfiguration();
@@ -32,6 +47,75 @@ class Api {
 				'password' => $c->val( "accounts/{$this->account}/ws-password" ),
 			]
 		);
+		$this->restBaseUrl = $c->val( 'rest-base-url' );
+		$this->apiKey = $c->val( "accounts/{$this->account}/ws-api-key" );
+	}
+
+	/**
+	 * Uses the rest API to create a payment using a blob of encrypted
+	 * payment data as returned by the Drop-In Web integration.
+	 *
+	 * @param array $params
+	 * amount, currency, encrypted_payment_details (blob from front-end)
+	 */
+	public function createPaymentFromEncryptedDetails( $params ) {
+		// TODO: use txn template / mapping a la Ingenico?
+		$restParams = [
+			'amount' => [
+				'currency' => $params['currency'],
+				'value' => $this->getAmountInMinorUnits(
+					$params['amount'], $params['currency']
+				)
+			],
+			'reference' => $params['order_id'],
+			'paymentMethod' => $params['encrypted_payment_data'],
+			'merchantAccount' => $this->account
+		];
+		// TODO: map this from $params['payment_method']
+		// 'scheme' corresponds to our 'cc' value
+		$restParams['paymentMethod']['type'] = 'scheme';
+		if ( !empty( $params['return_url'] ) ) {
+			$restParams['returnUrl'] = $params['return_url'];
+		}
+		$restParams['billingAddress'] = [
+			'city' => $params['city'] ?? 'NA',
+			'country' => $params['country'] ?? 'ZZ',
+			// FIXME do we have to split this out of $params['street_address'] ?
+			'houseNumberOrName' => 'NA',
+			'postalCode' => $params['postal_code'] ?? 'NA',
+			'stateOrProvince' => $params['state_province'] ?? 'NA',
+			'street' => $params['street_address'] ?? 'NA'
+		];
+		$restParams['shopperEmail'] = $params['email'] ?? '';
+		$restParams['shopperIP'] = $params['user_ip'] ?? '';
+		// TODO: FullName staging helper
+		$nameParts = [];
+		if ( !empty( $params['first_name'] ) ) {
+			$nameParts[] = $params['first_name'];
+		}
+		if ( !empty( $params['last_name'] ) ) {
+			$nameParts[] = $params['last_name'];
+		}
+		$fullName = implode( ' ', $nameParts );
+		$restParams['shopperName'] = $fullName;
+		// This is specifically for credit cards
+		if ( empty( $restParams['paymentMethod']['holderName'] ) ) {
+			$restParams['paymentMethod']['holderName'] = $fullName;
+		}
+		$restParams['shopperStatement'] = $params['description'] ?? '';
+		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
+		return $result['body'];
+	}
+
+	protected function makeRestApiCall( $params, $path, $method ) {
+		$url = $this->restBaseUrl . '/' . $path;
+		$request = new OutboundRequest( $url, $method );
+		$request->setBody( json_encode( $params ) );
+		$request->setHeader( 'x-API-key', $this->apiKey );
+		$request->setHeader( 'content-type', 'application/json' );
+		$response = $request->execute();
+		$response['body'] = json_decode( $response['body'], true );
+		return $response;
 	}
 
 	/**
