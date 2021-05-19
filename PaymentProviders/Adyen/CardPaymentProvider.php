@@ -40,6 +40,12 @@ class CardPaymentProvider extends PaymentProvider {
 				new CreatePaymentStatus(),
 				$rawResponse['resultCode']
 			);
+			$response->setRiskScores(
+				( new RiskScorer() )->getRiskScores(
+					$rawResponse['additionalData']['avsResult'],
+					$rawResponse['additionalData']['cvcResult']
+				)
+			);
 			// TODO: mapTxnIdAndErrors for REST results
 			$response->setGatewayTxnId( $rawResponse['pspReference'] );
 		} else {

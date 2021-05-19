@@ -11,6 +11,14 @@ use SmashPig\PaymentData\FinalStatus;
 class CreatePaymentResponse extends PaymentProviderResponse {
 
 	/**
+	 * Keys are types of risk scores (e.g. 'cvv' and 'avs') and values are
+	 * numbers from 0-100 indicating how likely the authorization is fraudulent.
+	 *
+	 * @var array
+	 */
+	protected $riskScores;
+
+	/**
 	 * A successfully created payment should be in COMPLETE or PENDING_POKE status
 	 *
 	 * @return bool
@@ -34,5 +42,21 @@ class CreatePaymentResponse extends PaymentProviderResponse {
 	 */
 	public function requiresApproval() {
 		return $this->getStatus() === FinalStatus::PENDING_POKE;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getRiskScores(): array {
+		return $this->riskScores;
+	}
+
+	/**
+	 * @param array $riskScores
+	 * @return static
+	 */
+	public function setRiskScores( array $riskScores ): CreatePaymentResponse {
+		$this->riskScores = $riskScores;
+		return $this;
 	}
 }

@@ -126,17 +126,17 @@ fraud-filters:
         26: 100
 
     cvv-map:
-            # Unknown
-            0: 100
-            # Matches
-            1: 0
-            # Doesn't match
-            2: 100
-            # Not checked
-            3: 50
-            # No CVC/CVV provided, but was required
-            4: 100
-            # Issuer not certified for CVC/CVV
-            5: 50
-            # No CVC/CVV provided
-            6: 50
+        # Unknown
+        0: 100
+        # Matches
+        1: 0
+        # Doesn't match
+        2: 100
+        # Not checked
+        3: 50
+        # No CVC/CVV provided, but was required
+        4: 100
+        # Issuer not certified for CVC/CVV
+        5: 50
+        # No CVC/CVV provided
+        6: 50
