@@ -18,7 +18,7 @@ namespace SmashPig\PaymentProviders\Adyen\Test {
 		public function testGetAmountFormatsNonFractionalCurrency() {
 			// open up access to the private getAmount method
 			$reflectionClass = new \ReflectionClass( Api::class );
-			$reflectionMethod = $reflectionClass->getMethod( 'getAmount' );
+			$reflectionMethod = $reflectionClass->getMethod( 'getWsdlAmountObject' );
 			$reflectionMethod->setAccessible( true );
 
 			// mock the Api class to skip constructor call
@@ -44,7 +44,7 @@ namespace SmashPig\PaymentProviders\Adyen\Test {
 		public function testGetAmountFormatsFractionalCurrency() {
 			// open up access to the private getAmount method
 			$reflectionClass = new \ReflectionClass( Api::class );
-			$reflectionMethod = $reflectionClass->getMethod( 'getAmount' );
+			$reflectionMethod = $reflectionClass->getMethod( 'getWsdlAmountObject' );
 			$reflectionMethod->setAccessible( true );
 
 			// mock the Api class to skip constructor call
@@ -70,7 +70,7 @@ namespace SmashPig\PaymentProviders\Adyen\Test {
 		public function testGetAmountFormatsExponent3Currency() {
 			// open up access to the private getAmount method
 			$reflectionClass = new \ReflectionClass( Api::class );
-			$reflectionMethod = $reflectionClass->getMethod( 'getAmount' );
+			$reflectionMethod = $reflectionClass->getMethod( 'getWsdlAmountObject' );
 			$reflectionMethod->setAccessible( true );
 
 			// mock the Api class to skip constructor call

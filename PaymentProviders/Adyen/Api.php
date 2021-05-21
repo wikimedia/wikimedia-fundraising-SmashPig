@@ -47,7 +47,7 @@ class Api {
 	public function createPayment( $params ) {
 		$data = new WSDL\authorise();
 		$data->paymentRequest = new WSDL\PaymentRequest();
-		$data->paymentRequest->amount = $this->getAmount( $params );
+		$data->paymentRequest->amount = $this->getWsdlAmountObject( $params );
 
 		$isRecurring = $params['recurring'] ?? false;
 		if ( $isRecurring ) {
@@ -86,7 +86,7 @@ class Api {
 	public function createDirectDebitPayment( $params ) {
 		$data = new WSDL\directdebit();
 		$data->request = new WSDL\DirectDebitRequest();
-		$data->request->amount = $this->getAmount( $params );
+		$data->request->amount = $this->getWsdlAmountObject( $params );
 
 		$isRecurring = $params['recurring'] ?? false;
 		if ( $isRecurring ) {
@@ -123,7 +123,7 @@ class Api {
 	public function approvePayment( $params ) {
 		$data = new WSDL\capture();
 		$data->modificationRequest = new WSDL\ModificationRequest();
-		$data->modificationRequest->modificationAmount = $this->getAmount( $params );
+		$data->modificationRequest->modificationAmount = $this->getWsdlAmountObject( $params );
 		$data->modificationRequest->merchantAccount = $this->account;
 		$data->modificationRequest->originalReference = $params['gateway_txn_id'];
 
@@ -170,22 +170,30 @@ class Api {
 	 * @param array $params
 	 * @return WSDL\Amount
 	 */
-	private function getAmount( $params ) {
+	private function getWsdlAmountObject( array $params ): WSDL\Amount {
 		$amount = new WSDL\Amount();
-		$amount_value = $params['amount'];
-		// Adyen requires amounts to be passed as an integer representing the value
-		// in minor units for that currency. Currencies that lack a minor unit
-		// (such as JPY) are simply passed as is.
-		// For example: USD 10.50 would be changed to 1050, JPY 150 would be passed as 150.
-		if ( CurrencyRoundingHelper::isExponent3Currency( $params['currency'] ) ) {
-			$amount_value = $params['amount'] * 1000;
-		} elseif ( CurrencyRoundingHelper::isFractionalCurrency( $params['currency'] ) ) {
-			$amount_value = $params['amount'] * 100;
-		}
-
-		$amount->value = (int)$amount_value;
+		$amount->value = $this->getAmountInMinorUnits( $params['amount'], $params['currency'] );
 		$amount->currency = $params['currency'];
 		return $amount;
+	}
+
+	/**
+	 * Adyen requires amounts to be passed as an integer representing the value
+	 * in minor units for that currency. Currencies that lack a minor unit
+	 * (such as JPY) are simply passed as is. For example: USD 10.50 would be
+	 * changed to 1050, JPY 150 would be passed as 150.
+	 *
+	 * @param float $amount The amount in major units
+	 * @param string $currency ISO currency code
+	 * @return int The amount in minor units
+	 */
+	private function getAmountInMinorUnits( float $amount, string $currency ): int {
+		if ( CurrencyRoundingHelper::isExponent3Currency( $currency ) ) {
+			$amount = $amount * 1000;
+		} elseif ( CurrencyRoundingHelper::isFractionalCurrency( $currency ) ) {
+			$amount = $amount * 100;
+		}
+		return (int)$amount;
 	}
 
 	/**
