@@ -11,6 +11,7 @@ use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
 use SmashPig\PaymentProviders\IPaymentProvider;
+use SmashPig\PaymentProviders\PaymentMethodResponse;
 use SmashPig\PaymentProviders\PaymentProviderResponse;
 
 /**
@@ -33,6 +34,22 @@ abstract class PaymentProvider implements IPaymentProvider {
 	public function __construct() {
 		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 		$this->api = $this->providerConfiguration->object( 'api' );
+	}
+
+	/**
+	 * Gets available payment methods
+	 *
+	 * @param array $params
+	 * @return PaymentProviderResponse
+	 */
+	public function getPaymentMethods( array $params ) {
+		// TODo: cache
+		$rawResponse = $this->api->getPaymentMethods( $params );
+
+		$response = new PaymentMethodResponse();
+		$response->setRawResponse( $rawResponse );
+
+		return $response;
 	}
 
 	/**

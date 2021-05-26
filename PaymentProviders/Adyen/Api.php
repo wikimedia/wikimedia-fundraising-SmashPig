@@ -107,6 +107,20 @@ class Api {
 		return $result['body'];
 	}
 
+	public function getPaymentMethods( $params ) {
+		$restParams['countryCode'] = $params['country'];
+		$restParams['amount']['currency'] = $params['currency'];
+		$restParams['amount']['value'] = $this->getAmountInMinorUnits(
+			$params['amount'], $params['currency']
+		);
+		$restParams['channel'] = 'Web';
+		// the format needs to be language-country nl-NL en-NL
+		$restParams['shopperLocale'] = str_replace( '_', '-', $params['language'] );
+
+		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
+		return $result['body'];
+	}
+
 	protected function makeRestApiCall( $params, $path, $method ) {
 		$url = $this->restBaseUrl . '/' . $path;
 		$request = new OutboundRequest( $url, $method );
