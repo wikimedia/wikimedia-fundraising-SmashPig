@@ -16,7 +16,7 @@ class CreatePaymentResponse extends PaymentProviderResponse {
 	 *
 	 * @var array
 	 */
-	protected $riskScores;
+	protected $riskScores = [];
 
 	/**
 	 * A successfully created payment should be in COMPLETE or PENDING_POKE status
