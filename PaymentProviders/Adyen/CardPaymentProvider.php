@@ -34,18 +34,32 @@ class CardPaymentProvider extends PaymentProvider {
 			);
 			$response = new CreatePaymentResponse();
 			$response->setRawResponse( $rawResponse );
+			$rawStatus = $rawResponse['resultCode'];
 			$this->mapStatus(
 				$response,
 				$rawResponse,
 				new CreatePaymentStatus(),
-				$rawResponse['resultCode']
+				$rawStatus
 			);
-			$response->setRiskScores(
-				( new RiskScorer() )->getRiskScores(
-					$rawResponse['additionalData']['avsResult'],
-					$rawResponse['additionalData']['cvcResult']
-				)
-			);
+			if ( $rawStatus === 'RedirectShopper' ) {
+				$response->setRedirectUrl( $rawResponse['action']['url'] )
+					->setRedirectData( $rawResponse['action']['data'] );
+			} else {
+				if ( isset( $rawResponse['additionalData'] ) ) {
+					$response->setRiskScores(
+						( new RiskScorer() )->getRiskScores(
+							$rawResponse['additionalData']['avsResult'] ?? null,
+							$rawResponse['additionalData']['cvcResult'] ?? null
+						)
+					);
+				} else {
+					Logger::warning(
+						'additionalData missing from Adyen createPayment response, so ' .
+						'no risk score for avs and cvv',
+						$rawResponse
+					);
+				}
+			}
 			// TODO: mapTxnIdAndErrors for REST results
 			$response->setGatewayTxnId( $rawResponse['pspReference'] );
 		} else {
