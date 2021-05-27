@@ -76,6 +76,16 @@ class Api {
 		$restParams['paymentMethod']['type'] = 'scheme';
 		if ( !empty( $params['return_url'] ) ) {
 			$restParams['returnUrl'] = $params['return_url'];
+			$parsed = parse_url( $params['return_url'] );
+			$restParams['origin'] = $parsed['scheme'] . '://' . $parsed['host'];
+			if ( !empty( $parsed['port'] ) ) {
+				$restParams['origin'] .= ':' . $parsed['port'];
+			}
+			// If there is a return URL we are definitely coming via the 'Web' channel
+			$restParams['channel'] = 'Web';
+		}
+		if ( !empty( $params['browser_info'] ) ) {
+			$restParams['browserInfo'] = $params['browser_info'];
 		}
 		$restParams['billingAddress'] = [
 			'city' => $params['city'] ?? 'NA',

@@ -25,6 +25,9 @@ class CardPaymentProvider extends PaymentProvider {
 	 *  * 'order_id'
 	 *  * 'amount'
 	 *  * 'currency'
+	 * to trigger 3D Secure on a card payment (for a card that has it enabled), please set
+	 *  * 'return_url'
+	 *  * 'browser_info' with subkeys from Checkout UI
 	 * @return CreatePaymentResponse
 	 */
 	public function createPayment( array $params ): CreatePaymentResponse {
