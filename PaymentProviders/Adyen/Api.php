@@ -108,16 +108,16 @@ class Api {
 	}
 
 	public function getPaymentMethods( $params ) {
+		$restParams['merchantAccount'] = $this->account;
 		$restParams['countryCode'] = $params['country'];
 		$restParams['amount']['currency'] = $params['currency'];
 		$restParams['amount']['value'] = $this->getAmountInMinorUnits(
 			$params['amount'], $params['currency']
 		);
 		$restParams['channel'] = 'Web';
-		// the format needs to be language-country nl-NL en-NL
+		// shopperLocale format needs to be language-country nl-NL en-NL
 		$restParams['shopperLocale'] = str_replace( '_', '-', $params['language'] );
-
-		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
+		$result = $this->makeRestApiCall( $restParams, 'paymentMethods', 'POST' );
 		return $result['body'];
 	}
 
