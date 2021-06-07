@@ -11,6 +11,7 @@ use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
 use SmashPig\PaymentProviders\IPaymentProvider;
+use SmashPig\PaymentProviders\PaymentDetailResponse;
 use SmashPig\PaymentProviders\PaymentMethodResponse;
 use SmashPig\PaymentProviders\PaymentProviderResponse;
 
@@ -47,6 +48,21 @@ abstract class PaymentProvider implements IPaymentProvider {
 		$rawResponse = $this->api->getPaymentMethods( $params );
 
 		$response = new PaymentMethodResponse();
+		$response->setRawResponse( $rawResponse );
+
+		return $response;
+	}
+
+	/**
+	 * Get more payment details from the redirect result
+	 *
+	 * @param string $redirectResult
+	 * @return PaymentDetailResponse
+	 */
+	public function getHostedPaymentDetails( $redirectResult ) {
+		$rawResponse = $this->api->getPaymentDetails( $redirectResult );
+
+		$response = new PaymentDetailResponse();
 		$response->setRawResponse( $rawResponse );
 
 		return $response;

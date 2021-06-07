@@ -117,6 +117,19 @@ class Api {
 		return $result['body'];
 	}
 
+	/**
+	 * Gets more details when no final state has been reached
+	 * on the /payments call. Redirect payments will need this.
+	 *
+	 * @param string $redirectResult
+	 * details
+	 */
+	public function getPaymentDetails( $redirectResult ) {
+		$restParams['details']['redirectResult'] = $redirectResult;
+		$result = $this->makeRestApiCall( $restParams, 'payments/details', 'POST' );
+		return $result['body'];
+	}
+
 	public function getPaymentMethods( $params ) {
 		$restParams['merchantAccount'] = $this->account;
 		$restParams['countryCode'] = $params['country'];
