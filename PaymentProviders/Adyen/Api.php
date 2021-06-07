@@ -118,6 +118,34 @@ class Api {
 	}
 
 	/**
+	 * Uses the rest API to create a direct debit payment from the
+	 * Component web integration
+	 *
+	 * @param array $params
+	 * amount, currency, value, issuer, returnUrl
+	 */
+	public function createDirectDebitPaymentFromCheckout( $params ) {
+		$restParams = [
+			'amount' => [
+				'currency' => $params['currency'],
+				'value' => $this->getAmountInMinorUnits(
+					$params['amount'], $params['currency']
+				)
+			],
+			'reference' => $params['order_id'],
+			'merchantAccount' => $this->account
+		];
+
+		// Todo: handle non ideal rtbt
+		$restParams['paymentMethod']['type'] = 'ideal';
+		$restParams['paymentMethod']['issuer'] = $params['issuer_id'];
+		$restParams['returnUrl'] = $params['return_url'];
+
+		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
+		return $result['body'];
+	}
+
+	/**
 	 * Gets more details when no final state has been reached
 	 * on the /payments call. Redirect payments will need this.
 	 *

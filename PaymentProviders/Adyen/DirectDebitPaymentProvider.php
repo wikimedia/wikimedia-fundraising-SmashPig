@@ -19,31 +19,50 @@ class DirectDebitPaymentProvider extends PaymentProvider {
 	 * @return CreatePaymentResponse
 	 */
 	public function createPayment( array $params ): CreatePaymentResponse {
-		$rawResponse = $this->api->createDirectDebitPayment( $params );
-		$response = new CreatePaymentResponse();
-		$response->setRawResponse( $rawResponse );
+		// probably not the best thing to check on
+		if ( !empty( $params['issuer_id'] ) ) {
+			$rawResponse = $this->api->createDirectDebitPaymentFromCheckout( $params );
+			$response = new CreatePaymentResponse();
+			$response->setRawResponse( $rawResponse );
+			$rawStatus = $rawResponse['resultCode'];
 
-		if ( !empty( $rawResponse->response ) ) {
-			$this->mapTxnIdAndErrors(
-				$response,
-				$rawResponse->response
-			);
 			$this->mapStatus(
 				$response,
 				$rawResponse,
 				new CreateDirectDebitPaymentStatus(),
-				$rawResponse->response->resultCode ?? null
+				$rawStatus
 			);
-		} else {
-			$responseError = 'response element missing from Adyen createPayment response.';
-			$response->addErrors( new PaymentError(
-				ErrorCode::MISSING_REQUIRED_DATA,
-				$responseError,
-				LogLevel::ERROR
-			) );
-			Logger::debug( $responseError, $rawResponse );
-		}
 
+			if ( $rawStatus === 'RedirectShopper' ) {
+				$response->setRedirectUrl( $rawResponse['action']['url'] );
+			}
+		} else {
+			$rawResponse = $this->api->createDirectDebitPayment( $params );
+			$response = new CreatePaymentResponse();
+			$response->setRawResponse( $rawResponse );
+
+			if ( !empty( $rawResponse->response ) ) {
+				$this->mapTxnIdAndErrors(
+					$response,
+					$rawResponse->response
+				);
+				$this->mapStatus(
+					$response,
+					$rawResponse,
+					new CreateDirectDebitPaymentStatus(),
+					$rawResponse->response->resultCode ?? null
+				);
+			} else {
+				$responseError = 'response element missing from Adyen createPayment response.';
+				$response->addErrors( new PaymentError(
+					ErrorCode::MISSING_REQUIRED_DATA,
+					$responseError,
+					LogLevel::ERROR
+					)
+				);
+				Logger::debug( $responseError, $rawResponse );
+			}
+		}
 		return $response;
 	}
 }
