@@ -19,7 +19,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 
 	public function setUp() : void {
 		parent::setUp();
-		$this->provider = new CardPaymentProvider();
+		$this->provider = $this->config->object( 'payment-provider/cc' );
 	}
 
 	public function testGoodApprovePayment() {

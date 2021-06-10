@@ -40,15 +40,26 @@ accounts: {}
     #   report-password: ""
     #   report-location: "/tmp"
 
+# By default, cache payment method lookups for 15 minutes
+common-cache-parameters: &CACHE
+    constructor-parameters:
+        -
+            cache-parameters:
+                duration: 900
+                key-base: SMASHPIG_ADYEN_METHODS
+
 payment-provider:
     cc:
         class: SmashPig\PaymentProviders\Adyen\CardPaymentProvider
+        <<: *CACHE
     dd:
         class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
+        <<: *CACHE
     rtbt:
         # For now we only handle recurring rtbt, which is treated
         # as direct debit under the hood.
         class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
+        <<: *CACHE
 
 # Number of job queues to use in parallel for capture jobs. If this is left
 # at the default 1, all jobs go to jobs-adyen. If this is anything greater,

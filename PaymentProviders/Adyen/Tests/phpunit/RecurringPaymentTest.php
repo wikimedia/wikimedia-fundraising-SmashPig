@@ -4,8 +4,6 @@ namespace SmashPig\PaymentProviders\Adyen\Test;
 
 use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
-use SmashPig\PaymentProviders\Adyen\CardPaymentProvider;
-use SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider;
 use SmashPig\PaymentProviders\Adyen\PaymentProvider;
 use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
 
@@ -22,7 +20,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 
 	public function setUp() : void {
 		parent::setUp();
-		$this->provider = new CardPaymentProvider();
+		$this->provider = $this->config->object( 'payment-provider/cc' );
 	}
 
 	protected function getTestParams() {
@@ -165,7 +163,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 	}
 
 	public function testGoodRecurringCreateDirectDebitPaymentCall() {
-		$this->provider = new DirectDebitPaymentProvider();
+		$this->provider = $this->config->object( 'payment-provider/dd' );
 		$params = $this->getTestParams();
 
 		$this->mockApi->expects( $this->once() )
@@ -186,7 +184,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 	}
 
 	public function testBadRecurringCreateDirectDebitPaymentCall() {
-		$this->provider = new DirectDebitPaymentProvider();
+		$this->provider = $this->config->object( 'payment-provider/dd' );
 		$params = $this->getTestParams();
 
 		$this->mockApi->expects( $this->once() )

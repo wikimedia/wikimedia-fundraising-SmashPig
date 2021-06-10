@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Adyen;
 
 use Psr\Log\LogLevel;
+use SmashPig\Core\Cache\CacheHelper;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\PaymentError;
@@ -32,25 +33,41 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 */
 	protected $providerConfiguration;
 
-	public function __construct() {
+	/**
+	 * @var array
+	 */
+	protected $cacheParameters;
+
+	public function __construct( array $options ) {
 		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 		$this->api = $this->providerConfiguration->object( 'api' );
+		$this->cacheParameters = $options['cache-parameters'];
 	}
 
 	/**
 	 * Gets available payment methods
 	 *
 	 * @param array $params
-	 * @return PaymentProviderResponse
+	 * @return PaymentMethodResponse
 	 */
-	public function getPaymentMethods( array $params ) {
-		// TODo: cache
-		$rawResponse = $this->api->getPaymentMethods( $params );
+	public function getPaymentMethods( array $params ) : PaymentMethodResponse {
+		$callback = function () use ( $params ) {
+			$rawResponse = $this->api->getPaymentMethods( $params );
 
-		$response = new PaymentMethodResponse();
-		$response->setRawResponse( $rawResponse );
+			$response = new PaymentMethodResponse();
+			$response->setRawResponse( $rawResponse );
 
-		return $response;
+			return $response;
+		};
+		// Not actually varying the cache based on amount, since
+		// that would make it a lot less useful and we seem to see
+		// the same values regardless of value.
+		$cacheKey = $this->cacheParameters['key-base'] . '_'
+			. $params['country'] . '_'
+			. $params['currency'] . '_'
+			. $params['language'];
+
+		return CacheHelper::getWithSetCallback( $cacheKey, $this->cacheParameters['duration'], $callback );
 	}
 
 	/**
