@@ -23,21 +23,24 @@ class RiskScorer {
 		$scores = [];
 
 		// TODO: Warn or log somewhere if avs/cvv results are null?
-
-		if ( $cvvResult && array_key_exists( $cvvResult, $this->cvvMap ) ) {
+		if ( $cvvResult ) {
 			$cvvResult = $this->trim( $cvvResult );
-			$scores['cvv'] = $cvvScore = $this->cvvMap[$cvvResult];
-			Logger::debug( "CVV result '$cvvResult' adds risk score $cvvScore." );
-		} else {
-			Logger::warning( "CVV result '$cvvResult' not found in cvv-map.", $this->cvvMap );
+			if ( array_key_exists( $cvvResult, $this->cvvMap ) ) {
+				$scores['cvv'] = $cvvScore = $this->cvvMap[$cvvResult];
+				Logger::debug( "CVV result '$cvvResult' adds risk score $cvvScore." );
+			} else {
+				Logger::warning( "CVV result '$cvvResult' not found in cvv-map.", $this->cvvMap );
+			}
 		}
 
-		if ( $avsResult && array_key_exists( $avsResult, $this->avsMap ) ) {
+		if ( $avsResult ) {
 			$avsResult = $this->trim( $avsResult );
-			$scores['avs'] = $avsScore = $this->avsMap[$avsResult];
-			Logger::debug( "AVS result '$avsResult' adds risk score $avsScore." );
-		} else {
-			Logger::warning( "AVS result '$avsResult' not found in avs-map.", $this->avsMap );
+			if ( array_key_exists( $avsResult, $this->avsMap ) ) {
+				$scores['avs'] = $avsScore = $this->avsMap[$avsResult];
+				Logger::debug( "AVS result '$avsResult' adds risk score $avsScore." );
+			} else {
+				Logger::warning( "AVS result '$avsResult' not found in avs-map.", $this->avsMap );
+			}
 		}
 
 		return $scores;
