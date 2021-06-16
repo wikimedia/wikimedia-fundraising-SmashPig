@@ -64,7 +64,9 @@ class CardPaymentProvider extends PaymentProvider {
 				}
 			}
 			// TODO: mapTxnIdAndErrors for REST results
-			$response->setGatewayTxnId( $rawResponse['pspReference'] );
+			if ( isset( $rawResponse['pspReference'] ) ) {
+				$response->setGatewayTxnId( $rawResponse['pspReference'] );
+			}
 		} else {
 			$rawResponse = $this->api->createPayment( $params );
 			$response = new CreatePaymentResponse();
