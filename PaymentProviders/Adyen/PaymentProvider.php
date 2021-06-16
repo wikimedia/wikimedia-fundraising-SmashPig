@@ -80,8 +80,26 @@ abstract class PaymentProvider implements IPaymentProvider {
 		$rawResponse = $this->api->getPaymentDetails( $redirectResult );
 
 		$response = new PaymentDetailResponse();
+		// TODO: DRY with CreatePaymentResponse
 		$response->setRawResponse( $rawResponse );
-
+		$rawStatus = $rawResponse['resultCode'];
+		$this->mapStatus(
+			$response,
+			$rawResponse,
+			new CreatePaymentStatus(),
+			$rawStatus
+		);
+		if ( isset( $rawResponse['additionalData'] ) ) {
+			$response->setRiskScores(
+				( new RiskScorer() )->getRiskScores(
+					$rawResponse['additionalData']['avsResult'] ?? null,
+					$rawResponse['additionalData']['cvcResult'] ?? null
+				)
+			);
+		}
+		if ( isset( $rawResponse['pspReference'] ) ) {
+			$response->setGatewayTxnId( $rawResponse['pspReference'] );
+		}
 		return $response;
 	}
 
