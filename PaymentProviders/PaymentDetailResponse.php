@@ -6,7 +6,6 @@ use SmashPig\PaymentData\FinalStatus;
 
 /**
  * Represents the status of a payment which may have been created remotely
- * Shares some properties with CreatePaymentResponse (TODO: DRY)
  *
  * Class PaymentDetailResponse
  * @package SmashPig\PaymentProviders
