@@ -86,7 +86,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 		$this->mapStatus(
 			$response,
 			$rawResponse,
-			new CreatePaymentStatus(),
+			$this->getPaymentDetailsStatusNormalizer(),
 			$rawStatus
 		);
 		if ( isset( $rawResponse['additionalData'] ) ) {
@@ -263,6 +263,8 @@ abstract class PaymentProvider implements IPaymentProvider {
 			Logger::debug( $message, $rawResponse );
 		}
 	}
+
+	abstract protected function getPaymentDetailsStatusNormalizer(): StatusNormalizer;
 
 	/**
 	 * Documented at

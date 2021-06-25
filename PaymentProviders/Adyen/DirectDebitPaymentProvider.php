@@ -6,6 +6,7 @@ use Psr\Log\LogLevel;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\PaymentError;
 use SmashPig\PaymentData\ErrorCode;
+use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
 
 class DirectDebitPaymentProvider extends PaymentProvider {
@@ -64,5 +65,9 @@ class DirectDebitPaymentProvider extends PaymentProvider {
 			}
 		}
 		return $response;
+	}
+
+	protected function getPaymentDetailsStatusNormalizer(): StatusNormalizer {
+		return new CreateDirectDebitPaymentStatus();
 	}
 }
