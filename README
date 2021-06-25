@@ -14,7 +14,13 @@ Provider configurations files contain settings which may differ between payment
 providers, such as account credentials and HTTP request settings. Defaults are
 in config/provider-defaults.yaml. They are overridden in a similar cascade by
 the same file in /etc/smashpig and ~/.smashpig, then overridden by settings in
-main.yaml in subdirectories named for the relevant payment processor.
+subdirectories named for the relevant payment processor. So for example, to
+enable debug logging only for paypal, you would add the 'logging:' top-level
+key to /etc/smashpig/paypal/main.yaml, then 'log-level: 7' nested under that.
+
+If you need to deploy provider configuration files in a separate directory from
+the global /etc/smashpig/main.yaml, set the provider-configuration-directory
+key in that global configuration file to point to your alternate directory.
 
 Command-line maintenance scripts have some common options:
     --help
