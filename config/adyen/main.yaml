@@ -60,6 +60,9 @@ payment-provider:
         # as direct debit under the hood.
         class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
         <<: *CACHE
+    apple:
+        class: SmashPig\PaymentProviders\Adyen\ApplePayPaymentProvider
+        <<: *CACHE
 
 # Whether the IPN listener should initiate a payment capture when it receives
 # notification of a successful authorization.

@@ -30,7 +30,7 @@ class DirectDebitPaymentProvider extends PaymentProvider {
 			$this->mapStatus(
 				$response,
 				$rawResponse,
-				new CreateDirectDebitPaymentStatus(),
+				new CreatePaymentStatus(),
 				$rawStatus
 			);
 
@@ -51,7 +51,7 @@ class DirectDebitPaymentProvider extends PaymentProvider {
 				$this->mapStatus(
 					$response,
 					$rawResponse,
-					new CreateDirectDebitPaymentStatus(),
+					new CreatePaymentStatus(),
 					$rawResponse->response->resultCode ?? null
 				);
 			} else {
@@ -69,6 +69,6 @@ class DirectDebitPaymentProvider extends PaymentProvider {
 	}
 
 	protected function getPaymentDetailsStatusNormalizer(): StatusNormalizer {
-		return new CreateDirectDebitPaymentStatus();
+		return new CreatePaymentStatus();
 	}
 }
