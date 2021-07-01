@@ -19,7 +19,7 @@ class RiskScorer {
 		$this->cvvMap = $config->val( 'fraud-filters/cvv-map' );
 	}
 
-	public function getRiskScores( string $avsResult, string $cvvResult ): array {
+	public function getRiskScores( ?string $avsResult, ?string $cvvResult ): array {
 		$scores = [];
 
 		// TODO: Warn or log somewhere if avs/cvv results are null?
