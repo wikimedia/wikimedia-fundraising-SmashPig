@@ -11,10 +11,13 @@ class Api {
 	/**
 	 * Constants set inline with Adyens docs
 	 * https://docs.adyen.com/classic-integration/recurring-payments/authorise-a-recurring-payment#recurring-payments
+	 * API
+	 * https://docs.adyen.com/online-payments/tokenization/create-and-use-tokens?tab=subscriptions_2#make-subscription-payments
 	 */
 	const RECURRING_CONTRACT = 'RECURRING';
 	const RECURRING_SHOPPER_INTERACTION = 'ContAuth';
 	const RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE = 'LATEST';
+	const RECURRING_PROCESSING_MODEL = 'Subscription';
 
 	/**
 	 * @var WSDL\Payment
@@ -108,6 +111,45 @@ class Api {
 			$restParams['paymentMethod']['holderName'] = $fullName;
 		}
 		$restParams['shopperStatement'] = $params['description'] ?? '';
+		$isRecurring = $params['recurring'] ?? '';
+		if ( $isRecurring ) {
+			$restParams['shopperInteraction'] = 'Ecommerce';
+			$restParams['shopperReference'] = $params['order_id'];
+			$restParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
+			$restParams['storePaymentMethod'] = true;
+		}
+		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
+		return $result['body'];
+	}
+
+	/**
+	 * Uses the rest API to create a payment from a saved token
+	 *
+	 * @param array $params
+	 * amount, currency, payment_method, recurring_payment_token, processor_contact_id
+	 */
+	public function createPaymentFromToken( $params ) {
+		$restParams = [
+			'amount' => [
+				'currency' => $params['currency'],
+				'value' => $this->getAmountInMinorUnits(
+					$params['amount'], $params['currency']
+				)
+			],
+			'reference' => $params['order_id'],
+			'merchantAccount' => $this->account
+		];
+
+		$restParams['paymentMethod']['type'] = $params['payment_method'];
+		// storedPaymentMethodId - token adyen sends back on auth
+		$restParams['paymentMethod']['storedPaymentMethodId'] = $params['recurring_payment_token'];
+		$restParams['shopperReference'] = $params['processor_contact_id'];
+		$restParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION;
+		$restParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
+
+		// Todo: ideal
+		// the documenation looks similiar to above but it has possible differences
+
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
 	}

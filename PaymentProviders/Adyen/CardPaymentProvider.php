@@ -68,6 +68,33 @@ class CardPaymentProvider extends PaymentProvider {
 			if ( isset( $rawResponse['pspReference'] ) ) {
 				$response->setGatewayTxnId( $rawResponse['pspReference'] );
 			}
+
+			// Recurring payments will send back the token in recurringDetailReference and the processor_contact_id in
+			// shopperReference, both are needed to charge a recurring payment
+			if ( isset( $rawResponse['additionalData']['recurring.recurringDetailReference'] ) ) {
+				$response->setRecurringPaymentToken( $rawResponse['additionalData']['recurring.recurringDetailReference'] );
+				$response->setProcessorContactID( $rawResponse['additionalData']['recurring.shopperReference'] );
+			}
+		} elseif ( !empty( $params['recurring_payment_token'] ) && !empty( $params['processor_contact_id'] ) ) {
+			// New style recurrings will have both the token and processor_contact_id (shopper reference)
+			// set, old style just the token
+			$params['payment_method'] = 'scheme';
+			$rawResponse = $this->api->createPaymentFromToken(
+				$params
+			);
+			$response = new CreatePaymentResponse();
+			$response->setRawResponse( $rawResponse );
+			$rawStatus = $rawResponse['resultCode'];
+			$this->mapStatus(
+				$response,
+				$rawResponse,
+				new CreatePaymentStatus(),
+				$rawStatus
+			);
+
+			if ( isset( $rawResponse['pspReference'] ) ) {
+				$response->setGatewayTxnId( $rawResponse['pspReference'] );
+			}
 		} else {
 			$rawResponse = $this->api->createPayment( $params );
 			$response = new CreatePaymentResponse();

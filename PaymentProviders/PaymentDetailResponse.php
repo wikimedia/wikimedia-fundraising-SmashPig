@@ -26,6 +26,11 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	protected $recurringPaymentToken;
 
 	/**
+	 * @var ?string
+	 */
+	protected $processorContactID;
+
+	/**
 	 * A successfully created payment should be in COMPLETE or PENDING_POKE status
 	 *
 	 * @return bool
@@ -80,6 +85,22 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	 */
 	public function setRecurringPaymentToken( string $recurringPaymentToken ): PaymentDetailResponse {
 		$this->recurringPaymentToken = $recurringPaymentToken;
+		return $this;
+	}
+
+	/**
+	 * @return ?string
+	 */
+	public function getProcessorContactID(): ?string {
+		return $this->processorContactID;
+	}
+
+	/**
+	 * @param string $processorContactID
+	 * @return static
+	 */
+	public function setProcessorContactID( string $processorContactID ): PaymentDetailResponse {
+		$this->processorContactID = $processorContactID;
 		return $this;
 	}
 }
