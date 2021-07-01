@@ -61,6 +61,18 @@ payment-provider:
         class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
         <<: *CACHE
 
+# Whether the IPN listener should initiate a payment capture when it receives
+# notification of a successful authorization.
+# Overrides to this value should be deployed in coordination with the front-
+# end integration. When the front-end is using the Checkout integration (i.e.
+# $wgDonationInterfaceGatewayAdapters['adyen'] == 'AdyenCheckoutAdapter'),
+# this value should be false. When the front-end is using the HPP integration
+# ($wgDonationInterfaceGatewayAdapters['adyen'] == 'AdyenAdapter'), this
+# value should be true. When we are confident we no longer need the HPP
+# integration, this setting can be deleted along with the code to send
+# PaymentCaptureJobs.
+capture-from-ipn-listener: true
+
 # Number of job queues to use in parallel for capture jobs. If this is left
 # at the default 1, all jobs go to jobs-adyen. If this is anything greater,
 # you must ALSO define queues in the global main.yaml for
