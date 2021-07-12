@@ -117,27 +117,33 @@ abstract class PaymentProvider implements IPaymentProvider {
 		$response = new ApprovePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 
-		if ( !empty( $rawResponse->captureResult ) ) {
-			$this->mapTxnIdAndErrors(
-				$response,
-				$rawResponse->captureResult
-			);
-			$this->mapStatus(
-				$response,
-				$rawResponse,
-				new ApprovePaymentStatus(),
-				$rawResponse->captureResult->response ?? null
-			);
-		} else {
-			$responseError = 'captureResult element missing from Adyen approvePayment response.';
+		if ( empty( $rawResponse['status'] ) ) {
+			$responseError = 'status element missing from Adyen capture response.';
 			$response->addErrors( new PaymentError(
 				ErrorCode::MISSING_REQUIRED_DATA,
 				$responseError,
 				LogLevel::ERROR
 			) );
 			Logger::debug( $responseError, $rawResponse );
+		} else {
+			$this->mapStatus(
+				$response,
+				$rawResponse,
+				new ApprovePaymentStatus(),
+				$rawResponse['status']
+			);
 		}
-
+		if ( empty( $rawResponse['pspReference'] ) ) {
+			$message = 'Unable to map Adyen Gateway Transaction ID';
+			$response->addErrors( new PaymentError(
+				ErrorCode::MISSING_TRANSACTION_ID,
+				$message,
+				LogLevel::ERROR
+			) );
+			Logger::debug( $message, $rawResponse );
+		} else {
+			$response->setGatewayTxnId( $rawResponse['pspReference'] );
+		}
 		return $response;
 	}
 

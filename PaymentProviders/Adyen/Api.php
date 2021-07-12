@@ -267,26 +267,30 @@ class Api {
 	 * captures the payment.
 	 *
 	 * @param array $params Needs keys 'gateway_txn_id', 'currency', and 'amount' set
-	 * @return bool|WSDL\captureResponse
+	 * @return bool|array
 	 */
 	public function approvePayment( $params ) {
-		$data = new WSDL\capture();
-		$data->modificationRequest = new WSDL\ModificationRequest();
-		$data->modificationRequest->modificationAmount = $this->getWsdlAmountObject( $params );
-		$data->modificationRequest->merchantAccount = $this->account;
-		$data->modificationRequest->originalReference = $params['gateway_txn_id'];
+		$restParams = [
+			'amount' => [
+				'currency' => $params['currency'],
+				'value' => $this->getAmountInMinorUnits(
+					$params['amount'], $params['currency']
+				)
+			],
+			'merchantAccount' => $this->account
+		];
+		$path = "payments/{$params['gateway_txn_id']}/captures";
 
 		$tl = new TaggedLogger( 'RawData' );
-		$tl->info( 'Launching SOAP capture request', $data );
+		$tl->info( "Launching REST capture request for {$params['gateway_txn_id']}", $restParams );
 
 		try {
-			$response = $this->soapClient->capture( $data );
+			$result = $this->makeRestApiCall( $restParams, $path, 'POST' );
 		} catch ( \Exception $ex ) {
-			Logger::error( 'SOAP capture request threw exception!', null, $ex );
+			Logger::error( 'REST capture request threw exception!', $params, $ex );
 			return false;
 		}
-
-		return $response;
+		return $result['body'];
 	}
 
 	/**

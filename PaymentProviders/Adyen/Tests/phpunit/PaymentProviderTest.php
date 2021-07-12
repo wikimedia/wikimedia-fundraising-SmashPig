@@ -36,7 +36,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 
 		$this->assertInstanceOf( '\SmashPig\PaymentProviders\ApprovePaymentResponse',
 			$approvePaymentResponse );
-		$this->assertEquals( '[capture-received]', $approvePaymentResponse->getRawStatus() );
+		$this->assertEquals( 'received', $approvePaymentResponse->getRawStatus() );
 		$this->assertSame( '00000000000000AB', $approvePaymentResponse->getGatewayTxnId() );
 		$this->assertTrue( $approvePaymentResponse->isSuccessful() );
 		$this->assertTrue( count( $approvePaymentResponse->getErrors() ) == 0 );
@@ -68,18 +68,19 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$firstError = $approvePaymentResponse->getErrors()[0];
 		$this->assertEquals( ErrorCode::MISSING_REQUIRED_DATA, $firstError->getErrorCode() );
 		$this->assertEquals(
-			'captureResult element missing from Adyen approvePayment response.',
+			'status element missing from Adyen capture response.',
 			$firstError->getDebugMessage()
 		);
+		$secondError = $approvePaymentResponse->getErrors()[1];
+		$this->assertEquals( ErrorCode::MISSING_TRANSACTION_ID, $secondError->getErrorCode() );
 	}
 
 	public function testUnknownStatusReturnedForApprovePayment() {
 		$this->mockApi->expects( $this->once() )
 			->method( 'approvePayment' )
-			->willReturn( (object)[ 'captureResult' => (object)[
-				'response' => '[unknown-status]',
+			->willReturn( [
+				'status' => '[unknown-status]',
 				'pspReference' => '00000000000000AB'
-			]
 			] );
 
 		// test params
