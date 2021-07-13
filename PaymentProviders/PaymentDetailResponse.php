@@ -21,6 +21,11 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	protected $riskScores = [];
 
 	/**
+	 * @var ?string
+	 */
+	protected $recurringPaymentToken;
+
+	/**
 	 * A successfully created payment should be in COMPLETE or PENDING_POKE status
 	 *
 	 * @return bool
@@ -59,6 +64,22 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	 */
 	public function setRiskScores( array $riskScores ): PaymentDetailResponse {
 		$this->riskScores = $riskScores;
+		return $this;
+	}
+
+	/**
+	 * @return ?string
+	 */
+	public function getRecurringPaymentToken(): ?string {
+		return $this->recurringPaymentToken;
+	}
+
+	/**
+	 * @param string $recurringPaymentToken
+	 * @return static
+	 */
+	public function setRecurringPaymentToken( string $recurringPaymentToken ): PaymentDetailResponse {
+		$this->recurringPaymentToken = $recurringPaymentToken;
 		return $this;
 	}
 }
