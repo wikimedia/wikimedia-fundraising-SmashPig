@@ -209,6 +209,20 @@ class Api {
 		return $result['body'];
 	}
 
+	/**
+	 * Uses the rest API to return saved payment details
+	 *
+	 * @param string $shopperReference
+	 * shopperReference
+	 */
+	public function getSavedPaymentDetails( $shopperReference ) {
+		$restParams['merchantAccount'] = $this->account;
+		$restParams['shopperReference'] = $shopperReference;
+
+		$result = $this->makeRestApiCall( $restParams, 'paymentMethods', 'POST' );
+		return $result['body'];
+	}
+
 	protected function makeRestApiCall( $params, $path, $method ) {
 		$url = $this->restBaseUrl . '/' . $path;
 		$request = new OutboundRequest( $url, $method );

@@ -99,6 +99,22 @@ abstract class PaymentProvider implements IPaymentProvider {
 	}
 
 	/**
+	 * Get details of a saved payment
+	 * This uses the same API call as getting payment methods but also returns the saved payment method
+	 * details for the shopperReference provided
+	 *
+	 * @param string $shopperReference
+	 * @return PaymentMethodResponse
+	 */
+	public function getSavedPaymentDetails( $shopperReference ) {
+		$rawResponse = $this->api->getSavedPaymentDetails( $shopperReference );
+		$response = new PaymentMethodResponse();
+		$response->setRawResponse( $rawResponse );
+
+		return $response;
+	}
+
+	/**
 	 * Approves a payment
 	 * FIXME: Should probably put this on a separate interface from IPaymentProvider.
 	 * Leaving this on the base class for now since subclasses need
