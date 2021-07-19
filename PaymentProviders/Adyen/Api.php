@@ -61,12 +61,7 @@ class Api {
 	public function createPaymentFromEncryptedDetails( $params ) {
 		// TODO: use txn template / mapping a la Ingenico?
 		$restParams = [
-			'amount' => [
-				'currency' => $params['currency'],
-				'value' => $this->getAmountInMinorUnits(
-					$params['amount'], $params['currency']
-				)
-			],
+			'amount' => $this->getArrayAmount( $params ),
 			'reference' => $params['order_id'],
 			'paymentMethod' => $params['encrypted_payment_data'],
 			'merchantAccount' => $this->account
@@ -126,20 +121,16 @@ class Api {
 	 */
 	public function createDirectDebitPaymentFromCheckout( $params ) {
 		$restParams = [
-			'amount' => [
-				'currency' => $params['currency'],
-				'value' => $this->getAmountInMinorUnits(
-					$params['amount'], $params['currency']
-				)
-			],
+			'amount' => $this->getArrayAmount( $params ),
 			'reference' => $params['order_id'],
-			'merchantAccount' => $this->account
+			'merchantAccount' => $this->account,
+			'paymentMethod' => [
+				'issuer' => $params['issuer_id'],
+				// Todo: handle non ideal rtbt
+				'type' => 'ideal',
+			],
+			'returnUrl' => $params['return_url']
 		];
-
-		// Todo: handle non ideal rtbt
-		$restParams['paymentMethod']['type'] = 'ideal';
-		$restParams['paymentMethod']['issuer'] = $params['issuer_id'];
-		$restParams['returnUrl'] = $params['return_url'];
 
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
@@ -153,21 +144,25 @@ class Api {
 	 * details
 	 */
 	public function getPaymentDetails( $redirectResult ) {
-		$restParams['details']['redirectResult'] = $redirectResult;
+		$restParams = [
+			'details' => [
+				'redirectResult' => $redirectResult
+			]
+		];
 		$result = $this->makeRestApiCall( $restParams, 'payments/details', 'POST' );
 		return $result['body'];
 	}
 
 	public function getPaymentMethods( $params ) {
-		$restParams['merchantAccount'] = $this->account;
-		$restParams['countryCode'] = $params['country'];
-		$restParams['amount']['currency'] = $params['currency'];
-		$restParams['amount']['value'] = $this->getAmountInMinorUnits(
-			$params['amount'], $params['currency']
-		);
-		$restParams['channel'] = 'Web';
-		// shopperLocale format needs to be language-country nl-NL en-NL
-		$restParams['shopperLocale'] = str_replace( '_', '-', $params['language'] );
+		$restParams = [
+			'merchantAccount' => $this->account,
+			'countryCode' => $params['country'],
+			'amount' => $this->getArrayAmount( $params ),
+			'channel' => 'Web',
+			// shopperLocale format needs to be language-country nl-NL en-NL
+			'shopperLocale' => str_replace( '_', '-', $params['language'] )
+		];
+
 		$result = $this->makeRestApiCall( $restParams, 'paymentMethods', 'POST' );
 		return $result['body'];
 	}
@@ -328,6 +323,21 @@ class Api {
 		$amount->value = $this->getAmountInMinorUnits( $params['amount'], $params['currency'] );
 		$amount->currency = $params['currency'];
 		return $amount;
+	}
+
+	/**
+	 * Convenience function for formatting amounts in REST calls
+	 *
+	 * @param array $params
+	 * @return array
+	 */
+	private function getArrayAmount( array $params ): array {
+		return [
+			'currency' => $params['currency'],
+			'value' => $this->getAmountInMinorUnits(
+				$params['amount'], $params['currency']
+			)
+		];
 	}
 
 	/**
