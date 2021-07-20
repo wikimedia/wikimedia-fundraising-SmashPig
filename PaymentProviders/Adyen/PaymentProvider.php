@@ -90,12 +90,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 			$rawStatus
 		);
 		if ( isset( $rawResponse['additionalData'] ) ) {
-			$response->setRiskScores(
-				( new RiskScorer() )->getRiskScores(
-					$rawResponse['additionalData']['avsResult'] ?? null,
-					$rawResponse['additionalData']['cvcResult'] ?? null
-				)
-			);
+			$this->mapAdditionalData( $rawResponse['additionalData'], $response );
 		}
 		if ( isset( $rawResponse['pspReference'] ) ) {
 			$response->setGatewayTxnId( $rawResponse['pspReference'] );
@@ -301,5 +296,26 @@ abstract class PaymentProvider implements IPaymentProvider {
 			return false;
 		}
 		return true;
+	}
+
+	protected function mapAdditionalData( array $additionalData, PaymentDetailResponse $response ) {
+		$response->setRiskScores(
+			( new RiskScorer() )->getRiskScores(
+				$additionalData['avsResult'] ?? null,
+				$additionalData['cvcResult'] ?? null
+			)
+		);
+		// Recurring payments will send back the token in recurringDetailReference and the processor_contact_id
+		// in shopperReference, both are needed to charge a recurring payment
+		if ( isset( $additionalData['recurring.shopperReference'] ) ) {
+			$response->setProcessorContactID(
+				$additionalData['recurring.shopperReference']
+			);
+		}
+		if ( isset( $additionalData['recurring.recurringDetailReference'] ) ) {
+			$response->setRecurringPaymentToken(
+				$additionalData['recurring.recurringDetailReference']
+			);
+		}
 	}
 }

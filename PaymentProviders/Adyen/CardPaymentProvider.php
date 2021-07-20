@@ -50,12 +50,7 @@ class CardPaymentProvider extends PaymentProvider {
 					->setRedirectData( $rawResponse['action']['data'] );
 			} else {
 				if ( isset( $rawResponse['additionalData'] ) ) {
-					$response->setRiskScores(
-						( new RiskScorer() )->getRiskScores(
-							$rawResponse['additionalData']['avsResult'] ?? null,
-							$rawResponse['additionalData']['cvcResult'] ?? null
-						)
-					);
+					$this->mapAdditionalData( $rawResponse['additionalData'], $response );
 				} else {
 					Logger::warning(
 						'additionalData missing from Adyen createPayment response, so ' .
@@ -67,13 +62,6 @@ class CardPaymentProvider extends PaymentProvider {
 			// TODO: mapTxnIdAndErrors for REST results
 			if ( isset( $rawResponse['pspReference'] ) ) {
 				$response->setGatewayTxnId( $rawResponse['pspReference'] );
-			}
-
-			// Recurring payments will send back the token in recurringDetailReference and the processor_contact_id in
-			// shopperReference, both are needed to charge a recurring payment
-			if ( isset( $rawResponse['additionalData']['recurring.recurringDetailReference'] ) ) {
-				$response->setRecurringPaymentToken( $rawResponse['additionalData']['recurring.recurringDetailReference'] );
-				$response->setProcessorContactID( $rawResponse['additionalData']['recurring.shopperReference'] );
 			}
 		} elseif ( !empty( $params['recurring_payment_token'] ) && !empty( $params['processor_contact_id'] ) ) {
 			// New style recurrings will have both the token and processor_contact_id (shopper reference)
