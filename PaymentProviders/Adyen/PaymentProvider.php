@@ -15,6 +15,8 @@ use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\PaymentDetailResponse;
 use SmashPig\PaymentProviders\PaymentMethodResponse;
 use SmashPig\PaymentProviders\PaymentProviderResponse;
+use SmashPig\PaymentProviders\SavedPaymentDetails;
+use SmashPig\PaymentProviders\SavedPaymentDetailsResponse;
 
 /**
  * Class PaymentProvider
@@ -99,17 +101,47 @@ abstract class PaymentProvider implements IPaymentProvider {
 	}
 
 	/**
-	 * Get details of a saved payment
-	 * This uses the same API call as getting payment methods but also returns the saved payment method
-	 * details for the shopperReference provided
+	 * Get details of payment methods on file for a specified donor
+	 * This uses the same API call as getting payment methods but also returns
+	 * the saved payment method details for the shopperReference provided
 	 *
-	 * @param string $shopperReference
-	 * @return PaymentMethodResponse
+	 * @param string $processorContactID
+	 * @return SavedPaymentDetailsResponse
 	 */
-	public function getSavedPaymentDetails( $shopperReference ) {
-		$rawResponse = $this->api->getSavedPaymentDetails( $shopperReference );
-		$response = new PaymentMethodResponse();
+	public function getSavedPaymentDetails( string $processorContactID ): SavedPaymentDetailsResponse {
+		$rawResponse = $this->api->getSavedPaymentDetails( $processorContactID );
+		$response = new SavedPaymentDetailsResponse();
 		$response->setRawResponse( $rawResponse );
+		$detailsList = [];
+		foreach ( $rawResponse['storedPaymentMethods'] as $storedMethod ) {
+			$ownerName = $storedMethod['ownerName'] ?? $storedMethod['holderName'] ?? null;
+			if ( isset( $storedMethod['brand'] ) ) {
+				[ $method, $submethod ] = ReferenceData::decodePaymentMethod(
+					$storedMethod['brand'], false
+				);
+			} elseif ( $storedMethod['type'] === 'sepadirectdebit' ) {
+				// special case, for now we only use SEPA direct debit for iDEAL
+				$method = 'rtbt';
+				$submethod = 'rtbt_ideal';
+			} else {
+				// No big deal for us if we don't have it mapped - the token field
+				// is the only one we actually use.
+				$method = null;
+				$submethod = null;
+			}
+			$detailsList[] = ( new SavedPaymentDetails() )
+				->setToken( $storedMethod['id'] )
+				->setDisplayName( $storedMethod['name'] ?? null )
+				->setPaymentMethod( $method )
+				->setPaymentSubmethod( $submethod )
+				->setExpirationMonth( $storedMethod['expiryMonth'] ?? null )
+				->setExpirationYear( $storedMethod['expiryYear'] ?? null )
+				->setOwnerName( $ownerName )
+				->setOwnerEmail( $storedMethod['shopperEmail'] ?? null )
+				->setIban( $storedMethod['iban'] ?? null )
+				->setCardSummary( $storedMethod['lastFour'] ?? null );
+		}
+		$response->setDetailsList( $detailsList );
 
 		return $response;
 	}
