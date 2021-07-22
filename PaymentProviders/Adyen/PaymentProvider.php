@@ -94,9 +94,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 		if ( isset( $rawResponse['additionalData'] ) ) {
 			$this->mapAdditionalData( $rawResponse['additionalData'], $response );
 		}
-		if ( isset( $rawResponse['pspReference'] ) ) {
-			$response->setGatewayTxnId( $rawResponse['pspReference'] );
-		}
+		$this->mapRestIdAndErrors( $response, $rawResponse );
 		return $response;
 	}
 
@@ -176,17 +174,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 				$rawResponse['status']
 			);
 		}
-		if ( empty( $rawResponse['pspReference'] ) ) {
-			$message = 'Unable to map Adyen Gateway Transaction ID';
-			$response->addErrors( new PaymentError(
-				ErrorCode::MISSING_TRANSACTION_ID,
-				$message,
-				LogLevel::ERROR
-			) );
-			Logger::debug( $message, $rawResponse );
-		} else {
-			$response->setGatewayTxnId( $rawResponse['pspReference'] );
-		}
+		$this->mapRestIdAndErrors( $response, $rawResponse );
 		return $response;
 	}
 
@@ -224,6 +212,52 @@ abstract class PaymentProvider implements IPaymentProvider {
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Maps a couple of common properties of Adyen Checkout API responses to our
+	 * standardized PaymentProviderResponse.
+	 * Their pspReference is mapped to our GatewayTxnId and their refusalReason
+	 * is mapped to a PaymentError with a normalized ErrorCode
+	 * TODO: some refusalReasons should get ValidationError not PaymentError
+	 *
+	 * @param PaymentProviderResponse $response
+	 * @param ?array $rawResponse
+	 */
+	protected function mapRestIdAndErrors(
+		PaymentProviderResponse $response,
+		?array $rawResponse
+	) {
+		if ( $rawResponse === null ) {
+			$responseError = 'Adyen response was null or invalid JSON.';
+			$response->addErrors( new PaymentError(
+				ErrorCode::NO_RESPONSE,
+				$responseError,
+				LogLevel::ERROR
+			) );
+			Logger::debug( $responseError, $rawResponse );
+		} else {
+			// Map trxn id if present. Redirect responses won't have this
+			// yet, so no need to throw an error when this is empty.
+			if ( !empty( $rawResponse['pspReference'] ) ) {
+				$response->setGatewayTxnId( $rawResponse['pspReference'] );
+			}
+			// Map refusal reason to PaymentError
+			if ( !empty( $rawResponse['refusalReason'] ) ) {
+				if ( $this->canRetryRefusalReason( $rawResponse['refusalReason'] ) ) {
+					$errorCode = ErrorCode::DECLINED;
+				} else {
+					$errorCode = ErrorCode::DECLINED_DO_NOT_RETRY;
+				}
+				$response->addErrors(
+					new PaymentError(
+						$errorCode,
+						$rawResponse['refusalReason'],
+						LogLevel::INFO
+					)
+				);
+			}
+		}
 	}
 
 	/**

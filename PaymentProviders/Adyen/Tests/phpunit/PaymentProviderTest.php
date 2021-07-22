@@ -30,7 +30,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		// test params
 		$params['gateway_txn_id'] = "CAPTURE-TEST-" . rand( 0, 100 );
 		$params['currency'] = 'USD';
-		$params['currency'] = '9.99';
+		$params['amount'] = '9.99';
 
 		$approvePaymentResponse = $this->provider->approvePayment( $params );
 
@@ -43,8 +43,8 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 	}
 
 	/**
-	 * Currently if we make an approvePayment call with an invalid payment id it triggers a
-	 * SoapFault within the Api class which is then caught and false is retured
+	 * Currently if bad JSON comes back from the ApprovePayment call the
+	 * API will json_decode it to null
 	 *
 	 * @see PaymentProviders/Adyen/Api.php:101
 	 *
@@ -52,12 +52,12 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 	public function testBadApprovePayment() {
 		$this->mockApi->expects( $this->once() )
 			->method( 'approvePayment' )
-			->willReturn( false );
+			->willReturn( null );
 
 		// test params
 		$params['gateway_txn_id'] = "INVALID-ID-0000";
 		$params['currency'] = 'USD';
-		$params['currency'] = '9.99';
+		$params['amount'] = '9.99';
 
 		$approvePaymentResponse = $this->provider->approvePayment( $params );
 
@@ -72,7 +72,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 			$firstError->getDebugMessage()
 		);
 		$secondError = $approvePaymentResponse->getErrors()[1];
-		$this->assertEquals( ErrorCode::MISSING_TRANSACTION_ID, $secondError->getErrorCode() );
+		$this->assertEquals( ErrorCode::NO_RESPONSE, $secondError->getErrorCode() );
 	}
 
 	public function testUnknownStatusReturnedForApprovePayment() {
@@ -86,7 +86,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		// test params
 		$params['gateway_txn_id'] = "CAPTURE-TEST-" . rand( 0, 100 );
 		$params['currency'] = 'USD';
-		$params['currency'] = '9.99';
+		$params['amount'] = '9.99';
 
 		$approvePaymentResponse = $this->provider->approvePayment( $params );
 

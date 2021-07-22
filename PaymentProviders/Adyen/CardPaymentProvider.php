@@ -59,10 +59,7 @@ class CardPaymentProvider extends PaymentProvider {
 					);
 				}
 			}
-			// TODO: mapTxnIdAndErrors for REST results
-			if ( isset( $rawResponse['pspReference'] ) ) {
-				$response->setGatewayTxnId( $rawResponse['pspReference'] );
-			}
+			$this->mapRestIdAndErrors( $response, $rawResponse );
 		} elseif ( !empty( $params['recurring_payment_token'] ) && !empty( $params['processor_contact_id'] ) ) {
 			// New style recurrings will have both the token and processor_contact_id (shopper reference)
 			// set, old style just the token
@@ -80,9 +77,7 @@ class CardPaymentProvider extends PaymentProvider {
 				$rawStatus
 			);
 
-			if ( isset( $rawResponse['pspReference'] ) ) {
-				$response->setGatewayTxnId( $rawResponse['pspReference'] );
-			}
+			$this->mapRestIdAndErrors( $response, $rawResponse );
 		} else {
 			$rawResponse = $this->api->createPayment( $params );
 			$response = new CreatePaymentResponse();

@@ -37,6 +37,7 @@ class DirectDebitPaymentProvider extends PaymentProvider {
 			if ( $rawStatus === 'RedirectShopper' ) {
 				$response->setRedirectUrl( $rawResponse['action']['url'] );
 			}
+			$this->mapRestIdAndErrors( $response, $rawResponse );
 		} else {
 			$rawResponse = $this->api->createDirectDebitPayment( $params );
 			$response = new CreatePaymentResponse();
