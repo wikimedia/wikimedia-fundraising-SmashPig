@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Adyen;
 
 use Psr\Log\LogLevel;
+use SmashPig\Core\Cache\CacheHelper;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\PaymentError;
@@ -11,7 +12,11 @@ use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
 use SmashPig\PaymentProviders\IPaymentProvider;
+use SmashPig\PaymentProviders\PaymentDetailResponse;
+use SmashPig\PaymentProviders\PaymentMethodResponse;
 use SmashPig\PaymentProviders\PaymentProviderResponse;
+use SmashPig\PaymentProviders\SavedPaymentDetails;
+use SmashPig\PaymentProviders\SavedPaymentDetailsResponse;
 
 /**
  * Class PaymentProvider
@@ -30,9 +35,113 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 */
 	protected $providerConfiguration;
 
-	public function __construct() {
+	/**
+	 * @var array
+	 */
+	protected $cacheParameters;
+
+	public function __construct( array $options ) {
 		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 		$this->api = $this->providerConfiguration->object( 'api' );
+		$this->cacheParameters = $options['cache-parameters'];
+	}
+
+	/**
+	 * Gets available payment methods
+	 *
+	 * @param array $params
+	 * @return PaymentMethodResponse
+	 */
+	public function getPaymentMethods( array $params ) : PaymentMethodResponse {
+		$callback = function () use ( $params ) {
+			$rawResponse = $this->api->getPaymentMethods( $params );
+
+			$response = new PaymentMethodResponse();
+			$response->setRawResponse( $rawResponse );
+
+			return $response;
+		};
+		// Not actually varying the cache based on amount, since
+		// that would make it a lot less useful and we seem to see
+		// the same values regardless of value.
+		$cacheKey = $this->cacheParameters['key-base'] . '_'
+			. $params['country'] . '_'
+			. $params['currency'] . '_'
+			. $params['language'];
+
+		return CacheHelper::getWithSetCallback( $cacheKey, $this->cacheParameters['duration'], $callback );
+	}
+
+	/**
+	 * Get more payment details from the redirect result
+	 *
+	 * @param string $redirectResult
+	 * @return PaymentDetailResponse
+	 */
+	public function getHostedPaymentDetails( $redirectResult ) {
+		$rawResponse = $this->api->getPaymentDetails( $redirectResult );
+
+		$response = new PaymentDetailResponse();
+		// TODO: DRY with CreatePaymentResponse
+		$response->setRawResponse( $rawResponse );
+		$rawStatus = $rawResponse['resultCode'];
+		$this->mapStatus(
+			$response,
+			$rawResponse,
+			$this->getPaymentDetailsStatusNormalizer(),
+			$rawStatus
+		);
+		if ( isset( $rawResponse['additionalData'] ) ) {
+			$this->mapAdditionalData( $rawResponse['additionalData'], $response );
+		}
+		$this->mapRestIdAndErrors( $response, $rawResponse );
+		return $response;
+	}
+
+	/**
+	 * Get details of payment methods on file for a specified donor
+	 * This uses the same API call as getting payment methods but also returns
+	 * the saved payment method details for the shopperReference provided
+	 *
+	 * @param string $processorContactID
+	 * @return SavedPaymentDetailsResponse
+	 */
+	public function getSavedPaymentDetails( string $processorContactID ): SavedPaymentDetailsResponse {
+		$rawResponse = $this->api->getSavedPaymentDetails( $processorContactID );
+		$response = new SavedPaymentDetailsResponse();
+		$response->setRawResponse( $rawResponse );
+		$detailsList = [];
+		foreach ( $rawResponse['storedPaymentMethods'] as $storedMethod ) {
+			$ownerName = $storedMethod['ownerName'] ?? $storedMethod['holderName'] ?? null;
+			if ( isset( $storedMethod['brand'] ) ) {
+				[ $method, $submethod ] = ReferenceData::decodePaymentMethod(
+					$storedMethod['brand'], false
+				);
+			} elseif ( $storedMethod['type'] === 'sepadirectdebit' ) {
+				// special case, for now we only use SEPA direct debit for iDEAL
+				$method = 'rtbt';
+				$submethod = 'rtbt_ideal';
+			} else {
+				// No big deal for us if we don't have it mapped - the token field
+				// is the only one we actually use.
+				$method = null;
+				$submethod = null;
+			}
+			$detailsList[] = ( new SavedPaymentDetails() )
+				->setToken( $storedMethod['id'] )
+				->setDisplayName( $storedMethod['name'] ?? null )
+				->setPaymentMethod( $method )
+				->setPaymentSubmethod( $submethod )
+				->setExpirationMonth( $storedMethod['expiryMonth'] ?? null )
+				->setExpirationYear( $storedMethod['expiryYear'] ?? null )
+				->setOwnerName( $ownerName )
+				->setOwnerEmail( $storedMethod['shopperEmail'] ?? null )
+				->setIban( $storedMethod['iban'] ?? null )
+				->setCardSummary( $storedMethod['lastFour'] ?? null );
+		}
+		$response->setDetailsList( $detailsList );
+
+		return $response;
 	}
 
 	/**
@@ -49,27 +158,23 @@ abstract class PaymentProvider implements IPaymentProvider {
 		$response = new ApprovePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 
-		if ( !empty( $rawResponse->captureResult ) ) {
-			$this->mapTxnIdAndErrors(
-				$response,
-				$rawResponse->captureResult
-			);
-			$this->mapStatus(
-				$response,
-				$rawResponse,
-				new ApprovePaymentStatus(),
-				$rawResponse->captureResult->response ?? null
-			);
-		} else {
-			$responseError = 'captureResult element missing from Adyen approvePayment response.';
+		if ( empty( $rawResponse['status'] ) ) {
+			$responseError = 'status element missing from Adyen capture response.';
 			$response->addErrors( new PaymentError(
 				ErrorCode::MISSING_REQUIRED_DATA,
 				$responseError,
 				LogLevel::ERROR
 			) );
 			Logger::debug( $responseError, $rawResponse );
+		} else {
+			$this->mapStatus(
+				$response,
+				$rawResponse,
+				new ApprovePaymentStatus(),
+				$rawResponse['status']
+			);
 		}
-
+		$this->mapRestIdAndErrors( $response, $rawResponse );
 		return $response;
 	}
 
@@ -107,6 +212,52 @@ abstract class PaymentProvider implements IPaymentProvider {
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Maps a couple of common properties of Adyen Checkout API responses to our
+	 * standardized PaymentProviderResponse.
+	 * Their pspReference is mapped to our GatewayTxnId and their refusalReason
+	 * is mapped to a PaymentError with a normalized ErrorCode
+	 * TODO: some refusalReasons should get ValidationError not PaymentError
+	 *
+	 * @param PaymentProviderResponse $response
+	 * @param ?array $rawResponse
+	 */
+	protected function mapRestIdAndErrors(
+		PaymentProviderResponse $response,
+		?array $rawResponse
+	) {
+		if ( $rawResponse === null ) {
+			$responseError = 'Adyen response was null or invalid JSON.';
+			$response->addErrors( new PaymentError(
+				ErrorCode::NO_RESPONSE,
+				$responseError,
+				LogLevel::ERROR
+			) );
+			Logger::debug( $responseError, $rawResponse );
+		} else {
+			// Map trxn id if present. Redirect responses won't have this
+			// yet, so no need to throw an error when this is empty.
+			if ( !empty( $rawResponse['pspReference'] ) ) {
+				$response->setGatewayTxnId( $rawResponse['pspReference'] );
+			}
+			// Map refusal reason to PaymentError
+			if ( !empty( $rawResponse['refusalReason'] ) ) {
+				if ( $this->canRetryRefusalReason( $rawResponse['refusalReason'] ) ) {
+					$errorCode = ErrorCode::DECLINED;
+				} else {
+					$errorCode = ErrorCode::DECLINED_DO_NOT_RETRY;
+				}
+				$response->addErrors(
+					new PaymentError(
+						$errorCode,
+						$rawResponse['refusalReason'],
+						LogLevel::INFO
+					)
+				);
+			}
+		}
 	}
 
 	/**
@@ -196,6 +347,8 @@ abstract class PaymentProvider implements IPaymentProvider {
 		}
 	}
 
+	abstract protected function getPaymentDetailsStatusNormalizer(): StatusNormalizer;
+
 	/**
 	 * Documented at
 	 * https://docs.adyen.com/development-resources/refusal-reasons
@@ -225,5 +378,26 @@ abstract class PaymentProvider implements IPaymentProvider {
 			return false;
 		}
 		return true;
+	}
+
+	protected function mapAdditionalData( array $additionalData, PaymentDetailResponse $response ) {
+		$response->setRiskScores(
+			( new RiskScorer() )->getRiskScores(
+				$additionalData['avsResult'] ?? null,
+				$additionalData['cvcResult'] ?? null
+			)
+		);
+		// Recurring payments will send back the token in recurringDetailReference and the processor_contact_id
+		// in shopperReference, both are needed to charge a recurring payment
+		if ( isset( $additionalData['recurring.shopperReference'] ) ) {
+			$response->setProcessorContactID(
+				$additionalData['recurring.shopperReference']
+			);
+		}
+		if ( isset( $additionalData['recurring.recurringDetailReference'] ) ) {
+			$response->setRecurringPaymentToken(
+				$additionalData['recurring.recurringDetailReference']
+			);
+		}
 	}
 }

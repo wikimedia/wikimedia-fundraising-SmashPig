@@ -34,6 +34,10 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					$job = RecordCaptureJob::factory( $msg );
 					QueueWrapper::push( 'jobs-adyen', $job );
 				} else {
+					$providerConfig = Context::get()->getProviderConfiguration();
+					if ( !$providerConfig->val( 'capture-from-ipn-listener' ) ) {
+						return true;
+					}
 					// Here we need to capture the payment, the job runner will collect the
 					// orphan message
 					$tl->info(
@@ -42,7 +46,7 @@ class PaymentCaptureAction implements IListenerMessageAction {
 					);
 					$job = ProcessCaptureRequestJob::factory( $msg );
 					$queueName = 'jobs-adyen';
-					$jobQueueCount = Context::get()->getProviderConfiguration()->val(
+					$jobQueueCount = $providerConfig->val(
 						'capture-job-queue-count'
 					);
 					if ( $jobQueueCount > 1 ) {

@@ -58,6 +58,7 @@ class ReferenceData {
 		'MD' => 'mc-debit',
 		'MG' => 'magna',
 		'ML' => 'mercadolivre',
+		'MS' => 'maestro',
 		'NB' => 'netbanking', // India
 		'NJ' => 'naranja',
 		'NT' => 'nativa',
@@ -67,6 +68,7 @@ class ReferenceData {
 		'PA' => 'bcp', // Peru, "via LatinAmericanPayments"
 		'PC' => 'pse', // Columbia, "all banks"
 		'PF' => 'cash_pago_facil',
+		'PQ' => 'pix', // Brazil
 		'PR' => 'presto',
 		'PW' => 'paytmwallet', // India
 		'RE' => 'cash_red_pagos',

@@ -12,6 +12,7 @@ use SmashPig\CrmLink\Messages\DonationInterfaceAntifraudFactory;
 use SmashPig\PaymentData\ValidationAction;
 use SmashPig\PaymentProviders\Adyen\CardPaymentProvider;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
+use SmashPig\PaymentProviders\PaymentProviderFactory;
 
 /**
  * Job that checks authorization IPN messages from Adyen and requests payment
@@ -221,7 +222,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	 * @return CardPaymentProvider
 	 */
 	protected function getProvider() {
-		return new CardPaymentProvider();
+		return PaymentProviderFactory::getProviderForMethod( 'cc' );
 	}
 
 	protected function cancelAuthorization() {

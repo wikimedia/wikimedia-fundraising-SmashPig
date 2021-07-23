@@ -2,37 +2,64 @@
 
 namespace SmashPig\PaymentProviders;
 
-use SmashPig\PaymentData\FinalStatus;
-
 /**
+ * Represents a newly-created payment. Contains all the properties of the
+ * PaymentDetailResponse and an additional pair of properties for when we
+ * need to redirect the donor.
+ *
  * Class CreatePaymentResponse
  * @package SmashPig\PaymentProviders
  */
-class CreatePaymentResponse extends PaymentProviderResponse {
+class CreatePaymentResponse extends PaymentDetailResponse {
 
 	/**
-	 * A successfully created payment should be in COMPLETE or PENDING_POKE status
+	 * URL that a user should be redirected to in order to complete the payment
 	 *
-	 * @return bool
+	 * @var string|null
 	 */
-	public function isSuccessful() {
-		return in_array(
-			$this->getStatus(),
-			[
-				FinalStatus::PENDING_POKE,
-				FinalStatus::COMPLETE
-			]
-		);
+	protected $redirectUrl;
+
+	/**
+	 * Data to be passed along with the redirect
+	 *
+	 * @var array
+	 */
+	protected $redirectData = [];
+
+	/**
+	 * @return string|null
+	 */
+	public function getRedirectUrl(): string {
+		return $this->redirectUrl;
 	}
 
 	/**
-	 * Determines whether the payment is in a status that requires further
-	 * action from the merchant to push through. Generally this means a card
-	 * payment has been authorized but not yet captured.
-	 *
-	 * @return bool
+	 * @param string $redirectUrl
+	 * @return CreatePaymentResponse
 	 */
-	public function requiresApproval() {
-		return $this->getStatus() === FinalStatus::PENDING_POKE;
+	public function setRedirectUrl( string $redirectUrl ): CreatePaymentResponse {
+		$this->redirectUrl = $redirectUrl;
+		return $this;
 	}
+
+	public function requiresRedirect(): bool {
+		return !empty( $this->redirectUrl );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getRedirectData(): array {
+		return $this->redirectData;
+	}
+
+	/**
+	 * @param array $redirectData
+	 * @return CreatePaymentResponse
+	 */
+	public function setRedirectData( array $redirectData ): CreatePaymentResponse {
+		$this->redirectData = $redirectData;
+		return $this;
+	}
+
 }
