@@ -39,19 +39,46 @@ class Api {
 	 */
 	protected $restBaseUrl;
 
+	/**
+	 * @var string
+	 */
+	protected $wsdlEndpoint;
+
+	/**
+	 * @var string
+	 */
+	protected $wsdlUser;
+
+	/**
+	 * @var string
+	 */
+	protected $wsdlPass;
+
 	public function __construct() {
 		$c = Context::get()->getProviderConfiguration();
 		$this->account = array_keys( $c->val( "accounts" ) )[0]; // this feels fragile
-		$this->soapClient = new WSDL\Payment(
-			$c->val( 'payments-wsdl' ),
-			[
-				'cache_wsdl' => WSDL_CACHE_NONE,
-				'login' => $c->val( "accounts/{$this->account}/ws-username" ),
-				'password' => $c->val( "accounts/{$this->account}/ws-password" ),
-			]
-		);
+		$this->wsdlEndpoint = $c->val( 'payments-wsdl' );
+		$this->wsdlUser = $c->val( "accounts/{$this->account}/ws-username" );
+		$this->wsdlPass = $c->val( "accounts/{$this->account}/ws-password" );
 		$this->restBaseUrl = $c->val( 'rest-base-url' );
 		$this->apiKey = $c->val( "accounts/{$this->account}/ws-api-key" );
+	}
+
+	/**
+	 * @return WSDL\Payment
+	 */
+	public function getSoapClient(): WSDL\Payment {
+		if ( !$this->soapClient ) {
+			$this->soapClient = new WSDL\Payment(
+				$this->wsdlEndpoint,
+				[
+					'cache_wsdl' => WSDL_CACHE_NONE,
+					'login' => $this->wsdlUser,
+					'password' => $this->wsdlPass,
+				]
+			);
+		}
+		return $this->soapClient;
 	}
 
 	/**
@@ -265,7 +292,7 @@ class Api {
 		$tl->info( 'Launching SOAP authorise request', $data );
 
 		try {
-			$response = $this->soapClient->authorise( $data );
+			$response = $this->getSoapClient()->authorise( $data );
 		} catch ( \Exception $ex ) {
 			Logger::error( 'SOAP authorise request threw exception!', null, $ex );
 			return false;
@@ -303,8 +330,8 @@ class Api {
 		$tl->info( 'Launching SOAP directdebit request', $data );
 
 		try {
-			$response = $this->soapClient->directdebit( $data );
-			Logger::debug( $this->soapClient->__getLastRequest() );
+			$response = $this->getSoapClient()->directdebit( $data );
+			Logger::debug( $this->getSoapClient()->__getLastRequest() );
 		} catch ( \Exception $ex ) {
 			Logger::error( 'SOAP directdebit request threw exception!', null, $ex );
 			return false;
@@ -361,7 +388,7 @@ class Api {
 		$tl->info( 'Launching SOAP cancel request', $data );
 
 		try {
-			$response = $this->soapClient->cancel( $data );
+			$response = $this->getSoapClient()->cancel( $data );
 		} catch ( \Exception $ex ) {
 			Logger::error( 'SOAP cancel request threw exception!', null, $ex );
 			return false;
