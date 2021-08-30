@@ -7,9 +7,9 @@ class CurrencyRoundingHelper {
 	/**
 	 * These currencies cannot have cents.
 	 *
-	 * @var array
+	 * @var string[]
 	 */
-	public static $non_fractional_currencies = [
+	public static $noDecimalCurrencies = [
 		'CLP',
 		'DJF',
 		'IDR',
@@ -25,11 +25,11 @@ class CurrencyRoundingHelper {
 	];
 
 	/**
-	 * Currencies whose minor unit is exponent 3 (three decimal places)
+	 * Currencies whose minor unit is thousandths (three decimal places)
 	 *
-	 * @var array
+	 * @var string[]
 	 */
-	public static $exponent3_currencies = [
+	public static $threeDecimalCurrencies = [
 		'BHD',
 		'CLF',
 		'IQD',
@@ -51,10 +51,9 @@ class CurrencyRoundingHelper {
 	 * @return string rounded amount
 	 */
 	public static function round( float $amount, string $currencyCode ): string {
-		$amount = floatval( $amount );
 		if ( self::isFractionalCurrency( $currencyCode ) ) {
 			$precision = 2;
-			if ( self::isExponent3Currency( $currencyCode ) ) {
+			if ( self::isThreeDecimalCurrency( $currencyCode ) ) {
 				$precision = 3;
 			}
 			return number_format( $amount, $precision, '.', '' );
@@ -64,13 +63,13 @@ class CurrencyRoundingHelper {
 	}
 
 	/**
-	 * @param string $currency_code The three-character currency code.
+	 * @param string $currencyCode The three-character currency code.
 	 *
 	 * @return bool
 	 */
-	public static function isFractionalCurrency( string $currency_code ): bool {
-		if ( in_array( strtoupper( $currency_code ),
-			static::$non_fractional_currencies ) ) {
+	public static function isFractionalCurrency( string $currencyCode ): bool {
+		if ( in_array( strtoupper( $currencyCode ),
+			static::$noDecimalCurrencies ) ) {
 			return false;
 		}
 		return true;
@@ -78,16 +77,15 @@ class CurrencyRoundingHelper {
 
 	/**
 	 * Checks if ISO 4217 (https://www.iso.org/iso-4217-currency-codes.html)
-	 * defines the currency's minor units as being expressed
-	 * using exponent 3 (three decimal places).
+	 * defines the currency's minor units as being expressed in thousandths.
 	 *
-	 * @param string $currency_code The three-character currency code.
+	 * @param string $currencyCode The three-character currency code.
 	 *
 	 * @return bool
 	 */
-	public static function isExponent3Currency( string $currency_code ): bool {
-		if ( in_array( strtoupper( $currency_code ),
-			static::$exponent3_currencies ) ) {
+	public static function isThreeDecimalCurrency( string $currencyCode ): bool {
+		if ( in_array( strtoupper( $currencyCode ),
+			static::$threeDecimalCurrencies ) ) {
 			return true;
 		}
 		return false;

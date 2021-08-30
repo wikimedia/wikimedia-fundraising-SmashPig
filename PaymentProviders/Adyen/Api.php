@@ -468,7 +468,7 @@ class Api {
 	 * @return int The amount in minor units
 	 */
 	private function getAmountInMinorUnits( float $amount, string $currency ): int {
-		if ( CurrencyRoundingHelper::isExponent3Currency( $currency ) ) {
+		if ( CurrencyRoundingHelper::isThreeDecimalCurrency( $currency ) ) {
 			$amount = $amount * 1000;
 		} elseif ( CurrencyRoundingHelper::isFractionalCurrency( $currency ) ) {
 			$amount = $amount * 100;
