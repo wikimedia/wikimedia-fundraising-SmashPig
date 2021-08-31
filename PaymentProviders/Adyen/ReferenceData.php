@@ -13,6 +13,10 @@ class ReferenceData {
 			'method' => 'cc',
 			'submethod' => 'amex',
 		],
+		'applepay' => [
+			'method' => 'apple',
+			'submethod' => 'apple'
+		],
 		'bijcard' => [
 			'method' => 'cc',
 			'submethod' => 'bij',
