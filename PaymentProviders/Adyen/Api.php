@@ -16,6 +16,7 @@ class Api {
 	 */
 	const RECURRING_CONTRACT = 'RECURRING';
 	const RECURRING_SHOPPER_INTERACTION = 'ContAuth';
+	const RECURRING_SHOPPER_INTERACTION_SETUP = 'Ecommerce';
 	const RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE = 'LATEST';
 	const RECURRING_PROCESSING_MODEL = 'Subscription';
 
@@ -141,10 +142,7 @@ class Api {
 		$restParams['shopperStatement'] = $params['description'] ?? '';
 		$isRecurring = $params['recurring'] ?? '';
 		if ( $isRecurring ) {
-			$restParams['shopperInteraction'] = 'Ecommerce';
-			$restParams['shopperReference'] = $params['order_id'];
-			$restParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
-			$restParams['storePaymentMethod'] = true;
+			$restParams = array_merge( $restParams, $this->addRecurringParams( $params ) );
 		}
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
@@ -218,6 +216,10 @@ class Api {
 				'applePayToken' => $params['payment_token']
 			]
 		];
+		$isRecurring = $params['recurring'] ?? '';
+		if ( $isRecurring ) {
+			$restParams = array_merge( $restParams, $this->addRecurringParams( $params ) );
+		}
 
 		$result = $this->makeRestApiCall(
 			$restParams,
@@ -482,5 +484,24 @@ class Api {
 		$recurring = new WSDL\Recurring();
 		$recurring->contract = static::RECURRING_CONTRACT;
 		return $recurring;
+	}
+
+	/**
+	 * Adds the parameters to set up a recurring payment.
+	 *
+	 * @param array $params
+	 * @return array
+	 */
+	private function addRecurringParams( $params ) {
+		// credit card, apple pay, and iDeal all need shopperReference and storePaymentMethod
+		$recurringParams['shopperReference'] = $params['order_id'];
+		$recurringParams['storePaymentMethod'] = true;
+
+		if ( $params['payment_method'] == 'cc' || $params['payment_method'] == 'apple' ) {
+			// credit card and apple pay also need shopperInteraction and recurringProcessingModel
+			$recurringParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION_SETUP;
+			$recurringParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
+		}
+		return $recurringParams;
 	}
 }
