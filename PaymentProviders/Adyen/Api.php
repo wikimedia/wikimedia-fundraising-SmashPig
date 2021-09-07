@@ -215,8 +215,7 @@ class Api {
 			'merchantAccount' => $this->account,
 			'paymentMethod' => [
 				'type' => 'applepay',
-				// TODO decide on a good 'normalized' parameter name
-				'applePayToken' => $params['gateway_session_id']
+				'applePayToken' => $params['payment_token']
 			]
 		];
 
