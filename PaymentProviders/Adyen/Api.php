@@ -208,6 +208,27 @@ class Api {
 		return $result['body'];
 	}
 
+	public function createApplePayPayment( $params ) {
+		$restParams = [
+			'amount' => $this->getArrayAmount( $params ),
+			'reference' => $params['order_id'],
+			'merchantAccount' => $this->account,
+			'paymentMethod' => [
+				'type' => 'applepay',
+				// TODO decide on a good 'normalized' parameter name
+				'applePayToken' => $params['gateway_session_id']
+			]
+		];
+
+		$result = $this->makeRestApiCall(
+			$restParams,
+			'payments',
+			'POST'
+		);
+
+		return $result['body'];
+	}
+
 	/**
 	 * Gets more details when no final state has been reached
 	 * on the /payments call. Redirect payments will need this.
@@ -447,7 +468,7 @@ class Api {
 	 * @return int The amount in minor units
 	 */
 	private function getAmountInMinorUnits( float $amount, string $currency ): int {
-		if ( CurrencyRoundingHelper::isExponent3Currency( $currency ) ) {
+		if ( CurrencyRoundingHelper::isThreeDecimalCurrency( $currency ) ) {
 			$amount = $amount * 1000;
 		} elseif ( CurrencyRoundingHelper::isFractionalCurrency( $currency ) ) {
 			$amount = $amount * 100;

@@ -6,7 +6,10 @@ use OutOfBoundsException;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\StatusNormalizer;
 
-class CreateDirectDebitPaymentStatus implements StatusNormalizer {
+/**
+ * Payment status normalizer for authorizations that need a capture
+ */
+class CreateCardPaymentStatus implements StatusNormalizer {
 
 	/**
 	 * @param string $adyenStatus
@@ -15,11 +18,8 @@ class CreateDirectDebitPaymentStatus implements StatusNormalizer {
 	public function normalizeStatus( string $adyenStatus ): string {
 		switch ( $adyenStatus ) {
 			case 'Authorised':
-			case 'Received':
-				$status = FinalStatus::COMPLETE;
-				break;
 			case 'RedirectShopper':
-				$status = FinalStatus::PENDING;
+				$status = FinalStatus::PENDING_POKE;
 				break;
 			case 'Refused':
 				$status = FinalStatus::FAILED;
