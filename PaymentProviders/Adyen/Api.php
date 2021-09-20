@@ -6,6 +6,11 @@ use SmashPig\Core\Http\OutboundRequest;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 
+// FIXME: get off of WSDL pronto
+// We have to include this manually because Composer 2 doesn't autoload
+// multiple classes in one file.
+include_once 'WSDL/Payment.php';
+
 class Api {
 
 	/**
