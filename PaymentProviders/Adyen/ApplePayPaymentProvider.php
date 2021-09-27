@@ -19,8 +19,11 @@ class ApplePayPaymentProvider extends PaymentProvider {
 			$rawResponse['resultCode'] ?? null
 		);
 		$this->mapRestIdAndErrors( $response, $rawResponse );
-		// In sandbox we get additionalData with cvcResult and avsResult, but both are of the
-		// 'no data provided' variety, so I'm skipping the mapAdditionalData for now.
+		// additionalData has the recurring details
+		if ( isset( $rawResponse['additionalData'] ) ) {
+			$this->mapAdditionalData( $rawResponse['additionalData'], $response );
+		}
+
 		return $response;
 	}
 
