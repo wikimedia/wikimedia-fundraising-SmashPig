@@ -167,11 +167,11 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 		$params = $this->getTestParams();
 
 		$this->mockApi->expects( $this->once() )
-			->method( 'createDirectDebitPayment' )
-			->willReturn( (object)[ 'response' => (object)[
+			->method( 'createPaymentFromToken' )
+			->willReturn( [
 				'resultCode' => 'Received',
 				'pspReference' => '00000000000000AB'
-			] ] );
+			 ] );
 
 		$createPaymentResponse = $this->provider->createPayment( $params );
 
@@ -188,14 +188,14 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 		$params = $this->getTestParams();
 
 		$this->mockApi->expects( $this->once() )
-			->method( 'createDirectDebitPayment' )
-			->willReturn( (object)[ 'response' => (object)[
+			->method( 'createPaymentFromToken' )
+			->willReturn( [
 				'additionalData' => null,
 				'fraudResult' => null,
 				'refusalReason' => '800 Contract not found',
 				'resultCode' => 'Refused',
 				'pspReference' => '851584732543280B'
-			] ] );
+			] );
 
 		$createPaymentResponse = $this->provider->createPayment( $params );
 

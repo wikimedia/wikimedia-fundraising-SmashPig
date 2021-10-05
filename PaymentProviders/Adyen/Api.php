@@ -179,9 +179,6 @@ class Api {
 		$restParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION;
 		$restParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
 
-		// Todo: ideal
-		// the documenation looks similiar to above but it has possible differences
-
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
 	}
