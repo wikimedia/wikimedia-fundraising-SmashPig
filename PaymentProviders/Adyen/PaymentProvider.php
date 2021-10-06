@@ -7,6 +7,7 @@ use SmashPig\Core\Cache\CacheHelper;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\PaymentError;
+use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
@@ -241,6 +242,12 @@ abstract class PaymentProvider implements IPaymentProvider {
 			// yet, so no need to throw an error when this is empty.
 			if ( !empty( $rawResponse['pspReference'] ) ) {
 				$response->setGatewayTxnId( $rawResponse['pspReference'] );
+			}
+			if ( !empty( $rawResponse['errorCode'] ) ) {
+				$badField = ExceptionMapper::getValidationErrorField( $rawResponse['errorCode'] );
+				if ( $badField !== null ) {
+					$response->addValidationError( new ValidationError( $badField ) );
+				}
 			}
 			// Map refusal reason to PaymentError
 			if ( !empty( $rawResponse['refusalReason'] ) ) {

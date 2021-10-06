@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders;
 
 use SmashPig\Core\PaymentError;
+use SmashPig\Core\ValidationError;
 
 /**
  * Class PaymentProviderResponse
@@ -17,6 +18,12 @@ abstract class PaymentProviderResponse {
 	 * @var PaymentError[]
 	 */
 	protected $errors = [];
+
+	/**
+	 * FIXME: should find a cleaner way to fold these in with the PaymentErrors above
+	 * @var ValidationError[]
+	 */
+	protected $validationErrors = [];
 
 	/**
 	 * raw response sent back from payment provider
@@ -72,6 +79,13 @@ abstract class PaymentProviderResponse {
 	}
 
 	/**
+	 * @return ValidationError[]
+	 */
+	public function getValidationErrors() {
+		return $this->validationErrors;
+	}
+
+	/**
 	 * @param PaymentError[] $errors
 	 * @return $this
 	 */
@@ -84,11 +98,11 @@ abstract class PaymentProviderResponse {
 	 * @return bool
 	 */
 	public function hasErrors(): bool {
-		return count( $this->getErrors() ) > 0;
+		return count( $this->getErrors() ) > 0 || count( $this->getValidationErrors() ) > 0;
 	}
 
 	/**
-	 * Convenience function to check for a specific error code
+	 * Convenience function to check for a specific error code in the PaymentError stack
 	 *
 	 * @param string $errorCode one of the ErrorCode constants
 	 * @return bool
@@ -117,6 +131,16 @@ abstract class PaymentProviderResponse {
 				array_push( $this->errors, $error );
 			}
 		}
+		return $this;
+	}
+
+	/**
+	 * Adds a validation error to the stack
+	 * @param ValidationError $error
+	 * @return $this
+	 */
+	public function addValidationError( ValidationError $error ): self {
+		array_push( $this->validationErrors, $error );
 		return $this;
 	}
 
