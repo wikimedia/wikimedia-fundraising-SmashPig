@@ -21,12 +21,12 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	protected $riskScores = [];
 
 	/**
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $recurringPaymentToken;
 
 	/**
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $processorContactID;
 
@@ -35,7 +35,7 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	 *
 	 * @return bool
 	 */
-	public function isSuccessful() {
+	public function isSuccessful(): bool {
 		return in_array(
 			$this->getStatus(),
 			[
@@ -52,7 +52,7 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	 *
 	 * @return bool
 	 */
-	public function requiresApproval() {
+	public function requiresApproval(): bool {
 		return $this->getStatus() === FinalStatus::PENDING_POKE;
 	}
 
@@ -73,7 +73,7 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	}
 
 	/**
-	 * @return ?string
+	 * @return string|null
 	 */
 	public function getRecurringPaymentToken(): ?string {
 		return $this->recurringPaymentToken;
@@ -89,7 +89,7 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	}
 
 	/**
-	 * @return ?string
+	 * @return string|null
 	 */
 	public function getProcessorContactID(): ?string {
 		return $this->processorContactID;

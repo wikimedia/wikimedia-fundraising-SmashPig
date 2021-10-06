@@ -32,19 +32,19 @@ abstract class PaymentProviderResponse {
 	 * consistency with our queue messages and wmf_contribution_extra.gateway_txn_id
 	 * column. Maybe one day we'll add the R.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	protected $gateway_txn_id;
 
 	/**
 	 * mapped PaymentStatus status for the providers transaction status
-	 * @var string
+	 * @var string|null
 	 */
 	protected $status;
 
 	/**
 	 * raw provider status in its original form.
-	 * @var string
+	 * @var string|null
 	 */
 	protected $rawStatus;
 
@@ -59,7 +59,7 @@ abstract class PaymentProviderResponse {
 	 * @param mixed $rawResponse
 	 * @return $this
 	 */
-	public function setRawResponse( $rawResponse ) {
+	public function setRawResponse( $rawResponse ): self {
 		$this->rawResponse = $rawResponse;
 		return $this;
 	}
@@ -67,7 +67,7 @@ abstract class PaymentProviderResponse {
 	/**
 	 * @return PaymentError[]
 	 */
-	public function getErrors() {
+	public function getErrors(): array {
 		return $this->errors;
 	}
 
@@ -75,7 +75,7 @@ abstract class PaymentProviderResponse {
 	 * @param PaymentError[] $errors
 	 * @return $this
 	 */
-	public function setErrors( $errors ) {
+	public function setErrors( $errors ): self {
 		$this->errors = $errors;
 		return $this;
 	}
@@ -83,7 +83,7 @@ abstract class PaymentProviderResponse {
 	/**
 	 * @return bool
 	 */
-	public function hasErrors() {
+	public function hasErrors(): bool {
 		return count( $this->getErrors() ) > 0;
 	}
 
@@ -93,7 +93,7 @@ abstract class PaymentProviderResponse {
 	 * @param string $errorCode one of the ErrorCode constants
 	 * @return bool
 	 */
-	public function hasError( $errorCode ) {
+	public function hasError( string $errorCode ): bool {
 		foreach ( $this->getErrors() as $error ) {
 			if ( $error->getErrorCode() === $errorCode ) {
 				return true;
@@ -108,7 +108,7 @@ abstract class PaymentProviderResponse {
 	 * @param PaymentError[]|PaymentError $errors
 	 * @return $this
 	 */
-	public function addErrors( $errors ) {
+	public function addErrors( $errors ): self {
 		if ( !is_array( $errors ) ) {
 			$errors = [ $errors ];
 		}
@@ -123,7 +123,7 @@ abstract class PaymentProviderResponse {
 	/**
 	 * @return string
 	 */
-	public function getGatewayTxnId() {
+	public function getGatewayTxnId(): ?string {
 		return $this->gateway_txn_id;
 	}
 
@@ -131,7 +131,7 @@ abstract class PaymentProviderResponse {
 	 * @param string $gateway_txn_id
 	 * @return static
 	 */
-	public function setGatewayTxnId( $gateway_txn_id ) {
+	public function setGatewayTxnId( string $gateway_txn_id ): self {
 		$this->gateway_txn_id = $gateway_txn_id;
 		return $this;
 	}
@@ -139,7 +139,7 @@ abstract class PaymentProviderResponse {
 	/**
 	 * @return string
 	 */
-	public function getStatus() {
+	public function getStatus(): ?string {
 		return $this->status;
 	}
 
@@ -147,7 +147,7 @@ abstract class PaymentProviderResponse {
 	 * @param string $status
 	 * @return static
 	 */
-	public function setStatus( $status ) {
+	public function setStatus( string $status ): self {
 		$this->status = $status;
 		return $this;
 	}
@@ -159,12 +159,12 @@ abstract class PaymentProviderResponse {
 	 *
 	 * @return bool
 	 */
-	abstract public function isSuccessful();
+	abstract public function isSuccessful(): bool;
 
 	/**
 	 * @return string
 	 */
-	public function getRawStatus() {
+	public function getRawStatus(): ?string {
 		return $this->rawStatus;
 	}
 
@@ -172,7 +172,7 @@ abstract class PaymentProviderResponse {
 	 * @param string $rawStatus
 	 * @return static
 	 */
-	public function setRawStatus( $rawStatus ) {
+	public function setRawStatus( string $rawStatus ): self {
 		$this->rawStatus = $rawStatus;
 		return $this;
 	}
