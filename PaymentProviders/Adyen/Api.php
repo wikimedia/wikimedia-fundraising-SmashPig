@@ -6,6 +6,11 @@ use SmashPig\Core\Http\OutboundRequest;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
 
+// FIXME: get off of WSDL pronto
+// We have to include this manually because Composer 2 doesn't autoload
+// multiple classes in one file.
+include_once 'WSDL/Payment.php';
+
 class Api {
 
 	/**
@@ -16,6 +21,7 @@ class Api {
 	 */
 	const RECURRING_CONTRACT = 'RECURRING';
 	const RECURRING_SHOPPER_INTERACTION = 'ContAuth';
+	const RECURRING_SHOPPER_INTERACTION_SETUP = 'Ecommerce';
 	const RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE = 'LATEST';
 	const RECURRING_PROCESSING_MODEL = 'Subscription';
 
@@ -141,10 +147,7 @@ class Api {
 		$restParams['shopperStatement'] = $params['description'] ?? '';
 		$isRecurring = $params['recurring'] ?? '';
 		if ( $isRecurring ) {
-			$restParams['shopperInteraction'] = 'Ecommerce';
-			$restParams['shopperReference'] = $params['order_id'];
-			$restParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
-			$restParams['storePaymentMethod'] = true;
+			$restParams = array_merge( $restParams, $this->addRecurringParams( $params, true ) );
 		}
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
@@ -175,9 +178,6 @@ class Api {
 		$restParams['shopperReference'] = $params['processor_contact_id'];
 		$restParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION;
 		$restParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
-
-		// Todo: ideal
-		// the documenation looks similiar to above but it has possible differences
 
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
@@ -215,10 +215,13 @@ class Api {
 			'merchantAccount' => $this->account,
 			'paymentMethod' => [
 				'type' => 'applepay',
-				// TODO decide on a good 'normalized' parameter name
-				'applePayToken' => $params['gateway_session_id']
+				'applePayToken' => $params['payment_token']
 			]
 		];
+		$isRecurring = $params['recurring'] ?? '';
+		if ( $isRecurring ) {
+			$restParams = array_merge( $restParams, $this->addRecurringParams( $params, true ) );
+		}
 
 		$result = $this->makeRestApiCall(
 			$restParams,
@@ -483,5 +486,27 @@ class Api {
 		$recurring = new WSDL\Recurring();
 		$recurring->contract = static::RECURRING_CONTRACT;
 		return $recurring;
+	}
+
+	/**
+	 * Adds the parameters to set up a recurring payment.
+	 *
+	 * @param array $params
+	 * @param bool $needInteractionAndModel Set to 'true' for card or Apple Pay transactions
+	 *  which need the shopperInteraction and recurringProcessModel parameters set.
+	 *
+	 * @return array
+	 */
+	private function addRecurringParams( $params, $needInteractionAndModel ) {
+		// credit card, apple pay, and iDeal all need shopperReference and storePaymentMethod
+		$recurringParams['shopperReference'] = $params['order_id'];
+		$recurringParams['storePaymentMethod'] = true;
+
+		if ( $needInteractionAndModel ) {
+			// credit card and apple pay also need shopperInteraction and recurringProcessingModel
+			$recurringParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION_SETUP;
+			$recurringParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
+		}
+		return $recurringParams;
 	}
 }

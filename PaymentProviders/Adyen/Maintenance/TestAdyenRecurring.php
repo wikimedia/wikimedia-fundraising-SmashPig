@@ -19,6 +19,7 @@ class TestAdyenRecurring extends MaintenanceBase {
 	public function __construct() {
 		parent::__construct();
 		$this->addOption( 'token', 'recurring payment token', false );
+		$this->addOption( 'invoice', 'invoice id', false );
 		$this->addOption( 'currency', 'recurring payment currency', false );
 		$this->addOption( 'amount', 'recurring payment amount', false );
 		$this->addOption( 'method', 'payment method', 'cc' );
@@ -42,8 +43,9 @@ class TestAdyenRecurring extends MaintenanceBase {
 		$params['order_id'] = "RECURRING-TEST-" . rand( 0, 10000 );
 
 		$params['recurring_payment_token'] = $this->getOption( 'token' );
+		$params['processor_contact_id'] = $this->getOption( 'invoice' );
 		$params['currency'] = $this->getOption( 'currency' );
-		$params['amount'] = $this->getOption( 'amount' );
+		$params['amount'] = floatval( $this->getOption( 'amount' ) );
 
 		// this is the Authorise call
 		$createPaymentResponse = $adyen->createPayment( $params );
