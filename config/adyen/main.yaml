@@ -166,3 +166,7 @@ fraud-filters:
         5: 50
         # No CVC/CVV provided
         6: 50
+
+curl:
+    validator:
+        class: SmashPig\PaymentProviders\Adyen\RestResponseValidator
