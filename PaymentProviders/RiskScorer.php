@@ -1,6 +1,6 @@
 <?php
 
-namespace SmashPig\PaymentProviders\Adyen;
+namespace SmashPig\PaymentProviders;
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;

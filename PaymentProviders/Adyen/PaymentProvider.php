@@ -16,6 +16,7 @@ use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\PaymentDetailResponse;
 use SmashPig\PaymentProviders\PaymentMethodResponse;
 use SmashPig\PaymentProviders\PaymentProviderResponse;
+use SmashPig\PaymentProviders\RiskScorer;
 use SmashPig\PaymentProviders\SavedPaymentDetails;
 use SmashPig\PaymentProviders\SavedPaymentDetailsResponse;
 
