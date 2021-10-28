@@ -5,6 +5,7 @@ namespace SmashPig\PaymentProviders\Ingenico;
 use BadMethodCallException;
 use SmashPig\Core\SmashPigException;
 use SmashPig\PaymentProviders\PaymentDetailResponse;
+use SmashPig\PaymentProviders\RiskScorer;
 
 /**
  * Class HostedCheckoutProvider
@@ -70,6 +71,16 @@ class HostedCheckoutProvider extends PaymentProvider {
 		}
 		$response = new PaymentDetailResponse();
 		$this->prepareResponseObject( $response, $rawResponse );
+		$fraudResults = $rawResponse['createdPaymentOutput']['payment']['paymentOutput']['cardPaymentMethodSpecificOutput']['fraudResults'] ?? null;
+		if ( $fraudResults ) {
+			$response->setRiskScores(
+				( new RiskScorer() )->getRiskScores(
+					$fraudResults['avsResult'] ?? null,
+					$fraudResults['cvvResult'] ?? null
+				)
+			);
+		}
+
 		return $response;
 	}
 
