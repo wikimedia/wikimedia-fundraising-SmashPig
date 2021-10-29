@@ -80,6 +80,13 @@ class HostedCheckoutProvider extends PaymentProvider {
 				)
 			);
 		}
+		// Though the response property is plural, its data type is string,
+		// and we've only ever seen one token come back at once.
+		if ( !empty( $rawResponse['createdPaymentOutput']['tokens'] ) ) {
+			$response->setRecurringPaymentToken(
+				$rawResponse['createdPaymentOutput']['tokens']
+			);
+		}
 
 		return $response;
 	}
