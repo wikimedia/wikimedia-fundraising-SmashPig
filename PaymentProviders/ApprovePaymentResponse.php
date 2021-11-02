@@ -15,7 +15,7 @@ class ApprovePaymentResponse extends PaymentProviderResponse {
 	 *
 	 * @return bool
 	 */
-	public function isSuccessful() {
+	public function isSuccessful(): bool {
 		return $this->getStatus() === FinalStatus::COMPLETE;
 	}
 }

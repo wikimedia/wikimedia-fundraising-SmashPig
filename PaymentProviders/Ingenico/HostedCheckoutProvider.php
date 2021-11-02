@@ -4,6 +4,8 @@ namespace SmashPig\PaymentProviders\Ingenico;
 
 use BadMethodCallException;
 use SmashPig\Core\SmashPigException;
+use SmashPig\PaymentProviders\PaymentDetailResponse;
+use SmashPig\PaymentProviders\RiskScorer;
 
 /**
  * Class HostedCheckoutProvider
@@ -50,22 +52,42 @@ class HostedCheckoutProvider extends PaymentProvider {
 	/**
 	 * @param string $hostedPaymentId
 	 *
-	 * @return array
+	 * @return PaymentDetailResponse
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function getHostedPaymentStatus( string $hostedPaymentId ): array {
+	public function getHostedPaymentStatus( string $hostedPaymentId ): PaymentDetailResponse {
 		if ( !$hostedPaymentId ) {
 			throw new BadMethodCallException(
 				'Called getHostedPaymentStatus with empty hostedPaymentId'
 			);
 		}
 		$path = "hostedcheckouts/$hostedPaymentId";
-		$response = $this->api->makeApiCall( $path, 'GET' );
-		if ( isset( $response['createdPaymentOutput'] ) ) {
+		$rawResponse = $this->api->makeApiCall( $path, 'GET' );
+
+		if ( isset( $rawResponse['createdPaymentOutput'] ) ) {
 			$this->addPaymentStatusErrorsIfPresent(
-				$response, $response['createdPaymentOutput']['payment']
+				$rawResponse, $rawResponse['createdPaymentOutput']['payment']
 			);
 		}
+		$response = new PaymentDetailResponse();
+		$this->prepareResponseObject( $response, $rawResponse );
+		$fraudResults = $rawResponse['createdPaymentOutput']['payment']['paymentOutput']['cardPaymentMethodSpecificOutput']['fraudResults'] ?? null;
+		if ( $fraudResults ) {
+			$response->setRiskScores(
+				( new RiskScorer() )->getRiskScores(
+					$fraudResults['avsResult'] ?? null,
+					$fraudResults['cvvResult'] ?? null
+				)
+			);
+		}
+		// Though the response property is plural, its data type is string,
+		// and we've only ever seen one token come back at once.
+		if ( !empty( $rawResponse['createdPaymentOutput']['tokens'] ) ) {
+			$response->setRecurringPaymentToken(
+				$rawResponse['createdPaymentOutput']['tokens']
+			);
+		}
+
 		return $response;
 	}
 

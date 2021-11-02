@@ -8,13 +8,10 @@ use SmashPig\PaymentData\ErrorCode;
 class ExceptionMapper {
 	// List gleaned from https://docs.adyen.com/development-resources/error-codes
 	// then roughly classified with a few regexes and some hand-coding
-	protected static $codeMap = [
+	protected static $fatalErrorCodes = [
 		'000' => ErrorCode::UNKNOWN, // Unknown
 		'010' => ErrorCode::UNKNOWN, // Not allowed
 		'100' => ErrorCode::MISSING_REQUIRED_DATA, // Required object 'amount' is not provided.
-		'101' => ErrorCode::UNEXPECTED_VALUE, // Invalid card number
-		'102' => ErrorCode::UNKNOWN, // Unable to determine variant
-		'103' => ErrorCode::UNEXPECTED_VALUE, // CVC is not the right length
 		'104' => ErrorCode::UNKNOWN, // Billing address problem
 		'105' => ErrorCode::UNEXPECTED_VALUE, // Invalid paRes from issuer
 		'106' => ErrorCode::UNKNOWN, // This session was already used previously
@@ -269,6 +266,12 @@ class ExceptionMapper {
 		'5_208' => ErrorCode::UNKNOWN, // PayWithGoogle token already expired
 	];
 
+	protected static $validationErrorFields = [
+		'101' => 'card_num', // Invalid card number
+		'102' => 'card_num', // Unable to determine variant
+		'103' => 'cvv',
+	];
+
 	/**
 	 * @throws ApiException
 	 */
@@ -279,16 +282,28 @@ class ExceptionMapper {
 		if ( $adyenResponse === null ) {
 			$exceptionCode = ErrorCode::NO_RESPONSE;
 			$exceptionMessage = 'No response or malformed JSON';
-		} else {
-			if ( isset( $adyenResponse['errorCode'] ) ) {
-				$exceptionCode = self::$codeMap[$adyenResponse['errorCode']];
-				$exceptionMessage = $adyenResponse['message'] ?? 'Error in Adyen response';
-			}
+		} elseif (
+			isset( $adyenResponse['errorCode'] ) &&
+			isset( self::$fatalErrorCodes[$adyenResponse['errorCode']] )
+		) {
+			$exceptionCode = self::$fatalErrorCodes[$adyenResponse['errorCode']];
+			$exceptionMessage = $adyenResponse['message'] ?? 'Error in Adyen response';
+		} elseif (
+			isset( $adyenResponse['errorCode'] ) &&
+			!isset( self::$fatalErrorCodes[$adyenResponse['errorCode']] ) &&
+			self::getValidationErrorField( $adyenResponse['errorCode'] ) === null
+		) {
+			$exceptionCode = ErrorCode::UNKNOWN;
+			$exceptionMessage = 'Unknown Adyen error code ' . $adyenResponse['errorCode'];
 		}
 		if ( $exceptionCode !== null ) {
 			$exception = new ApiException( $exceptionMessage, $exceptionCode );
 			$exception->setRawErrors( [ $adyenResponse ] );
 			throw $exception;
 		}
+	}
+
+	public static function getValidationErrorField( $errorCode ): ?string {
+		return self::$validationErrorFields[$errorCode] ?? null;
 	}
 }

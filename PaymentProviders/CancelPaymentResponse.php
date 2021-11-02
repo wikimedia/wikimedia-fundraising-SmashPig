@@ -13,7 +13,7 @@ class CancelPaymentResponse extends PaymentProviderResponse {
 	/**
 	 * @inheritDoc
 	 */
-	public function isSuccessful() {
+	public function isSuccessful(): bool {
 		return $this->getStatus() === FinalStatus::CANCELLED;
 	}
 }

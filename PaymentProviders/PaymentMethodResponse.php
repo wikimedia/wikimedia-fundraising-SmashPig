@@ -14,7 +14,7 @@ class PaymentMethodResponse extends PaymentProviderResponse {
 	 *
 	 * @return bool
 	 */
-	public function isSuccessful() {
+	public function isSuccessful(): bool {
 		return true;
 	}
 

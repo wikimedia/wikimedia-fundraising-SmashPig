@@ -29,7 +29,7 @@ class CreatePaymentResponse extends PaymentDetailResponse {
 	/**
 	 * @return string|null
 	 */
-	public function getRedirectUrl(): string {
+	public function getRedirectUrl(): ?string {
 		return $this->redirectUrl;
 	}
 

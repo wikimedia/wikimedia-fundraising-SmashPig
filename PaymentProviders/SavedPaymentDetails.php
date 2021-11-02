@@ -13,55 +13,55 @@ class SavedPaymentDetails {
 
 	/**
 	 * The display name of the saved payment method
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $displayName;
 
 	/**
 	 * The high-level category of payment method (cc / rtbt)
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $paymentMethod;
 
 	/**
 	 * Card brand (visa/mc/amex) or other specific payment type
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $paymentSubmethod;
 
 	/**
 	 * For cards, the two digit expiration month
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $expirationMonth;
 
 	/**
 	 * For cards, the last two digits of the expiration year
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $expirationYear;
 
 	/**
 	 * For bank accounts, the international ID number
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $iban;
 
 	/**
 	 * For cards, the last four digits of the account number
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $cardSummary;
 
 	/**
 	 * Full name of the payment method owner
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $ownerName;
 
 	/**
 	 * Email address of the payment method owner
-	 * @var ?string
+	 * @var string|null
 	 */
 	protected $ownerEmail;
 
@@ -82,14 +82,14 @@ class SavedPaymentDetails {
 	}
 
 	/**
-	 * @return ?string
+	 * @return string|null
 	 */
 	public function getDisplayName(): ?string {
 		return $this->displayName;
 	}
 
 	/**
-	 * @param ?string $displayName
+	 * @param string|null $displayName
 	 * @return SavedPaymentDetails
 	 */
 	public function setDisplayName( ?string $displayName ): SavedPaymentDetails {
@@ -98,14 +98,14 @@ class SavedPaymentDetails {
 	}
 
 	/**
-	 * @return ?string
+	 * @return string|null
 	 */
 	public function getPaymentMethod(): ?string {
 		return $this->paymentMethod;
 	}
 
 	/**
-	 * @param ?string $paymentMethod
+	 * @param string|null $paymentMethod
 	 * @return SavedPaymentDetails
 	 */
 	public function setPaymentMethod( ?string $paymentMethod ): SavedPaymentDetails {
@@ -114,14 +114,14 @@ class SavedPaymentDetails {
 	}
 
 	/**
-	 * @return ?string
+	 * @return string|null
 	 */
 	public function getPaymentSubmethod(): ?string {
 		return $this->paymentSubmethod;
 	}
 
 	/**
-	 * @param ?string $paymentSubmethod
+	 * @param string|null $paymentSubmethod
 	 * @return SavedPaymentDetails
 	 */
 	public function setPaymentSubmethod( ?string $paymentSubmethod ): SavedPaymentDetails {
