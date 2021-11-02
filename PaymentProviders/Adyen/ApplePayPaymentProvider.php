@@ -42,8 +42,16 @@ class ApplePayPaymentProvider extends PaymentProvider {
 		return $response;
 	}
 
+	/**
+	 * This method should never be called, since Apple Pay does not include any flow in
+	 * which the user is redirected to an external site and then returns to ours. (That's
+	 * where a payment details status normalizer would be used.)
+	 *
+	 * {@inheritDoc}
+	 * @see \SmashPig\PaymentProviders\Adyen\PaymentProvider::getPaymentDetailsStatusNormalizer()
+	 */
 	protected function getPaymentDetailsStatusNormalizer() : StatusNormalizer {
-		return new CreatePaymentStatus();
+		throw new \BadMethodCallException( 'No payment details status normalizer for Apple Pay.' );
 	}
 
 	public function createPaymentSession( array $params ) : array {
