@@ -265,13 +265,6 @@ class ExceptionMapper {
 		'5_208' => ErrorCode::UNKNOWN, // PayWithGoogle token already expired
 	];
 
-	protected static $validationErrorFields = [
-		'101' => 'card_num', // Invalid card number
-		'102' => 'card_num', // Unable to determine variant
-		'103' => 'cvv',
-		'905' => 'payment_submethod' // Unsupported card type
-	];
-
 	/**
 	 * @throws ApiException
 	 */
@@ -291,7 +284,7 @@ class ExceptionMapper {
 		} elseif (
 			isset( $adyenResponse['errorCode'] ) &&
 			!isset( self::$fatalErrorCodes[$adyenResponse['errorCode']] ) &&
-			self::getValidationErrorField( $adyenResponse['errorCode'] ) === null
+			ValidationErrorMapper::getValidationErrorField( $adyenResponse['errorCode'] ) === null
 		) {
 			$exceptionCode = ErrorCode::UNKNOWN;
 			$exceptionMessage = 'Unknown Adyen error code ' . $adyenResponse['errorCode'];
@@ -301,9 +294,5 @@ class ExceptionMapper {
 			$exception->setRawErrors( [ $adyenResponse ] );
 			throw $exception;
 		}
-	}
-
-	public static function getValidationErrorField( $errorCode ): ?string {
-		return self::$validationErrorFields[$errorCode] ?? null;
 	}
 }
