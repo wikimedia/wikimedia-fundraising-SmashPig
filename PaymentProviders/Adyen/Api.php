@@ -119,29 +119,18 @@ class Api {
 		if ( !empty( $params['browser_info'] ) ) {
 			$restParams['browserInfo'] = $params['browser_info'];
 		}
-		$restParams['billingAddress'] = [
-			'city' => $params['city'] ?? 'NA',
-			'country' => $params['country'] ?? 'ZZ',
-			// FIXME do we have to split this out of $params['street_address'] ?
-			'houseNumberOrName' => 'NA',
-			'postalCode' => $params['postal_code'] ?? 'NA',
-			'stateOrProvince' => $params['state_province'] ?? 'NA',
-			'street' => $params['street_address'] ?? 'NA'
-		];
-		$restParams['shopperEmail'] = $params['email'] ?? '';
-		$restParams['shopperIP'] = $params['user_ip'] ?? '';
-		// TODO: FullName staging helper
-		$nameParts = [];
-		if ( !empty( $params['first_name'] ) ) {
-			$nameParts[] = $params['first_name'];
-		}
-		if ( !empty( $params['last_name'] ) ) {
-			$nameParts[] = $params['last_name'];
-		}
-		$fullName = implode( ' ', $nameParts );
-		$restParams['shopperName'] = $fullName;
+		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 		// This is specifically for credit cards
 		if ( empty( $restParams['paymentMethod']['holderName'] ) ) {
+			// TODO: FullName staging helper
+			$nameParts = [];
+			if ( !empty( $params['first_name'] ) ) {
+				$nameParts[] = $params['first_name'];
+			}
+			if ( !empty( $params['last_name'] ) ) {
+				$nameParts[] = $params['last_name'];
+			}
+			$fullName = implode( ' ', $nameParts );
 			$restParams['paymentMethod']['holderName'] = $fullName;
 		}
 		$restParams['shopperStatement'] = $params['description'] ?? '';
@@ -151,6 +140,35 @@ class Api {
 		}
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
+	}
+
+	/**
+	 * Formats contact info for payment creation. Takes our normalized
+	 * parameter names and maps them across to Adyen's parameter names,
+	 * and adds default values suggested by Adyen tech support.
+	 *
+	 * @param array $params normalized params from calling code
+	 * @return array contact ID parameters formatted Adyen-style
+	 */
+	protected function getContactInfo( array $params ) {
+		$contactInfo = [
+			'billingAddress' => [
+				'city' => $params['city'] ?? 'NA',
+				'country' => $params['country'] ?? 'ZZ',
+				// FIXME do we have to split this out of $params['street_address'] ?
+				'houseNumberOrName' => 'NA',
+				'postalCode' => $params['postal_code'] ?? 'NA',
+				'stateOrProvince' => $params['state_province'] ?? 'NA',
+				'street' => $params['street_address'] ?? 'NA'
+			],
+			'shopperEmail' => $params['email'] ?? '',
+			'shopperIP' => $params['user_ip'] ?? '',
+		];
+		$contactInfo['shopperName'] = [
+			'firstName' => $params['first_name'] ?? '',
+			'lastName' => $params['last_name'] ?? ''
+		];
+		return $contactInfo;
 	}
 
 	/**
@@ -207,6 +225,7 @@ class Api {
 		if ( $isRecurring ) {
 			$restParams = array_merge( $restParams, $this->addRecurringParams( $params, true ) );
 		}
+		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
@@ -226,6 +245,7 @@ class Api {
 		if ( $isRecurring ) {
 			$restParams = array_merge( $restParams, $this->addRecurringParams( $params, true ) );
 		}
+		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
 		$result = $this->makeRestApiCall(
 			$restParams,
