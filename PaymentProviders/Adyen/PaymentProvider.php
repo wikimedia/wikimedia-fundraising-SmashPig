@@ -94,7 +94,8 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 			$response,
 			$rawResponse,
 			$this->getPaymentDetailsStatusNormalizer(),
-			$rawStatus
+			$rawStatus,
+			$this->getPaymentDetailsSuccessfulStatuses()
 		);
 		if ( isset( $rawResponse['additionalData'] ) ) {
 			$this->mapAdditionalData( $rawResponse['additionalData'], $response );
@@ -370,6 +371,8 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 	}
 
 	abstract protected function getPaymentDetailsStatusNormalizer(): StatusNormalizer;
+
+	abstract protected function getPaymentDetailsSuccessfulStatuses(): array;
 
 	/**
 	 * Documented at
