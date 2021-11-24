@@ -12,17 +12,20 @@ class PaymentsFraudDatabase extends SmashPigDatabase {
 
 	/**
 	 * Return fraud record for a (gateway, order_id), or null if none is found
-	 * TODO: option to also return score breakdown
 	 *
 	 * @param string $gatewayName
 	 * @param string $orderId
+	 * @param bool $withBreakdown
 	 * @return array|null Fraud record for a transaction, or null if nothing matches
+	 *  If $withBreakdown is requested, the array will contain a 'score_breakdown' key
+	 *  whose value is an array whose keys are filter_names and values are risk_scores
 	 * @throws DataStoreException
 	 */
 	public function fetchMessageByGatewayOrderId(
 		string $gatewayName,
-		string $orderId
-	) {
+		string $orderId,
+		bool $withBreakdown = false
+	): ?array {
 		$sql = 'SELECT * FROM payments_fraud
 			WHERE gateway = :gateway
 		    AND order_id = :order_id
@@ -35,6 +38,16 @@ class PaymentsFraudDatabase extends SmashPigDatabase {
 		$row = $executed->fetch( PDO::FETCH_ASSOC );
 		if ( !$row ) {
 			return null;
+		}
+		if ( $withBreakdown ) {
+			$row['score_breakdown'] = [];
+			$sql = 'SELECT filter_name, risk_score FROM payments_fraud_breakdown
+				WHERE payments_fraud_id = :payments_fraud_id';
+			$params = [ 'payments_fraud_id' => $row['id'] ];
+			$executed = $this->prepareAndExecute( $sql, $params );
+			while ( $breakdownRow = $executed->fetch( PDO::FETCH_ASSOC ) ) {
+				$row['score_breakdown'][$breakdownRow['filter_name']] = $breakdownRow['risk_score'];
+			}
 		}
 		return $row;
 	}
