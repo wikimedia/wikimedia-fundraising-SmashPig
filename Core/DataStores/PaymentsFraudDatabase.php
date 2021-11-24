@@ -71,7 +71,10 @@ class PaymentsFraudDatabase extends SmashPigDatabase {
 		return 'data-store/fredge-db';
 	}
 
-	protected function getTableScriptFile(): string {
-		return '005_CreatePaymentsFraudTable.sql';
+	protected function getTableScriptFiles(): array {
+		return [
+			'005_CreatePaymentsFraudTable.sql',
+			'006_CreatePaymentsFraudBreakdownTable.sql'
+		];
 	}
 }
