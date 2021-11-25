@@ -43,6 +43,8 @@ class PaymentsFraudDatabase extends SmashPigDatabase {
 		if ( !$row ) {
 			return null;
 		}
+		// IPs are stored as integers but should be returned as dotted quads
+		$row['user_ip'] = long2ip( $row['user_ip'] );
 		if ( $withBreakdown ) {
 			$row['score_breakdown'] = [];
 			$sql = 'SELECT filter_name, risk_score FROM payments_fraud_breakdown
@@ -69,6 +71,8 @@ class PaymentsFraudDatabase extends SmashPigDatabase {
 		if ( $message['risk_score'] > self::MAX_RISK_SCORE ) {
 			$message['risk_score'] = self::MAX_RISK_SCORE;
 		}
+		// IPs are stored as integers but come over the wire as dotted quads
+		$message['user_ip'] = ip2long( $message['user_ip'] );
 
 		// TODO: skip this lookup if the message has a payments_fraud_id key set
 		// This lookup is copied from the existing antifraud queue consumer,
