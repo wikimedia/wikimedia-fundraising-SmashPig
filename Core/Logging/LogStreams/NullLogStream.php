@@ -7,6 +7,10 @@ use SmashPig\Core\Logging\LogEvent;
 
 class NullLogStream implements ILogStream {
 
+	public function __construct() {
+		// need an empty constructor to allow config to instantiate
+	}
+
 	public function processEvent( LogEvent $event ) {
 		// do nothing
 	}
