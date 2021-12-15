@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Ingenico\Tests;
 
+use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Ingenico\HostedCheckoutProvider;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -126,6 +127,8 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 		$response = $this->provider->getHostedPaymentStatus( $hostedPaymentId );
 		$rawResponse = $response->getRawResponse();
 		$this->assertEquals( 'IN_PROGRESS', $rawResponse['status'] );
+		$this->assertEquals( 'IN_PROGRESS', $response->getRawStatus() );
+		$this->assertEquals( FinalStatus::PENDING, $response->getStatus() );
 	}
 
 }
