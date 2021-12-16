@@ -12,6 +12,7 @@ use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
+use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\PaymentDetailResponse;
 use SmashPig\PaymentProviders\PaymentMethodResponse;
@@ -26,7 +27,7 @@ use SmashPig\PaymentProviders\SavedPaymentDetailsResponse;
  *
  *
  */
-abstract class PaymentProvider implements IPaymentProvider {
+abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentProvider {
 	/**
 	 * @var Api
 	 */
@@ -186,7 +187,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 	 * @param string $gatewayTxnId
 	 * @return CancelPaymentResponse
 	 */
-	public function cancelPayment( $gatewayTxnId ) {
+	public function cancelPayment( $gatewayTxnId ): CancelPaymentResponse {
 		$rawResponse = $this->api->cancel( $gatewayTxnId );
 		$response = new CancelPaymentResponse();
 		$response->setRawResponse( $rawResponse );

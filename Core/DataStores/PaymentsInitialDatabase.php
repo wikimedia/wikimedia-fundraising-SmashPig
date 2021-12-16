@@ -92,7 +92,7 @@ class PaymentsInitialDatabase extends SmashPigDatabase {
 		return 'data-store/fredge-db';
 	}
 
-	protected function getTableScriptFile(): string {
-		return '003_CreatePaymentsInitialTable.sql';
+	protected function getTableScriptFiles(): array {
+		return [ '003_CreatePaymentsInitialTable.sql' ];
 	}
 }

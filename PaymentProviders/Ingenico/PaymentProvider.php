@@ -9,7 +9,9 @@ use SmashPig\Core\Mapper\Mapper;
 use SmashPig\Core\PaymentError;
 use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
+use SmashPig\PaymentProviders\CancelPaymentResponse;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
+use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\PaymentProviderResponse;
 
@@ -17,7 +19,7 @@ use SmashPig\PaymentProviders\PaymentProviderResponse;
  * Base class for Ingenico payments. Each payment product group should get
  * a concrete subclass implementing PaymentProvider
  */
-abstract class PaymentProvider implements IPaymentProvider {
+abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentProvider {
 
 	/**
 	 * @var Api
@@ -100,18 +102,19 @@ abstract class PaymentProvider implements IPaymentProvider {
 	}
 
 	/**
-	 * TODO: This should return a normalized CancelPaymentResponse (and cancelPayment
-	 * should part of IPaymentProvider or a related interface)
 	 *
 	 * @param string $gatewayTxnId
-	 * @return mixed
+	 * @return CancelPaymentResponse
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function cancelPayment( $gatewayTxnId ) {
+	public function cancelPayment( $gatewayTxnId ): CancelPaymentResponse {
 		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
 		$path = "payments/$gatewayTxnId/cancel";
-		$response = $this->api->makeApiCall( $path, 'POST' );
+		$rawResponse = $this->api->makeApiCall( $path, 'POST' );
 		$this->addPaymentStatusErrorsIfPresent( $response, $response['payment'] );
+
+		$response = new CancelPaymentResponse();
+		$this->prepareResponseObject( $response, $rawResponse );
 		return $response;
 	}
 
