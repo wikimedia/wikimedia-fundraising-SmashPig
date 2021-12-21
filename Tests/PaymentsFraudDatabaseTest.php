@@ -42,6 +42,9 @@ class PaymentsFraudDatabaseTest extends BaseSmashPigUnitTestCase {
 			'Record retrieved by fetchMessageByGatewayOrderId.' );
 
 		unset( $fetched['id'] );
+		// date is converted to unix timestamp when retrieved.
+		$message['date'] = strtotime( $message['date'] );
+
 		$this->assertEquals( $message, $fetched,
 			'Fetched record matches stored message.' );
 	}
@@ -79,6 +82,9 @@ class PaymentsFraudDatabaseTest extends BaseSmashPigUnitTestCase {
 			'Record retrieved by fetchMessageByGatewayOrderId.' );
 
 		unset( $fetched['id'] );
+		// date is converted to unix timestamp when retrieved.
+		$message['date'] = strtotime( $message['date'] );
+
 		$this->assertEquals( $message, $fetched,
 			'Fetched record matches stored message.' );
 	}
