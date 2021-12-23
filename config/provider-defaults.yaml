@@ -23,7 +23,7 @@ logging:
 security:
     ip-header-name: ""
     ip-trusted-proxies: []
-    ip-whitelist: []
+    ip-allowlist: []
 
 endpoints: []
 

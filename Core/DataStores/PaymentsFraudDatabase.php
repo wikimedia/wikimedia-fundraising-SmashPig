@@ -45,6 +45,9 @@ class PaymentsFraudDatabase extends SmashPigDatabase {
 		}
 		// IPs are stored as integers but should be returned as dotted quads
 		$row['user_ip'] = long2ip( $row['user_ip'] );
+		// Covert date back to unix timestamp
+		$row['date'] = strtotime( $row['date'] );
+
 		if ( $withBreakdown ) {
 			$row['score_breakdown'] = [];
 			$sql = 'SELECT filter_name, risk_score FROM payments_fraud_breakdown
