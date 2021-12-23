@@ -63,16 +63,9 @@ abstract class BaseQueueConsumer {
 		int $timeLimit = 0,
 		int $messageLimit = 0
 	) {
-		if ( !is_numeric( $timeLimit ) ) {
-			throw new InvalidArgumentException( 'timeLimit must be numeric' );
-		}
-		if ( !is_numeric( $messageLimit ) ) {
-			throw new InvalidArgumentException( 'messageLimit must be numeric' );
-		}
-
 		$this->queueName = $queueName;
-		$this->timeLimit = intval( $timeLimit );
-		$this->messageLimit = intval( $messageLimit );
+		$this->timeLimit = $timeLimit;
+		$this->messageLimit = $messageLimit;
 
 		$this->backend = QueueWrapper::getQueue( $queueName );
 
@@ -112,9 +105,11 @@ abstract class BaseQueueConsumer {
 			$debugMessages = [];
 			if ( $data === null ) {
 				$debugMessages[] = 'Queue is empty.';
-			} elseif ( !$timeOk ) {
+			}
+			if ( !$timeOk ) {
 				$debugMessages[] = "Time limit ($this->timeLimit) is elapsed.";
-			} elseif ( !$countOk ) {
+			}
+			if ( !$countOk ) {
 				$debugMessages[] = "Message limit ($this->messageLimit) is reached.";
 			}
 			if ( !empty( $debugMessages ) ) {
