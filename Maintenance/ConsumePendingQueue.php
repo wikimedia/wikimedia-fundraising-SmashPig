@@ -18,7 +18,7 @@ class ConsumePendingQueue extends MaintenanceBase {
 		$this->addOption( 'queue', 'queue name to consume from', 'pending' );
 		$this->addOption( 'time-limit', 'Try to keep execution under <n> seconds', 60, 't' );
 		$this->addOption( 'max-messages', 'At most consume <n> messages', 0, 'm' );
-		$this->addOption( 'wait-for-messages', 'Wait for messages when queue is empty', false, 'w' );
+		$this->addFlag( 'wait-for-messages', 'Wait for messages when queue is empty', 'w' );
 	}
 
 	/**
