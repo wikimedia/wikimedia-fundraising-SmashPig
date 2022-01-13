@@ -10,6 +10,8 @@ use SmashPig\Core\PaymentError;
 use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentData\ReferenceData\CurrencyRates;
+use SmashPig\PaymentData\ReferenceData\NationalCurrencies;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
@@ -57,6 +59,16 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 	 * @return PaymentMethodResponse
 	 */
 	public function getPaymentMethods( array $params ) : PaymentMethodResponse {
+		$badParams = $this->validateGetPaymentMethodsParams( $params );
+		if ( count( $badParams ) > 0 ) {
+			$response = new PaymentMethodResponse();
+			$response->setSuccessful( false );
+
+			foreach ( $badParams as $badParam ) {
+				$response->addValidationError( new ValidationError( $badParam ) );
+			}
+			return $response;
+		}
 		$callback = function () use ( $params ) {
 			$rawResponse = $this->api->getPaymentMethods( $params );
 
@@ -421,5 +433,26 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 				$additionalData['recurring.recurringDetailReference']
 			);
 		}
+	}
+
+	/**
+	 * @param array $params
+	 * @return array
+	 */
+	protected function validateGetPaymentMethodsParams( array $params ): array {
+		$badParams = [];
+		if ( !array_key_exists( $params['country'], NationalCurrencies::getNationalCurrencies() ) ) {
+			$badParams[] = 'country';
+		}
+		if ( !array_key_exists( $params['currency'], CurrencyRates::getCurrencyRates() ) ) {
+			$badParams[] = 'currency';
+		}
+		if ( !is_numeric( $params['amount'] ) ) {
+			$badParams[] = 'amount';
+		}
+		if ( empty( $params['language'] ) ) {
+			$badParams[] = 'language';
+		}
+		return $badParams;
 	}
 }
