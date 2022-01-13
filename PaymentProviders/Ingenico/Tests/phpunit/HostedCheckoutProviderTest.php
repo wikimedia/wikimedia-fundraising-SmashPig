@@ -77,6 +77,7 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 		// checking the PaymentDetailResponse
 		$this->assertEquals( 'PENDING_APPROVAL', $response->getRawStatus() );
 		$this->assertEquals( 'pending-poke', $response->getStatus() );
+		$this->assertTrue( $response->isSuccessful() );
 		$this->assertSame( '000000891566072501680000200001', $response->getGatewayTxnId() );
 		$this->assertEquals( [ 'avs' => 25, 'cvv' => 0 ], $response->getRiskScores() );
 	}
@@ -129,6 +130,7 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( 'IN_PROGRESS', $rawResponse['status'] );
 		$this->assertEquals( 'IN_PROGRESS', $response->getRawStatus() );
 		$this->assertEquals( FinalStatus::PENDING, $response->getStatus() );
+		$this->assertFalse( $response->isSuccessful() );
 	}
 
 }

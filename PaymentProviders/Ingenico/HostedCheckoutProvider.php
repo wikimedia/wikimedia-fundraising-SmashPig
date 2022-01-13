@@ -106,6 +106,7 @@ class HostedCheckoutProvider extends PaymentProvider {
 			$response->setStatus(
 				( new HostedCheckoutStatus() )->normalizeStatus( $rawResponse['status'] )
 			);
+			$response->setSuccessful( false );
 		}
 
 		return $response;

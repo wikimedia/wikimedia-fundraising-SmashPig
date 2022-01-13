@@ -84,6 +84,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$response = $this->provider->cancelPayment( $gatewayTxnId );
 
 		$this->assertEquals( FinalStatus::CANCELLED, $response->getStatus() );
+		$this->assertTrue( $response->isSuccessful() );
 		$this->assertEquals( $gatewayTxnId, $response->getGatewayTxnId() );
 	}
 

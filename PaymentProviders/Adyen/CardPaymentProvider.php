@@ -103,6 +103,7 @@ class CardPaymentProvider extends PaymentProvider {
 						LogLevel::ERROR
 					)
 				);
+				$response->setSuccessful( false );
 				Logger::debug( $responseError, $rawResponse );
 			}
 		}

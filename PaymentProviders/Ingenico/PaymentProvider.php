@@ -8,6 +8,7 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Mapper\Mapper;
 use SmashPig\Core\PaymentError;
 use SmashPig\PaymentData\ErrorCode;
+use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\CancelPaymentResponse;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
@@ -96,7 +97,7 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 		$rawResponse = $this->api->makeApiCall( $path, 'POST', [] );
 
 		$response = new ApprovePaymentResponse();
-		$this->prepareResponseObject( $response, $rawResponse );
+		$this->prepareResponseObject( $response, $rawResponse, [ FinalStatus::COMPLETE ] );
 
 		return $response;
 	}
@@ -111,10 +112,10 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 		// Our gateway_txn_id corresponds to paymentId in Ingenico's documentation.
 		$path = "payments/$gatewayTxnId/cancel";
 		$rawResponse = $this->api->makeApiCall( $path, 'POST' );
-		$this->addPaymentStatusErrorsIfPresent( $response, $response['payment'] );
+		$this->addPaymentStatusErrorsIfPresent( $rawResponse, $rawResponse['payment'] );
 
 		$response = new CancelPaymentResponse();
-		$this->prepareResponseObject( $response, $rawResponse );
+		$this->prepareResponseObject( $response, $rawResponse, [ FinalStatus::CANCELLED ] );
 		return $response;
 	}
 
@@ -250,7 +251,11 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 	 * @param PaymentProviderResponse $response
 	 * @param array $rawResponse
 	 */
-	protected function prepareResponseObject( PaymentProviderResponse $response, $rawResponse ) {
+	protected function prepareResponseObject(
+		PaymentProviderResponse $response,
+		array $rawResponse,
+		array $sucessfulStatuses = [ FinalStatus::COMPLETE, FinalStatus::PENDING_POKE ]
+	) {
 		$response->setRawResponse( $rawResponse );
 		if ( isset( $rawResponse['errors'] ) ) {
 			$response->addErrors(
@@ -278,6 +283,7 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 					LogLevel::ERROR
 				)
 			);
+			$response->setSuccessful( false );
 			Logger::debug( $responseError, $rawResponse );
 			return;
 		}
@@ -293,6 +299,7 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 					LogLevel::ERROR
 				)
 			);
+			$response->setSuccessful( false );
 			Logger::debug( $message, $rawResponse );
 		}
 		// map status
@@ -302,6 +309,8 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 			try {
 				$status = ( new PaymentStatus() )->normalizeStatus( $rawStatus );
 				$response->setStatus( $status );
+				$success = in_array( $status, $sucessfulStatuses );
+				$response->setSuccessful( $success );
 			} catch ( \Exception $ex ) {
 				$response->addErrors(
 					new PaymentError(
@@ -310,6 +319,7 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 						LogLevel::ERROR
 					)
 				);
+				$response->setSuccessful( false );
 				Logger::debug( 'Unable to map Ingenico status', $rawResponse );
 			}
 		} else {
