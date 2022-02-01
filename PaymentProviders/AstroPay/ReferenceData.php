@@ -54,6 +54,7 @@ class ReferenceData {
 		'HI' => 'hiper',
 		'I' => 'itau',
 		'IB' => 'interbank',
+		'IO' => 'ach', // South Africa, ACH bt
 		'JC' => 'jcb',
 		'LI' => 'lider',
 		'MC' => 'mc',
