@@ -41,7 +41,7 @@ class ReferenceData {
 		],
 		'diners' => [
 			'method' => 'cc',
-			'submethod' => 'dc',
+			'submethod' => 'diners',
 		],
 		// Sofortüberweisung
 		'directEbanking' => [
