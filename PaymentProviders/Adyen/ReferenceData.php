@@ -17,6 +17,10 @@ class ReferenceData {
 			'method' => 'apple',
 			'submethod' => 'amex',
 		],
+		'googlepay' => [
+			'method' => 'google',
+			'submethod' => 'google'
+		],
 		'applepay' => [
 			'method' => 'apple',
 			'submethod' => 'apple'
