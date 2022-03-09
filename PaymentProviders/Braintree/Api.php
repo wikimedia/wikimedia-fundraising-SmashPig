@@ -43,6 +43,10 @@ class Api {
 		return $this->makeQueryApiCall( 'query { ping }' );
 	}
 
+	public function createClientToken(): array {
+		return $this->makeQueryApiCall( 'mutation { createClientToken { clientToken } }' );
+	}
+
 	protected function makeQueryApiCall( $query ): array {
 		$request = new OutboundRequest( $this->endpoint, 'POST' );
 		$request->setHeader( 'Authorization', $this->getAuthorizationHeader() );
