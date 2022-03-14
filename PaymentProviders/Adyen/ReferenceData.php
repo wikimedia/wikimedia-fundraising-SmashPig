@@ -76,6 +76,10 @@ class ReferenceData {
 			'method' => 'cc',
 			'submethod' => 'jcb',
 		],
+		'jcb_applepay' => [
+			'method' => 'apple',
+			'submethod' => 'jcb',
+		],
 		'mc' => [
 			'method' => 'cc',
 			'submethod' => 'mc',
