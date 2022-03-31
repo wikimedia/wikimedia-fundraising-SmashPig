@@ -28,4 +28,6 @@ class ErrorCode {
 	const UNEXPECTED_VALUE = 1000008;
 	/** @var string For use in default: cases. When encountered, classify the error and add here if needed */
 	const UNKNOWN = 1000009;
+	/** @var string A supposedly well-defined field has a value that is not supported */
+	const ACCOUNT_MISCONFIGURATION = 1000010;
 }
