@@ -99,12 +99,21 @@ class CurlWrapper {
 			$tries++;
 			if ( $tries >= $loopCount ) {
 				if ( $continue ) {
-					// We ran out of retries, but apparently still haven't got
-					// anything good. Squawk.
-					Logger::alert(
-						"cURL transaction to {$url} failed {$loopCount} times! " .
-						'Please see previous warning-level logs for details.'
-					);
+					if ( $url == 'https://ipnpb.paypal.com/cgi-bin/webscr' ) {
+						// Temp patch to quiet down Paypal IPN failmail
+						Logger::notice(
+							"Paypal cURL transaction to {$url} failed {$loopCount} times! " .
+							'Please see previous warning-level logs for details.'
+						);
+					} else {
+						// We ran out of retries, but apparently still haven't got
+						// anything good. Squawk.
+						Logger::alert(
+							"cURL transaction to {$url} failed {$loopCount} times! " .
+							'Please see previous warning-level logs for details.'
+						);
+					}
+
 				}
 				$continue = false;
 			}
