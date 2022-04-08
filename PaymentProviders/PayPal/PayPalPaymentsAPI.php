@@ -21,12 +21,9 @@ class PayPalPaymentsAPI {
 
 		if ( $response['body'] === 'VERIFIED' ) {
 			return true;
-		} else {
+		} elseif ( $response['body'] === 'INVALID' ) {
 			return false;
 		}
-// elseif ( $response['body'] === 'INVALID' ) {
-// return false;
-// }
 
 		throw new LogicException(
 			'EnumValidator should not allow reaching this point!'
