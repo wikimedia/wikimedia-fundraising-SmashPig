@@ -99,25 +99,12 @@ class CurlWrapper {
 			$tries++;
 			if ( $tries >= $loopCount ) {
 				if ( $continue ) {
-					if ( $url == 'https://ipnpb.paypal.com/cgi-bin/webscr' ) {
-						// Temp patch to quiet down Paypal IPN failmail
-
-						// Update: THIS STILL SENDS FAILMAIL! SO we're removing it ul
-						// we can understand why
-//						Logger::notice(
-//							"Paypal cURL transaction to {$url} failed {$loopCount} times! " .
-//							'Please see previous warning-level logs for details.'
-//						);
-
-					} else {
-						// We ran out of retries, but apparently still haven't got
-						// anything good. Squawk.
-						Logger::alert(
-							"cURL transaction to {$url} failed {$loopCount} times! " .
-							'Please see previous warning-level logs for details.'
-						);
-					}
-
+					// We ran out of retries, but apparently still haven't got
+					// anything good. Squawk.
+					Logger::alert(
+						"cURL transaction to {$url} failed {$loopCount} times! " .
+						'Please see previous warning-level logs for details.'
+					);
 				}
 				$continue = false;
 			}
