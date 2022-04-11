@@ -30,9 +30,9 @@ class HashCache implements CacheItemPoolInterface {
 	 */
 	public function getItem( $key ) {
 		if ( isset( $this->items[$key] ) ) {
-			return new HashCacheItem( $key, $this->items[$key], true );
+			return new SimpleCacheItem( $key, $this->items[$key], true );
 		}
-		return new HashCacheItem( $key, null, false );
+		return new SimpleCacheItem( $key, null, false );
 	}
 
 	/**

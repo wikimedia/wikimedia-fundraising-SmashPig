@@ -4,14 +4,14 @@ namespace SmashPig\Core\Cache;
 
 use Psr\Cache\CacheItemInterface;
 
-class HashCacheItem implements CacheItemInterface {
+class SimpleCacheItem implements CacheItemInterface {
 
 	protected $key;
 	protected $value;
 	protected $hit;
 
 	/**
-	 * HashCacheItem constructor.
+	 * SimpleCacheItem constructor.
 	 * @param string $key
 	 * @param mixed $value
 	 * @param bool $hit
@@ -79,6 +79,7 @@ class HashCacheItem implements CacheItemInterface {
 	 */
 	public function set( $value ) {
 		$this->value = $value;
+		return $this;
 	}
 
 	/**
@@ -95,6 +96,7 @@ class HashCacheItem implements CacheItemInterface {
 	 */
 	public function expiresAt( $expiration ) {
 		// TODO: Implement expiresAt() method.
+		return $this;
 	}
 
 	/**
@@ -112,5 +114,6 @@ class HashCacheItem implements CacheItemInterface {
 	 */
 	public function expiresAfter( $time ) {
 		// TODO: Implement expiresAfter() method.
+		return $this;
 	}
 }
