@@ -9,6 +9,8 @@ class SimpleCacheItem implements CacheItemInterface {
 	protected $key;
 	protected $value;
 	protected $hit;
+	/* @var int|null time to live in seconds */
+	protected $ttl = null;
 
 	/**
 	 * SimpleCacheItem constructor.
@@ -65,6 +67,15 @@ class SimpleCacheItem implements CacheItemInterface {
 	}
 
 	/**
+	 * Base interface is missing any way to get the TTL, so we add this in SimpleCacheItem.
+	 *
+	 * @return int|null
+	 */
+	public function getTtl() {
+		return $this->ttl;
+	}
+
+	/**
 	 * Sets the value represented by this cache item.
 	 *
 	 * The $value argument may be any item that can be serialized by PHP,
@@ -95,7 +106,7 @@ class SimpleCacheItem implements CacheItemInterface {
 	 *   The called object.
 	 */
 	public function expiresAt( $expiration ) {
-		// TODO: Implement expiresAt() method.
+		$this->ttl = $expiration->getTimestamp() - time();
 		return $this;
 	}
 
@@ -113,7 +124,11 @@ class SimpleCacheItem implements CacheItemInterface {
 	 *   The called object.
 	 */
 	public function expiresAfter( $time ) {
-		// TODO: Implement expiresAfter() method.
+		if ( is_int( $time ) ) {
+			$this->ttl = $time;
+		} else {
+			$this->expiresAt( new \DateTime( 'now' ) + $time );
+		}
 		return $this;
 	}
 }
