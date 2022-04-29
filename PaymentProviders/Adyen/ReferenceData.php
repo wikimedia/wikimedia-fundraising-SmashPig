@@ -17,6 +17,10 @@ class ReferenceData {
 			'method' => 'apple',
 			'submethod' => 'amex',
 		],
+		'googlepay' => [
+			'method' => 'google',
+			'submethod' => 'google'
+		],
 		'applepay' => [
 			'method' => 'apple',
 			'submethod' => 'apple'
@@ -41,7 +45,7 @@ class ReferenceData {
 		],
 		'diners' => [
 			'method' => 'cc',
-			'submethod' => 'dc',
+			'submethod' => 'diners',
 		],
 		// Sofortüberweisung
 		'directEbanking' => [
@@ -72,6 +76,10 @@ class ReferenceData {
 			'method' => 'cc',
 			'submethod' => 'jcb',
 		],
+		'jcb_applepay' => [
+			'method' => 'apple',
+			'submethod' => 'jcb',
+		],
 		'mc' => [
 			'method' => 'cc',
 			'submethod' => 'mc',
@@ -95,9 +103,16 @@ class ReferenceData {
 			'method' => 'rtbt',
 			'submethod' => 'rtbt_safetypay',
 		],
+		// 'sepadirectdebit' => [
+		//	'method' => 'dd',
+		//	'submethod' => 'dd_sepa',
+		// ],
+		// Technically, sepadirectdebit is method 'dd', but under Adyen we only ever use it for
+		// recurring installments on iDeal payments. We tag it as iDeal here to be consistent
+		// with how the donations are sent to the queue from the nightly charge job.
 		'sepadirectdebit' => [
-			'method' => 'dd',
-			'submethod' => 'dd_sepa',
+			'method' => 'rtbt',
+			'submethod' => 'rtbt_ideal',
 		],
 		'tenpay' => [
 			'method' => 'ew',
