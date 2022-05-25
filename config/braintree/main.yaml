@@ -20,4 +20,4 @@ payment-provider:
     test:
         class: SmashPig\PaymentProviders\Braintree\TestPaymentProvider
     paypal:
-        class: SmashPig\PaymentProviders\Braintree\PaymentProvider
+        class: SmashPig\PaymentProviders\Braintree\PaypalPaymentProvider

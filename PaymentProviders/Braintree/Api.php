@@ -40,19 +40,42 @@ class Api {
 	}
 
 	public function ping(): array {
-		return $this->makeQueryApiCall( 'query { ping }' );
+		return $this->makeApiCall( 'query { ping }' );
 	}
 
 	public function createClientToken(): array {
-		return $this->makeQueryApiCall( 'mutation { createClientToken { clientToken } }' );
+		$query = $this->getQuery( 'createClientToken' );
+		return $this->makeApiCall( $query );
 	}
 
-	protected function makeQueryApiCall( $query ): array {
+	/**
+	 *
+	 * @param array $input
+	 * @return array
+	 */
+	public function chargePayment( array $input ): array {
+		$query = $this->getQuery( 'ChargePaymentMethod' );
+		$variables = [ 'input' => $input ];
+		return $this->makeApiCall( $query, $variables );
+	}
+
+	/**
+	 * Submit query/mutation GraphQL calls to Braintree
+	 *
+	 * @param string $query graphql query/mutation string
+	 * @param array $variables graphql query/mutation variables
+	 * @return array
+	 */
+	protected function makeApiCall( string $query, array $variables = [] ): array {
 		$request = new OutboundRequest( $this->endpoint, 'POST' );
 		$request->setHeader( 'Authorization', $this->getAuthorizationHeader() );
 		$request->setHeader( 'Braintree-Version', $this->version );
 		$request->setHeader( 'Content-type', 'application/json' );
-		$request->setBody( json_encode( [ 'query' => $query ] ) );
+		$body = [ 'query' => $query ];
+		if ( !empty( $variables ) ) {
+			$body['variables'] = $variables;
+		}
+		$request->setBody( json_encode( $body ) );
 		return json_decode( $request->execute()['body'], true );
 	}
 
@@ -60,5 +83,22 @@ class Api {
 		return base64_encode(
 			$this->publicKey . ':' . $this->privateKey
 		);
+	}
+
+	/**
+	 * Read in Braintree graphQL query file.
+	 *
+	 * @param string $name
+	 * @return string
+	 */
+	protected function getQuery( string $name ): string {
+		$queryDir = __DIR__ . '/Queries/';
+		$queryFileExt = '.graphql';
+		$queryFilePath = $queryDir . $name . $queryFileExt;
+		if ( file_exists( $queryFilePath ) ) {
+			return file_get_contents( $queryFilePath );
+		} else {
+			throw new \UnexpectedValueException( "Unable to find query file '{$queryFilePath}'" );
+		}
 	}
 }
