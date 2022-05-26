@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Braintree\Tests;
 
 use SmashPig\PaymentProviders\Braintree\PaymentProvider;
+use SmashPig\PaymentProviders\Braintree\ValidationErrorMapper;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
@@ -40,5 +41,29 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$response = $provider->createPaymentSession();
 
 		$this->assertEquals( $expectedSession, $response->getPaymentSession() );
+	}
+
+	/**
+	 * Test confirming that the right param for the specified
+	 * validation error's inputPath array is returned
+	 */
+	public function testValidationErrorMapper() {
+		$validationError = ValidationErrorMapper::getValidationErrorField( [
+			"input",
+			"paymentMethodId"
+		] );
+		$this->assertEquals( $validationError, 'payment_method' );
+		$validationError = ValidationErrorMapper::getValidationErrorField( [
+			"input",
+			"transaction",
+			"amount"
+		] );
+		$this->assertEquals( $validationError, 'amount' );
+		$validationError = ValidationErrorMapper::getValidationErrorField( [
+			"input",
+			"transaction",
+			"mock"
+		] );
+		$this->assertEquals( $validationError, 'general' );
 	}
 }
