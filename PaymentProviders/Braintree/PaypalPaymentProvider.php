@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Braintree;
 
+use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
 
@@ -23,9 +24,14 @@ class PaypalPaymentProvider extends PaymentProvider {
 		$response->setRawResponse( $rawResponse );
 		if ( !empty( $rawResponse['errors'] ) ) {
 			$response->setSuccessful( false );
-			/**
-			 * Waiting for the braintree error mapping patch
-			 */
+			foreach ( $rawResponse['errors'] as $error ) {
+				$mappedError = $this->mapErrors( $error['extensions'], $error['message'] );
+				if ( $mappedError instanceof ValidationError ) {
+					$response->addValidationError( $mappedError );
+				} else {
+					$response->addErrors( $mappedError );
+				}
+			}
 		} else {
 			$response->setGatewayTxnId( $rawResponse['data']['chargePaymentMethod']['transaction']['id'] );
 			$mappedStatus = ( new PaymentStatus() )->normalizeStatus( $rawResponse['data']['chargePaymentMethod']['transaction']['status'] );

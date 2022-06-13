@@ -48,7 +48,7 @@ class PaymentProvider implements IPaymentProvider {
 	 * @return int
 	 * https://graphql.braintreepayments.com/guides/making_api_calls/#understanding-responses
 	 */
-	protected function getErrorCode( string $errorClass ): Integer {
+	protected function getErrorCode( string $errorClass ): int {
 		switch ( $errorClass ) {
 			case 'INTERNAL':
 				return ErrorCode::INTERNAL_ERROR;
@@ -74,9 +74,10 @@ class PaymentProvider implements IPaymentProvider {
 
 	/**
 	 * @param array $error
-	 * @return PaymentError
+	 * @param string|null $debugMessage
+	 * @return PaymentError|ValidationError
 	 */
-	protected function mapErrors( array $error ): PaymentError {
+	protected function mapErrors( array $error, string $debugMessage = null ) {
 		$defaultCode = ErrorCode::UNKNOWN;
 
 		/**
@@ -90,19 +91,20 @@ class PaymentProvider implements IPaymentProvider {
 		];
 		$mappedCode = $defaultCode;
 		$logLevel = LogLevel::ERROR;
-		if ( isset( $error['legacyCode'] ) ) {
+		if ( isset( $error['legacyCode'] ) && in_array( $error['legacyCode'], $errorMap ) ) {
 			$mappedCode = $errorMap[$error['legacyCode']];
 		}
 		if ( isset( $error['errorClass'] ) ) {
 			$mappedCode = $this->getErrorCode( $error['errorClass'] );
 		}
 		if ( $mappedCode == ErrorCode::VALIDATION ) {
-			return new ValidationError( ValidationErrorMapper::getValidationErrorField( $error['inputPath'] ) );
+			$validationField = ValidationErrorMapper::getValidationErrorField( $error['inputPath'] );
+			return new ValidationError( $validationField, null, [], $debugMessage );
 		}
 
 		return new PaymentError(
 			$mappedCode,
-			json_encode( $error ),
+			json_encode( array_merge( $error, [ "message" => $debugMessage ] ) ),
 			$logLevel
 		);
 	}
