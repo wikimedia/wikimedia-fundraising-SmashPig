@@ -24,6 +24,7 @@ class PaypalPaymentProvider extends PaymentProvider {
 		$response->setRawResponse( $rawResponse );
 		if ( !empty( $rawResponse['errors'] ) ) {
 			$response->setSuccessful( false );
+			$response->setStatus( FinalStatus::FAILED );
 			foreach ( $rawResponse['errors'] as $error ) {
 				$mappedError = $this->mapErrors( $error['extensions'], $error['message'] );
 				if ( $mappedError instanceof ValidationError ) {
