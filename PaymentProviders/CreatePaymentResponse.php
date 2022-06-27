@@ -20,6 +20,13 @@ class CreatePaymentResponse extends PaymentDetailResponse {
 	protected $redirectUrl;
 
 	/**
+	 * Response for the donor details
+	 *
+	 * @var array
+	 */
+	protected $donor_details = [];
+
+	/**
 	 * Data to be passed along with the redirect
 	 *
 	 * @var array
@@ -62,4 +69,25 @@ class CreatePaymentResponse extends PaymentDetailResponse {
 		return $this;
 	}
 
+	/**
+	 * Set donor details in Payment response
+	 * @param array $donor
+	 * @return void
+	 */
+	public function setDonorDetails( array $donor ): void {
+		$this->donor_details = [
+			'first_name' => $donor['firstName'],
+			'last_name' => $donor['lastName'],
+			'email' => $donor['email'],
+			'phone' => $donor['phone']
+		];
+	}
+
+	/**
+	 * Get donor details from payment response
+	 * @return array
+	 */
+	public function getDonorDetails(): array {
+		return $this->donor_details;
+	}
 }
