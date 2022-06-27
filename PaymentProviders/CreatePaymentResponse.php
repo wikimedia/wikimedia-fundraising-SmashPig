@@ -20,11 +20,16 @@ class CreatePaymentResponse extends PaymentDetailResponse {
 	protected $redirectUrl;
 
 	/**
-	 * Response for the donor details
+	 * Child class for saving Donor details
 	 *
-	 * @var array
+	 * @var DonorDetails|null
 	 */
-	protected $donor_details = [];
+	protected $donorDetails = null;
+
+	/**
+	 * @var boolean
+	 */
+	protected $hasDonorDetails = false;
 
 	/**
 	 * Data to be passed along with the redirect
@@ -49,6 +54,22 @@ class CreatePaymentResponse extends PaymentDetailResponse {
 		return $this;
 	}
 
+	/**
+	 * @param DonorDetails $donorDetails
+	 * @return void
+	 */
+	public function setDonorDetails( DonorDetails $donorDetails ): void {
+		$this->hasDonorDetails = true;
+		$this->donorDetails = $donorDetails;
+	}
+
+	/**
+	 * @return DonorDetails
+	 */
+	public function getDonorDetails(): DonorDetails {
+		return $this->donorDetails;
+	}
+
 	public function requiresRedirect(): bool {
 		return !empty( $this->redirectUrl );
 	}
@@ -67,27 +88,5 @@ class CreatePaymentResponse extends PaymentDetailResponse {
 	public function setRedirectData( array $redirectData ): CreatePaymentResponse {
 		$this->redirectData = $redirectData;
 		return $this;
-	}
-
-	/**
-	 * Set donor details in Payment response
-	 * @param array $donor
-	 * @return void
-	 */
-	public function setDonorDetails( array $donor ): void {
-		$this->donor_details = [
-			'first_name' => $donor['firstName'],
-			'last_name' => $donor['lastName'],
-			'email' => $donor['email'],
-			'phone' => $donor['phone']
-		];
-	}
-
-	/**
-	 * Get donor details from payment response
-	 * @return array
-	 */
-	public function getDonorDetails(): array {
-		return $this->donor_details;
 	}
 }

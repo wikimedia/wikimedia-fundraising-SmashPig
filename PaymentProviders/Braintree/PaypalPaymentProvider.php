@@ -5,6 +5,7 @@ namespace SmashPig\PaymentProviders\Braintree;
 use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\CreatePaymentResponse;
+use SmashPig\PaymentProviders\DonorDetails;
 
 class PaypalPaymentProvider extends PaymentProvider {
 	/**
@@ -33,7 +34,7 @@ class PaypalPaymentProvider extends PaymentProvider {
 				}
 			}
 		} else {
-			$this->addTransactionDetailParams( $rawResponse, $response );
+			$this->setSuccessfulResponseDetails( $rawResponse, $response );
 		}
 		return $response;
 	}
@@ -66,14 +67,30 @@ class PaypalPaymentProvider extends PaymentProvider {
 		return $apiParams;
 	}
 
-	protected function addTransactionDetailParams( array $rawResponse, CreatePaymentResponse &$response ) {
+	protected function setSuccessfulResponseDetails( array $rawResponse, CreatePaymentResponse &$response ) {
 		$successfulStatuses = [ FinalStatus::PENDING_POKE, FinalStatus::COMPLETE ];
 		$transaction = $rawResponse['data']['chargePaymentMethod']['transaction'];
 
 		$mappedStatus = ( new PaymentStatus() )->normalizeStatus( $transaction['status'] );
 		$response->setSuccessful( in_array( $mappedStatus, $successfulStatuses ) );
 		$response->setGatewayTxnId( $transaction['id'] );
-		$response->setDonorDetails( $transaction['paymentMethodSnapshot']['payer'] );
+		if ( isset( $transaction['paymentMethodSnapshot']['payer'] ) ) {
+			$payer = $transaction['paymentMethodSnapshot']['payer'];
+			$donorDetails = new DonorDetails();
+			if ( isset( $payer['firstName'] ) ) {
+				$donorDetails->setFirstName( $payer['firstName'] );
+			}
+			if ( isset( $payer['lastName'] ) ) {
+				$donorDetails->setLastName( $payer['lastName'] );
+			}
+			if ( isset( $payer['email'] ) ) {
+				$donorDetails->setEmail( $payer['email'] );
+			}
+			if ( isset( $payer['phone'] ) ) {
+				$donorDetails->setPhone( $payer['phone'] );
+			}
+			$response->setDonorDetails( $donorDetails );
+		}
 		$response->setStatus( $mappedStatus );
 	}
 }

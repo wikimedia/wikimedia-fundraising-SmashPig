@@ -58,13 +58,12 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$provider = new PaypalPaymentProvider();
 		$response = $provider->createPayment( $request );
 		$donor_details = $response->getDonorDetails();
-
 		$this->assertEquals( FinalStatus::COMPLETE, $response->getStatus() );
 		$this->assertEquals( $txn_id, $response->getGatewayTxnId() );
-		$this->assertEquals( $payer[ 'firstName' ], $donor_details[ 'first_name' ] );
-		$this->assertEquals( $payer[ 'lastName' ], $donor_details[ 'last_name' ] );
-		$this->assertEquals( $payer[ 'email' ], $donor_details[ 'email' ] );
-		$this->assertEquals( $payer[ 'phone' ], $donor_details[ 'phone' ] );
+		$this->assertEquals( $payer[ 'firstName' ], $donor_details->getFirstName() );
+		$this->assertEquals( $payer[ 'lastName' ], $donor_details->getLastName() );
+		$this->assertEquals( $payer[ 'email' ], $donor_details->getEmail() );
+		$this->assertEquals( $payer[ 'phone' ], $donor_details->getPhone() );
 	}
 
 	public function testCreatePaymentThrowsExceptionWhenCalledWithoutRequiredFields() {
