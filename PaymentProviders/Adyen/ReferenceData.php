@@ -17,9 +17,9 @@ class ReferenceData {
 			'method' => 'apple',
 			'submethod' => 'amex',
 		],
-		'googlepay' => [
+		'amex_googlepay' => [
 			'method' => 'google',
-			'submethod' => 'google'
+			'submethod' => 'amex',
 		],
 		'applepay' => [
 			'method' => 'apple',
@@ -36,6 +36,10 @@ class ReferenceData {
 		],
 		'cartebancaire' => [
 			'method' => 'cc',
+			'submethod' => 'cb',
+		],
+		'cartebancaire_applepay' => [
+			'method' => 'apple',
 			'submethod' => 'cb',
 		],
 		// China Union Pay
@@ -60,6 +64,10 @@ class ReferenceData {
 			'method' => 'apple',
 			'submethod' => 'discover',
 		],
+		'discover_googlepay' => [
+			'method' => 'google',
+			'submethod' => 'discover',
+		],
 		'dotpay' => [
 			'method' => 'ew',
 			'submethod' => 'ew_dotpay',
@@ -67,6 +75,14 @@ class ReferenceData {
 		'electron_applepay' => [
 			'method' => 'apple',
 			'submethod' => 'visa-electron',
+		],
+		'electron_googlepay' => [
+			'method' => 'google',
+			'submethod' => 'visa-electron',
+		],
+		'googlepay' => [
+			'method' => 'google',
+			'submethod' => 'google'
 		],
 		'ideal' => [
 			'method' => 'rtbt',
@@ -89,6 +105,10 @@ class ReferenceData {
 		],
 		'mc_applepay' => [
 			'method' => 'apple',
+			'submethod' => 'mc',
+		],
+		'mc_googlepay' => [
+			'method' => 'google',
 			'submethod' => 'mc',
 		],
 		'maestro' => [
@@ -133,6 +153,10 @@ class ReferenceData {
 		],
 		'visa_applepay' => [
 			'method' => 'apple',
+			'submethod' => 'visa',
+		],
+		'visa_googlepay' => [
+			'method' => 'google',
 			'submethod' => 'visa',
 		],
 		// Debit card issued by Visa Europe

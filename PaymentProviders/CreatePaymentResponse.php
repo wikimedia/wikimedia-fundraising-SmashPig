@@ -20,6 +20,18 @@ class CreatePaymentResponse extends PaymentDetailResponse {
 	protected $redirectUrl;
 
 	/**
+	 * Child class for saving Donor details
+	 *
+	 * @var DonorDetails|null
+	 */
+	protected $donorDetails = null;
+
+	/**
+	 * @var boolean
+	 */
+	protected $hasDonorDetails = false;
+
+	/**
 	 * Data to be passed along with the redirect
 	 *
 	 * @var array
@@ -42,6 +54,23 @@ class CreatePaymentResponse extends PaymentDetailResponse {
 		return $this;
 	}
 
+	/**
+	 * @param DonorDetails $donorDetails
+	 * @return CreatePaymentResponse
+	 */
+	public function setDonorDetails( DonorDetails $donorDetails ): CreatePaymentResponse {
+		$this->hasDonorDetails = true;
+		$this->donorDetails = $donorDetails;
+		return $this;
+	}
+
+	/**
+	 * @return DonorDetails
+	 */
+	public function getDonorDetails(): DonorDetails {
+		return $this->donorDetails;
+	}
+
 	public function requiresRedirect(): bool {
 		return !empty( $this->redirectUrl );
 	}
@@ -61,5 +90,4 @@ class CreatePaymentResponse extends PaymentDetailResponse {
 		$this->redirectData = $redirectData;
 		return $this;
 	}
-
 }
