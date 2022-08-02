@@ -238,15 +238,24 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 	}
 
 	/**
-	 * @param string $gatewayTxnId The full Adyen payment ID
-	 * @return array
+	 * @param string $processorContactId Our processor Contact Id / order ID for the payment
+	 * @return string|null
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function tokenizePayment( $gatewayTxnId ) {
-		// Our gateway_txn_id corresponds to paymentId in Adyen's documentation.
-		$path = "payments/$gatewayTxnId/tokenize";
-		$response = $this->api->makeApiCall( $path, 'POST' );
-		return $response;
+	// Documentation:
+	// https://docs.adyen.com/online-payments/tokenization/managing-tokens#list-saved-details
+	public function getRecurringPaymentToken( string $processorContactId ): ?string {
+		$rawResult = $this->api->getPaymentMethods( [
+			'processor_contact_id' => $processorContactId,
+		] );
+
+		if ( !empty( $rawResult['storedPaymentMethods'] ) ) {
+			return $rawResult['storedPaymentMethods'][0]['id'];
+		}
+		Logger::info(
+			"Adyen: Not able to get the recurring token with processor Contact ID '{$processorContactId}'"
+		);
+		return null;
 	}
 
 	/**
