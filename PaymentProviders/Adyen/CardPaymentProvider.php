@@ -61,7 +61,9 @@ class CardPaymentProvider extends PaymentProvider {
 		);
 		$response = new CreatePaymentResponse();
 		$response->setRawResponse( $rawResponse );
-		$rawStatus = $rawResponse['resultCode'];
+		$this->mapRestIdAndErrors( $response, $rawResponse );
+
+		$rawStatus = $rawResponse['resultCode'] ?? null;
 		$this->mapStatus(
 			$response,
 			$rawResponse,
@@ -74,7 +76,8 @@ class CardPaymentProvider extends PaymentProvider {
 		} else {
 			if ( isset( $rawResponse['additionalData'] ) ) {
 				$this->mapAdditionalData( $rawResponse['additionalData'], $response );
-			} else {
+			} elseif ( !$response->hasErrors() ) {
+				// We expect additionalData on responses with no errors and no redirect
 				Logger::warning(
 					'additionalData missing from Adyen createPayment response, so ' .
 					'no risk score for avs and cvv',
@@ -82,7 +85,7 @@ class CardPaymentProvider extends PaymentProvider {
 				);
 			}
 		}
-		$this->mapRestIdAndErrors( $response, $rawResponse );
+
 		return $response;
 	}
 

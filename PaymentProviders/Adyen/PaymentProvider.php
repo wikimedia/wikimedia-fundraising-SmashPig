@@ -383,14 +383,22 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 				Logger::debug( 'Unable to map Adyen status', $rawResponse );
 			}
 		} else {
-			$message = 'Missing Adyen status';
-			$response->addErrors( new PaymentError(
-				ErrorCode::MISSING_REQUIRED_DATA,
-				$message,
-				LogLevel::ERROR
-			) );
+			if ( $response->hasErrors() ) {
+				// We don't necessarily get a status code if there's another error
+				// but it sure as heck didn't succeed!
+				$response->setStatus( FinalStatus::FAILED );
+			} else {
+				$message = 'Missing Adyen status';
+				$response->addErrors(
+					new PaymentError(
+						ErrorCode::MISSING_REQUIRED_DATA,
+						$message,
+						LogLevel::ERROR
+					)
+				);
+				Logger::debug( $message, $rawResponse );
+			}
 			$response->setSuccessful( false );
-			Logger::debug( $message, $rawResponse );
 		}
 	}
 
