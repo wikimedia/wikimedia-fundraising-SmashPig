@@ -14,6 +14,7 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	 * @var PHPUnit_Framework_MockObject_MockObject
 	 */
 	protected $api;
+	protected $merchantAccounts;
 
 	public function setUp(): void {
 		parent::setUp();
@@ -22,6 +23,22 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 		$providerConfig->overrideObjectInstance( 'api', $this->api );
+		$this->merchantAccounts = [ 'USD' => 'wikimediafoundation', 'GBP' => 'WMF-GBP' ];
+		$providerConfig->overrideObjectInstance( 'merchantAccounts', $this->merchantAccounts );
+	}
+
+	public function testPaymentWithNotSupportedCurrencyError() {
+		$request = [
+			"payment_token" => "fake-valid-nonce",
+			"order_id" => '123.3',
+			"amount" => '1.00',
+			"currency" => "CNY"
+		];
+
+		$provider = new PaypalPaymentProvider( [ 'merchant-accounts' => $this->merchantAccounts ] );
+		$response = $provider->createPayment( $request );
+		$validationError = $response->getValidationErrors();
+		$this->assertEquals( $validationError[0]->getField(), 'currency' );
 	}
 
 	public function testAuthorizePayment() {
@@ -36,6 +53,7 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			"payment_token" => "fake-valid-nonce",
 			"order_id" => '123.3',
 			"amount" => '1.00',
+			"currency" => 'USD'
 		];
 		$this->api->expects( $this->once() )
 			->method( 'authorizePayment' )
@@ -55,7 +73,7 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 				]
 			] );
 
-		$provider = new PaypalPaymentProvider();
+		$provider = new PaypalPaymentProvider( [ 'merchant-accounts' => $this->merchantAccounts ] );
 		$response = $provider->createPayment( $request );
 		$donor_details = $response->getDonorDetails();
 		$this->assertEquals( FinalStatus::PENDING_POKE, $response->getStatus() );
@@ -66,30 +84,8 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $payer[ 'phone' ], $donor_details->getPhone() );
 	}
 
-	public function testAuthorizePaymentThrowsExceptionWhenCalledWithoutRequiredFields() {
-		$provider = new PaypalPaymentProvider();
-		$requestWithoutPaymentToken = [
-			"amount" => '1.00',
-			"order_id" => '123.3'
-		];
-		$this->expectException( \InvalidArgumentException::class );
-		$provider->createPayment( $requestWithoutPaymentToken );
-		$requestWithoutAmount = [
-			"payment_token" => "fake-valid-nonce",
-			"order_id" => '123.3'
-		];
-		$this->expectException( \InvalidArgumentException::class );
-		$provider->createPayment( $requestWithoutAmount );
-		$requestWithoutOrderId = [
-			"payment_token" => "fake-valid-nonce",
-			"amount" => '1.00'
-		];
-		$this->expectException( \InvalidArgumentException::class );
-		$provider->createPayment( $requestWithoutOrderId );
-	}
-
 	public function testApprovePaymentThrowsExceptionWhenCalledWithoutRequiredFields() {
-		$provider = new PaypalPaymentProvider();
+		$provider = new PaypalPaymentProvider( [ 'merchant-accounts' => $this->merchantAccounts ] );
 		$requestWithoutTransactionId = [];
 		$this->expectException( \InvalidArgumentException::class );
 		$provider->approvePayment( $requestWithoutTransactionId );
@@ -115,7 +111,7 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 				]
 			] );
 
-		$provider = new PaypalPaymentProvider();
+		$provider = new PaypalPaymentProvider( [ 'merchant-accounts' => $this->merchantAccounts ] );
 		$response = $provider->approvePayment( $request );
 		$this->assertEquals( FinalStatus::COMPLETE, $response->getStatus() );
 		$this->assertEquals( $txn_id, $response->getGatewayTxnId() );
@@ -132,7 +128,8 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$request = [
 			"payment_token" => "fake-valid-nonce",
 			"order_id" => '123.3',
-			"amount" => '1.00'
+			"amount" => '1.00',
+			"currency" => "GBP"
 		];
 		$this->api->expects( $this->once() )
 			->method( 'authorizePayment' )
@@ -143,7 +140,7 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 							'id' => $txn_id,
 							'status' => "SUBMITTED_FOR_SETTLEMENT",
 							'paymentMethodSnapshot' => [
-								'payer' => $payer
+								'payer' => $payer,
 							]
 						]
 					] ],
@@ -152,7 +149,7 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 				]
 			] );
 
-		$provider = new PaypalPaymentProvider();
+		$provider = new PaypalPaymentProvider( [ 'merchant-accounts' => $this->merchantAccounts ] );
 		$response = $provider->createPayment( $request );
 		$donor_details = $response->getDonorDetails();
 		$this->assertEquals( FinalStatus::COMPLETE, $response->getStatus() );
@@ -164,24 +161,29 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testCreatePaymentThrowsExceptionWhenCalledWithoutRequiredFields() {
-		$provider = new PaypalPaymentProvider();
+		$provider = new PaypalPaymentProvider( [ 'merchant-accounts' => $this->merchantAccounts ] );
 		$requestWithoutPaymentToken = [
 			"amount" => '1.00',
 			"order_id" => '123.3'
 		];
-		$this->expectException( \InvalidArgumentException::class );
-		$provider->createPayment( $requestWithoutPaymentToken );
+		$response = $provider->createPayment( $requestWithoutPaymentToken );
+		$validationError = $response->getValidationErrors();
+		$this->assertEquals( $validationError[0]->getField(), 'payment_token' );
+
 		$requestWithoutAmount = [
 			"payment_token" => "fake-valid-nonce",
 			"order_id" => '123.3'
 		];
-		$this->expectException( \InvalidArgumentException::class );
-		$provider->createPayment( $requestWithoutAmount );
+		$response = $provider->createPayment( $requestWithoutAmount );
+		$validationError = $response->getValidationErrors();
+		$this->assertEquals( $validationError[0]->getField(), 'amount' );
+
 		$requestWithoutOrderId = [
 			"payment_token" => "fake-valid-nonce",
 			"amount" => '1.00'
 		];
-		$this->expectException( \InvalidArgumentException::class );
-		$provider->createPayment( $requestWithoutOrderId );
+		$response = $provider->createPayment( $requestWithoutOrderId );
+		$validationError = $response->getValidationErrors();
+		$this->assertEquals( $validationError[0]->getField(), 'order_id' );
 	}
 }
