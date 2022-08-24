@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Adyen;
 
+use OutOfBoundsException;
 use Psr\Log\LogLevel;
 use SmashPig\Core\Cache\CacheHelper;
 use SmashPig\Core\Context;
@@ -128,34 +129,48 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 		$rawResponse = $this->api->getSavedPaymentDetails( $processorContactID );
 		$response = new SavedPaymentDetailsResponse();
 		$response->setRawResponse( $rawResponse );
+		// The API call we were using before had emails for each list item, while API
+		// call we're using now just seems to have this on the root node.
+		$email = $rawResponse['lastKnownShopperEmail'] ?? null;
 		$detailsList = [];
-		foreach ( $rawResponse['storedPaymentMethods'] as $storedMethod ) {
-			$ownerName = $storedMethod['ownerName'] ?? $storedMethod['holderName'] ?? null;
-			if ( isset( $storedMethod['brand'] ) ) {
-				[ $method, $submethod ] = ReferenceData::decodePaymentMethod(
-					$storedMethod['brand'], false
-				);
-			} elseif ( $storedMethod['type'] === 'sepadirectdebit' ) {
-				// special case, for now we only use SEPA direct debit for iDEAL
-				$method = 'rtbt';
-				$submethod = 'rtbt_ideal';
-			} else {
-				// No big deal for us if we don't have it mapped - the token field
-				// is the only one we actually use.
-				$method = null;
-				$submethod = null;
-			}
-			$detailsList[] = ( new SavedPaymentDetails() )
-				->setToken( $storedMethod['id'] )
+		foreach ( $rawResponse['details'] as $detail ) {
+			$storedMethod = $detail['RecurringDetail'];
+			$paymentDetailsObject = new SavedPaymentDetails();
+			// Set generic properties
+			$paymentDetailsObject
+				->setToken( $storedMethod['recurringDetailReference'] )
 				->setDisplayName( $storedMethod['name'] ?? null )
-				->setPaymentMethod( $method )
-				->setPaymentSubmethod( $submethod )
-				->setExpirationMonth( $storedMethod['expiryMonth'] ?? null )
-				->setExpirationYear( $storedMethod['expiryYear'] ?? null )
-				->setOwnerName( $ownerName )
-				->setOwnerEmail( $storedMethod['shopperEmail'] ?? null )
-				->setIban( $storedMethod['iban'] ?? null )
-				->setCardSummary( $storedMethod['lastFour'] ?? null );
+				->setOwnerEmail( $storedMethod['shopperEmail'] ?? $email ?? null );
+
+			if ( isset( $storedMethod['variant'] ) ) {
+				try {
+					[ $method, $submethod ] = ReferenceData::decodePaymentMethod(
+						$storedMethod['variant'], $storedMethod['paymentMethodVariant'] ?? false
+					);
+					$paymentDetailsObject
+						->setPaymentMethod( $method )
+						->setPaymentSubmethod( $submethod );
+				}
+				catch ( OutOfBoundsException $ex ) {
+					// No big deal for us if we don't have it mapped - the token field
+					// is the only one we actually use.
+				}
+			}
+
+			if ( isset( $storedMethod['bank'] ) ) {
+				// Set properties for bank transfers, e.g. iDEAL
+				$paymentDetailsObject
+					->setOwnerName( $storedMethod['bank']['ownerName'] ?? null )
+					->setIban( $storedMethod['bank']['iban'] ?? null );
+			} elseif ( isset( $storedMethod['card'] ) ) {
+				// Set properties for tokenized credit cards & Apple/Google Pay
+				$paymentDetailsObject->setOwnerName( $storedMethod['card']['holderName'] ?? null )
+					->setExpirationMonth( $storedMethod['card']['expiryMonth'] ?? null )
+					->setExpirationYear( $storedMethod['card']['expiryYear'] ?? null )
+					->setCardSummary( $storedMethod['card']['number'] ?? null );
+			}
+
+			$detailsList[] = $paymentDetailsObject;
 		}
 		$response->setDetailsList( $detailsList );
 		$response->setSuccessful( count( $detailsList ) > 0 );
@@ -235,27 +250,6 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 		}
 
 		return $response;
-	}
-
-	/**
-	 * @param string $processorContactId Our processor Contact Id / order ID for the payment
-	 * @return string|null
-	 * @throws \SmashPig\Core\ApiException
-	 */
-	// Documentation:
-	// https://docs.adyen.com/online-payments/tokenization/managing-tokens#list-saved-details
-	public function getRecurringPaymentToken( string $processorContactId ): ?string {
-		$rawResult = $this->api->getPaymentMethods( [
-			'processor_contact_id' => $processorContactId,
-		] );
-
-		if ( !empty( $rawResult['storedPaymentMethods'] ) ) {
-			return $rawResult['storedPaymentMethods'][0]['id'];
-		}
-		Logger::info(
-			"Adyen: Not able to get the recurring token with processor Contact ID '{$processorContactId}'"
-		);
-		return null;
 	}
 
 	/**
@@ -473,6 +467,8 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 	 */
 	protected function validateGetPaymentMethodsParams( array $params ): array {
 		$badParams = [];
+		// FIXME: we should move the supported country/currency yaml files to the SmashPig level
+		// and use those, rather than these possibly-incomplete lists.
 		if ( !array_key_exists( $params['country'], NationalCurrencies::getNationalCurrencies() ) ) {
 			$badParams[] = 'country';
 		}

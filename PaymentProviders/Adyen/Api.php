@@ -5,6 +5,8 @@ use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\Http\OutboundRequest;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
+use SmashPig\PaymentData\RecurringModel;
+use UnexpectedValueException;
 
 // FIXME: get off of WSDL pronto
 // We have to include this manually because Composer 2 doesn't autoload
@@ -23,7 +25,13 @@ class Api {
 	const RECURRING_SHOPPER_INTERACTION = 'ContAuth';
 	const RECURRING_SHOPPER_INTERACTION_SETUP = 'Ecommerce';
 	const RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE = 'LATEST';
-	const RECURRING_PROCESSING_MODEL = 'Subscription';
+	/**
+	 * These two happen to have the same string values as the cross-processor constants in RecurringModel, but
+	 * we define Adyen-specific constants here in case Adyen ever decides to change their strings. Code that
+	 * builds the request to Adyen API endpoints should use these constants instead of those in RecurringModel.
+	 */
+	const RECURRING_MODEL_SUBSCRIPTION = 'Subscription';
+	const RECURRING_MODEL_CARD_ON_FILE = 'CardOnFile';
 
 	/**
 	 * @var WSDL\Payment
@@ -67,6 +75,7 @@ class Api {
 		$this->wsdlUser = $c->val( "accounts/{$this->account}/ws-username" );
 		$this->wsdlPass = $c->val( "accounts/{$this->account}/ws-password" );
 		$this->restBaseUrl = $c->val( 'rest-base-url' );
+		$this->recurringBaseUrl = $c->val( 'recurring-base-url' );
 		$this->apiKey = $c->val( "accounts/{$this->account}/ws-api-key" );
 	}
 
@@ -195,7 +204,7 @@ class Api {
 		$restParams['paymentMethod']['storedPaymentMethodId'] = $params['recurring_payment_token'];
 		$restParams['shopperReference'] = $params['processor_contact_id'];
 		$restParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION;
-		$restParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
+		$restParams['recurringProcessingModel'] = static::RECURRING_MODEL_SUBSCRIPTION;
 
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
@@ -354,25 +363,34 @@ class Api {
 	}
 
 	/**
-	 * Uses the rest API to return saved payment details
+	 * Uses the rest API to return saved payment details. These will include a token
+	 * that can be used to make recurring donations or further charges without the
+	 * shopper needing to input their card details again.
 	 *
-	 * @param string $shopperReference
-	 * @return array
+	 * @param string $shopperReference An identifying string we assign to the shopper
+	 *  when we first store (tokenize) the payment details.
+	 * @return array A list of saved payment methods with tokens and other details.
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function getSavedPaymentDetails( $shopperReference ) {
-		$restParams['merchantAccount'] = $this->account;
-		$restParams['shopperReference'] = $shopperReference;
+	public function getSavedPaymentDetails( string $shopperReference ): array {
+		$restParams = [
+			'merchantAccount' => $this->account,
+			'shopperReference' => $shopperReference,
+			'recurring' => [
+				'contract' => self::RECURRING_CONTRACT,
+			],
+		];
 
-		$result = $this->makeRestApiCall( $restParams, 'paymentMethods', 'POST' );
+		$result = $this->makeRestApiCall( $restParams, 'listRecurringDetails', 'POST', true );
 		return $result['body'];
 	}
 
 	/**
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	protected function makeRestApiCall( $params, $path, $method ) {
-		$url = $this->restBaseUrl . '/' . $path;
+	protected function makeRestApiCall( $params, $path, $method, $useRecurringBasePath = false ) {
+		$basePath = $useRecurringBasePath ? $this->recurringBaseUrl : $this->restBaseUrl;
+		$url = $basePath . '/' . $path;
 		$request = new OutboundRequest( $url, $method );
 		$request->setBody( json_encode( $params ) );
 		$request->setHeader( 'x-API-key', $this->apiKey );
@@ -580,7 +598,6 @@ class Api {
 	 * @param array $params
 	 * @param bool $needInteractionAndModel Set to 'true' for card or Apple Pay transactions
 	 *  which need the shopperInteraction and recurringProcessModel parameters set.
-	 *
 	 * @return array
 	 */
 	private function addRecurringParams( $params, $needInteractionAndModel ) {
@@ -591,7 +608,23 @@ class Api {
 		if ( $needInteractionAndModel ) {
 			// credit card and apple pay also need shopperInteraction and recurringProcessingModel
 			$recurringParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION_SETUP;
-			$recurringParams['recurringProcessingModel'] = static::RECURRING_PROCESSING_MODEL;
+
+			// By default make recurring charges as 'Subscription' but allow for Card On File
+			// in case of speculative tokenization (e.g. for monthly convert).
+			$recurringModel = $params['recurring_model'] ?? RecurringModel::SUBSCRIPTION;
+			switch ( $recurringModel ) {
+				case RecurringModel::SUBSCRIPTION:
+					$recurringParams['recurringProcessingModel'] = static::RECURRING_MODEL_SUBSCRIPTION;
+					break;
+				case RecurringModel::CARD_ON_FILE:
+					$recurringParams['recurringProcessingModel'] = static::RECURRING_MODEL_CARD_ON_FILE;
+					break;
+				default:
+					throw new UnexpectedValueException(
+						"Unknown recurring processing model $recurringModel"
+					);
+			}
+
 		}
 		return $recurringParams;
 	}
