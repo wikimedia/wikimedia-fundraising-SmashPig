@@ -395,6 +395,12 @@ class Api {
 		$request->setBody( json_encode( $params ) );
 		$request->setHeader( 'x-API-key', $this->apiKey );
 		$request->setHeader( 'content-type', 'application/json' );
+		if ( $method === 'POST' ) {
+			// Set the idempotency header in case we retry on timeout
+			// https://docs.adyen.com/development-resources/api-idempotency
+			$prefix = gethostname() . '-' . getmypid();
+			$request->setHeader( 'Idempotency-Key', uniqid( $prefix, true ) );
+		}
 		$response = $request->execute();
 		$response['body'] = json_decode( $response['body'], true );
 		ExceptionMapper::throwOnAdyenError( $response['body'] );
