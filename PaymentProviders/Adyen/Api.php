@@ -205,6 +205,7 @@ class Api {
 		$restParams['shopperReference'] = $params['processor_contact_id'];
 		$restParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION;
 		$restParams['recurringProcessingModel'] = static::RECURRING_MODEL_SUBSCRIPTION;
+		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
