@@ -24,7 +24,6 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 			->getMock();
 		$providerConfig->overrideObjectInstance( 'api', $this->api );
 		$this->merchantAccounts = [ 'USD' => 'wikimediafoundation', 'GBP' => 'WMF-GBP' ];
-		$providerConfig->overrideObjectInstance( 'merchantAccounts', $this->merchantAccounts );
 	}
 
 	public function testPaymentWithNotSupportedCurrencyError() {
@@ -133,6 +132,14 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		];
 		$this->api->expects( $this->once() )
 			->method( 'authorizePayment' )
+			->with( [
+				'transaction' => [
+					'merchantAccountId' => 'WMF-GBP',
+					'amount' => '1.00',
+					'orderId' => '123.3'
+				],
+				'paymentMethodId' => 'fake-valid-nonce'
+			] )
 			->willReturn( [
 				'data' => [
 					'authorizePaymentMethod' => [
@@ -160,7 +167,7 @@ class PayPalPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $payer[ 'phone' ], $donor_details->getPhone() );
 	}
 
-	public function testCreatePaymentThrowsExceptionWhenCalledWithoutRequiredFields() {
+	public function testCreatePaymentValidationErrorWhenCalledWithoutRequiredFields() {
 		$provider = new PaypalPaymentProvider( [ 'merchant-accounts' => $this->merchantAccounts ] );
 		$requestWithoutPaymentToken = [
 			"amount" => '1.00',
