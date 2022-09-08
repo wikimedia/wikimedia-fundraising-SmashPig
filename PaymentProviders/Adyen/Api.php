@@ -2,6 +2,7 @@
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Helpers\CurrencyRoundingHelper;
+use SmashPig\Core\Helpers\UniqueId;
 use SmashPig\Core\Http\OutboundRequest;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
@@ -205,6 +206,7 @@ class Api {
 		$restParams['shopperReference'] = $params['processor_contact_id'];
 		$restParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION;
 		$restParams['recurringProcessingModel'] = static::RECURRING_MODEL_SUBSCRIPTION;
+		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 		return $result['body'];
@@ -395,6 +397,11 @@ class Api {
 		$request->setBody( json_encode( $params ) );
 		$request->setHeader( 'x-API-key', $this->apiKey );
 		$request->setHeader( 'content-type', 'application/json' );
+		if ( $method === 'POST' ) {
+			// Set the idempotency header in case we retry on timeout
+			// https://docs.adyen.com/development-resources/api-idempotency
+			$request->setHeader( 'Idempotency-Key', UniqueId::generate() );
+		}
 		$response = $request->execute();
 		$response['body'] = json_decode( $response['body'], true );
 		ExceptionMapper::throwOnAdyenError( $response['body'] );
