@@ -64,6 +64,13 @@ class Api {
 	protected $recurringBaseUrl;
 
 	/**
+	 * Base path for REST API calls to the data protection service
+	 * (see https://docs.adyen.com/development-resources/data-protection-api)
+	 * @var string
+	 */
+	protected $dataProtectionBaseUrl;
+
+	/**
 	 * @var string
 	 */
 	protected $wsdlEndpoint;
@@ -86,6 +93,7 @@ class Api {
 		$this->wsdlPass = $c->val( "accounts/{$this->account}/ws-password" );
 		$this->restBaseUrl = $c->val( 'rest-base-url' );
 		$this->recurringBaseUrl = $c->val( 'recurring-base-url' );
+		$this->dataProtectionBaseUrl = $c->val( 'data-protection-base-url' );
 		$this->apiKey = $c->val( "accounts/{$this->account}/ws-api-key" );
 	}
 
@@ -412,6 +420,25 @@ class Api {
 
 		$result = $this->makeRestApiCall(
 			$restParams, 'listRecurringDetails', 'POST', $this->recurringBaseUrl
+		);
+		return $result['body'];
+	}
+
+	/**
+	 * https://docs.adyen.com/development-resources/data-protection-api#submit-a-subject-erasure-request
+	 *
+	 * @param string $gatewayTransactionId For Adyen this is called the PSP Reference
+	 * @return array usually just [ 'result' => 'SUCCESS' ]
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	public function deleteDataForPayment( string $gatewayTransactionId ): array {
+		$restParams = [
+			'merchantAccount' => $this->account,
+			'pspReference' => $gatewayTransactionId,
+			'forceErasure' => true
+		];
+		$result = $this->makeRestApiCall(
+			$restParams, 'requestSubjectErasure', 'POST', $this->dataProtectionBaseUrl
 		);
 		return $result['body'];
 	}
