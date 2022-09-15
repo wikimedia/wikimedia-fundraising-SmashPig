@@ -34,7 +34,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 
 		$approvePaymentResponse = $this->provider->approvePayment( $params );
 
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\ApprovePaymentResponse',
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\ApprovePaymentResponse',
 			$approvePaymentResponse );
 		$this->assertEquals( 'received', $approvePaymentResponse->getRawStatus() );
 		$this->assertSame( '00000000000000AB', $approvePaymentResponse->getGatewayTxnId() );
@@ -61,7 +61,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 
 		$approvePaymentResponse = $this->provider->approvePayment( $params );
 
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\ApprovePaymentResponse',
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\ApprovePaymentResponse',
 			$approvePaymentResponse );
 		$this->assertFalse( $approvePaymentResponse->isSuccessful() );
 		$this->assertTrue( $approvePaymentResponse->hasErrors() );
@@ -90,7 +90,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 
 		$approvePaymentResponse = $this->provider->approvePayment( $params );
 
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\ApprovePaymentResponse',
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\ApprovePaymentResponse',
 			$approvePaymentResponse );
 		$this->assertFalse( $approvePaymentResponse->isSuccessful() );
 		$this->assertTrue( $approvePaymentResponse->hasErrors() );
@@ -113,7 +113,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 
 		$cancelPaymentResponse = $this->provider->cancelPayment( $gatewayTxnId );
 
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\CancelPaymentResponse',
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CancelPaymentResponse',
 			$cancelPaymentResponse );
 		$this->assertEquals( '[cancel-received]', $cancelPaymentResponse->getRawStatus() );
 		$this->assertSame( '00000000000000AB', $cancelPaymentResponse->getGatewayTxnId() );
@@ -138,7 +138,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 
 		$cancelPaymentResponse = $this->provider->cancelPayment( $gatewayTxnId );
 
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\CancelPaymentResponse',
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CancelPaymentResponse',
 			$cancelPaymentResponse );
 		$this->assertFalse( $cancelPaymentResponse->isSuccessful() );
 

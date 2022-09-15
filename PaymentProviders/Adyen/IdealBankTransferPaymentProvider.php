@@ -4,7 +4,7 @@ namespace SmashPig\PaymentProviders\Adyen;
 
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\StatusNormalizer;
-use SmashPig\PaymentProviders\CreatePaymentResponse;
+use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 
 class IdealBankTransferPaymentProvider extends PaymentProvider {
 
