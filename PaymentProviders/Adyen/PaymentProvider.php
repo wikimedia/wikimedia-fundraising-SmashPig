@@ -276,35 +276,37 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 	 *
 	 * @param string $gatewayTxnId
 	 * @return CancelPaymentResponse
+	 * @throws \SmashPig\Core\ApiException
 	 */
 	public function cancelPayment( $gatewayTxnId ): CancelPaymentResponse {
 		$rawResponse = $this->api->cancel( $gatewayTxnId );
 		$response = new CancelPaymentResponse();
 		$response->setRawResponse( $rawResponse );
 
-		if ( !empty( $rawResponse->cancelResult ) ) {
-			$this->mapTxnIdAndErrors(
-				$response,
-				$rawResponse->cancelResult,
-				false
+		if ( empty( $rawResponse['status'] ) ) {
+			$responseError = 'cancelResult element missing from Adyen cancel response.';
+			$response->addErrors(
+				new PaymentError(
+					ErrorCode::MISSING_REQUIRED_DATA,
+					$responseError,
+					LogLevel::ERROR
+				)
 			);
+			$response->setSuccessful( false );
+			Logger::debug( $responseError, $rawResponse );
+		} else {
 			$this->mapStatus(
 				$response,
 				$rawResponse,
 				new CancelPaymentStatus(),
-				$rawResponse->cancelResult->response ?? null,
+				$rawResponse['status'],
 				[ FinalStatus::CANCELLED ]
 			);
-		} else {
-			$responseError = 'cancelResult element missing from Adyen cancel response.';
-			$response->addErrors( new PaymentError(
-				ErrorCode::MISSING_REQUIRED_DATA,
-				$responseError,
-				LogLevel::ERROR
-			) );
-			$response->setSuccessful( false );
-			Logger::debug( $responseError, $rawResponse );
 		}
+		$this->mapRestIdAndErrors(
+			$response,
+			$rawResponse
+		);
 
 		return $response;
 	}

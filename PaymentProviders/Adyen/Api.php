@@ -541,26 +541,19 @@ class Api {
 	 * Cancels a payment that may already be authorized
 	 *
 	 * @param string $pspReference The Adyen-side identifier, aka gateway_txn_id
-	 * @return bool|WSDL\cancelResponse
+	 * @return array
+	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function cancel( $pspReference ) {
-		$data = new WSDL\cancel();
-		$data->modificationRequest = new WSDL\ModificationRequest();
-
-		$data->modificationRequest->merchantAccount = $this->account;
-		$data->modificationRequest->originalReference = $pspReference;
-
-		$tl = new TaggedLogger( 'RawData' );
-		$tl->info( 'Launching SOAP cancel request', $data );
-
-		try {
-			$response = $this->getSoapClient()->cancel( $data );
-		} catch ( \Exception $ex ) {
-			Logger::error( 'SOAP cancel request threw exception!', null, $ex );
-			return false;
-		}
-
-		return $response;
+	public function cancel( string $pspReference ): array {
+		$restParams = [
+			'merchantAccount' => $this->account
+		];
+		// TODO: Adyen supports a merchant reference for the cancellation
+		// but we'll need to change our ICancelablePaymentProvider to
+		// support an array of parameters.
+		$path = "payments/$pspReference/cancels";
+		$result = $this->makeRestApiCall( $restParams, $path, 'POST' );
+		return $result['body'];
 	}
 
 	/**

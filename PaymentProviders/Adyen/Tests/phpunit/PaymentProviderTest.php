@@ -115,7 +115,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 
 		$this->assertInstanceOf( '\SmashPig\PaymentProviders\CancelPaymentResponse',
 			$cancelPaymentResponse );
-		$this->assertEquals( '[cancel-received]', $cancelPaymentResponse->getRawStatus() );
+		$this->assertEquals( 'received', $cancelPaymentResponse->getRawStatus() );
 		$this->assertSame( '00000000000000AB', $cancelPaymentResponse->getGatewayTxnId() );
 		$this->assertTrue( $cancelPaymentResponse->isSuccessful() );
 		$this->assertTrue( count( $cancelPaymentResponse->getErrors() ) == 0 );
@@ -134,7 +134,7 @@ class PaymentProviderTest extends BaseAdyenTestCase {
 		$this->mockApi->expects( $this->once() )
 			->method( 'cancel' )
 			->with( $gatewayTxnId )
-			->willReturn( false );
+			->willReturn( [] );
 
 		$cancelPaymentResponse = $this->provider->cancelPayment( $gatewayTxnId );
 
