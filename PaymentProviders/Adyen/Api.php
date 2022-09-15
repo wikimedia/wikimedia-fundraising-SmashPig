@@ -50,9 +50,18 @@ class Api {
 	protected $apiKey;
 
 	/**
+	 * Default base path for REST API calls
+	 *
 	 * @var string
 	 */
 	protected $restBaseUrl;
+
+	/**
+	 * Base path for REST API calls to the recurring service
+	 * (see https://docs.adyen.com/api-explorer/#/Recurring/v67/overview)
+	 * @var string
+	 */
+	protected $recurringBaseUrl;
 
 	/**
 	 * @var string
@@ -71,7 +80,7 @@ class Api {
 
 	public function __construct() {
 		$c = Context::get()->getProviderConfiguration();
-		$this->account = array_keys( $c->val( "accounts" ) )[0]; // this feels fragile
+		$this->account = array_keys( $c->val( 'accounts' ) )[0]; // this feels fragile
 		$this->wsdlEndpoint = $c->val( 'payments-wsdl' );
 		$this->wsdlUser = $c->val( "accounts/{$this->account}/ws-username" );
 		$this->wsdlPass = $c->val( "accounts/{$this->account}/ws-password" );
@@ -401,15 +410,25 @@ class Api {
 			],
 		];
 
-		$result = $this->makeRestApiCall( $restParams, 'listRecurringDetails', 'POST', true );
+		$result = $this->makeRestApiCall(
+			$restParams, 'listRecurringDetails', 'POST', $this->recurringBaseUrl
+		);
 		return $result['body'];
 	}
 
 	/**
+	 * @param array $params array of parameters to be JSON encoded and sent to the API
+	 * @param string $path REST path (entity name, possible id, possible action)
+	 * @param string $method HTTP method, usually GET or POST
+	 * @param string|null $alternateBaseUrl By default, the base URL used will be the restBaseUrl.
+	 *  To use an alternate base URL, pass it here
+	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	protected function makeRestApiCall( $params, $path, $method, $useRecurringBasePath = false ) {
-		$basePath = $useRecurringBasePath ? $this->recurringBaseUrl : $this->restBaseUrl;
+	protected function makeRestApiCall(
+		array $params, string $path, string $method, ?string $alternateBaseUrl = null
+	) {
+		$basePath = $alternateBaseUrl ?? $this->restBaseUrl;
 		$url = $basePath . '/' . $path;
 		$request = new OutboundRequest( $url, $method );
 		$request->setBody( json_encode( $params ) );
