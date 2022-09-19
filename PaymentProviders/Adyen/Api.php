@@ -213,14 +213,14 @@ class Api {
 	}
 
 	/**
-	 * Uses the rest API to create a direct debit payment from the
+	 * Uses the rest API to create an ideal payment from the
 	 * Component web integration
 	 *
 	 * @param array $params
 	 * amount, currency, value, issuer, returnUrl
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function createDirectDebitPaymentFromCheckout( $params ) {
+	public function createIdealNonRecurringPaymentFromCheckout( $params ) {
 		$restParams = [
 			'amount' => $this->getArrayAmount( $params ),
 			'reference' => $params['order_id'],
