@@ -55,12 +55,12 @@ payment-provider:
         class: SmashPig\PaymentProviders\Adyen\CardPaymentProvider
         <<: *CACHE
     dd:
-        class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
-        <<: *CACHE
-    rtbt:
         # For now we only handle recurring rtbt, which is treated
         # as direct debit under the hood.
-        class: SmashPig\PaymentProviders\Adyen\DirectDebitPaymentProvider
+        class: SmashPig\PaymentProviders\Adyen\IdealBankTransferPaymentProvider
+        <<: *CACHE
+    rtbt:
+        class: SmashPig\PaymentProviders\Adyen\IdealBankTransferPaymentProvider
         <<: *CACHE
     google:
         class: SmashPig\PaymentProviders\Adyen\GooglePayPaymentProvider
