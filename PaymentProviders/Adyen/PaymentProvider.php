@@ -14,19 +14,19 @@ use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\ReferenceData\CurrencyRates;
 use SmashPig\PaymentData\ReferenceData\NationalCurrencies;
+use SmashPig\PaymentData\SavedPaymentDetails;
 use SmashPig\PaymentData\StatusNormalizer;
-use SmashPig\PaymentProviders\ApprovePaymentResponse;
-use SmashPig\PaymentProviders\CancelPaymentResponse;
 use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\IRefundablePaymentProvider;
-use SmashPig\PaymentProviders\PaymentDetailResponse;
-use SmashPig\PaymentProviders\PaymentMethodResponse;
-use SmashPig\PaymentProviders\PaymentProviderResponse;
-use SmashPig\PaymentProviders\RefundPaymentResponse;
+use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
+use SmashPig\PaymentProviders\Responses\CancelPaymentResponse;
+use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
+use SmashPig\PaymentProviders\Responses\PaymentMethodResponse;
+use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
+use SmashPig\PaymentProviders\Responses\RefundPaymentResponse;
+use SmashPig\PaymentProviders\Responses\SavedPaymentDetailsResponse;
 use SmashPig\PaymentProviders\RiskScorer;
-use SmashPig\PaymentProviders\SavedPaymentDetails;
-use SmashPig\PaymentProviders\SavedPaymentDetailsResponse;
 
 /**
  * Class PaymentProvider
