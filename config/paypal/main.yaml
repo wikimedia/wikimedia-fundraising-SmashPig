@@ -4,6 +4,16 @@
 #   /etc/smashpig/paypal/main.yaml
 #   $HOME/.smashpig/paypal/main.yaml
 
+api:
+    class: SmashPig\PaymentProviders\PayPal\Api
+    constructor-parameters:
+        # For testing, set to https://api.sandbox.paypal.com/nvp
+        - endpoint: https://api.paypal.com/nvp
+        - user: <your_username.your.domain>
+        - password: <supersecret>
+        - certificate_path: /path/to/your/certificate.pem
+        - version: 204
+
 ipn-validator:
     class: SmashPig\PaymentProviders\PayPal\PayPalIpnValidator
 
