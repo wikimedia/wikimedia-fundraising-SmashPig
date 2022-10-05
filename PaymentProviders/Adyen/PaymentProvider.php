@@ -6,6 +6,7 @@ use OutOfBoundsException;
 use Psr\Log\LogLevel;
 use SmashPig\Core\Cache\CacheHelper;
 use SmashPig\Core\Context;
+use SmashPig\Core\DataStores\PaymentsInitialDatabase;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\PaymentError;
 use SmashPig\Core\ValidationError;
@@ -13,17 +14,21 @@ use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\ReferenceData\CurrencyRates;
 use SmashPig\PaymentData\ReferenceData\NationalCurrencies;
+use SmashPig\PaymentData\SavedPaymentDetails;
 use SmashPig\PaymentData\StatusNormalizer;
-use SmashPig\PaymentProviders\ApprovePaymentResponse;
-use SmashPig\PaymentProviders\CancelPaymentResponse;
 use SmashPig\PaymentProviders\ICancelablePaymentProvider;
+use SmashPig\PaymentProviders\IDeleteDataProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
-use SmashPig\PaymentProviders\PaymentDetailResponse;
-use SmashPig\PaymentProviders\PaymentMethodResponse;
-use SmashPig\PaymentProviders\PaymentProviderResponse;
+use SmashPig\PaymentProviders\IRefundablePaymentProvider;
+use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
+use SmashPig\PaymentProviders\Responses\CancelPaymentResponse;
+use SmashPig\PaymentProviders\Responses\DeleteDataResponse;
+use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
+use SmashPig\PaymentProviders\Responses\PaymentMethodResponse;
+use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
+use SmashPig\PaymentProviders\Responses\RefundPaymentResponse;
+use SmashPig\PaymentProviders\Responses\SavedPaymentDetailsResponse;
 use SmashPig\PaymentProviders\RiskScorer;
-use SmashPig\PaymentProviders\SavedPaymentDetails;
-use SmashPig\PaymentProviders\SavedPaymentDetailsResponse;
 
 /**
  * Class PaymentProvider
@@ -31,7 +36,12 @@ use SmashPig\PaymentProviders\SavedPaymentDetailsResponse;
  *
  *
  */
-abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentProvider {
+abstract class PaymentProvider implements
+	ICancelablePaymentProvider,
+	IDeleteDataProvider,
+	IPaymentProvider,
+	IRefundablePaymentProvider
+{
 	/**
 	 * @var Api
 	 */
@@ -88,6 +98,26 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 			. $params['language'];
 
 		return CacheHelper::getWithSetCallback( $cacheKey, $this->cacheParameters['duration'], $callback );
+	}
+
+	/**
+	 * Return the details from the params for pending resolve, because Adyen doesn't offer any way to look up the status via their API
+	 * @param array $params
+	 * @return PaymentDetailResponse
+	 * @throws \SmashPig\Core\DataStores\DataStoreException
+	 */
+	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
+		$result = new PaymentDetailResponse();
+		$result->setGatewayTxnId( $params['gateway_txn_id'] );
+		$result->setRecurringPaymentToken( $params['recurring_payment_token'] ?? '' );
+		// will check the breakdown at resolve again, so it's fine to be blank
+		$result->setRiskScores( [] );
+		$this->paymentsInitialDatabase = PaymentsInitialDatabase::get();
+		$paymentsInitRow = $this->paymentsInitialDatabase->fetchMessageByGatewayOrderId(
+			$params['gateway'], $params['order_id']
+		);
+		$result->setStatus( $paymentsInitRow['payments_final_status'] ?? FinalStatus::PENDING_POKE );
+		return $result;
 	}
 
 	/**
@@ -215,31 +245,19 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 	}
 
 	/**
-	 * Cancels a payment
+	 * Refunds a payment
+	 * https://docs.adyen.com/online-payments/refund
 	 *
-	 * @param string $gatewayTxnId
-	 * @return CancelPaymentResponse
+	 * @param array $params
+	 * @return RefundPaymentResponse
 	 */
-	public function cancelPayment( $gatewayTxnId ): CancelPaymentResponse {
-		$rawResponse = $this->api->cancel( $gatewayTxnId );
-		$response = new CancelPaymentResponse();
+	public function refundPayment( array $params ): RefundPaymentResponse {
+		$rawResponse = $this->api->refundPayment( $params );
+		$response = new RefundPaymentResponse();
 		$response->setRawResponse( $rawResponse );
 
-		if ( !empty( $rawResponse->cancelResult ) ) {
-			$this->mapTxnIdAndErrors(
-				$response,
-				$rawResponse->cancelResult,
-				false
-			);
-			$this->mapStatus(
-				$response,
-				$rawResponse,
-				new CancelPaymentStatus(),
-				$rawResponse->cancelResult->response ?? null,
-				[ FinalStatus::CANCELLED ]
-			);
-		} else {
-			$responseError = 'cancelResult element missing from Adyen cancel response.';
+		if ( empty( $rawResponse['status'] ) ) {
+			$responseError = 'status element missing from Adyen capture response.';
 			$response->addErrors( new PaymentError(
 				ErrorCode::MISSING_REQUIRED_DATA,
 				$responseError,
@@ -247,8 +265,108 @@ abstract class PaymentProvider implements IPaymentProvider, ICancelablePaymentPr
 			) );
 			$response->setSuccessful( false );
 			Logger::debug( $responseError, $rawResponse );
+		} else {
+			$this->mapStatus(
+				$response,
+				$rawResponse,
+				new RefundPaymentStatus(),
+				$rawResponse['status'],
+				[ FinalStatus::COMPLETE ]
+			);
 		}
+		$this->mapRestIdAndErrors( $response, $rawResponse );
+		return $response;
+	}
 
+	/**
+	 * Cancels a payment
+	 *
+	 * @param string $gatewayTxnId
+	 * @return CancelPaymentResponse
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	public function cancelPayment( $gatewayTxnId ): CancelPaymentResponse {
+		$rawResponse = $this->api->cancel( $gatewayTxnId );
+		$response = new CancelPaymentResponse();
+		$response->setRawResponse( $rawResponse );
+
+		if ( empty( $rawResponse['status'] ) ) {
+			$responseError = 'cancelResult element missing from Adyen cancel response.';
+			$response->addErrors(
+				new PaymentError(
+					ErrorCode::MISSING_REQUIRED_DATA,
+					$responseError,
+					LogLevel::ERROR
+				)
+			);
+			$response->setSuccessful( false );
+			Logger::debug( $responseError, $rawResponse );
+		} else {
+			$this->mapStatus(
+				$response,
+				$rawResponse,
+				new CancelPaymentStatus(),
+				$rawResponse['status'],
+				[ FinalStatus::CANCELLED ]
+			);
+		}
+		$this->mapRestIdAndErrors(
+			$response,
+			$rawResponse
+		);
+
+		return $response;
+	}
+
+	/**
+	 * Request deletion of all donor data associated with a payment.
+	 *
+	 * @param string $gatewayTransactionId called the PSP reference by Adyen
+	 * @return DeleteDataResponse
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	public function deleteDataForPayment( string $gatewayTransactionId ): DeleteDataResponse {
+		$rawResponse = $this->api->deleteDataForPayment( $gatewayTransactionId );
+		$response = new DeleteDataResponse();
+		$response->setRawResponse( $rawResponse );
+		if ( !isset( $rawResponse['result'] ) ) {
+			$responseError = 'Adyen response was null or invalid JSON.';
+			$response->addErrors( new PaymentError(
+				ErrorCode::MISSING_REQUIRED_DATA,
+				$responseError,
+				LogLevel::ERROR
+			) );
+			$response->setSuccessful( false );
+		} else {
+			switch ( $rawResponse['result'] ) {
+				case 'SUCCESS':
+				case 'ALREADY_PROCESSED':
+					$response->setSuccessful( true );
+					break;
+				case 'ACTIVE_RECURRING_TOKEN_EXISTS':
+					// shouldn't get here, since we're always passing forceErasure: true
+					$errorMessage = 'Adyen data deletion request failed on active recurring token';
+					$response->addErrors( new PaymentError(
+							ErrorCode::UNKNOWN,
+							$errorMessage,
+							LogLevel::ERROR
+						)
+					);
+					// Log here too just because it's so odd
+					Logger::error( $errorMessage );
+					$response->setSuccessful( false );
+					break;
+				case 'PAYMENT_NOT_FOUND':
+					$response->setSuccessful( false );
+					$response->addErrors( new PaymentError(
+							ErrorCode::TRANSACTION_NOT_FOUND,
+							"PSP reference $gatewayTransactionId not found at Adyen",
+							LogLevel::ERROR
+						)
+					);
+					break;
+			}
+		}
 		return $response;
 	}
 

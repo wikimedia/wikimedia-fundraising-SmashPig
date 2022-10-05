@@ -1,6 +1,6 @@
 <?php
 
-namespace SmashPig\PaymentProviders;
+namespace SmashPig\PaymentProviders\Responses;
 
 use SmashPig\Core\PaymentError;
 use SmashPig\Core\ValidationError;
@@ -59,6 +59,12 @@ abstract class PaymentProviderResponse {
 	 * @var bool
 	 */
 	protected $successful;
+
+	/**
+	 * Time taken in milliseconds
+	 * @var int
+	 */
+	protected $timeTaken;
 
 	/**
 	 * @return mixed
@@ -213,6 +219,22 @@ abstract class PaymentProviderResponse {
 	 */
 	public function setRawStatus( string $rawStatus ): self {
 		$this->rawStatus = $rawStatus;
+		return $this;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getTimeTaken(): int {
+		return $this->timeTaken;
+	}
+
+	/**
+	 * @param int $timeTaken
+	 * @return static
+	 */
+	public function setTimeTaken( int $timeTaken ): self {
+		$this->timeTaken = $timeTaken;
 		return $this;
 	}
 }

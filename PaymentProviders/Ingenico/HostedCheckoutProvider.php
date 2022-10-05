@@ -4,7 +4,7 @@ namespace SmashPig\PaymentProviders\Ingenico;
 
 use BadMethodCallException;
 use SmashPig\Core\SmashPigException;
-use SmashPig\PaymentProviders\PaymentDetailResponse;
+use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use SmashPig\PaymentProviders\RiskScorer;
 
 /**
@@ -30,6 +30,10 @@ class HostedCheckoutProvider extends PaymentProvider {
 		} else {
 			throw new SmashPigException( "Subdomain key missing from configuration." );
 		}
+	}
+
+	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
+		return $this->getHostedPaymentStatus( $params['gateway_session_id'] );
 	}
 
 	/**

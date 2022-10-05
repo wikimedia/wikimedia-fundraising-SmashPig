@@ -6,7 +6,7 @@ use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\StatusNormalizer;
 use UnexpectedValueException;
 
-class CancelPaymentStatus implements StatusNormalizer {
+class RefundPaymentStatus implements StatusNormalizer {
 
 	/**
 	 * @param string $adyenStatus
@@ -15,7 +15,7 @@ class CancelPaymentStatus implements StatusNormalizer {
 	public function normalizeStatus( string $adyenStatus ): string {
 		switch ( $adyenStatus ) {
 			case 'received':
-				$status = FinalStatus::CANCELLED;
+				$status = FinalStatus::COMPLETE;
 				break;
 			default:
 				throw new UnexpectedValueException( "Unknown Adyen status $adyenStatus" );
