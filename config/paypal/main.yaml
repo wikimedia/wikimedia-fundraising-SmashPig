@@ -4,8 +4,8 @@
 #   /etc/smashpig/paypal/main.yaml
 #   $HOME/.smashpig/paypal/main.yaml
 
-api:
-    class: SmashPig\PaymentProviders\PayPal\PayPalPaymentsAPI
+ipn-validator:
+    class: SmashPig\PaymentProviders\PayPal\PayPalIpnValidator
 
 endpoints:
     listener:
@@ -120,10 +120,4 @@ messages:
             # FIXME: if case_type=chargeback, then txn_type might be blank
             # and the message should go to the refund queue.
 curl:
-    validator:
-        class: SmashPig\Core\Http\EnumValidator
-        constructor-parameters:
-            -
-                - INVALID
-                - VERIFIED
     retries: 7
