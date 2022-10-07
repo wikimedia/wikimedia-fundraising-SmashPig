@@ -32,18 +32,14 @@ class Api {
 	protected $version;
 
 	/**
-	 * @param string $endpoint
-	 * @param string $user
-	 * @param string $password
-	 * @param string $certificate_path
-	 * @param string $version
+	 * @param array $params required keys 'endpoint', 'user', 'password', 'certificate_path', and 'version'
 	 */
-	public function __construct( string $endpoint, string $user, string $password, string $certificate_path, string $version ) {
-		$this->endpoint = $endpoint;
-		$this->user = $user;
-		$this->password = $password;
-		$this->certificate_path = $certificate_path;
-		$this->version = $version;
+	public function __construct( array $params ) {
+		$this->endpoint = $params[ 'endpoint' ];
+		$this->user = $params[ 'user' ];
+		$this->password = $params[ 'password' ];
+		$this->certificate_path = $params[ 'certificate_path' ];
+		$this->version = $params[ 'version' ];
 	}
 
 	/**
