@@ -15,6 +15,11 @@ api:
             certificate_path: /path/to/your/certificate.pem
             version: 204
 
+payment-provider:
+    paypal:
+        class:
+            SmashPig\PaymentProviders\PayPal\PaymentProvider
+
 ipn-validator:
     class: SmashPig\PaymentProviders\PayPal\PayPalIpnValidator
 
