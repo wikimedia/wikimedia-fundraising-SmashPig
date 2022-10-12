@@ -7,8 +7,6 @@ require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 use SmashPig\Core\Context;
 use SmashPig\Maintenance\MaintenanceBase;
 
-$maintClass = 'SmashPig\PaymentProviders\PayPal\Maintenance\TestApi';
-
 /**
  * Test out basic Paypal API connectivity
  */
@@ -61,5 +59,7 @@ class TestApi extends MaintenanceBase {
 		return $params;
 	}
 }
+
+$maintClass = TestApi::class;
 
 require RUN_MAINTENANCE_IF_MAIN;
