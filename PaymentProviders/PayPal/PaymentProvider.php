@@ -2,9 +2,13 @@
 
 namespace SmashPig\PaymentProviders\PayPal;
 
+use Psr\Log\LogLevel;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\PaymentError;
 use SmashPig\PaymentData\DonorDetails;
+use SmashPig\PaymentData\ErrorCode;
+use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
@@ -30,10 +34,25 @@ class PaymentProvider implements IPaymentProvider {
 	}
 
 	/**
-	 * @inheritDoc
+	 * @param array $params
+	 * @return ApprovePaymentResponse
 	 */
 	public function approvePayment( array $params ): ApprovePaymentResponse {
-		// TODO: Implement approvePayment() method.
+		$rawResponse = $this->api->doExpressCheckoutPayment( $params );
+		$response = new ApprovePaymentResponse();
+		$response->setRawResponse( $rawResponse );
+		$response->setRawStatus( $rawResponse['ACK'] ?? null );
+		if ( $this->isSuccessfulPaypalResponse( $rawResponse ) ) {
+			$response->setSuccessful( true );
+			$response->setGatewayTxnId( $rawResponse['PAYMENTINFO_0_TRANSACTIONID'] );
+			$response->setStatus( ( new ApprovePaymentStatus() )->normalizeStatus( $rawResponse['PAYMENTINFO_0_PAYMENTSTATUS'] ) );
+		} else {
+			$response->setSuccessful( false );
+			$response->setStatus( FinalStatus::FAILED );
+			$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
+
+		}
+		return $response;
 	}
 
 	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
@@ -55,7 +74,7 @@ class PaymentProvider implements IPaymentProvider {
 
 		$response = ( new PaymentDetailResponse() )
 			->setRawResponse( $rawResponse )
-			->setSuccessful( $this->checkPaypalAcknowledgmentStatus( $rawResponse ) )
+			->setSuccessful( $this->isSuccessfulPaypalResponse( $rawResponse ) )
 			->setDonorDetails( $details )
 			->setRawStatus( $rawStatus )
 			->setProcessorContactID( $rawResponse['PAYERID'] ?? null )
@@ -69,17 +88,90 @@ class PaymentProvider implements IPaymentProvider {
 		return $response;
 	}
 
-	protected function checkPaypalAcknowledgmentStatus( array $rawResponse ): bool {
-		if ( empty( $rawResponse['ACK'] ) ) {
+	/**
+	 * @param array $rawResponse
+	 *
+	 * @return bool
+	 */
+	protected function isSuccessfulPaypalResponse( array $rawResponse ): bool {
+		$paypalAcknowledgementStatus = $rawResponse['ACK'] ?? null;
+
+		if ( $paypalAcknowledgementStatus === null ) {
 			return false;
 		}
-		if ( $rawResponse['ACK'] == 'Success' ) {
+		if ( $paypalAcknowledgementStatus == 'Success' ) {
 			return true;
 		}
-		if ( $rawResponse['ACK'] == 'SuccessWithWarning' ) {
+		if ( $paypalAcknowledgementStatus == 'SuccessWithWarning' ) {
 			Logger::warning( 'PayPal response came back with warning: ' . json_encode( $rawResponse ) );
+
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Normalize PayPal response errors
+	 *
+	 * TODO: We need a place where all mapping can live to avoid
+	 * having it peppered across different classes. Maybe a 'ProivderResponseMapper'
+	 * or something like that? It feels wrong that this class needs to know
+	 * so much about Paypal's request format and tightly couples the code to
+	 * the specific API method/response/version
+	 *
+	 * @param array $response
+	 * @return array
+	 */
+	protected function mapErrorsInResponse( array $response ): array {
+		$errors = [];
+		if ( isset( $response['L_ERRORCODE0'] ) ) {
+			$originalErrorCode = $response['L_ERRORCODE0'];
+			$mapperErrorCode = $this->mapPaypalErrorCode( $originalErrorCode );
+			$errorMessage = $response['L_LONGMESSAGE0'] ?? '';
+
+			$errors[] = new PaymentError(
+				$mapperErrorCode,
+				$originalErrorCode . ": " . $errorMessage,
+				LogLevel::ERROR
+			);
+		}
+		return $errors;
+	}
+
+	/**
+	 * Map Paypal error code to our own ErrorCode
+	 *
+	 * TODO: maybe we should insist on an int coming in as it feels weird
+	 * to go from string to int for no good reason
+	 *
+	 * @param string $errorCode
+	 * @return int
+	 */
+	private function mapPaypalErrorCode( string $errorCode ): int {
+		// default to unknown
+		$mappedCode = ErrorCode::UNKNOWN;
+
+		switch ( $errorCode ) {
+			case '11607':
+			case '10412':
+				$mappedCode = ErrorCode::DUPLICATE_ORDER_ID;
+				break;
+			case '10486': // First attempt failed
+				$mappedCode = ErrorCode::DECLINED;
+				break;
+			case '10411': // Timeout
+				$mappedCode = ErrorCode::SERVER_TIMEOUT;
+				break;
+			case '81100': // Missing Parameter
+				$mappedCode = ErrorCode::MISSING_REQUIRED_DATA;
+				break;
+			case '10410': // Invalid Paypal EC Token
+				$mappedCode = ErrorCode::TRANSACTION_NOT_FOUND;
+				break;
+			case '10421': // Express Checkout belongs to a different customer (weird)
+				$mappedCode = ErrorCode::UNEXPECTED_VALUE;
+				break;
+		}
+		return $mappedCode;
 	}
 }
