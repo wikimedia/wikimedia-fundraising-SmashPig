@@ -51,6 +51,10 @@ class AdyenPaymentsAccountingReport extends AdyenAudit {
 		// fee is given in settlement currency
 		// but queue consumer expects it in original
 		$exchange = $row['Exchange Rate'];
+		// The exchange rate can be empty for Settled Externally (amex)
+		if ( $exchange == "" ) {
+			$exchange = 1;
+		}
 		$fee = floatval( $row['Commission (SC)'] ) +
 			floatval( $row['Markup (SC)'] ) +
 			floatval( $row['Scheme Fees (SC)'] ) +
