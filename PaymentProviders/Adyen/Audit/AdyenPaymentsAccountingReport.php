@@ -70,7 +70,8 @@ class AdyenPaymentsAccountingReport extends AdyenAudit {
 
 	protected function parseRefund( array $row, array $msg ): array {
 		// Captured (PC) and Original Amount both have the amount refunded
-		$msg['gross'] = $row['Original Amount'];
+		// For some currencies (JPY) Original Amount seems to be off by 100x
+		$msg['gross'] = $row['Captured (PC)'];
 		$msg['gross_currency'] = $row['Payment Currency'];
 
 		$msg['gateway_parent_id'] = $row['Psp Reference'];
