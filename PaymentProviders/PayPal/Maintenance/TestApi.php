@@ -15,6 +15,7 @@ class TestApi extends MaintenanceBase {
 	public function __construct() {
 		parent::__construct();
 		$this->desiredOptions['config-node']['default'] = 'paypal';
+		$this->addArgument( 'is_recurring', 'is recurring', false );
 	}
 
 	/**
@@ -55,7 +56,10 @@ class TestApi extends MaintenanceBase {
 			'PAYMENTREQUEST_0_PAYMENTREASON' => 'None',
 			'SOLUTIONTYPE' => 'Mark'
 			];
-
+		if ( $this->getArgument( 'is_recurring' ) ) {
+			$params['L_BILLINGTYPE0'] = 'RecurringPayments';
+			$params['L_BILLINGAGREEMENTDESCRIPTION0'] = 'Monthly Subscription';
+		}
 		return $params;
 	}
 }

@@ -48,6 +48,7 @@ class Api {
 	 *
 	 * @param array $params
 	 * @return array
+	 * @throws \SmashPig\Core\ApiException
 	 */
 	public function makeApiCall( array $params ) {
 		$requestParams = array_merge( $this->getDefaultRequestParams(), $params );
@@ -57,6 +58,7 @@ class Api {
 		$response = $request->execute();
 		Logger::debug( "Response from API call: " . json_encode( $response ) );
 		parse_str( $response['body'], $result );
+		ExceptionMapper::throwOnPaypalError( $response['body'] );
 		return $result;
 	}
 
@@ -77,6 +79,32 @@ class Api {
 			'PAYMENTREQUEST_0_ITEMAMT' => $params['amount'],
 			'PAYMENTREQUEST_0_PAYMENTACTION' => 'Sale',
 			'PAYMENTREQUEST_0_PAYMENTREASON' => 'None',
+		];
+
+		return $this->makeApiCall( $requestParams );
+	}
+
+	/**
+	 * @param array $params
+	 * @return array
+	 */
+	public function createRecurringPaymentsProfile( array $params ) {
+		$requestParams = [
+			'METHOD' => 'CreateRecurringPaymentsProfile',
+			// A timestamped token, the value of which was returned in the response to the first call to SetExpressCheckout or SetCustomerBillingAgreement response.
+			// Tokens expire after approximately 3 hours.
+			'TOKEN' => $params['payment_token'],
+			'PROFILESTARTDATE' => gmdate( "Y-m-d\TH:i:s\Z", strtotime( $params['date'] ) ), // The date when billing for this profile begins, set it today
+			'DESC' => $params['description'],
+			'PROFILEREFERENCE' => $params['order_id'],
+			'BILLINGPERIOD' => 'Month',
+			'BILLINGFREQUENCY' => 1,
+			'AMT' => $params['amount'],
+			'CURRENCYCODE' => $params['currency'],
+			'EMAIL' => $params['email'],
+			'AUTOBILLOUTAMT' => 'NoAutoBill', // PayPal does not automatically bill the outstanding balance if payments fail.
+			'TOTALBILLINGCYCLES' => 0, // Forever.
+			'MAXFAILEDPAYMENTS' => 0, // Just keep trying
 		];
 
 		return $this->makeApiCall( $requestParams );

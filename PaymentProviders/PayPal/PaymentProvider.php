@@ -13,6 +13,7 @@ use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
+use SmashPig\PaymentProviders\Responses\CreateRecurringPaymentsProfileResponse;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use UnexpectedValueException;
 
@@ -37,13 +38,42 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 
 	/**
 	 * @param array $params
+	 *
+	 * @return CreateRecurringPaymentsProfileResponse
+	 */
+	public function createRecurringPaymentsProfile( array $params ) : CreateRecurringPaymentsProfileResponse {
+		$rawResponse = $this->api->createRecurringPaymentsProfile( $params );
+
+		$response = ( new CreateRecurringPaymentsProfileResponse() )
+			->setRawResponse( $rawResponse )
+			->setSuccessful( $this->isSuccessfulPaypalResponse( $rawResponse ) );
+
+		if ( !empty( $rawResponse['ACK'] ) ) {
+			$response->setRawStatus( $rawResponse['ACK'] );
+		}
+
+		if ( isset( $rawResponse['PROFILESTATUS'] ) ) {
+			$response->setStatus( ( new RecurringPaymentsProfileStatus() )
+				->normalizeStatus( $rawResponse['PROFILESTATUS'] ) )
+				->setProfileId( $rawResponse['PROFILEID'] );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * @param array $params
 	 * @return ApprovePaymentResponse
+	 * @throws UnexpectedValueException if the response body is null
 	 */
 	public function approvePayment( array $params ): ApprovePaymentResponse {
 		$rawResponse = $this->api->doExpressCheckoutPayment( $params );
 		$response = new ApprovePaymentResponse();
 		$response->setRawResponse( $rawResponse );
-		$response->setRawStatus( $rawResponse['ACK'] ?? null );
+
+		if ( !empty( $rawResponse['ACK'] ) ) {
+			$response->setRawStatus( $rawResponse['ACK'] );
+		}
 
 		if ( $this->isSuccessfulPaypalResponse( $rawResponse ) ) {
 			$response->setSuccessful( true );
