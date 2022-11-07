@@ -83,6 +83,18 @@ class Api {
 	}
 
 	/**
+	 * @param string $token
+	 * @return array
+	 */
+	public function getExpressCheckoutDetails( string $token ) {
+		$requestParams = [
+			'METHOD' => 'GetExpressCheckoutDetails',
+			'TOKEN' => $token
+		];
+		return $this->makeApiCall( $requestParams );
+	}
+
+	/**
 	 * Paypal expects auth and version params to be sent within the request body.
 	 * https://developer.paypal.com/api/nvp-soap/gs-PayPalAPIs/#link-callpayload
 	 *

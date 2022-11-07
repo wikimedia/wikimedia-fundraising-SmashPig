@@ -9,12 +9,13 @@ use SmashPig\Core\PaymentError;
 use SmashPig\PaymentData\DonorDetails;
 use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 
-class PaymentProvider implements IPaymentProvider {
+class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvider {
 
 	/**
 	 * @var Api
@@ -55,12 +56,16 @@ class PaymentProvider implements IPaymentProvider {
 		return $response;
 	}
 
+	/**
+	 * Get the latest status from PayPal
+	 *
+	 * $params['token'] should match the PayPal EC Token
+	 *
+	 * @param array $params
+	 * @return PaymentDetailResponse
+	 */
 	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
-		$rawResponse = $this->api->makeApiCall( [
-			'METHOD' => 'GetExpressCheckoutDetails',
-			'TOKEN' => $params['gateway_session_id']
-		] );
-
+		$rawResponse = $this->api->getExpressCheckoutDetails( $params['token'] );
 		return $this->mapGetDetailsResponse( $rawResponse );
 	}
 
