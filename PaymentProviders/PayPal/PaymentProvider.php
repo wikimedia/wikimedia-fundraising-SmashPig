@@ -14,6 +14,7 @@ use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
+use UnexpectedValueException;
 
 class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvider {
 
@@ -43,16 +44,22 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 		$response = new ApprovePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 		$response->setRawStatus( $rawResponse['ACK'] ?? null );
+
 		if ( $this->isSuccessfulPaypalResponse( $rawResponse ) ) {
 			$response->setSuccessful( true );
 			$response->setGatewayTxnId( $rawResponse['PAYMENTINFO_0_TRANSACTIONID'] );
-			$response->setStatus( ( new ApprovePaymentStatus() )->normalizeStatus( $rawResponse['PAYMENTINFO_0_PAYMENTSTATUS'] ) );
+			if ( !empty( $rawResponse['PAYMENTINFO_0_PAYMENTSTATUS'] ) ) {
+				$response->setStatus( ( new ApprovePaymentStatus() )->normalizeStatus( $rawResponse['PAYMENTINFO_0_PAYMENTSTATUS'] ) );
+			} else {
+				throw new UnexpectedValueException( "Paypal API call successful but no status returned" );
+			}
 		} else {
 			$response->setSuccessful( false );
+			// when the API call fails we don't get a result in PAYMENTINFO_0_PAYMENTSTATUS so set the status here.
 			$response->setStatus( FinalStatus::FAILED );
 			$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
-
 		}
+
 		return $response;
 	}
 
@@ -94,6 +101,15 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 	}
 
 	/**
+	 * Check the API call result.
+	 *
+	 * 'ACK' is the Acknowledge Status for the entire transaction or API call. PayPal also returns
+	 * payment-specific fields such as 'PAYMENTINFO_0_PAYMENTSTATUS', which is the payment status of the first payment.
+	 * PayPal supports multiple payments in a single request. PayPal indicate this in the docs by referring to
+	 * payment-specific fields with 'n' e.g. 'PAYMENTINFO_n_PAYMENTSTATUS'. This isn't relevant in WMF's case as we
+	 * only ever send over one payment in a single request. PayPal used to also return 'PAYMENTINFO_0_ACK' but that's
+	 * now been deprecated.
+	 *
 	 * @param array $rawResponse
 	 *
 	 * @return bool
@@ -145,9 +161,6 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 
 	/**
 	 * Map Paypal error code to our own ErrorCode
-	 *
-	 * TODO: maybe we should insist on an int coming in as it feels weird
-	 * to go from string to int for no good reason
 	 *
 	 * @param string $errorCode
 	 * @return int
