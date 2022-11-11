@@ -55,14 +55,15 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				'body' => $testApiResponse,
 		] );
 
-		// perform the test
 		$testApiParams = [
 				'METHOD' => 'GetExpressCheckoutDetails',
 				'TOKEN' => 'EC-TESTTOKEN12345678910'
 		];
 
-		// check the results
+		// call the code
 		$response = $this->api->makeApiCall( $testApiParams );
+
+		// check the results
 		$this->assertEquals( http_build_query( $response ), $testApiResponse );
 	}
 
