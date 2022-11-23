@@ -18,6 +18,7 @@ use SmashPig\PaymentData\SavedPaymentDetails;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\IDeleteDataProvider;
+use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\IRefundablePaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
@@ -40,7 +41,8 @@ abstract class PaymentProvider implements
 	ICancelablePaymentProvider,
 	IDeleteDataProvider,
 	IPaymentProvider,
-	IRefundablePaymentProvider
+	IRefundablePaymentProvider,
+	IGetLatestPaymentStatusProvider
 {
 	/**
 	 * @var Api
@@ -101,23 +103,34 @@ abstract class PaymentProvider implements
 	}
 
 	/**
-	 * Return the details from the params for pending resolve, because Adyen doesn't offer any way to look up the status via their API
+	 * Get the last Adyen status from our payments_initial db table.
+	 *
+	 * $params['gateway_txn_id'] is required
+	 * $params['gateway'] is required
+	 * $params['order_id'] is required
+	 * $params['recurring_payment_token'] is optional
+	 *
+	 * Note: Adyen doesn't offer an API action to retrieve this info so
+	 * we're using the last status we saved. If no final status is set then
+	 * we return pending-poke.
+	 *
 	 * @param array $params
 	 * @return PaymentDetailResponse
-	 * @throws \SmashPig\Core\DataStores\DataStoreException
 	 */
 	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
-		$result = new PaymentDetailResponse();
-		$result->setGatewayTxnId( $params['gateway_txn_id'] );
-		$result->setRecurringPaymentToken( $params['recurring_payment_token'] ?? '' );
+		$response = new PaymentDetailResponse();
+		$response->setGatewayTxnId( $params['gateway_txn_id'] );
+		$response->setRecurringPaymentToken( $params['recurring_payment_token'] ?? '' );
 		// will check the breakdown at resolve again, so it's fine to be blank
-		$result->setRiskScores( [] );
+		$response->setRiskScores( [] );
 		$this->paymentsInitialDatabase = PaymentsInitialDatabase::get();
 		$paymentsInitRow = $this->paymentsInitialDatabase->fetchMessageByGatewayOrderId(
 			$params['gateway'], $params['order_id']
 		);
-		$result->setStatus( $paymentsInitRow['payments_final_status'] ?? FinalStatus::PENDING_POKE );
-		return $result;
+		$response->setStatus( $paymentsInitRow['payments_final_status'] ?? FinalStatus::PENDING_POKE );
+		// successful if either FinalStatus::PENDING_POKE, FinalStatus::COMPLETE
+		$response->setSuccessful( in_array( $response->getStatus(), $this->getPaymentDetailsSuccessfulStatuses() ) );
+		return $response;
 	}
 
 	/**

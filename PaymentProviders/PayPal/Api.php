@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\PayPal;
 
 use SmashPig\Core\Http\OutboundRequest;
+use SmashPig\Core\Logging\Logger;
 
 class Api {
 
@@ -54,8 +55,43 @@ class Api {
 		$request->setCertPath( $this->certificate_path );
 		$request->setBody( http_build_query( $requestParams ) );
 		$response = $request->execute();
+		Logger::debug( "Response from API call: " . json_encode( $response ) );
 		parse_str( $response['body'], $result );
 		return $result;
+	}
+
+	/**
+	 * @param array $params
+	 * @return array
+	 */
+	public function doExpressCheckoutPayment( array $params ) {
+		$requestParams = [
+			'METHOD' => 'DoExpressCheckoutPayment',
+			'TOKEN' => $params['payment_token'],
+			'PAYERID' => $params['processor_contact_id'],
+			'PAYMENTREQUEST_0_AMT' => $params['amount'],
+			'PAYMENTREQUEST_0_CURRENCYCODE' => $params['currency'],
+			'PAYMENTREQUEST_0_CUSTOM' => $params['order_id'],
+			'PAYMENTREQUEST_0_DESC' => $params['description'],
+			'PAYMENTREQUEST_0_INVNUM' => $params['order_id'],
+			'PAYMENTREQUEST_0_ITEMAMT' => $params['amount'],
+			'PAYMENTREQUEST_0_PAYMENTACTION' => 'Sale',
+			'PAYMENTREQUEST_0_PAYMENTREASON' => 'None',
+		];
+
+		return $this->makeApiCall( $requestParams );
+	}
+
+	/**
+	 * @param string $token
+	 * @return array
+	 */
+	public function getExpressCheckoutDetails( string $token ) {
+		$requestParams = [
+			'METHOD' => 'GetExpressCheckoutDetails',
+			'TOKEN' => $token
+		];
+		return $this->makeApiCall( $requestParams );
 	}
 
 	/**

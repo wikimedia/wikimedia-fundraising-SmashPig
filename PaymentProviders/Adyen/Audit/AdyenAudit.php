@@ -45,10 +45,10 @@ abstract class AdyenAudit implements AuditParser {
 		'retried',
 		'reversed',
 		'cancelled',
-		'sentforrefund', // does this eventually become refunded
-		'settledexternally', // amex
+		'sentforrefund',
 		'expired',
-		'error'
+		'error',
+		'capturefailed'
 	];
 
 	protected $fileData;
@@ -93,15 +93,19 @@ abstract class AdyenAudit implements AuditParser {
 		$msg = $this->setCommonValues( $row );
 
 		switch ( $type ) {
+			// Amex has externally in the type name
 			case 'settled':
+			case 'settledexternally':
 				$msg = $this->parseDonation( $row, $msg );
 				break;
 			case 'chargeback':
+			case 'chargebackexternally':
 			case 'refunded':
+			case 'refundedexternally':
 				$msg = $this->parseRefund( $row, $msg );
 				break;
 			default:
-				throw new OutOfBoundsException( "Unknown audit line type {$this->type}." );
+				throw new OutOfBoundsException( "Unknown audit line type {$type}." );
 		}
 
 		$this->fileData[] = $msg;
