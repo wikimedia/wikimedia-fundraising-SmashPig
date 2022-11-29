@@ -13,6 +13,7 @@ use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
+use SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse;
 use SmashPig\PaymentProviders\Responses\CreateRecurringPaymentsProfileResponse;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use UnexpectedValueException;
@@ -34,6 +35,30 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 	 */
 	public function createPayment( array $params ): CreatePaymentResponse {
 		// TODO: Implement createPayment() method.
+	}
+
+	/**
+	 * Set the PayPal Express Checkout
+	 *
+	 * @param array $params
+	 * @return CreatePaymentSessionResponse
+	 */
+	public function createPaymentSession( array $params ): CreatePaymentSessionResponse {
+		$rawResponse = $this->api->createPaymentSession( $params );
+
+		$response = ( new CreatePaymentSessionResponse() )
+			->setRawResponse( $rawResponse )
+			->setSuccessful( $this->isSuccessfulPaypalResponse( $rawResponse ) );
+
+		if ( !empty( $rawResponse['ACK'] ) ) {
+			$response->setRawStatus( $rawResponse['ACK'] );
+		}
+
+		if ( isset( $rawResponse['TOKEN'] ) ) {
+			$response->setPaymentSession( $rawResponse['TOKEN'] );
+		}
+
+		return $response;
 	}
 
 	/**

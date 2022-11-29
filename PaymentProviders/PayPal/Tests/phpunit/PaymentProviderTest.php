@@ -121,6 +121,61 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( "Success", $response->getRawResponse()['ACK'] );
 	}
 
+	public function testSetExpressCheckoutFail() {
+		// set up expectations
+		$testParams = [
+			'amount' => '30.00',
+			'currency' => 'ddd',
+			'order_id' => '888.1',
+			'is_recurring' => 1,
+		];
+
+		$testCreatePaymentSessionResponse = $this->getTestData( 'SetExpressCheckoutFail.response' );
+		parse_str( $testCreatePaymentSessionResponse, $parsedTestCreatePaymentSessionResponse );
+
+		$this->api->expects( $this->once() )
+			->method( 'createPaymentSession' )
+			->with( $this->equalTo( $testParams ) )
+			->willReturn( $parsedTestCreatePaymentSessionResponse );
+
+		// call the code
+		$response = $this->provider->createPaymentSession( $testParams );
+
+		// check the results
+		$this->assertInstanceOf( 'SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse', $response );
+		$this->assertFalse( $response->isSuccessful() );
+		$this->assertEquals( "Failure", $response->getRawStatus() );
+		$this->assertEquals( "Failure", $response->getRawResponse()['ACK'] );
+	}
+
+	public function testSetExpressCheckoutSuccess() {
+		// set up expectations
+		$testParams = [
+			'amount' => '30.00',
+			'currency' => 'USD',
+			'order_id' => '888.1',
+			'is_recurring' => 1,
+		];
+
+		$testCreatePaymentSessionResponse = $this->getTestData( 'SetExpressCheckoutSuccess.response' );
+		parse_str( $testCreatePaymentSessionResponse, $parsedTestCreatePaymentSessionResponse );
+
+		$this->api->expects( $this->once() )
+			->method( 'createPaymentSession' )
+			->with( $this->equalTo( $testParams ) )
+			->willReturn( $parsedTestCreatePaymentSessionResponse );
+
+		// call the code
+		$response = $this->provider->createPaymentSession( $testParams );
+
+		// check the results
+		$this->assertInstanceOf( 'SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse', $response );
+		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( "EC-9J76236023054520Y", $response->getPaymentSession() );
+		$this->assertEquals( "Success", $response->getRawStatus() );
+		$this->assertEquals( "Success", $response->getRawResponse()['ACK'] );
+	}
+
 	private function getTestData( $testFileName ) {
 		$testFileDir = __DIR__ . '/../Data/';
 		$testFilePath = $testFileDir . $testFileName;

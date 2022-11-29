@@ -63,6 +63,44 @@ class Api {
 	}
 
 	/**
+	 * Doc link: https://developer.paypal.com/api/nvp-soap/set-express-checkout-nvp/
+	 *
+	 * @param array $params
+	 * @return array
+	 */
+	public function createPaymentSession( array $params ) {
+		$requestParams = [
+			'VERSION' => 204,
+			'METHOD' => 'SetExpressCheckout',
+			'RETURNURL' => $params['return_url'],
+			'CANCELURL' => $params['cancel_url'],
+			'REQCONFIRMSHIPPING' => 0,
+			'NOSHIPPING' => 1,
+			'LOCALECODE' => $params['locale'],
+			'L_PAYMENTREQUEST_0_AMT0' => $params['amount'],
+			'L_PAYMENTREQUEST_0_DESC0' => $params['description'],
+			'PAYMENTREQUEST_0_AMT' => $params['amount'],
+			'PAYMENTREQUEST_0_CURRENCYCODE' => $params['currency'],
+			'PAYMENTREQUEST_0_CUSTOM' => $params['order_id'],
+			'PAYMENTREQUEST_0_DESC' => $params['description'],
+			'PAYMENTREQUEST_0_INVNUM' => $params['order_id'],
+			'PAYMENTREQUEST_0_ITEMAMT' => $params['amount'],
+			'PAYMENTREQUEST_0_PAYMENTACTION' => 'Sale',
+			'PAYMENTREQUEST_0_PAYMENTREASON' => 'None',
+			'SOLUTIONTYPE' => 'Mark'
+		];
+
+		if ( $params['is_recurring'] === 1 ) {
+			$requestParams['L_BILLINGTYPE0'] = 'RecurringPayments';
+			$requestParams['L_BILLINGAGREEMENTDESCRIPTION0'] = $params['description'];
+		}
+
+		return $this->makeApiCall( $requestParams );
+	}
+
+	/**
+	 * Doc link: https://developer.paypal.com/api/nvp-soap/do-express-checkout-payment-nvp/
+	 *
 	 * @param array $params
 	 * @return array
 	 */
@@ -85,6 +123,8 @@ class Api {
 	}
 
 	/**
+	 * Doc link: https://developer.paypal.com/api/nvp-soap/create-recurring-payments-profile-nvp/
+	 *
 	 * @param array $params
 	 * @return array
 	 */
@@ -111,6 +151,8 @@ class Api {
 	}
 
 	/**
+	 * Doc link: https://developer.paypal.com/api/nvp-soap/get-express-checkout-details-nvp/
+	 *
 	 * @param string $token
 	 * @return array
 	 */
@@ -138,5 +180,4 @@ class Api {
 		$params['VERSION'] = $this->version;
 		return $params;
 	}
-
 }
