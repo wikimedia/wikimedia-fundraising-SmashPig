@@ -61,6 +61,29 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( "Success", $response->getRawResponse()['ACK'] );
 	}
 
+	public function testGetLatestPaymentStatusWithError() {
+		// set up expectations
+		$testParams = [
+			'token' => 'EC-3HX397483P386493S'
+		];
+		$testApiResponse = $this->getTestData( 'GetLatestPaymentStatusWithError.response' );
+		parse_str( $testApiResponse, $parsedTestApiResponse );
+
+		$this->api->expects( $this->once() )
+			->method( 'getExpressCheckoutDetails' )
+			->with( $this->equalTo( $testParams['token'] ) )
+			->willReturn( $parsedTestApiResponse );
+
+		// call the code
+		$response = $this->provider->getLatestPaymentStatus( $testParams );
+
+		// check the results
+		$this->assertInstanceOf( 'SmashPig\PaymentProviders\Responses\PaymentDetailResponse', $response );
+		$this->assertFalse( $response->isSuccessful() );
+		$this->assertNull( $response->getRawStatus() );
+		$this->assertNull( $response->getStatus() );
+	}
+
 	public function testCreateRecurringPaymentsProfileSampleApiCall() {
 		// perform the test
 		$testParams = [

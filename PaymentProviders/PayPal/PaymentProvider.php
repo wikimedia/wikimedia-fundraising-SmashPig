@@ -88,8 +88,9 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 
 	/**
 	 * @param array $params
+	 *
 	 * @return ApprovePaymentResponse
-	 * @throws UnexpectedValueException if the response body is null
+	 * @throws UnexpectedValueException
 	 */
 	public function approvePayment( array $params ): ApprovePaymentResponse {
 		$rawResponse = $this->api->doExpressCheckoutPayment( $params );
@@ -131,26 +132,50 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 		return $this->mapGetDetailsResponse( $rawResponse );
 	}
 
-	protected function mapGetDetailsResponse( array $rawResponse ) {
-		$details = ( new DonorDetails() )
-			->setEmail( $rawResponse['EMAIL'] ?? null )
-			->setFirstName( $rawResponse['FIRSTNAME'] ?? null )
-			->setLastName( $rawResponse['LASTNAME'] ?? null );
-
-		$rawStatus = $rawResponse['CHECKOUTSTATUS'];
-
+	/**
+	 * Map Detail Response for GetExpressCheckoutDetails
+	 *
+	 * Not mapped, but usually present in response:
+	 * CORRELATIONID (their-side request ID for debugging), COUNTRYCODE, MIDDLENAME, SUFFIX,
+	 * TIMESTAMP (TODO: map to payment date), CUSTOM, INVNUM (last 2 are both order_id),
+	 * BILLINGAGREEMENTACCEPTEDSTATUS, REDIRECTREQUIRED, PAYMENTREQUEST_0_AMT, PAYMENTREQUEST_0_CURRENCYCODE
+	 *
+	 * @param array $rawResponse
+	 *
+	 * @return PaymentDetailResponse
+	 * @throws UnexpectedValueException
+	 */
+	protected function mapGetDetailsResponse( array $rawResponse ): PaymentDetailResponse {
 		$response = ( new PaymentDetailResponse() )
-			->setRawResponse( $rawResponse )
-			->setSuccessful( $this->isSuccessfulPaypalResponse( $rawResponse ) )
-			->setDonorDetails( $details )
-			->setRawStatus( $rawStatus )
-			->setProcessorContactID( $rawResponse['PAYERID'] ?? null )
-			->setStatus( ( new ExpressCheckoutStatus() )->normalizeStatus( $rawStatus ) )
-			->setGatewayTxnId( $rawResponse['PAYMENTINFO_0_TRANSACTIONID'] ?? '' );
-		// Not mapped, but usually present in response:
-		// CORRELATIONID (their-side request ID for debugging), COUNTRYCODE, MIDDLENAME, SUFFIX,
-		// TIMESTAMP (TODO: map to payment date), CUSTOM, INVNUM (last 2 are both order_id),
-		// BILLINGAGREEMENTACCEPTEDSTATUS, REDIRECTREQUIRED, PAYMENTREQUEST_0_AMT, PAYMENTREQUEST_0_CURRENCYCODE
+			->setRawResponse( $rawResponse );
+
+		if ( $this->isSuccessfulPaypalResponse( $rawResponse ) ) {
+			$details = ( new DonorDetails() )
+				->setEmail( $rawResponse['EMAIL'] ?? null )
+				->setFirstName( $rawResponse['FIRSTNAME'] ?? null )
+				->setLastName( $rawResponse['LASTNAME'] ?? null );
+
+			$response->setSuccessful( true )
+				->setDonorDetails( $details )
+				->setProcessorContactID( $rawResponse['PAYERID'] ?? null );
+
+			if ( !empty( $rawResponse['PAYMENTREQUEST_0_TRANSACTIONID'] ) ) {
+				// This field is only returned after a successful transaction for DoExpressCheckout has occurred.
+				$response->setGatewayTxnId( $rawResponse['PAYMENTREQUEST_0_TRANSACTIONID'] );
+			}
+
+			if ( !empty( $rawResponse['CHECKOUTSTATUS'] ) ) {
+				$response->setRawStatus( $rawResponse['CHECKOUTSTATUS'] )
+					->setStatus( ( new ExpressCheckoutStatus() )->normalizeStatus( $rawResponse['CHECKOUTSTATUS'] ) );
+			} else {
+				throw new UnexpectedValueException( "Paypal API call successful but no status returned" );
+			}
+		} else {
+			$response->setSuccessful( false );
+			// when the API call fails we don't get a result in CHECKOUTSTATUS,
+			// while if the error code is just a timeout, we do not want to make status failed, so no need to set the status here yet.
+			$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
+		}
 
 		return $response;
 	}
