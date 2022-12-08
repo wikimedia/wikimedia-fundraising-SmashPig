@@ -96,6 +96,10 @@ class ReferenceData {
 			'method' => 'google',
 			'submethod' => 'google'
 		],
+		'googlewallet' => [
+			'method' => 'google',
+			'submethod' => 'google'
+		],
 		'ideal' => [
 			'method' => 'rtbt',
 			'submethod' => 'rtbt_ideal',
