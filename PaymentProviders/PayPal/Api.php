@@ -165,6 +165,19 @@ class Api {
 	}
 
 	/**
+	 * @param array $params Associative array with a 'subscr_id' key
+	 * @return array
+	 */
+	public function manageRecurringPaymentsProfileStatusCancel( array $params ) {
+		$requestParams = [
+			'METHOD' => 'ManageRecurringPaymentsProfileStatus',
+			'PROFILEID' => $params[ 'subscr_id' ],
+			'ACTION' => 'Cancel'
+		];
+		return $this->makeApiCall( $requestParams );
+	}
+
+	/**
 	 * Paypal expects auth and version params to be sent within the request body.
 	 * https://developer.paypal.com/api/nvp-soap/gs-PayPalAPIs/#link-callpayload
 	 *

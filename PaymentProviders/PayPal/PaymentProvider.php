@@ -12,6 +12,7 @@ use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
+use SmashPig\PaymentProviders\Responses\CancelSubscriptionResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse;
 use SmashPig\PaymentProviders\Responses\CreateRecurringPaymentsProfileResponse;
@@ -112,6 +113,38 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 		} else {
 			$response->setSuccessful( false );
 			// when the API call fails we don't get a result in PAYMENTINFO_0_PAYMENTSTATUS so set the status here.
+			$response->setStatus( FinalStatus::FAILED );
+			$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Cancel an existing PayPal subscription
+	 *
+	 * @param array $params Associative array with a 'subscr_id' key
+	 * @return CancelSubscriptionResponse
+	 */
+	public function cancelSubscription( array $params ): CancelSubscriptionResponse {
+		$rawResponse = $this->api->manageRecurringPaymentsProfileStatusCancel( $params );
+		$response = new CancelSubscriptionResponse();
+		$response->setRawResponse( $rawResponse );
+		$response->setRawStatus( $rawResponse['ACK'] ?? null );
+
+		if ( $this->isSuccessfulPaypalResponse( $rawResponse ) ) {
+			$response->setSuccessful( true );
+
+			if (
+				empty( $rawResponse[ 'PROFILEID' ] ) ||
+				$rawResponse[ 'PROFILEID' ] !== $params[ 'subscr_id' ]
+			) {
+				throw new UnexpectedValueException(
+					"Paypal API call successful but incorrect or missing PROFILEID in response" );
+			}
+
+		} else {
+			$response->setSuccessful( false );
 			$response->setStatus( FinalStatus::FAILED );
 			$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
 		}
@@ -242,6 +275,8 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 	/**
 	 * Map Paypal error code to our own ErrorCode
 	 *
+	 * Documentation https://developer.paypal.com/api/nvp-soap/errors/
+	 *
 	 * @param string $errorCode
 	 * @return int
 	 */
@@ -268,6 +303,9 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 				break;
 			case '10421': // Express Checkout belongs to a different customer (weird)
 				$mappedCode = ErrorCode::UNEXPECTED_VALUE;
+				break;
+			case '11556': // Invalid subscription status for cancel action; should be active or suspended
+				$mappedCode = ErrorCode::SUBSCRIPTION_CANNOT_BE_CANCELED;
 				break;
 		}
 		return $mappedCode;
