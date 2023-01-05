@@ -62,4 +62,33 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->api->makeApiCall( $emptyParams = [] );
 	}
 
+	public function testApiCallGeneratesCorrectHMACSignature(): void {
+		$emptyParams = [];
+
+		// curlWrapper::execute() is called within Api::makeApiCall()
+		// via OutboundRequest::execute(). I did consider mocking
+		// OutboundRequest, but it looks like we typically mock the
+		// CurlWrapper for this scenario, which is one level lower.
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->anything(), // url
+				$this->anything(), // method
+				$this->callback( function ( $headers ) use ( $emptyParams ) {
+					// generate the signature here using the expected inputs
+					$secret = "test_ITSASECRET";
+					$signatureInput = "test_login" . $headers['X-Date'] . json_encode( $emptyParams );
+					$expectedSignatureValue = hash_hmac( "sha256", $signatureInput, $secret );
+
+					// compare generated signature with the signature in the headers
+					$this->assertEquals( $expectedSignatureValue, $headers['Authorization'] );
+					return true; // if we get here, the headers were set.
+				} )
+			)
+			->willReturn( $emptyResult = [] );
+
+		// headers are generated during the call to makeApiCall
+		$this->api->makeApiCall( $emptyParams );
+	}
+
 }

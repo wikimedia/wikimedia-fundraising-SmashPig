@@ -24,3 +24,6 @@ api:
             secret: generated_when_api_account_created
             endpoint: https://sandbox.dlocal.com
             version: 2.1
+
+signature-calculator:
+    class: SmashPig\PaymentProviders\dlocal\SignatureCalculator
