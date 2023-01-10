@@ -2,8 +2,10 @@
 
 namespace SmashPig\PaymentProviders\dlocal;
 
+use SmashPig\Core\ApiException;
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\OutboundRequest;
+use Symfony\Component\HttpFoundation\Response;
 
 class Api {
 
@@ -52,13 +54,31 @@ class Api {
 
 	/**
 	 * @param array $params
+	 * @param string $method
 	 * @return array
+	 * @throws ApiException
 	 */
-	public function makeApiCall( array $params ): array {
-		$request = $this->getNewRequest();
-		$request->setBody( json_encode( $params, JSON_THROW_ON_ERROR ) );
+	public function makeApiCall( array $params, string $method = 'POST' ): array {
+		$request = $this->createRequestBasedOnMethodAndSetBody( $method, $params );
 		$this->setRequestHeaders( $request );
-		return $request->execute();
+		$rawResponse = $request->execute();
+
+		if ( $this->responseIsInvalid( $rawResponse ) ) {
+			throw new ApiException(
+				"Response is invalid. Status:" . $rawResponse['status'] . ' body: ' . $rawResponse['body']
+			);
+		}
+
+		return json_decode( $rawResponse['body'], true );
+	}
+
+	public function getPaymentMethods( string $country ): array {
+		$params = [
+			'route' => 'payment-methods',
+			'country' => $country,
+		];
+
+		return $this->makeApiCall( $params, 'GET' );
 	}
 
 	/**
@@ -82,7 +102,8 @@ class Api {
 
 		// calculate the request signature and add to 'Authorization' header
 		// as instructed in https://docs.dlocal.com/reference/payins-security#headers
-		$signatureInput = $this->login . $date . $request->getBody();
+		$requestBody = ( $request->getMethod() === 'POST' ) ? $request->getBody() : '';
+		$signatureInput = $this->login . $date . $requestBody;
 		$signature = $this->signatureCalculator->calculate( $signatureInput, $this->secret );
 		// dLocal signatures have a text prefix which needs to be in the header
 		$signaturePrefix = 'V2-HMAC-SHA256, Signature: ';
@@ -90,10 +111,40 @@ class Api {
 	}
 
 	/**
+	 * The OutboundRequest will be created differently depending on the $method(HTTP verb e.g GET/POST/PUT).
+	 * In this function, we detect the verb and create the appropriate form of OutboundRequest.
+	 *
+	 * The $body of the request is also different between methods, for GET we set the $body to null and for
+	 * POST, we json_encode() the $body.
+	 *
+	 *
+	 * @param string $method
+	 * @param array $params
 	 * @return OutboundRequest
 	 */
-	protected function getNewRequest(): OutboundRequest {
-		return new OutboundRequest( $this->endpoint );
+	protected function createRequestBasedOnMethodAndSetBody( string $method, array $params ): OutboundRequest {
+		$apiUrl = $this->endpoint;
+
+		if ( $method === 'GET' ) {
+			$route = $params['route'] ?? '';
+			unset( $params['route'] );
+			$apiUrl .= '/' . $route . '?' . http_build_query( $params );
+			$body = null;
+		} else {
+			$body = json_encode( $params );
+		}
+
+		$request = new OutboundRequest( $apiUrl, $method );
+		$request->setBody( $body );
+		return $request;
+	}
+
+	/**
+	 * @param array $rawResponse
+	 * @return bool
+	 */
+	protected function responseIsInvalid( array $rawResponse ): bool {
+		return $rawResponse['status'] === Response::HTTP_NO_CONTENT || empty( $rawResponse['body'] );
 	}
 
 }

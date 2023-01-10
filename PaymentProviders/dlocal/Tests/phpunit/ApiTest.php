@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\dlocal\Tests;
 
+use SmashPig\Core\Http\CurlWrapper;
 use SmashPig\PaymentProviders\dlocal\Api;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
@@ -56,7 +57,10 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 					return true; // if we get here, the headers were set.
 				} )
 			)
-			->willReturn( $emptyResult = [] );
+			->willReturn( [
+				'status' => 200,
+				'body' => '{"result":"test"}',
+			] );
 
 		// headers are generated during the call to makeApiCall
 		$this->api->makeApiCall( $emptyParams = [] );
@@ -88,10 +92,68 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 					return true; // if we get here, the headers were set.
 				} )
 			)
-			->willReturn( $emptyResult = [] );
+			->willReturn( [
+				'status' => 200,
+				'body' => '{"result":"test"}',
+			] );
 
 		// headers are generated during the call to makeApiCall
 		$this->api->makeApiCall( $emptyParams );
 	}
 
+	/**
+	 * @see PaymentProviders/dlocal/Tests/Data/payment-methods.response
+	 */
+	public function testGetPaymentMethods(): void {
+		$mockResponse = $this->prepareMockResponse( 'payment-methods.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payment-methods?country=MX' ),
+				$this->equalTo( 'GET' )
+			)->willReturn( $mockResponse );
+
+		$results = $this->api->getPaymentMethods( 'MX' ); // MX is Mexico
+
+		$expectedPaymentMethod = [
+			'id' => 'OX',
+			'type' => 'TICKET',
+			'name' => 'Oxxo',
+			'logo' => 'https://pay.dlocal.com/views/2.0/images/payments/OX.png',
+			'allowed_flows' =>
+				[
+					0 => 'REDIRECT',
+				],
+		];
+
+		// the first result for Mexico should be Oxxo
+		$this->assertEquals( $expectedPaymentMethod, $results[0] );
+	}
+
+	/**
+	 * This helper method is an alternative to Tests/BaseSmashPigUnitTestCase.php:setUpResponse(),
+	 * which returns the mock response instead of setting it, inside the method.
+	 *
+	 * The header size counting code is a bit confusing, I forget what it does every time I see it, but
+	 * all that it's doing is telling CurlWrapper::parseResponse() where the headers end and the body begins.
+	 *
+	 * @param string $filename
+	 * @param int $statusCode
+	 * @return array
+	 */
+	private function prepareMockResponse( string $filename, int $statusCode ): array {
+		$filePath = __DIR__ . '/../Data/' . $filename;
+		$fileContents = file_get_contents( $filePath );
+
+		// the +2 here is to include the two line ending chars "\n\n" in the header count. see doc-bloc for more.
+		$header_size = strpos( $fileContents, "\n\n" ) + 2;
+
+		return CurlWrapper::parseResponse(
+			$fileContents,
+			[
+				'http_code' => $statusCode,
+				'header_size' => $header_size,
+			]
+		);
+	}
 }
