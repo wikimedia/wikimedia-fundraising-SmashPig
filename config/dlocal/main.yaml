@@ -27,3 +27,7 @@ api:
 
 signature-calculator:
     class: SmashPig\PaymentProviders\dlocal\SignatureCalculator
+
+payment-provider:
+    cc:
+        class: SmashPig\PaymentProviders\dlocal\CardPaymentProvider

@@ -53,13 +53,15 @@ class Api {
 	}
 
 	/**
-	 * @param array $params
 	 * @param string $method
+	 * @param string $route
+	 * @param array $params
 	 * @return array
 	 * @throws ApiException
 	 */
-	public function makeApiCall( array $params, string $method = 'POST' ): array {
-		$request = $this->createRequestBasedOnMethodAndSetBody( $method, $params );
+	public function makeApiCall( string $method = 'POST', string $route = '', array $params = [] ): array {
+		$request = $this->createRequestBasedOnMethodAndSetBody( $method, $route, $params );
+
 		$this->setRequestHeaders( $request );
 		$rawResponse = $request->execute();
 
@@ -74,11 +76,19 @@ class Api {
 
 	public function getPaymentMethods( string $country ): array {
 		$params = [
-			'route' => 'payments-methods',
 			'country' => $country,
 		];
 
-		return $this->makeApiCall( $params, 'GET' );
+		return $this->makeApiCall( 'GET', 'payments-methods', $params );
+	}
+
+	/**
+	 * @param array $params
+	 * @return array
+	 * @throws ApiException
+	 */
+	public function authorizePayment( array $params ): array {
+		return $this->makeApiCall( 'POST', 'payments', $params );
 	}
 
 	/**
@@ -122,13 +132,11 @@ class Api {
 	 * @param array $params
 	 * @return OutboundRequest
 	 */
-	protected function createRequestBasedOnMethodAndSetBody( string $method, array $params ): OutboundRequest {
-		$apiUrl = $this->endpoint;
+	protected function createRequestBasedOnMethodAndSetBody( string $method, string $route, array $params ): OutboundRequest {
+		$apiUrl = !empty( $route ) ? $this->endpoint . '/' . $route : $this->endpoint;
 
 		if ( $method === 'GET' ) {
-			$route = $params['route'] ?? '';
-			unset( $params['route'] );
-			$apiUrl .= '/' . $route . '?' . http_build_query( $params );
+			$apiUrl .= '?' . http_build_query( $params );
 			$body = null;
 		} else {
 			$body = json_encode( $params );
