@@ -22,7 +22,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 			'login' => 'test_login',
 			'trans_key' => 'test_dg$3434534E',
 			'secret' => 'test_ITSASECRET',
-			'version' => '2.1'
+			'version' => '2.1',
 		] );
 	}
 
@@ -76,9 +76,12 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				$this->anything(), // method
 				$this->callback( function ( $headers ) use ( $emptyParams ) {
 					// generate the signature here using the expected inputs
-					$secret = "test_ITSASECRET";
-					$signatureInput = "test_login" . $headers['X-Date'] . json_encode( $emptyParams );
-					$expectedSignatureValue = hash_hmac( "sha256", $signatureInput, $secret );
+					$secret = 'test_ITSASECRET';
+					$signatureInput = 'test_login' . $headers['X-Date'] . json_encode( $emptyParams );
+					$calculatedSignature = hash_hmac( 'sha256', $signatureInput, $secret );
+					// dLocal signatures have a text prefix which needs to be in the header
+					$signatureTextPrefix = 'V2-HMAC-SHA256, Signature: ';
+					$expectedSignatureValue = $signatureTextPrefix . $calculatedSignature;
 
 					// compare generated signature with the signature in the headers
 					$this->assertEquals( $expectedSignatureValue, $headers['Authorization'] );

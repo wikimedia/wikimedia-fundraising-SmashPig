@@ -84,7 +84,9 @@ class Api {
 		// as instructed in https://docs.dlocal.com/reference/payins-security#headers
 		$signatureInput = $this->login . $date . $request->getBody();
 		$signature = $this->signatureCalculator->calculate( $signatureInput, $this->secret );
-		$request->setHeader( 'Authorization', $signature );
+		// dLocal signatures have a text prefix which needs to be in the header
+		$signaturePrefix = 'V2-HMAC-SHA256, Signature: ';
+		$request->setHeader( 'Authorization', $signaturePrefix . $signature );
 	}
 
 	/**
