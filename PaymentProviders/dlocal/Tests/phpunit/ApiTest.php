@@ -21,7 +21,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->api = new Api( [
 			'endpoint' => 'http://example.com',
 			'login' => 'test_login',
-			'trans_key' => 'test_dg$3434534E',
+			'trans-key' => 'test_dg$3434534E',
 			'secret' => 'test_ITSASECRET',
 			'version' => '2.1',
 		] );

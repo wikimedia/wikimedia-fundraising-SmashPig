@@ -46,7 +46,7 @@ class Api {
 	public function __construct( array $params ) {
 		$this->endpoint = $params['endpoint'];
 		$this->login = $params['login'];
-		$this->trans_key = $params['trans_key'];
+		$this->trans_key = $params['trans-key'];
 		$this->secret = $params['secret'];
 		$this->version = $params['version'];
 		$this->signatureCalculator = Context::get()->getProviderConfiguration()->object( 'signature-calculator' );
