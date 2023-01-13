@@ -74,7 +74,7 @@ class Api {
 
 	public function getPaymentMethods( string $country ): array {
 		$params = [
-			'route' => 'payment-methods',
+			'route' => 'payments-methods',
 			'country' => $country,
 		];
 

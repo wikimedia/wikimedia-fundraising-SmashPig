@@ -109,7 +109,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->curlWrapper->expects( $this->once() )
 			->method( 'execute' )
 			->with(
-				$this->equalTo( 'http://example.com/payment-methods?country=MX' ),
+				$this->equalTo( 'http://example.com/payments-methods?country=MX' ),
 				$this->equalTo( 'GET' )
 			)->willReturn( $mockResponse );
 
