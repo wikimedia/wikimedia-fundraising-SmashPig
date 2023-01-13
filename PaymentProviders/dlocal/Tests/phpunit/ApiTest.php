@@ -66,6 +66,33 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->api->makeApiCall( $emptyParams = [] );
 	}
 
+	public function testApiCallSetsRequiredFormatDateHeader(): void {
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->anything(), // url
+				$this->anything(), // method
+				$this->callback( function ( $headers ) {
+					$this->assertArrayHasKey( 'X-Date', $headers );
+
+					// confirm X-Date string matches format set in docs https://docs.dlocal.com/reference/payins-security#headers
+					// e.g. 2023-01-16T14:35:56.990Z
+					$expectedDateFormat = 'Y-m-d\TH:i:s.v\Z';
+					$dateFromString = \DateTime::createFromFormat( $expectedDateFormat, $headers['X-Date'] );
+					$this->assertNotFalse( $dateFromString ); // returns false when string doesn't match format
+					$this->assertEquals( $dateFromString->format( $expectedDateFormat ),  $headers['X-Date'] );
+					return true; // if we get here, the date header was good were set.
+				} )
+			)
+			->willReturn( [
+				'status' => 200,
+				'body' => '{"result":"test"}',
+			] );
+
+		// headers are generated during the call to makeApiCall
+		$this->api->makeApiCall( $emptyParams = [] );
+	}
+
 	public function testApiCallGeneratesCorrectHMACSignature(): void {
 		$emptyParams = [];
 

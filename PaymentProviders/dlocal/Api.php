@@ -89,8 +89,8 @@ class Api {
 	 * @return void
 	 */
 	protected function setRequestHeaders( OutboundRequest $request ): void {
-		// set date header using ATOM format which is ISO8601 compatible
-		$date = ( new \DateTime() )->format( \DateTime::ATOM );
+		// date format is ISO8601 compatible
+		$date = ( new \DateTime() )->format( 'Y-m-d\TH:i:s.v\Z' );
 
 		// set the simple headers
 		$request->setHeader( 'X-Date', $date )
