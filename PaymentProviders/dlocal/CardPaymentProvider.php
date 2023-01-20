@@ -4,9 +4,10 @@ namespace SmashPig\PaymentProviders\dlocal;
 
 use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 
-class CardPaymentProvider extends PaymentProvider {
+class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 
 	/**
 	 * @param array $params
