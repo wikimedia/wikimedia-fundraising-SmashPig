@@ -9,6 +9,38 @@ use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 
 class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 
+	public function createPayment( array $params ): CreatePaymentResponse {
+		$response = new CreatePaymentResponse();
+		$invalidParams = $this->validateParams( $params );
+
+		if ( count( $invalidParams ) === 0 ) {
+			// transform is only called when required fields are present
+			$params = $this->transformToApiParams( $params );
+			$rawResponse = $this->api->authorizePayment( $params );
+			$response->setRawResponse( $rawResponse );
+
+			$rawStatus = $rawResponse['status'] ?? "";
+			$response->setRawStatus( $rawStatus );
+			$this->mapStatusAndAddErrorsIfAny( $response );
+
+			if ( $response->isSuccessful() ) {
+				$response->setGatewayTxnId( $rawResponse['id'] );
+			}
+		} else {
+			foreach ( $invalidParams as $field ) {
+				$response->addValidationError(
+						new ValidationError( $field,
+								null, [],
+								'Invalid ' . $field )
+				);
+			}
+			$response->setStatus( FinalStatus::FAILED );
+			$response->setSuccessful( false );
+		}
+
+		return $response;
+	}
+
 	/**
 	 * @param array $params
 	 * Need check for the following required params
@@ -29,17 +61,17 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 	protected function validateParams( array $params ): array {
 		$invalidFields = [];
 		$requiredFields = [
-				'amount',
-				'currency',
-				'country',
-				'payment_method',
-				'payment_submethod',
-				'order_id',
-				'payment_token',
-				'first_name',
-				'last_name',
-				'email',
-				'fiscal_number',
+			'amount',
+			'currency',
+			'country',
+			'payment_method',
+			'payment_submethod',
+			'order_id',
+			'payment_token',
+			'first_name',
+			'last_name',
+			'email',
+			'fiscal_number',
 		];
 		foreach ( $requiredFields as $field ) {
 			if ( empty( $params[$field] ) ) {
@@ -57,21 +89,21 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 	 */
 	protected function transformToApiParams( array $params ): array {
 		$apiParams = [
-				'amount' => $params['amount'],
-				'currency' => $params['currency'],
-				'country' => $params['country'],
-				'payment_method_id' => $params['payment_method'],
-				'payment_method_flow' => $params['payment_submethod'],
-				'order_id' => $params['order_id'],
-				'card' => [
-						'token' => $params['payment_token'],
-						'capture' => false
-				],
-				'payer' => [
-						'name' => $params['first_name'] . ' ' . $params['last_name'],
-						'email' => $params['email'],
-						'document' => $params['fiscal_number'],
-				]
+			'amount' => $params['amount'],
+			'currency' => $params['currency'],
+			'country' => $params['country'],
+			'payment_method_id' => $params['payment_method'],
+			'payment_method_flow' => $params['payment_submethod'],
+			'order_id' => $params['order_id'],
+			'card' => [
+				'token' => $params['payment_token'],
+				'capture' => false
+			],
+			'payer' => [
+				'name' => $params['first_name'] . ' ' . $params['last_name'],
+				'email' => $params['email'],
+				'document' => $params['fiscal_number'],
+			]
 		];
 
 		if ( array_key_exists( 'contact_id', $params ) ) {
@@ -103,37 +135,5 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 		}
 
 		return $apiParams;
-	}
-
-	public function createPayment( array $params ): CreatePaymentResponse {
-		$response = new CreatePaymentResponse();
-		$invalidParams = $this->validateParams( $params );
-
-		if ( count( $invalidParams ) === 0 ) {
-			// transform is only called when required fields are present
-			$params = $this->transformToApiParams( $params );
-			$rawResponse = $this->api->authorizePayment( $params );
-			$response->setRawResponse( $rawResponse );
-
-			$rawStatus = $rawResponse['status'] ?? "";
-			$response->setRawStatus( $rawStatus );
-			$this->mapStatusAndAddErrorsIfAny( $response );
-
-			if ( $response->isSuccessful() ) {
-				$response->setGatewayTxnId( $rawResponse['id'] );
-			}
-		} else {
-			foreach ( $invalidParams as $field ) {
-				$response->addValidationError(
-						new ValidationError( $field,
-								null, [],
-								'Invalid ' . $field )
-				);
-			}
-			$response->setStatus( FinalStatus::FAILED );
-			$response->setSuccessful( false );
-		}
-
-		return $response;
 	}
 }
