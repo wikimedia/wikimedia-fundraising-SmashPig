@@ -5,10 +5,16 @@ namespace SmashPig\PaymentProviders\dlocal;
 use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\IPaymentProvider;
+use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 
 class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 
+	/**
+	 * @param array $params
+	 * @return CreatePaymentResponse
+	 * @throws \SmashPig\Core\ApiException
+	 */
 	public function createPayment( array $params ): CreatePaymentResponse {
 		$response = new CreatePaymentResponse();
 		$invalidParams = $this->validateParams( $params );
@@ -39,6 +45,32 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Capture an authorized payment
+	 *
+	 * 'gateway_txn_id' - Required
+	 * 'amount' - optional
+	 * 'currency' - optional
+	 * 'order_id' - optional
+	 *
+	 * @param array $params
+	 * @return ApprovePaymentResponse
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	public function approvePayment( array $params ): ApprovePaymentResponse {
+		if ( $this->validateApprovePaymentParams( $params ) ) {
+			$rawResponse = $this->api->capturePayment( $params );
+			$approvePaymentResponse = DlocalApprovePaymentResponseFactory::fromRawResponse( $rawResponse );
+		} else {
+			$approvePaymentResponse = new ApprovePaymentResponse();
+			$this->addApprovePaymentResponseValidationErrors( $params, $approvePaymentResponse );
+			$approvePaymentResponse->setSuccessful( false );
+			$approvePaymentResponse->setStatus( FinalStatus::FAILED );
+		}
+
+		return $approvePaymentResponse;
 	}
 
 	/**
@@ -136,4 +168,43 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 
 		return $apiParams;
 	}
+
+	/**
+	 * Confirm required parameters are set.
+	 *
+	 * 'gateway_txn_id' - Required
+	 *
+	 * @param array $params
+	 * @return bool
+	 */
+	protected function validateApprovePaymentParams( array $params ): bool {
+		return array_key_exists( 'gateway_txn_id', $params );
+	}
+
+	/**
+	 * @param array $params
+	 * @param ApprovePaymentResponse $approvePaymentResponse
+	 * @return void
+	 */
+	protected function addApprovePaymentResponseValidationErrors( array $params, ApprovePaymentResponse $approvePaymentResponse ): void {
+		$missingParams = $this->getMissingApprovePaymentParams( $params );
+		foreach ( $missingParams as $missingParam ) {
+			$approvePaymentResponse->addValidationError( new ValidationError( $missingParam ) );
+		}
+	}
+
+	/**
+	 * @param array $params
+	 * @return array
+	 */
+	protected function getMissingApprovePaymentParams( array $params ): array {
+		$requiredParams = [
+			'gateway_txn_id'
+		];
+
+		return array_filter( $requiredParams, static function ( $requiredParam ) use ( $params ) {
+			return !array_key_exists( $requiredParam, $params );
+		} );
+	}
+
 }
