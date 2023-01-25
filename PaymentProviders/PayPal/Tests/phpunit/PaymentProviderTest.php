@@ -41,14 +41,14 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 	public function testGetLatestPaymentStatus() {
 		// set up expectations
 		$testParams = [
-			'token' => 'EC-TESTTOKEN12345678910'
+			'gateway_session_id' => 'EC-TESTTOKEN12345678910'
 		];
 		$testApiResponse = $this->getTestData( 'GetLatestPaymentStatus.response' );
 		parse_str( $testApiResponse, $parsedTestApiResponse );
 
 		$this->api->expects( $this->once() )
 			->method( 'getExpressCheckoutDetails' )
-			->with( $this->equalTo( $testParams['token'] ) )
+			->with( $this->equalTo( $testParams['gateway_session_id'] ) )
 			->willReturn( $parsedTestApiResponse );
 
 		// call the code
@@ -64,14 +64,14 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 	public function testGetLatestPaymentStatusWithError() {
 		// set up expectations
 		$testParams = [
-			'token' => 'EC-3HX397483P386493S'
+			'gateway_session_id' => 'EC-3HX397483P386493S'
 		];
 		$testApiResponse = $this->getTestData( 'GetLatestPaymentStatusWithError.response' );
 		parse_str( $testApiResponse, $parsedTestApiResponse );
 
 		$this->api->expects( $this->once() )
 			->method( 'getExpressCheckoutDetails' )
-			->with( $this->equalTo( $testParams['token'] ) )
+			->with( $this->equalTo( $testParams['gateway_session_id'] ) )
 			->willReturn( $parsedTestApiResponse );
 
 		// call the code
@@ -91,7 +91,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 			'amount' => '30.0',
 			'currency' => 'USD',
 			'email' => 'test_user@paypal.com',
-			'payment_token' => 'EC-74C37985WY171780F',
+			'gateway_session_id' => 'EC-74C37985WY171780F',
 		];
 
 		$testApiResponse = $this->getTestData( 'CreateRecurringPaymentsProfile.response' );
@@ -116,7 +116,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 	public function testApprovePayment() {
 		// set up expectations
 		$testParams = [
-				'payment_token' => 'EC-TESTTOKEN12345678910',
+				'gateway_session_id' => 'EC-TESTTOKEN12345678910',
 				'processor_contact_id' => 'FLJLQ2GV38E4Y',
 				'order_id' => '15190.1',
 				'amount' => '20.00',

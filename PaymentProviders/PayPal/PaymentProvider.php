@@ -156,13 +156,13 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 	/**
 	 * Get the latest status from PayPal
 	 *
-	 * $params['token'] should match the PayPal EC Token
+	 * $params['gateway_session_id'] should match the PayPal EC Token
 	 *
 	 * @param array $params
 	 * @return PaymentDetailResponse
 	 */
 	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
-		$rawResponse = $this->api->getExpressCheckoutDetails( $params['token'] );
+		$rawResponse = $this->api->getExpressCheckoutDetails( $params['gateway_session_id'] );
 		return $this->mapGetDetailsResponse( $rawResponse );
 	}
 
