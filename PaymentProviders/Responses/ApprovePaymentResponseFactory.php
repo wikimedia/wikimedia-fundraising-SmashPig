@@ -4,8 +4,8 @@ namespace SmashPig\PaymentProviders\Responses;
 
 abstract class ApprovePaymentResponseFactory {
 	/**
-	 * @param array $rawResponse API response from processor
+	 * @param mixed $rawResponse API response from processor
 	 * @return ApprovePaymentResponse
 	 */
-	abstract public static function fromRawResponse( array $rawResponse ): ApprovePaymentResponse;
+	abstract public static function fromRawResponse( $rawResponse ): ApprovePaymentResponse;
 }

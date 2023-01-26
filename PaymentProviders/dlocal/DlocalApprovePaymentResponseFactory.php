@@ -9,10 +9,10 @@ use SmashPig\PaymentProviders\Responses\ApprovePaymentResponseFactory;
 class DlocalApprovePaymentResponseFactory extends ApprovePaymentResponseFactory {
 
 	/**
-	 * @param array $rawResponse
+	 * @param mixed $rawResponse
 	 * @return ApprovePaymentResponse
 	 */
-	public static function fromRawResponse( array $rawResponse ): ApprovePaymentResponse {
+	public static function fromRawResponse( $rawResponse ): ApprovePaymentResponse {
 		$approvePaymentResponse = new ApprovePaymentResponse();
 		$approvePaymentResponse->setRawResponse( $rawResponse );
 		$rawStatus = $rawResponse['status'] ?? null;
