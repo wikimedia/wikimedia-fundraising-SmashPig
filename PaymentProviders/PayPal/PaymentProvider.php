@@ -200,7 +200,7 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 
 			if ( !empty( $rawResponse['CHECKOUTSTATUS'] ) ) {
 				$response->setRawStatus( $rawResponse['CHECKOUTSTATUS'] )
-					->setStatus( ( new ExpressCheckoutStatus() )->normalizeStatus( $rawResponse['CHECKOUTSTATUS'] ) );
+					->setStatus( ( new ExpressCheckoutStatus() )->normalizeStatus( $rawResponse ) );
 			} else {
 				throw new UnexpectedValueException( "Paypal API call successful but no status returned" );
 			}
