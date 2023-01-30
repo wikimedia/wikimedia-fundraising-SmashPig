@@ -237,6 +237,11 @@ class Api {
 				'name' => $params['first_name'] . ' ' . $params['last_name']
 			]
 		];
+
+		if ( array_key_exists( 'description', $params ) ) {
+			$apiParams['description'] = $params['description'];
+		}
+
 		$apiFields = [];
 		$apiFields['payer'] = [
 			'email' => 'email',
