@@ -41,7 +41,7 @@ class TestAuthorizeRedirectPayment extends MaintenanceBase {
 		$payer = [
 			'first_name' => 'Lorem',
 			'last_name' => 'Ipsum',
-			'email' => 'li@mail.com',
+			'email' => 'test@example.com',
 			'document' => '504.141.611-73',
 		];
 
