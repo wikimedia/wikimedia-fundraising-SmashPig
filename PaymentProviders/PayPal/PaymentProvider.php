@@ -11,6 +11,7 @@ use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
+use SmashPig\PaymentProviders\IRecurringPaymentProfileProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CancelSubscriptionResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
@@ -19,7 +20,7 @@ use SmashPig\PaymentProviders\Responses\CreateRecurringPaymentsProfileResponse;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use UnexpectedValueException;
 
-class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvider {
+class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvider, IRecurringPaymentProfileProvider {
 
 	/**
 	 * @var Api
@@ -155,13 +156,13 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 	/**
 	 * Get the latest status from PayPal
 	 *
-	 * $params['token'] should match the PayPal EC Token
+	 * $params['gateway_session_id'] should match the PayPal EC Token
 	 *
 	 * @param array $params
 	 * @return PaymentDetailResponse
 	 */
 	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
-		$rawResponse = $this->api->getExpressCheckoutDetails( $params['token'] );
+		$rawResponse = $this->api->getExpressCheckoutDetails( $params['gateway_session_id'] );
 		return $this->mapGetDetailsResponse( $rawResponse );
 	}
 
@@ -199,7 +200,7 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 
 			if ( !empty( $rawResponse['CHECKOUTSTATUS'] ) ) {
 				$response->setRawStatus( $rawResponse['CHECKOUTSTATUS'] )
-					->setStatus( ( new ExpressCheckoutStatus() )->normalizeStatus( $rawResponse['CHECKOUTSTATUS'] ) );
+					->setStatus( ( new ExpressCheckoutStatus() )->normalizeStatus( $rawResponse ) );
 			} else {
 				throw new UnexpectedValueException( "Paypal API call successful but no status returned" );
 			}

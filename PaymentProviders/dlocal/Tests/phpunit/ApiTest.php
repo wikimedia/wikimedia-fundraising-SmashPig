@@ -2,10 +2,14 @@
 
 namespace SmashPig\PaymentProviders\dlocal\Tests;
 
+use SmashPig\Core\ApiException;
 use SmashPig\Core\Http\CurlWrapper;
 use SmashPig\PaymentProviders\dlocal\Api;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
+/**
+ * @group Dlocal
+ */
 class ApiTest extends BaseSmashPigUnitTestCase {
 
 	/**
@@ -63,7 +67,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 			] );
 
 		// headers are generated during the call to makeApiCall
-		$this->api->makeApiCall( $emptyParams = [] );
+		$this->api->makeApiCall();
 	}
 
 	public function testApiCallSetsRequiredFormatDateHeader(): void {
@@ -90,7 +94,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 			] );
 
 		// headers are generated during the call to makeApiCall
-		$this->api->makeApiCall( $emptyParams = [] );
+		$this->api->makeApiCall();
 	}
 
 	public function testApiCallGeneratesCorrectHMACSignature(): void {
@@ -125,7 +129,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 			] );
 
 		// headers are generated during the call to makeApiCall
-		$this->api->makeApiCall( $emptyParams );
+		$this->api->makeApiCall();
 	}
 
 	/**
@@ -155,6 +159,200 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 
 		// the first result for Mexico should be Oxxo
 		$this->assertEquals( $expectedPaymentMethod, $results[0] );
+	}
+
+	/**
+	 * @see PaymentProviders/dlocal/Tests/Data/authorize-payment.response
+	 */
+	public function testAuthorizePayments(): void {
+		$mockResponse = $this->prepareMockResponse( 'authorize-payment.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+				->method( 'execute' )
+				->with(
+						$this->equalTo( 'http://example.com/payments' ),
+						$this->equalTo( 'POST' )
+				)->willReturn( $mockResponse );
+
+		$params = [
+			"amount" => 120,
+			"currency" => "USD",
+			"country" => "BR",
+			"payment_method_id" => "CARD",
+			"payment_method_flow" => "DIRECT",
+			"payer" => [
+				"name" => "Thiago Gabriel",
+				"email" => "thiago@example.com",
+				"document" => "53033315550",
+				"user_reference" => "12345",
+				"address" => [
+					"state"  => "Rio de Janeiro",
+					"city" => "Volta Redonda",
+					"zip_code" => "27275-595",
+					"street" => "Servidao B-1",
+					"number" => "1106"
+				],
+				"ip" => "127.0.0.1",
+				],
+			"card" => [
+				"token" => "CV-124c18a5-874d-4982-89d7-b9c256e647b5"
+			],
+			"order_id" => "657434343",
+		];
+		$results = $this->api->authorizePayment( $params );
+
+		$expectedAuthorizePaymentResult = [
+				"id" => "D-4-80ca7fbd-67ad-444a-aa88-791ca4a0c2b2",
+				"amount" => 120,
+				"currency" => "USD",
+				"country" => "BR",
+				"payment_method_id" => "CARD",
+				"payment_method_type" => "CARD",
+				"payment_method_flow" => "DIRECT",
+				"card" => [
+						"holder_name" => "Thiago Gabriel",
+						"expiration_month" => 10,
+						"expiration_year" => 2040,
+						"brand" => "VI",
+						"last4" => "1111"
+						],
+				"created_date" => "2018-12-26T20:28:47.000+0000",
+				"approved_date" => "2018-12-26T20:28:47.000+0000",
+				"status" => "AUTHORIZED",
+				"status_detail" => "The payment was authorized",
+				"status_code" => "600",
+				"order_id" => "657434343",
+				"notification_url" => "http://merchant.com/notifications"
+		];
+
+		$this->assertEquals( $expectedAuthorizePaymentResult, $results );
+	}
+
+	public function testCapturePaymentMapsApiParamsCorrectly() : void {
+		$apiParams = [
+			"gateway_txn_id" => "T-2486-91e73695-3e0a-4a77-8594-f2220f8c6515",
+			'amount' => 100,
+			'currency' => 'BRL',
+			'order_id' => '1234512345',
+		];
+
+		// gateway_txn_id should get mapped to authorization_id
+		$expectedMappedParams = [
+			"authorization_id" => "T-2486-91e73695-3e0a-4a77-8594-f2220f8c6515",
+			'amount' => 100,
+			'currency' => 'BRL',
+			'order_id' => '1234512345',
+		];
+
+		$mockResponse = $this->prepareMockResponse( 'capture-payment.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything(),
+				$this->callback( function ( $body ) use ( $expectedMappedParams ) {
+					// request body should be a json formatted string of the mapped params
+					$this->assertEquals( json_encode( $expectedMappedParams ), $body );
+					return true;
+				} )
+			)->willReturn( $mockResponse );
+
+		$capturePaymentResult = $this->api->capturePayment( $apiParams );
+
+		$this->assertEquals( $apiParams['gateway_txn_id'], $capturePaymentResult['authorization_id'] );
+		$this->assertEquals( $apiParams['amount'], $capturePaymentResult['amount'] );
+		$this->assertEquals( $apiParams['currency'], $capturePaymentResult['currency'] );
+		$this->assertEquals( $apiParams['order_id'], $capturePaymentResult['order_id'] );
+	}
+
+	public function testCapturePaymentSuccess() : void {
+		$apiParams = [
+			"gateway_txn_id" => "T-2486-91e73695-3e0a-4a77-8594-f2220f8c6515",
+			'amount' => 100,
+			'currency' => 'BRL',
+			'order_id' => '1234512345',
+		];
+
+		$mockResponse = $this->prepareMockResponse( 'capture-payment.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything(),
+			)->willReturn( $mockResponse );
+
+		$capturePaymentResult = $this->api->capturePayment( $apiParams );
+
+		$this->assertEquals( 'PAID', $capturePaymentResult['status'] );
+		$this->assertEquals( 'The payment was paid.', $capturePaymentResult['status_detail'] );
+		$this->assertEquals( 200, $capturePaymentResult['status_code'] );
+
+		$this->assertEquals( $apiParams['gateway_txn_id'], $capturePaymentResult['authorization_id'] );
+		$this->assertEquals( $apiParams['amount'], $capturePaymentResult['amount'] );
+		$this->assertEquals( $apiParams['currency'], $capturePaymentResult['currency'] );
+		$this->assertEquals( $apiParams['order_id'], $capturePaymentResult['order_id'] );
+	}
+
+	public function testCapturePaymentExceptionOnMissingAuthId(): void {
+		$this->expectException( \InvalidArgumentException::class );
+		$this->expectExceptionMessage( "gateway_txn_id is a required field" );
+
+		// gateway_txn_id missing from apiParams
+		$apiParams = [
+			'amount' => 100,
+			'currency' => 'BRL',
+			'order_id' => '1234512345',
+		];
+
+		$this->api->capturePayment( $apiParams );
+	}
+
+	public function testCapturePaymentExceptionOnPaymentNotFound(): void {
+		$this->expectException( ApiException::class );
+		$this->expectExceptionMessage( 'Response Error(404) {"code":4000,"message":"Payment not found"}' );
+
+		$apiParams = [
+			"gateway_txn_id" => "T-INVALID-TOKEN",
+		];
+
+		$mockResponse = $this->prepareMockResponse( 'capture-payment-fail-invalid-token.response', 404 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything()
+			)->willReturn( $mockResponse );
+
+		$capturePaymentResult = $this->api->capturePayment( $apiParams );
+	}
+
+	/**
+	 * This failure happens if you attempt to capture a payment that has previous been captured for the full amount
+	 * authorized.
+	 */
+	public function testCapturePaymentExceptionOnAmountExceeded(): void {
+		$this->expectException( ApiException::class );
+		$this->expectExceptionMessage( 'Response Error(400) {"code":5007,"message":"Amount exceeded"}' );
+
+		$apiParams = [
+			"gateway_txn_id" => "T-2486-91e73695-3e0a-4a77-8594-f2220f8c6515",
+			'amount' => 100,
+			'currency' => 'BRL',
+			'order_id' => '1234512345',
+		];
+
+		$mockResponse = $this->prepareMockResponse( 'capture-payment-fail-amount-exceeded.response', 400 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything()
+			)->willReturn( $mockResponse );
+
+		$capturePaymentResult = $this->api->capturePayment( $apiParams );
 	}
 
 	/**
