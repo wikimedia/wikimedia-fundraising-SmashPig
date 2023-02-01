@@ -165,69 +165,56 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 	 * @see PaymentProviders/dlocal/Tests/Data/authorize-payment.response
 	 */
 	public function testAuthorizePayments(): void {
+		$params = $this->getAuthorizePaymentRequestParams();
+
+		$apiParams = $params['params'];
+		$transformedParams = $params['transformedParams'];
+
 		$mockResponse = $this->prepareMockResponse( 'authorize-payment.response', 200 );
 		$this->curlWrapper->expects( $this->once() )
-				->method( 'execute' )
-				->with(
-						$this->equalTo( 'http://example.com/payments' ),
-						$this->equalTo( 'POST' )
-				)->willReturn( $mockResponse );
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything(),
+				$this->callback( function ( $body ) use ( $transformedParams ) {
+					// request body should be a json formatted string of the mapped params
+					$this->assertEquals( json_encode( $transformedParams ), $body );
+					return true;
+				} )
+			)->willReturn( $mockResponse );
 
-		$params = [
-			"amount" => 120,
-			"currency" => "USD",
-			"country" => "BR",
-			"payment_method_id" => "CARD",
-			"payment_method_flow" => "DIRECT",
-			"payer" => [
-				"name" => "Thiago Gabriel",
-				"email" => "thiago@example.com",
-				"document" => "53033315550",
-				"user_reference" => "12345",
-				"address" => [
-					"state"  => "Rio de Janeiro",
-					"city" => "Volta Redonda",
-					"zip_code" => "27275-595",
-					"street" => "Servidao B-1",
-					"number" => "1106"
-				],
-				"ip" => "127.0.0.1",
-				],
-			"card" => [
-				"token" => "CV-124c18a5-874d-4982-89d7-b9c256e647b5"
-			],
-			"order_id" => "657434343",
-		];
-		$results = $this->api->authorizePayment( $params );
-
-		$expectedAuthorizePaymentResult = [
-				"id" => "D-4-80ca7fbd-67ad-444a-aa88-791ca4a0c2b2",
-				"amount" => 120,
-				"currency" => "USD",
-				"country" => "BR",
-				"payment_method_id" => "CARD",
-				"payment_method_type" => "CARD",
-				"payment_method_flow" => "DIRECT",
-				"card" => [
-						"holder_name" => "Thiago Gabriel",
-						"expiration_month" => 10,
-						"expiration_year" => 2040,
-						"brand" => "VI",
-						"last4" => "1111"
-						],
-				"created_date" => "2018-12-26T20:28:47.000+0000",
-				"approved_date" => "2018-12-26T20:28:47.000+0000",
-				"status" => "AUTHORIZED",
-				"status_detail" => "The payment was authorized",
-				"status_code" => "600",
-				"order_id" => "657434343",
-				"notification_url" => "http://merchant.com/notifications"
-		];
-
-		$this->assertEquals( $expectedAuthorizePaymentResult, $results );
+		$results = $this->api->authorizePayment( $apiParams );
 	}
 
-	public function testCapturePaymentMapsApiParamsCorrectly() : void {
+		/**
+		 * @see PaymentProviders/dlocal/Tests/Data/redirect-payment.response
+		 */
+	public function testRedirectPayment(): void {
+		$params = $this->getRedirectPaymentRequestParams();
+
+		$apiParams = $params['params'];
+		$transformedParams = $params['transformedParams'];
+
+		$mockResponse = $this->prepareMockResponse( 'redirect-payment.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything(),
+				$this->callback( function ( $body ) use ( $transformedParams ) {
+					// request body should be a json formatted string of the mapped params
+					$this->assertEquals( json_encode( $transformedParams ), $body );
+					return true;
+				} )
+			)->willReturn( $mockResponse );
+
+		$results = $this->api->authorizePayment( $apiParams );
+		$this->assertSame( "100", $results["status_code"] );
+	}
+
+	public function testCapturePaymentMapsApiParamsCorrectly(): void {
 		$apiParams = [
 			"gateway_txn_id" => "T-2486-91e73695-3e0a-4a77-8594-f2220f8c6515",
 			'amount' => 100,
@@ -265,7 +252,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $apiParams['order_id'], $capturePaymentResult['order_id'] );
 	}
 
-	public function testCapturePaymentSuccess() : void {
+	public function testCapturePaymentSuccess(): void {
 		$apiParams = [
 			"gateway_txn_id" => "T-2486-91e73695-3e0a-4a77-8594-f2220f8c6515",
 			'amount' => 100,
@@ -380,5 +367,97 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				'header_size' => $header_size,
 			]
 		);
+	}
+
+	private function getAuthorizePaymentRequestParams(): array {
+		return [
+			'params' => [
+				'payment_token' => "CV-124c18a5-874d-4982-89d7-b9c256e647b5",
+				'order_id' => '123.3',
+				'amount' => '100',
+				'currency' => 'MXN',
+				'country' => 'MX',
+				'first_name' => 'Lorem',
+				'last_name' => 'Ipsum',
+				'email' => 'li@mail.com',
+				'fiscal_number' => '12345',
+				'contact_id' => '12345',
+				'state_province' => 'lore',
+				'city' => 'lore',
+				'postal_code' => 'lore',
+				'street_address' => 'lore',
+				'street_number' => 2,
+				'user_ip' => '127.0.0.1'
+			],
+			'transformedParams' => [
+				'amount' => '100',
+				'currency' => 'MXN',
+				'country' => 'MX',
+				'order_id' => '123.3',
+				'payment_method_flow' => Api::PAYMENT_METHOD_FLOW_DIRECT,
+				'payer' => [
+					'name' => 'Lorem Ipsum',
+					'email' => 'li@mail.com',
+					'document' => '12345',
+					'user_reference' => '12345',
+					'ip' => '127.0.0.1',
+				],
+				'address' => [
+					'state' => 'lore',
+					'city' => 'lore',
+					'zip_code' => 'lore',
+					'street' => 'lore',
+					'number' => 2,
+				],
+				'payment_method_id' => Api::PAYMENT_METHOD_ID_CARD,
+				'card' => [
+					'token' => 'CV-124c18a5-874d-4982-89d7-b9c256e647b5',
+					'capture' => false
+				],
+			]
+		];
+	}
+
+	private function getRedirectPaymentRequestParams(): array {
+		return [
+			'params' => [
+				'order_id' => '123.3',
+				'amount' => '100',
+				'currency' => 'MXN',
+				'country' => 'MX',
+				'first_name' => 'Lorem',
+				'last_name' => 'Ipsum',
+				'email' => 'li@mail.com',
+				'fiscal_number' => '12345',
+				'contact_id' => '12345',
+				'state_province' => 'lore',
+				'city' => 'lore',
+				'postal_code' => 'lore',
+				'street_address' => 'lore',
+				'street_number' => 2,
+				'user_ip' => '127.0.0.1'
+			],
+			'transformedParams' => [
+				'amount' => '100',
+				'currency' => 'MXN',
+				'country' => 'MX',
+				'order_id' => '123.3',
+				'payment_method_flow' => API::PAYMENT_METHOD_FLOW_REDIRECT,
+				'payer' => [
+					'name' => 'Lorem Ipsum',
+					'email' => 'li@mail.com',
+					'document' => '12345',
+					'user_reference' => '12345',
+					'ip' => '127.0.0.1',
+				],
+				'address' => [
+					'state' => 'lore',
+					'city' => 'lore',
+					'zip_code' => 'lore',
+					'street' => 'lore',
+					'number' => 2,
+				]
+			]
+		];
 	}
 }
