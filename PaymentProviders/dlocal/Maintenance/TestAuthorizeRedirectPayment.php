@@ -28,7 +28,6 @@ class TestAuthorizeRedirectPayment extends MaintenanceBase {
 			'amount' => '100',
 			'currency' => 'USD',
 			'country' => 'BR',
-			'payment_method_flow' => 'REDIRECT',
 			'contact_id' => '12345',
 			'state_province' => 'lore',
 			'city' => 'lore',
@@ -36,18 +35,13 @@ class TestAuthorizeRedirectPayment extends MaintenanceBase {
 			'street_address' => 'lore',
 			'street_number' => 2,
 			'user_ip' => '127.0.0.1',
-		];
-
-		$payer = [
 			'first_name' => 'Lorem',
 			'last_name' => 'Ipsum',
 			'email' => 'test@example.com',
-			'document' => '504.141.611-73',
+			'fiscal_number' => '504.141.611-73',
 		];
 
-		$params['payer'] = $payer;
-
-		$result = $api->authorizePayment( $params );
+		$result = $api->redirectPayment( $params );
 		print_r( $result );
 	}
 }
