@@ -31,3 +31,5 @@ signature-calculator:
 payment-provider:
     cc:
         class: SmashPig\PaymentProviders\dlocal\CardPaymentProvider
+    cash:
+        class: SmashPig\PaymentProviders\dlocal\HostedPaymentProvider

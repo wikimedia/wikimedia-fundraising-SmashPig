@@ -4,9 +4,10 @@ namespace SmashPig\PaymentProviders\dlocal;
 
 use SmashPig\Core\ApiException;
 use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 
-class HostedPaymentProvider extends PaymentProvider {
+class HostedPaymentProvider extends PaymentProvider implements IPaymentProvider {
 
 	/**
 	 * @param array $params
