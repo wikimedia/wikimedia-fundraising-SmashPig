@@ -268,7 +268,6 @@ class Api {
 	 * @return array
 	 */
 	protected function mapParamsToApiAuthorizeRequestParams( array $params ): array {
-		$apiParams = [];
 		$apiParams = $this->getCreatePaymentApiParams( $params );
 
 		if ( array_key_exists( 'payment_token', $params ) ) {
