@@ -5,11 +5,13 @@ namespace SmashPig\PaymentProviders\dlocal;
 use SmashPig\Core\Context;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Core\ValidationError;
+use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
+use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
-class PaymentProvider {
+class PaymentProvider implements IGetLatestPaymentStatusProvider {
 	/**
 	 * @var Api
 	 */
@@ -31,6 +33,12 @@ class PaymentProvider {
 
 	public function approvePayment( array $params ): ApprovePaymentResponse {
 		// TODO: Implement approvePayment() method.
+	}
+
+	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
+		$result = $this->api->getPaymentStatus( $params['gateway_txn_id'] );
+		$response = DlocalPaymentStatusResponseFactory::fromRawResponse( $result );
+		return $response;
 	}
 
 	/**
