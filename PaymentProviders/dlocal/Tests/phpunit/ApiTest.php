@@ -312,7 +312,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				$this->anything()
 			)->willReturn( $mockResponse );
 
-		$capturePaymentResult = $this->api->capturePayment( $apiParams );
+		$this->api->capturePayment( $apiParams );
 	}
 
 	/**
@@ -339,7 +339,47 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				$this->anything()
 			)->willReturn( $mockResponse );
 
-		$capturePaymentResult = $this->api->capturePayment( $apiParams );
+		$this->api->capturePayment( $apiParams );
+	}
+
+	public function testGetPaymentStatusPending(): void {
+		$gatewayTxnId = "D-2486-5bc9c596-f3b6-4b7c-bf3c-432276030cd9";
+
+		$mockResponse = $this->prepareMockResponse( 'get-payment-status-pending.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments/' . $gatewayTxnId . '/status' ), // url
+				$this->equalTo( 'GET' ), // method
+				$this->anything()
+			)->willReturn( $mockResponse );
+
+		$paymentStatus = $this->api->getPaymentStatus( $gatewayTxnId );
+
+		$this->assertEquals( 'D-2486-5bc9c596-f3b6-4b7c-bf3c-432276030cd9', $paymentStatus['id'] );
+		$this->assertEquals( 'PENDING', $paymentStatus['status'] );
+		$this->assertEquals( 'The payment is pending.', $paymentStatus['status_detail'] );
+		$this->assertEquals( 100, $paymentStatus['status_code'] );
+	}
+
+	public function testGetPaymentStatusPaid(): void {
+		$gatewayTxnId = "D-2486-5bc9c596-f3b6-4b7c-bf3c-432276030cd9";
+
+		$mockResponse = $this->prepareMockResponse( 'get-payment-status-paid.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments/' . $gatewayTxnId . '/status' ), // url
+				$this->equalTo( 'GET' ), // method
+				$this->anything()
+			)->willReturn( $mockResponse );
+
+		$paymentStatus = $this->api->getPaymentStatus( $gatewayTxnId );
+
+		$this->assertEquals( 'D-2486-5bc9c596-f3b6-4b7c-bf3c-432276030cd9', $paymentStatus['id'] );
+		$this->assertEquals( 'PAID', $paymentStatus['status'] );
+		$this->assertEquals( 'The payment was paid.', $paymentStatus['status_detail'] );
+		$this->assertEquals( 200, $paymentStatus['status_code'] );
 	}
 
 	/**

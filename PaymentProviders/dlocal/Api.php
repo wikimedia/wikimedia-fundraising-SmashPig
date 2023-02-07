@@ -9,8 +9,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class Api {
 
+	/**
+	 * @var string
+	 */
 	public const PAYMENT_METHOD_ID_CARD = 'CARD';
+
+	/**
+	 * @var string
+	 */
 	public const PAYMENT_METHOD_FLOW_DIRECT = 'DIRECT';
+
+	/**
+	 * @var string
+	 */
 	public const PAYMENT_METHOD_FLOW_REDIRECT = 'REDIRECT';
 
 	/**
@@ -121,6 +132,20 @@ class Api {
 	}
 
 	/**
+	 * Get payment status.
+	 *
+	 * https://docs.dlocal.com/reference/retrieve-a-payment-status
+	 *
+	 * @param string $gatewayTxnId
+	 * @return array
+	 * @throws ApiException
+	 */
+	public function getPaymentStatus( string $gatewayTxnId ): array {
+		$route = 'payments/' . $gatewayTxnId . '/status';
+		return $this->makeApiCall( 'GET', $route );
+	}
+
+	/**
 	 * Set dLocal request headers
 	 * https://docs.dlocal.com/reference/payins-security#headers
 	 *
@@ -162,10 +187,13 @@ class Api {
 	 * @return OutboundRequest
 	 */
 	protected function createRequestBasedOnMethodAndSetBody( string $method, string $route, array $params ): OutboundRequest {
-		$apiUrl = !empty( $route ) ? $this->endpoint . '/' . $route : $this->endpoint;
+		$apiUrl = empty( $route ) ? $this->endpoint : $this->endpoint . '/' . $route;
 
 		if ( $method === 'GET' ) {
-			$apiUrl .= '?' . http_build_query( $params );
+			if ( $params !== [] ) {
+				$apiUrl .= '?' . http_build_query( $params );
+			}
+
 			$body = null;
 		} else {
 			$body = json_encode( $params );
