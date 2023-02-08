@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\dlocal\Tests\phpunit;
 
+use SmashPig\Core\ApiException;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\dlocal\Api;
 use SmashPig\PaymentProviders\dlocal\PaymentProvider;
@@ -64,5 +65,22 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 		// TODO: do we wanna map the status detail and redirect url to the response?
 		$this->assertEquals( $params['gateway_txn_id'], $paymentDetailResponse->getGatewayTxnId() );
 		$this->assertEquals( FinalStatus::COMPLETE, $paymentDetailResponse->getStatus() );
+	}
+
+	public function testGetLatestPaymentStatusThrowsExceptionOnPaymentIdNotFound(): void {
+		$gatewayTxnId = 'D-INVALID-5bc9c596-f3b6-4b7c-bf3c-432276030cd9';
+		$this->api->expects( $this->once() )
+			->method( 'getPaymentStatus' )
+			->with( $gatewayTxnId )
+			->willThrowException(
+				new ApiException( 'Response Error(404) {"code":4000,"message":"Payment not found"}' )
+			);
+
+		$this->expectException( ApiException::class );
+		$this->expectExceptionMessage( 'Response Error(404) {"code":4000,"message":"Payment not found"}' );
+
+		$params = [ 'gateway_txn_id' => $gatewayTxnId ];
+		$paymentProvider = new PaymentProvider();
+		$paymentProvider->getLatestPaymentStatus( $params );
 	}
 }

@@ -382,6 +382,24 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( 200, $paymentStatus['status_code'] );
 	}
 
+	public function testGetPaymentStatusUnknownPaymentIdThrowsException(): void {
+		$gatewayTxnId = "D-INVALID-5bc9c596-f3b6-4b7c-bf3c-432276030cd9";
+
+		$mockResponse = $this->prepareMockResponse( 'get-payment-status-unknown-payment-id.response', 404 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments/' . $gatewayTxnId . '/status' ), // url
+				$this->equalTo( 'GET' ), // method
+				$this->anything()
+			)->willReturn( $mockResponse );
+
+		$this->expectException( ApiException::class );
+		$this->expectExceptionMessage( 'Response Error(404) {"code":4000,"message":"Payment not found"}' );
+
+		$this->api->getPaymentStatus( $gatewayTxnId );
+	}
+
 	/**
 	 * This helper method is an alternative to Tests/BaseSmashPigUnitTestCase.php:setUpResponse(),
 	 * which returns the mock response instead of setting it, inside the method.
