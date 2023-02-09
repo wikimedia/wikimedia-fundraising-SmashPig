@@ -208,6 +208,50 @@ public function testPaymentWithCompleteParamsFailsDueToUnknownStatus(): void {
 		$this->assertEquals( FinalStatus::UNKNOWN, $response->getStatus() );
 	}
 
+	public function testPaymentWithCompleteParams3DSecureEnabled(): void {
+		$params = $this->getCreatePaymentRequestParams();
+		$params['3DSecure'] = true;
+
+		$this->api->expects( $this->once() )
+				->method( 'authorizePayment' )
+				->with( $params )
+			->willReturn( [
+				"id" => "PAY2323243343543",
+				"amount" => 1,
+				"currency" => "ZAR",
+				"country" => "SA",
+				"payment_method_id" => "CARD",
+				"payment_method_type" => "CARD",
+				"payment_method_flow" => "DIRECT",
+				"card" => [
+					"holder_name" => "Lorem Ipsum",
+					"expiration_month" => 10,
+					"expiration_year" => 2040,
+					"last4" => "1111",
+					"brand" => "VI"
+				],
+				'three_dsecure' =>
+					[
+						'redirect_url' => 'https://www.example.com/3d-secure-redirect',
+					],
+				'created_date' => '2023-02-09T14:47:49.000+0000',
+				'status' => 'PENDING',
+				'status_detail' => 'The payment is pending for 3ds authorization.',
+				'status_code' => '101',
+				'order_id' => '657434343',
+				'notification_url' => 'http://merchant.com/notifications',
+
+			] );
+
+		$provider = new CardPaymentProvider();
+		$response = $provider->createPayment( $params );
+		$error = $response->getErrors();
+		$this->assertCount( 0, $error );
+		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( FinalStatus::PENDING, $response->getStatus() );
+		$this->assertEquals( "https://www.example.com/3d-secure-redirect", $response->getRedirectUrl() );
+	}
+
 	public function testApprovePaymentSuccess(): void {
 		$params = [
 			"gateway_txn_id" => "T-2486-91e73695-3e0a-4a77-8594-f2220f8c6515",
