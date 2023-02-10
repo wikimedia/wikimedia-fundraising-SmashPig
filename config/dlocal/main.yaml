@@ -9,7 +9,7 @@ actions:
 
 endpoints:
     listener:
-        class: SmashPig\PaymentProviders\AstroPay\AstroPayListener
+        class: SmashPig\PaymentProviders\Dlocal\DlocalListener
 
 login: &login x_login
 secret: "secretkey"
