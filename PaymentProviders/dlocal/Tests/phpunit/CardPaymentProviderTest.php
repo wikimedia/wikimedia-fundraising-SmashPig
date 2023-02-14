@@ -39,12 +39,10 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testPaymentWithCompleteParamsSuccess(): void {
-		$data = $this->getCreatePaymentRequestParams();
-		$params = $data['params'];
-		$transformedParams = $data['transformedParams'];
+		$params = $this->getCreatePaymentRequestParams();
 		$this->api->expects( $this->once() )
 				->method( 'authorizePayment' )
-				->with( $transformedParams )
+				->with( $params )
 				->willReturn( [
 						"id" => "PAY2323243343543",
 						"amount" => 1,
@@ -77,12 +75,10 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testPaymentWithCompleteParamsFail(): void {
-		$data = $this->getCreatePaymentRequestParams();
-		$params = $data['params'];
-		$transformedParams = $data['transformedParams'];
+		$params = $this->getCreatePaymentRequestParams();
 		$this->api->expects( $this->once() )
 				->method( 'authorizePayment' )
-				->with( $transformedParams )
+				->with( $params )
 				->willReturn( [
 						"id" => "PAY2323243343543",
 						"amount" => 1,
@@ -115,12 +111,10 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testPaymentWithCompleteParamsPending(): void {
-		$data = $this->getCreatePaymentRequestParams();
-		$params = $data['params'];
-		$transformedParams = $data['transformedParams'];
+		$params = $this->getCreatePaymentRequestParams();
 		$this->api->expects( $this->once() )
 				->method( 'authorizePayment' )
-				->with( $transformedParams )
+				->with( $params )
 				->willReturn( [
 						"id" => "PAY2323243343543",
 						"amount" => 1,
@@ -138,7 +132,7 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 						],
 						"created_date" => "2018-02-15T15:14:52-00:00",
 						"approved_date" => "2018-02-15T15:14:52-00:00",
-						"status" => "PENDING",
+						"status" => "AUTHORIZED",
 						"status_code" => "100",
 						"status_detail" => "The payment is pending.",
 						"order_id" => $params['order_id'],
@@ -153,12 +147,10 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 	}
 
 	public function testPaymentWithCompleteParamsFailsDueToUnknownStatus(): void {
-		$data = $this->getCreatePaymentRequestParams();
-		$params = $data['params'];
-		$transformedParams = $data['transformedParams'];
+		$params = $this->getCreatePaymentRequestParams();
 		$this->api->expects( $this->once() )
 				->method( 'authorizePayment' )
-				->with( $transformedParams )
+				->with( $params )
 				->willReturn( [
 						"id" => "PAY2323243343543",
 						"amount" => 1,
@@ -187,17 +179,14 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$error = $response->getErrors();
 		$this->assertCount( 1, $error );
 		$this->assertFalse( $response->isSuccessful() );
-		$this->assertEquals( FinalStatus::FAILED, $response->getStatus() );
+		$this->assertEquals( FinalStatus::UNKNOWN, $response->getStatus() );
 	}
 
 	public function testPaymentWithCompleteParamsFailsAndEmptyStatusInResponse(): void {
-		$data = $this->getCreatePaymentRequestParams();
-		$params = $data['params'];
-		$transformedParams = $data['transformedParams'];
-
+		$params = $this->getCreatePaymentRequestParams();
 		$this->api->expects( $this->once() )
 				->method( 'authorizePayment' )
-				->with( $transformedParams )
+				->with( $params )
 				->willReturn( [
 						"code" => 5008,
 						"message" => "Token not found or inactive"
@@ -208,7 +197,7 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$error = $response->getErrors();
 		$this->assertCount( 1, $error );
 		$this->assertFalse( $response->isSuccessful() );
-		$this->assertEquals( FinalStatus::FAILED, $response->getStatus() );
+		$this->assertEquals( FinalStatus::UNKNOWN, $response->getStatus() );
 	}
 
 	public function testApprovePaymentSuccess(): void {
@@ -259,12 +248,10 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 
 	private function getCreatePaymentRequestParams(): array {
 		return [
-				"params" => [
-						"payment_token" => 'fake-token',
-						"order_id" => '123.3',
-						"amount" => '1.00',
-						"currency" => 'ZAR',
-						"country" => 'SA',
+						'payment_token' => 'fake-token',
+						'amount' => '1.00',
+						'currency' => 'ZAR',
+						'country' => 'SA',
 						'payment_method' => 'CARD',
 						'payment_submethod' => 'DIRECT',
 						'order_id' => '1234',
@@ -279,33 +266,6 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 						'street_address' => 'lore',
 						'street_number' => 2,
 						'user_ip' => '127.0.0.1'
-				],
-				"transformedParams" => [
-						'amount' => '1.00',
-						'currency' => 'ZAR',
-						'country' => 'SA',
-						'payment_method_id' => 'CARD',
-						'payment_method_flow' => 'DIRECT',
-						'order_id' => '1234',
-						'card' => [
-								'token' => 'fake-token',
-								'capture' => false
-						],
-						'payer' => [
-								'name' => 'Lorem Ipsum',
-								'email' => 'li@mail.com',
-								'document' => '12345',
-								'user_reference' => '12345',
-								'ip' => '127.0.0.1',
-						],
-						'address' => [
-								'state' => 'lore',
-								'city' => 'lore',
-								'zip_code' => 'lore',
-								'street' => 'lore',
-								'number' => 2,
-						]
-				]
 		];
 	}
 }

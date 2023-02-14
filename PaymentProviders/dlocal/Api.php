@@ -12,6 +12,21 @@ class Api {
 	/**
 	 * @var string
 	 */
+	public const PAYMENT_METHOD_ID_CARD = 'CARD';
+
+	/**
+	 * @var string
+	 */
+	public const PAYMENT_METHOD_FLOW_DIRECT = 'DIRECT';
+
+	/**
+	 * @var string
+	 */
+	public const PAYMENT_METHOD_FLOW_REDIRECT = 'REDIRECT';
+
+	/**
+	 * @var string
+	 */
 	protected $endpoint;
 
 	/**
@@ -88,7 +103,18 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function authorizePayment( array $params ): array {
-		return $this->makeApiCall( 'POST', 'payments', $params );
+		$apiParams = $this->mapParamsToApiAuthorizeRequestParams( $params );
+		return $this->makeApiCall( 'POST', 'payments', $apiParams );
+	}
+
+		/**
+		 * @param array $params
+		 * @return array
+		 * @throws ApiException
+		 */
+	public function redirectPayment( array $params ): array {
+		$apiParams = $this->getCreatePaymentApiParams( $params );
+		return $this->makeApiCall( 'POST', 'payments', $apiParams );
 	}
 
 	/**
@@ -103,6 +129,20 @@ class Api {
 	public function capturePayment( array $params ): array {
 		$apiParams = $this->mapParamsToApiCaptureRequestParams( $params );
 		return $this->makeApiCall( 'POST', 'payments', $apiParams );
+	}
+
+	/**
+	 * Get payment status.
+	 *
+	 * https://docs.dlocal.com/reference/retrieve-a-payment-status
+	 *
+	 * @param string $gatewayTxnId
+	 * @return array
+	 * @throws ApiException
+	 */
+	public function getPaymentStatus( string $gatewayTxnId ): array {
+		$route = 'payments/' . $gatewayTxnId . '/status';
+		return $this->makeApiCall( 'GET', $route );
 	}
 
 	/**
@@ -147,10 +187,13 @@ class Api {
 	 * @return OutboundRequest
 	 */
 	protected function createRequestBasedOnMethodAndSetBody( string $method, string $route, array $params ): OutboundRequest {
-		$apiUrl = !empty( $route ) ? $this->endpoint . '/' . $route : $this->endpoint;
+		$apiUrl = empty( $route ) ? $this->endpoint : $this->endpoint . '/' . $route;
 
 		if ( $method === 'GET' ) {
-			$apiUrl .= '?' . http_build_query( $params );
+			if ( $params !== [] ) {
+				$apiUrl .= '?' . http_build_query( $params );
+			}
+
 			$body = null;
 		} else {
 			$body = json_encode( $params );
@@ -192,6 +235,78 @@ class Api {
 		if ( array_key_exists( 'order_id', $params ) ) {
 			$apiParams['order_id'] = $params['order_id'];
 		}
+		return $apiParams;
+	}
+
+	protected function fillNestedArrayFields( array $sourceArray, array &$destinationArray, array $fieldParams ) {
+		$array = [];
+		foreach ( $fieldParams as $field => $apiParams ) {
+			foreach ( $apiParams as $key => $value ) {
+				if ( array_key_exists( $value, $sourceArray ) ) {
+					$array[$field][$key] = $sourceArray[$value];
+				}
+			}
+			if ( array_key_exists( $field, $destinationArray ) ) {
+				$destinationArray[$field] = array_merge( $destinationArray[$field], $array[$field] );
+			} elseif ( count( $array[$field] ) > 0 ) {
+				$destinationArray[$field] = $array[$field];
+			}
+		}
+	}
+
+	protected function getCreatePaymentApiParams( array $params ): array {
+		$apiParams = [
+			'amount' => $params['amount'],
+			'currency' => $params['currency'],
+			'country' => $params['country'],
+			'order_id' => $params['order_id'],
+			'payment_method_flow' => self::PAYMENT_METHOD_FLOW_REDIRECT,
+			'payer' => [
+				'name' => $params['first_name'] . ' ' . $params['last_name']
+			]
+		];
+
+		if ( array_key_exists( 'description', $params ) ) {
+			$apiParams['description'] = $params['description'];
+		}
+
+		$apiFields = [];
+		$apiFields['payer'] = [
+			'email' => 'email',
+			'document' => 'fiscal_number',
+			'user_reference' => 'contact_id',
+			'ip' => 'user_ip',
+		];
+
+		$apiFields['address'] = [
+			'state' => 'state_province',
+			'city' => 'city',
+			'zip_code' => 'postal_code',
+			'street' => 'street_address',
+			'number' => 'street_number',
+		];
+
+		$this->fillNestedArrayFields( $params, $apiParams, $apiFields );
+		return $apiParams;
+	}
+
+	/**
+	 * @param array $params
+	 * Convert the API request body to DLocal Authorize Payment Request standards
+	 * @return array
+	 */
+	protected function mapParamsToApiAuthorizeRequestParams( array $params ): array {
+		$apiParams = $this->getCreatePaymentApiParams( $params );
+
+		if ( array_key_exists( 'payment_token', $params ) ) {
+			$apiParams['payment_method_id'] = self::PAYMENT_METHOD_ID_CARD;
+			$apiParams['payment_method_flow'] = self::PAYMENT_METHOD_FLOW_DIRECT;
+			$apiParams['card'] = [
+					'token' => $params['payment_token'],
+					'capture' => false
+			];
+		}
+
 		return $apiParams;
 	}
 
