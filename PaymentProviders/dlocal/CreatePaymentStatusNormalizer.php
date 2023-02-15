@@ -9,6 +9,7 @@ use UnexpectedValueException;
 class CreatePaymentStatusNormalizer implements StatusNormalizer {
 
 	public const SUCCESS_STATUS = [
+		FinalStatus::COMPLETE,
 		FinalStatus::PENDING,
 		FinalStatus::PENDING_POKE
 	];

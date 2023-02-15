@@ -133,6 +133,16 @@ class Api {
 	}
 
 	/**
+	 * @param array $params
+	 * @return array
+	 * @throws ApiException
+	 */
+	public function makeRecurringPayment( array $params ): array {
+		$apiParams = $this->mapParamsToCardRecurringPaymentRequestParams( $params );
+		return $this->makeApiCall( 'POST', 'payments', $apiParams );
+	}
+
+	/**
 	 * Get payment status.
 	 *
 	 * https://docs.dlocal.com/reference/retrieve-a-payment-status
@@ -273,7 +283,7 @@ class Api {
 			'currency' => $params['currency'],
 			'country' => $params['country'],
 			'order_id' => $params['order_id'],
-			'payment_method_flow' => self::PAYMENT_METHOD_FLOW_REDIRECT,
+			'payment_method_flow' => self::PAYMENT_METHOD_FLOW_REDIRECT, // Set as a default and may be overridden in unique situations.
 			'payer' => [
 				'name' => $params['first_name'] . ' ' . $params['last_name']
 			]
@@ -318,15 +328,37 @@ class Api {
 	 */
 	protected function mapParamsToCardAuthorizePaymentRequestParams( array $params ): array {
 		$apiParams = $this->mapParamsToAuthorizePaymentRequestParams( $params );
+		$isRecurring = $params['recurring'] ?? false;
+		$paramsHasPaymentToken = array_key_exists( 'payment_token', $params );
 
-		if ( array_key_exists( 'payment_token', $params ) ) {
+		// Ensure this transaction is not a redirect payment attempt by checking for the presence of
+		// a payment token.
+
+		if ( $paramsHasPaymentToken ) {
 			$apiParams['payment_method_id'] = self::PAYMENT_METHOD_ID_CARD;
 			$apiParams['payment_method_flow'] = self::PAYMENT_METHOD_FLOW_DIRECT;
 			$apiParams['card'] = [
-					'token' => $params['payment_token'],
-					'capture' => false
+				'token' => $params['payment_token'],
 			];
+			if ( $isRecurring ) {
+				$apiParams['card']['save'] = true;
+			}
+			$apiParams['card']['capture'] = false;
 		}
+
+		return $apiParams;
+	}
+
+	protected function mapParamsToCardRecurringPaymentRequestParams( array $params ): array {
+		$apiParams = $this->mapParamsToAuthorizePaymentRequestParams( $params );
+		$apiParams['payment_method_id'] = self::PAYMENT_METHOD_ID_CARD;
+		$apiParams['payment_method_flow'] = self::PAYMENT_METHOD_FLOW_DIRECT;
+
+		$apiParams['card'] = [
+			'card_id' => $params['recurring_payment_token']
+		];
+
+			$apiParams['card']['capture'] = true;
 
 		return $apiParams;
 	}

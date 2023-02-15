@@ -238,6 +238,91 @@ public function testPaymentWithCompleteParamsFailsDueToUnknownStatus(): void {
 		$this->assertEquals( FinalStatus::COMPLETE, $approvePaymentResponse->getStatus() );
 	}
 
+	public function testPaymentWithCompleteParamsPendingRecurringSetToTrue(): void {
+		$params = $this->getCreatePaymentRequestParams();
+		$params['recurring'] = "1";
+		$gateway_txn_id = "PAY2323243343543";
+		$card_id = "CID-e41c183d-2657-4e82-b39a-b0069c2af657";
+		$this->api->expects( $this->once() )
+			->method( 'authorizePayment' )
+			->with( $params )
+			->willReturn( [
+				"id" => $gateway_txn_id,
+				"amount" => 1,
+				"currency" => "ZAR",
+				"country" => "SA",
+				"payment_method_id" => "CARD",
+				"payment_method_type" => "CARD",
+				"payment_method_flow" => "DIRECT",
+				"card" => [
+					"holder_name" => "Lorem Ipsum",
+					"expiration_month" => 10,
+					"expiration_year" => 2040,
+					"last4" => "1111",
+					"brand" => "VI",
+					"card_id" => $card_id
+				],
+				"created_date" => "2018-02-15T15:14:52-00:00",
+				"approved_date" => "2018-02-15T15:14:52-00:00",
+				"status" => "AUTHORIZED",
+				"status_code" => "100",
+				"status_detail" => "The payment is pending.",
+				"order_id" => $params['order_id'],
+			] );
+
+		$provider = new CardPaymentProvider();
+		$response = $provider->createPayment( $params );
+		$error = $response->getErrors();
+		$this->assertCount( 0, $error );
+		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( $response->getGatewayTxnId(), $gateway_txn_id );
+		$this->assertEquals( $response->getRecurringPaymentToken(), $card_id );
+		$this->assertEquals( FinalStatus::PENDING_POKE, $response->getStatus() );
+	}
+
+	public function testPaymentWithCompleteParamsAndRecurringPaymentToken(): void {
+		$params = $this->getCreatePaymentRequestParams();
+		unset( $params['payment_token'] );
+		$card_id = "CID-e41c183d-2657-4e82-b39a-b0069c2af657";
+		$params['recurring_payment_token'] = $card_id;
+		$gateway_txn_id = "PAY2323243343543";
+		$this->api->expects( $this->once() )
+			->method( 'makeRecurringPayment' )
+			->with( $params )
+			->willReturn( [
+				"id" => $gateway_txn_id,
+				"amount" => 1,
+				"currency" => "ZAR",
+				"country" => "SA",
+				"payment_method_id" => "CARD",
+				"payment_method_type" => "CARD",
+				"payment_method_flow" => "DIRECT",
+				"card" => [
+					"holder_name" => "Lorem Ipsum",
+					"expiration_month" => 10,
+					"expiration_year" => 2040,
+					"last4" => "1111",
+					"brand" => "VI",
+					"card_id" => $card_id
+				],
+				"created_date" => "2018-02-15T15:14:52-00:00",
+				"approved_date" => "2018-02-15T15:14:52-00:00",
+				"status" => "PAID",
+				"status_code" => "200",
+				"status_detail" => "The payment was paid.",
+				"order_id" => $params['order_id'],
+			] );
+
+		$provider = new CardPaymentProvider();
+		$response = $provider->createPayment( $params );
+		$error = $response->getErrors();
+		$this->assertCount( 0, $error );
+		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( $response->getGatewayTxnId(), $gateway_txn_id );
+		$this->assertEquals( $response->getRecurringPaymentToken(), $card_id );
+		$this->assertEquals( FinalStatus::COMPLETE, $response->getStatus() );
+	}
+
 	public function testApprovePaymentFailMissingGatewayTxnId(): void {
 		$params = [
 			// gateway_txn_id is missing

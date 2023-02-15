@@ -43,6 +43,9 @@ class DlocalCreatePaymentResponseFactory extends CreatePaymentResponseFactory {
 				$createPaymentResponse->setSuccessful( false );
 			} else {
 				$createPaymentResponse->setSuccessful( $statusMapper->isSuccessStatus( $status ) );
+				if ( array_key_exists( 'card', $rawResponse ) && array_key_exists( 'card_id', $rawResponse['card'] ) ) {
+					$createPaymentResponse->setRecurringPaymentToken( $rawResponse['card']['card_id'] );
+				}
 			}
 		} catch ( UnexpectedValueException $ex ) {
 			Logger::debug( 'Create Payment failed', $rawResponse );
