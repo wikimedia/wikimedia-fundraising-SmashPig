@@ -6,16 +6,12 @@ use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\StatusNormalizer;
 use UnexpectedValueException;
 
-class PaymentStatusNormalizer implements StatusNormalizer {
+class CancelPaymentStatusNormalizer implements StatusNormalizer {
 
-	/**
-	 * @var array
-	 */
-	public const SUCCESS_STATUS = [ FinalStatus::COMPLETE ];
+	public const SUCCESS_STATUS = [ FinalStatus::CANCELLED ];
 
 	/**
 	 * @param string $paymentProcessorStatus
-	 *
 	 * @return bool
 	 */
 	public function isSuccessStatus( string $paymentProcessorStatus ): bool {
@@ -23,17 +19,12 @@ class PaymentStatusNormalizer implements StatusNormalizer {
 	}
 
 	/**
-	 * https://docs.dlocal.com/reference/payment-status-codes we have separate subclasses for each type of response
-	 * @param string $paymentProcessorStatus
-	 * @return string
+	 * @inheritDoc
 	 */
 	public function normalizeStatus( string $paymentProcessorStatus ): string {
 		switch ( $paymentProcessorStatus ) {
-			case 'PENDING':
-				$normalizedStatus = FinalStatus::PENDING_POKE;
-				break;
-			case 'PAID':
-				$normalizedStatus = FinalStatus::COMPLETE;
+			case 'CANCELLED':
+				$normalizedStatus = FinalStatus::CANCELLED;
 				break;
 			default:
 				throw new UnexpectedValueException( "Unknown status $paymentProcessorStatus" );

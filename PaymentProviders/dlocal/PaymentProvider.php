@@ -5,13 +5,15 @@ namespace SmashPig\PaymentProviders\dlocal;
 use SmashPig\Core\Context;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Core\ValidationError;
+use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
+use SmashPig\PaymentProviders\Responses\CancelPaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
-class PaymentProvider implements IGetLatestPaymentStatusProvider {
+class PaymentProvider implements IGetLatestPaymentStatusProvider, ICancelablePaymentProvider {
 	/**
 	 * @var Api
 	 */
@@ -35,10 +37,27 @@ class PaymentProvider implements IGetLatestPaymentStatusProvider {
 		// TODO: Implement approvePayment() method.
 	}
 
+	/**
+	 * Cancel Payment which is authorized but not captured yet
+	 * @param string $gatewayTxnId
+	 *
+	 * @return \SmashPig\PaymentProviders\Responses\CancelPaymentResponse
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	public function cancelPayment( string $gatewayTxnId ): CancelPaymentResponse {
+		$result = $this->api->cancelPayment( $gatewayTxnId );
+		return DlocalCancelPaymentResponseFactory::fromRawResponse( $result );
+	}
+
+	/**
+	 * @param array $params
+	 *
+	 * @return \SmashPig\PaymentProviders\Responses\PaymentDetailResponse
+	 * @throws \SmashPig\Core\ApiException
+	 */
 	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
 		$result = $this->api->getPaymentStatus( $params['gateway_txn_id'] );
-		$response = DlocalPaymentStatusResponseFactory::fromRawResponse( $result );
-		return $response;
+		return DlocalPaymentStatusResponseFactory::fromRawResponse( $result );
 	}
 
 	/**

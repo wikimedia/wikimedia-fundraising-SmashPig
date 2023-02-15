@@ -146,6 +146,17 @@ class Api {
 	}
 
 	/**
+	 * @param string $gatewayTxnId
+	 *
+	 * @return array
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	public function cancelPayment( string $gatewayTxnId ): array {
+		$route = 'payments/' . $gatewayTxnId . '/cancel';
+		return $this->makeApiCall( 'POST', $route );
+	}
+
+	/**
 	 * Set dLocal request headers
 	 * https://docs.dlocal.com/reference/payins-security#headers
 	 *
