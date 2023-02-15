@@ -40,11 +40,12 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 
 	public function testPaymentWithCompleteParamsSuccess(): void {
 		$params = $this->getCreatePaymentRequestParams();
+		$gateway_txn_id = "PAY2323243343543";
 		$this->api->expects( $this->once() )
-				->method( 'authorizePayment' )
-				->with( $params )
-				->willReturn( [
-						"id" => "PAY2323243343543",
+			->method( 'authorizePayment' )
+			->with( $params )
+			->willReturn( [
+						"id" => $gateway_txn_id,
 						"amount" => 1,
 						"currency" => "ZAR",
 						"country" => "SA",
@@ -71,16 +72,18 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$validationError = $response->getValidationErrors();
 		$this->assertCount( 0, $validationError );
 		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( $response->getGatewayTxnId(), $gateway_txn_id );
 		$this->assertEquals( FinalStatus::PENDING_POKE, $response->getStatus() );
 	}
 
 	public function testPaymentWithCompleteParamsFail(): void {
 		$params = $this->getCreatePaymentRequestParams();
+		$gateway_txn_id = "PAY2323243343543";
 		$this->api->expects( $this->once() )
-				->method( 'authorizePayment' )
-				->with( $params )
-				->willReturn( [
-						"id" => "PAY2323243343543",
+			->method( 'authorizePayment' )
+			->with( $params )
+			->willReturn( [
+						"id" => $gateway_txn_id,
 						"amount" => 1,
 						"currency" => "ZAR",
 						"country" => "SA",
@@ -107,16 +110,18 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$error = $response->getErrors();
 		$this->assertCount( 1, $error );
 		$this->assertFalse( $response->isSuccessful() );
+		$this->assertEquals( $response->getGatewayTxnId(), $gateway_txn_id );
 		$this->assertEquals( FinalStatus::FAILED, $response->getStatus() );
 	}
 
 	public function testPaymentWithCompleteParamsPending(): void {
 		$params = $this->getCreatePaymentRequestParams();
+		$gateway_txn_id = "PAY2323243343543";
 		$this->api->expects( $this->once() )
-				->method( 'authorizePayment' )
-				->with( $params )
-				->willReturn( [
-						"id" => "PAY2323243343543",
+			->method( 'authorizePayment' )
+			->with( $params )
+			->willReturn( [
+						"id" => $gateway_txn_id,
 						"amount" => 1,
 						"currency" => "ZAR",
 						"country" => "SA",
@@ -143,16 +148,18 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$error = $response->getErrors();
 		$this->assertCount( 0, $error );
 		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( $response->getGatewayTxnId(), $gateway_txn_id );
 		$this->assertEquals( FinalStatus::PENDING_POKE, $response->getStatus() );
 	}
 
-	public function testPaymentWithCompleteParamsFailsDueToUnknownStatus(): void {
+public function testPaymentWithCompleteParamsFailsDueToUnknownStatus(): void {
 		$params = $this->getCreatePaymentRequestParams();
+		$gateway_txn_id = "PAY2323243343543";
 		$this->api->expects( $this->once() )
 				->method( 'authorizePayment' )
 				->with( $params )
 				->willReturn( [
-						"id" => "PAY2323243343543",
+						"id" => $gateway_txn_id,
 						"amount" => 1,
 						"currency" => "ZAR",
 						"country" => "SA",
@@ -179,8 +186,9 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$error = $response->getErrors();
 		$this->assertCount( 1, $error );
 		$this->assertFalse( $response->isSuccessful() );
+		$this->assertEquals( $response->getGatewayTxnId(), $gateway_txn_id );
 		$this->assertEquals( FinalStatus::UNKNOWN, $response->getStatus() );
-	}
+}
 
 	public function testPaymentWithCompleteParamsFailsAndEmptyStatusInResponse(): void {
 		$params = $this->getCreatePaymentRequestParams();

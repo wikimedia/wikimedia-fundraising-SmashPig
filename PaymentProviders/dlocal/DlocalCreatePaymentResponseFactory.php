@@ -21,7 +21,11 @@ class DlocalCreatePaymentResponseFactory extends CreatePaymentResponseFactory {
 		$createPaymentResponse = new CreatePaymentResponse();
 		$createPaymentResponse->setRawResponse( $rawResponse );
 		$rawStatus = $rawResponse['status'] ?? '';
+		$gatewayTxnId = $rawResponse['id'] ?? null;
 		$createPaymentResponse->setRawStatus( $rawStatus );
+		if ( $gatewayTxnId ) {
+			$createPaymentResponse->setGatewayTxnId( $gatewayTxnId );
+		}
 		if ( array_key_exists( 'redirect_url', $rawResponse ) ) {
 			$createPaymentResponse->setRedirectUrl( $rawResponse['redirect_url'] );
 		}
