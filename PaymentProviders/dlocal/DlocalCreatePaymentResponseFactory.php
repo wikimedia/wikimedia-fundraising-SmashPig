@@ -38,15 +38,24 @@ class DlocalCreatePaymentResponseFactory extends CreatePaymentResponseFactory {
 			$status = $statusMapper->normalizeStatus( $rawStatus );
 			$createPaymentResponse->setStatus( $status );
 			if ( $status === FinalStatus::FAILED ) {
-				$createPaymentResponse->addErrors( new PaymentError( ErrorMapper::$errorCodes[ $rawResponse[ 'status_code' ] ],
+				$createPaymentResponse->addErrors( new PaymentError( ErrorMapper::$paymentStatusErrorCodes[ $rawResponse[ 'status_code' ] ],
 					$rawResponse[ 'status_detail' ], LogLevel::ERROR ) );
 				$createPaymentResponse->setSuccessful( false );
 			} else {
 				$createPaymentResponse->setSuccessful( $statusMapper->isSuccessStatus( $status ) );
 			}
 		} catch ( UnexpectedValueException $ex ) {
-			$createPaymentResponse->addErrors( new PaymentError( ErrorCode::UNEXPECTED_VALUE, $ex->getMessage(), LogLevel::ERROR ) );
-			Logger::debug( 'Unable to map dlocal status', $rawResponse );
+			Logger::debug( 'Create Payment failed', $rawResponse );
+
+			$code = $rawResponse['code'] ?? null;
+			$errorCode = ErrorMapper::$errorCodes[ $code ] ?? null;
+			$message = $rawResponse['message'] ?? $ex->getMessage();
+
+			if ( !$errorCode ) {
+				Logger::debug( 'Unable to map error code' );
+				$errorCode = ErrorCode::UNEXPECTED_VALUE;
+			}
+			$createPaymentResponse->addErrors( new PaymentError( $errorCode, $message, LogLevel::ERROR ) );
 			$createPaymentResponse->setSuccessful( false );
 			$createPaymentResponse->setStatus( FinalStatus::UNKNOWN );
 		}
