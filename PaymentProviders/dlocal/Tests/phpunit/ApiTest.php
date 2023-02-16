@@ -400,6 +400,62 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->api->getPaymentStatus( $gatewayTxnId );
 	}
 
+	public function testCancelPaymentSuccess(): void {
+		$gatewayTxnId = "T-2486-0ef6f3b6-544f-4734-9ee8-b8a7130cd8c6";
+
+		$mockResponse = $this->prepareMockResponse( 'cancel-payment-status-cancelled.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments/' . $gatewayTxnId . '/cancel' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything()
+			)->willReturn( $mockResponse );
+
+		$cancelPayment = $this->api->cancelPayment( $gatewayTxnId );
+
+		$this->assertEquals( 'T-2486-0ef6f3b6-544f-4734-9ee8-b8a7130cd8c6', $cancelPayment['id'] );
+		$this->assertEquals( 'CANCELLED', $cancelPayment['status'] );
+		$this->assertEquals( 'The payment was cancelled.', $cancelPayment['status_detail'] );
+		$this->assertEquals( 200, $cancelPayment['status_code'] );
+	}
+
+	public function testCancelPaymentFailed(): void {
+		$this->expectException( ApiException::class );
+		$this->expectExceptionMessage( 'Response Error(403) {"code":3003,"message":"Merchant has no authorization to use this API"}' );
+
+		$gatewayTxnId = "PAID-GATEWAY-TXN-ID";
+
+		$mockResponse = $this->prepareMockResponse( 'cancel-payment-fail-paid-txn.response', 403 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments/' . $gatewayTxnId . '/cancel' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything()
+			)->willReturn( $mockResponse );
+		$cancelPayment = $this->api->cancelPayment( $gatewayTxnId );
+		$this->assertEquals( 403, $cancelPayment['status_code'] );
+	}
+
+	public function testCancelPaymentThrowsException(): void {
+		$this->expectException( ApiException::class );
+		$this->expectExceptionMessage( 'Response Error(404) {"code":4000,"message":"Payment not found"}' );
+
+		$gatewayTxnId = "INVALID-GATEWAY-TXN-ID";
+
+		$mockResponse = $this->prepareMockResponse( 'cancel-payment-fail-invalid-txn-id.response', 404 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments/' . $gatewayTxnId . '/cancel' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything()
+			)->willReturn( $mockResponse );
+
+		$this->api->cancelPayment( $gatewayTxnId );
+	}
+
 	/**
 	 * This helper method is an alternative to Tests/BaseSmashPigUnitTestCase.php:setUpResponse(),
 	 * which returns the mock response instead of setting it, inside the method.
