@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\dlocal;
 
 use SmashPig\Core\ApiException;
 use SmashPig\Core\Context;
+use SmashPig\Core\Helpers\UniqueId;
 use SmashPig\Core\Http\OutboundRequest;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -162,7 +163,8 @@ class Api {
 			->setHeader( 'X-Trans-Key', $this->trans_key )
 			->setHeader( 'Content-Type', 'application/json' )
 			->setHeader( 'X-Version', $this->version )
-			->setHeader( 'User-Agent', 'SmashPig' );
+			->setHeader( 'User-Agent', 'SmashPig' )
+			->setHeader( 'X-Idempotency-Key', UniqueId::generate() );
 
 		// calculate the request signature and add to 'Authorization' header
 		// as instructed in https://docs.dlocal.com/reference/payins-security#headers
