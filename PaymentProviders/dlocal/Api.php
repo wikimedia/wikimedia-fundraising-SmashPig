@@ -270,6 +270,10 @@ class Api {
 			$apiParams['description'] = $params['description'];
 		}
 
+		if ( array_key_exists( 'return_url', $params ) ) {
+			$apiParams['callback_url'] = $params['return_url'];
+		}
+
 		$apiFields = [];
 		$apiFields['payer'] = [
 			'email' => 'email',
