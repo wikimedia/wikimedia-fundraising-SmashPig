@@ -29,9 +29,19 @@ class PaymentStatusNormalizer implements StatusNormalizer {
 	 */
 	public function normalizeStatus( string $paymentProcessorStatus ): string {
 		switch ( $paymentProcessorStatus ) {
-			case 'PENDING':
+			case 'AUTHORIZED':
 				$normalizedStatus = FinalStatus::PENDING_POKE;
 				break;
+			case 'PENDING':
+				$normalizedStatus = FinalStatus::PENDING;
+				break;
+			case 'REJECTED':
+				$normalizedStatus = FinalStatus::FAILED;
+				break;
+			case 'CANCELLED':
+				$normalizedStatus = FinalStatus::CANCELLED;
+				break;
+			case 'VERIFIED':
 			case 'PAID':
 				$normalizedStatus = FinalStatus::COMPLETE;
 				break;

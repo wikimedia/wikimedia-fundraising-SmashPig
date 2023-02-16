@@ -41,7 +41,7 @@ class PaymentProviderTest extends BaseSmashPigUnitTestCase {
 
 		// TODO: do we wanna map the status detail and redirect url to the response?
 		$this->assertEquals( $params['gateway_txn_id'], $paymentDetailResponse->getGatewayTxnId() );
-		$this->assertEquals( FinalStatus::PENDING_POKE, $paymentDetailResponse->getStatus() );
+		$this->assertEquals( FinalStatus::PENDING, $paymentDetailResponse->getStatus() );
 	}
 
 	public function testGetLatestPaymentStatusPaid(): void {
