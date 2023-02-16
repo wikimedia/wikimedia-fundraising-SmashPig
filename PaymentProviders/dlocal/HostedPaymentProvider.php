@@ -16,7 +16,6 @@ class HostedPaymentProvider extends PaymentProvider implements IPaymentProvider 
 	 */
 	public function createPayment( array $params ): CreatePaymentResponse {
 		try {
-			$response = new CreatePaymentResponse();
 			$this->validateCreateHostedPaymentParams( $params );
 			$rawResponse = $this->api->redirectPayment( $params );
 			$response = DlocalCreatePaymentResponseFactory::fromRawResponse( $rawResponse );

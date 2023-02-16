@@ -20,17 +20,21 @@ class DlocalCreatePaymentResponseFactory extends CreatePaymentResponseFactory {
 	public static function fromRawResponse( $rawResponse ): CreatePaymentResponse {
 		$createPaymentResponse = new CreatePaymentResponse();
 		$createPaymentResponse->setRawResponse( $rawResponse );
-		$rawStatus = $rawResponse['status'] ?? '';
+		$rawStatus = $rawResponse['status'] ?? null;
 		$gatewayTxnId = $rawResponse['id'] ?? null;
-		$createPaymentResponse->setRawStatus( $rawStatus );
 		if ( $gatewayTxnId ) {
 			$createPaymentResponse->setGatewayTxnId( $gatewayTxnId );
 		}
 		if ( array_key_exists( 'redirect_url', $rawResponse ) ) {
 			$createPaymentResponse->setRedirectUrl( $rawResponse['redirect_url'] );
 		}
-		$statusMapper = new CreatePaymentStatusNormalizer();
+
 		try {
+			$statusMapper = new CreatePaymentStatusNormalizer();
+			if ( !$rawStatus ) {
+				throw new UnexpectedValueException( "Unknown status" );
+			}
+			$createPaymentResponse->setRawStatus( $rawStatus );
 			$status = $statusMapper->normalizeStatus( $rawStatus );
 			$createPaymentResponse->setStatus( $status );
 			if ( $status === FinalStatus::FAILED ) {
