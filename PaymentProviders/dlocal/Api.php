@@ -279,6 +279,10 @@ class Api {
 			]
 		];
 
+		if ( array_key_exists( 'payment_method_id', $params ) ) {
+			$apiParams['payment_method_id'] = $params['payment_method_id'];
+		}
+
 		if ( array_key_exists( 'description', $params ) ) {
 			$apiParams['description'] = $params['description'];
 		}

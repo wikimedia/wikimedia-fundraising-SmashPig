@@ -214,6 +214,37 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->assertSame( "100", $results["status_code"] );
 	}
 
+	public function testRedirectPaymentWithSpecificPaymentMethod(): void {
+		$params = $this->getRedirectPaymentRequestParams();
+
+		// add in the specific payment method id 'OX' which is used for Oxxo payments
+		// in Mexico https://docs.dlocal.com/docs/mexico
+		$params['params']['payment_method_id'] = 'OX';
+		$apiParams = $params['params'];
+
+		$mockResponse = $this->prepareMockResponse( 'redirect-payment-specific-method-id.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->equalTo( 'http://example.com/payments' ), // url
+				$this->equalTo( 'POST' ), // method
+				$this->anything(),
+				$this->callback( function ( $requestParams ) {
+					// confirm payment_method_id is present in generated request params
+					$requestParamsArray = json_decode( $requestParams, true );
+					$this->assertEquals( "OX", $requestParamsArray['payment_method_id'] );
+					return true;
+				} )
+			)->willReturn( $mockResponse );
+
+		$results = $this->api->authorizePayment( $apiParams );
+		$this->assertSame( "100", $results["status_code"] );
+		$this->assertSame( "PENDING", $results["status"] );
+		$this->assertSame( "PQ", $results["payment_method_id"] );
+		$this->assertSame( "TICKET", $results["payment_method_type"] );
+		$this->assertSame( "REDIRECT", $results["payment_method_flow"] );
+	}
+
 	public function testCapturePaymentMapsApiParamsCorrectly(): void {
 		$apiParams = [
 			"gateway_txn_id" => "T-2486-91e73695-3e0a-4a77-8594-f2220f8c6515",
