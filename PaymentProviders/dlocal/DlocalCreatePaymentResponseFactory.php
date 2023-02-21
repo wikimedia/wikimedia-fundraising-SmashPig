@@ -30,11 +30,11 @@ class DlocalCreatePaymentResponseFactory extends CreatePaymentResponseFactory {
 		}
 
 		try {
-			$statusMapper = new CreatePaymentStatusNormalizer();
 			if ( !$rawStatus ) {
 				throw new UnexpectedValueException( "Unknown status" );
 			}
 			$createPaymentResponse->setRawStatus( $rawStatus );
+			$statusMapper = new CreatePaymentStatusNormalizer();
 			$status = $statusMapper->normalizeStatus( $rawStatus );
 			$createPaymentResponse->setStatus( $status );
 			if ( $status === FinalStatus::FAILED ) {
