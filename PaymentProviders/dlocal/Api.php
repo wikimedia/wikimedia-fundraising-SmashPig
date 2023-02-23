@@ -104,7 +104,7 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function authorizePayment( array $params ): array {
-		$apiParams = $this->mapParamsToApiAuthorizeRequestParams( $params );
+		$apiParams = $this->mapParamsToCardAuthorizePaymentRequestParams( $params );
 		return $this->makeApiCall( 'POST', 'payments', $apiParams );
 	}
 
@@ -114,7 +114,7 @@ class Api {
 		 * @throws ApiException
 		 */
 	public function redirectPayment( array $params ): array {
-		$apiParams = $this->getCreatePaymentApiParams( $params );
+		$apiParams = $this->mapParamsToAuthorizePaymentRequestParams( $params );
 		return $this->makeApiCall( 'POST', 'payments', $apiParams );
 	}
 
@@ -128,7 +128,7 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function capturePayment( array $params ): array {
-		$apiParams = $this->mapParamsToApiCaptureRequestParams( $params );
+		$apiParams = $this->mapParamsToCapturePaymentRequestParams( $params );
 		return $this->makeApiCall( 'POST', 'payments', $apiParams );
 	}
 
@@ -232,7 +232,7 @@ class Api {
 	 * @param array $params
 	 * @return array
 	 */
-	protected function mapParamsToApiCaptureRequestParams( array $params ): array {
+	protected function mapParamsToCapturePaymentRequestParams( array $params ): array {
 		$apiParams = [];
 		if ( array_key_exists( 'gateway_txn_id', $params ) ) {
 			$apiParams['authorization_id'] = $params['gateway_txn_id'];
@@ -251,7 +251,7 @@ class Api {
 		return $apiParams;
 	}
 
-	protected function fillNestedArrayFields( array $sourceArray, array &$destinationArray, array $fieldParams ) {
+	protected function fillNestedArrayFields( array $sourceArray, array &$destinationArray, array $fieldParams ): void {
 		$array = [];
 		foreach ( $fieldParams as $field => $apiParams ) {
 			foreach ( $apiParams as $key => $value ) {
@@ -267,7 +267,7 @@ class Api {
 		}
 	}
 
-	protected function getCreatePaymentApiParams( array $params ): array {
+	protected function mapParamsToAuthorizePaymentRequestParams( array $params ): array {
 		$apiParams = [
 			'amount' => $params['amount'],
 			'currency' => $params['currency'],
@@ -316,8 +316,8 @@ class Api {
 	 * Convert the API request body to DLocal Authorize Payment Request standards
 	 * @return array
 	 */
-	protected function mapParamsToApiAuthorizeRequestParams( array $params ): array {
-		$apiParams = $this->getCreatePaymentApiParams( $params );
+	protected function mapParamsToCardAuthorizePaymentRequestParams( array $params ): array {
+		$apiParams = $this->mapParamsToAuthorizePaymentRequestParams( $params );
 
 		if ( array_key_exists( 'payment_token', $params ) ) {
 			$apiParams['payment_method_id'] = self::PAYMENT_METHOD_ID_CARD;
