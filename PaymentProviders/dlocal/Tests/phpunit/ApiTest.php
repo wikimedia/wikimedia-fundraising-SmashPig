@@ -27,6 +27,8 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 			'login' => 'test_login',
 			'trans-key' => 'test_dg$3434534E',
 			'secret' => 'test_ITSASECRET',
+			'callback_url' => 'http://example.com',
+			'notification_url' => 'http://example.com',
 			'version' => '2.1',
 		] );
 	}
@@ -547,6 +549,8 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 					'user_reference' => '12345',
 					'ip' => '127.0.0.1',
 				],
+				'callback_url' => 'http://example.com',
+				'notification_url' => 'http://example.com',
 				'address' => [
 					'state' => 'lore',
 					'city' => 'lore',
@@ -595,6 +599,8 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 					'user_reference' => '12345',
 					'ip' => '127.0.0.1',
 				],
+				'callback_url' => 'http://example.com',
+				'notification_url' => 'http://example.com',
 				'address' => [
 					'state' => 'lore',
 					'city' => 'lore',

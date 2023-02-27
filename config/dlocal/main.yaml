@@ -23,6 +23,8 @@ api:
             trans-key: x_trans_key
             secret: generated_when_api_account_created
             endpoint: https://sandbox.dlocal.com
+            callback_url:
+            notification_url:
             version: 2.1
 
 signature-calculator:

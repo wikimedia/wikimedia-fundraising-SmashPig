@@ -55,12 +55,23 @@ class Api {
 	protected $version;
 
 	/**
+	 * @var mixed
+	 */
+	protected $callback_url;
+	/**
+	 * @var mixed
+	 */
+	protected $notification_url;
+
+	/**
 	 * @var SignatureCalculator
 	 */
 	private $signatureCalculator;
 
 	public function __construct( array $params ) {
 		$this->endpoint = $params['endpoint'];
+		$this->callback_url = $params['callback_url'];
+		$this->notification_url = $params['notification_url'];
 		$this->login = $params['login'];
 		$this->trans_key = $params['trans-key'];
 		$this->secret = $params['secret'];
@@ -288,6 +299,13 @@ class Api {
 				'name' => $params['first_name'] . ' ' . $params['last_name']
 			]
 		];
+
+		if ( $this->callback_url !== null ) {
+			$apiParams['callback_url'] = $this->callback_url;
+		}
+		if ( $this->notification_url !== null ) {
+			$apiParams['notification_url'] = $this->notification_url;
+		}
 
 		if ( array_key_exists( 'payment_method_id', $params ) ) {
 			$apiParams['payment_method_id'] = $params['payment_method_id'];
