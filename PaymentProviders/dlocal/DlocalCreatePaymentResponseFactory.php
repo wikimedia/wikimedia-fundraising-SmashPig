@@ -25,9 +25,7 @@ class DlocalCreatePaymentResponseFactory extends CreatePaymentResponseFactory {
 		if ( $gatewayTxnId ) {
 			$createPaymentResponse->setGatewayTxnId( $gatewayTxnId );
 		}
-		if ( array_key_exists( 'redirect_url', $rawResponse ) ) {
-			$createPaymentResponse->setRedirectUrl( $rawResponse['redirect_url'] );
-		}
+		self::setRedirectURL( $rawResponse, $createPaymentResponse );
 
 		try {
 			if ( !$rawStatus ) {
@@ -47,12 +45,12 @@ class DlocalCreatePaymentResponseFactory extends CreatePaymentResponseFactory {
 					$createPaymentResponse->setRecurringPaymentToken( $rawResponse['card']['card_id'] );
 				}
 			}
-		} catch ( UnexpectedValueException $ex ) {
+		} catch ( UnexpectedValueException $unexpectedValueException ) {
 			Logger::debug( 'Create Payment failed', $rawResponse );
 
 			$code = $rawResponse['code'] ?? null;
 			$errorCode = ErrorMapper::$errorCodes[ $code ] ?? null;
-			$message = $rawResponse['message'] ?? $ex->getMessage();
+			$message = $rawResponse['message'] ?? $unexpectedValueException->getMessage();
 
 			if ( !$errorCode ) {
 				Logger::debug( 'Unable to map error code' );
@@ -64,5 +62,21 @@ class DlocalCreatePaymentResponseFactory extends CreatePaymentResponseFactory {
 		}
 
 		return $createPaymentResponse;
+	}
+
+	/**
+	 * @param array $rawResponse
+	 * @param CreatePaymentResponse $createPaymentResponse
+	 * @return void
+	 */
+	protected static function setRedirectURL( array $rawResponse, CreatePaymentResponse $createPaymentResponse ): void {
+		if ( array_key_exists( 'redirect_url', $rawResponse ) ) {
+			$createPaymentResponse->setRedirectUrl( $rawResponse['redirect_url'] );
+		}
+
+		if ( array_key_exists( 'three_dsecure', $rawResponse )
+			&& array_key_exists( 'redirect_url', $rawResponse['three_dsecure'] ) ) {
+			$createPaymentResponse->setRedirectUrl( $rawResponse['three_dsecure']['redirect_url'] );
+		}
 	}
 }

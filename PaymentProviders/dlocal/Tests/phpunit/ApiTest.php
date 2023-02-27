@@ -189,6 +189,10 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$results = $this->api->authorizePayment( $apiParams );
 	}
 
+	public function testtestAuthorizePayment3DSecure() {
+		$this->markTestIncomplete();
+	}
+
 		/**
 		 * @see PaymentProviders/dlocal/Tests/Data/redirect-payment.response
 		 */

@@ -346,6 +346,9 @@ class Api {
 	 */
 	protected function mapParamsToCardAuthorizePaymentRequestParams( array $params ): array {
 		$apiParams = $this->mapParamsToAuthorizePaymentRequestParams( $params );
+
+		$apiParams = $this->check3DSecure( $params, $apiParams );
+
 		$isRecurring = $params['recurring'] ?? false;
 		$paramsHasPaymentToken = array_key_exists( 'payment_token', $params );
 
@@ -378,6 +381,20 @@ class Api {
 
 			$apiParams['card']['capture'] = true;
 
+		return $apiParams;
+	}
+
+	/**
+	 * @param array $params
+	 * @param array $apiParams
+	 * @return array
+	 */
+	protected function check3DSecure( array $params, array $apiParams ): array {
+		if ( array_key_exists( 'use_3d_secure', $params ) && $params['use_3d_secure'] === true ) {
+			$apiParams['three_dsecure'] = [
+				'force' => true,
+			];
+		}
 		return $apiParams;
 	}
 
