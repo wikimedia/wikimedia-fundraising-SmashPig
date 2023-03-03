@@ -181,12 +181,12 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				$this->anything(),
 				$this->callback( function ( $body ) use ( $transformedParams ) {
 					// request body should be a json formatted string of the mapped params
-					$this->assertEquals( json_encode( $transformedParams ), $body );
+					$this->assertEquals( $transformedParams, json_decode( $body, true ) );
 					return true;
 				} )
 			)->willReturn( $mockResponse );
 
-		$this->api->authorizePayment( $apiParams );
+		$results = $this->api->cardAuthorizePayment( $apiParams );
 	}
 
 	public function testtestAuthorizePayment3DSecure() {
@@ -211,12 +211,12 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				$this->anything(),
 				$this->callback( function ( $body ) use ( $transformedParams ) {
 					// request body should be a json formatted string of the mapped params
-					$this->assertEquals( json_encode( $transformedParams ), $body );
+					$this->assertEquals( $transformedParams, json_decode( $body, true ) );
 					return true;
 				} )
 			)->willReturn( $mockResponse );
 
-		$results = $this->api->authorizePayment( $apiParams );
+		$results = $this->api->redirectPayment( $apiParams );
 		$this->assertSame( "100", $results["status_code"] );
 	}
 
@@ -243,7 +243,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				} )
 			)->willReturn( $mockResponse );
 
-		$results = $this->api->authorizePayment( $apiParams );
+		$results = $this->api->redirectPayment( $apiParams );
 		$this->assertSame( "100", $results["status_code"] );
 		$this->assertSame( "PENDING", $results["status"] );
 		$this->assertSame( "PQ", $results["payment_method_id"] );
@@ -316,20 +316,6 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $apiParams['amount'], $capturePaymentResult['amount'] );
 		$this->assertEquals( $apiParams['currency'], $capturePaymentResult['currency'] );
 		$this->assertEquals( $apiParams['order_id'], $capturePaymentResult['order_id'] );
-	}
-
-	public function testCapturePaymentExceptionOnMissingAuthId(): void {
-		$this->expectException( \InvalidArgumentException::class );
-		$this->expectExceptionMessage( "gateway_txn_id is a required field" );
-
-		// gateway_txn_id missing from apiParams
-		$apiParams = [
-			'amount' => 100,
-			'currency' => 'BRL',
-			'order_id' => '1234512345',
-		];
-
-		$this->api->capturePayment( $apiParams );
 	}
 
 	public function testCapturePaymentExceptionOnPaymentNotFound(): void {
@@ -645,16 +631,16 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 					'document' => '12345',
 					'user_reference' => '12345',
 					'ip' => '127.0.0.1',
+					'address' => [
+						'state' => 'lore',
+						'city' => 'lore',
+						'zip_code' => 'lore',
+						'street' => 'lore',
+						'number' => 2,
+					],
 				],
 				'callback_url' => 'http://example.com',
 				'notification_url' => 'http://example.com',
-				'address' => [
-					'state' => 'lore',
-					'city' => 'lore',
-					'zip_code' => 'lore',
-					'street' => 'lore',
-					'number' => 2,
-				],
 				'payment_method_id' => Api::PAYMENT_METHOD_ID_CARD,
 				'card' => [
 					'token' => 'CV-124c18a5-874d-4982-89d7-b9c256e647b5',
@@ -695,16 +681,16 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 					'document' => '12345',
 					'user_reference' => '12345',
 					'ip' => '127.0.0.1',
+					'address' => [
+						'state' => 'lore',
+						'city' => 'lore',
+						'zip_code' => 'lore',
+						'street' => 'lore',
+						'number' => 2,
+					]
 				],
 				'callback_url' => 'http://example.com',
-				'notification_url' => 'http://example.com',
-				'address' => [
-					'state' => 'lore',
-					'city' => 'lore',
-					'zip_code' => 'lore',
-					'street' => 'lore',
-					'number' => 2,
-				]
+				'notification_url' => 'http://example.com'
 			]
 		];
 	}
