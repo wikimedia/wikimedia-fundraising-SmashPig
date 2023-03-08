@@ -5,6 +5,6 @@
  */
 class PaymentMessage extends DlocalMessage {
 	public function getDestinationQueue() {
-		return 'donations';
+		return 'jobs-dlocal';
 	}
 }

@@ -31,8 +31,19 @@ abstract class DlocalMessage extends ListenerMessage {
 		'callback_url',
 		'created_date',
 		'authorization',
-		'signatureInput'
+		'signatureInput',
+		'wallet'
 	];
+
+	/**
+	 * @var mixed
+	 */
+	public $authorization;
+
+	/**
+	 * @var mixed
+	 */
+	public $signatureInput;
 
 	/**
 	 * @var mixed
@@ -104,6 +115,11 @@ abstract class DlocalMessage extends ListenerMessage {
 	 */
 	protected $status;
 
+	/**
+	 * @var array
+	 */
+	protected $wallet;
+
 	public function validate(): bool {
 		return true;
 	}
@@ -122,13 +138,13 @@ abstract class DlocalMessage extends ListenerMessage {
 	 * @return array $queueMsg
 	 */
 	public function normalizeForQueue() {
-		// normalize the payment method and submethod
+		// Normalize the payment method and submethod
 		[ $method, $submethod ] = ReferenceData::decodePaymentMethod(
 			$this->payment_method_type,
 			$this->payment_method_id
 		);
 
-		// get just the contribution_tracking_id from the order_id in 12345.1 format
+		// Get just the contribution_tracking_id from the order_id in 12345.1 format
 		$contributionTracking = explode( '.', $this->order_id );
 
 		$queueMsg = [
@@ -141,12 +157,24 @@ abstract class DlocalMessage extends ListenerMessage {
 			'currency' => $this->currency,
 			'country' => $this->country,
 			'gross' => $this->amount,
-			'date' => $this->created_date,
+			'date' => strtotime( $this->created_date ),
 			'gateway_status' => $this->status,
+			'dlocal_payment_method' => $this->payment_method_id,
 			'payment_method' => $method,
 			'payment_submethod' => $submethod
 		];
 
-		return $queueMsg;
+		// If there is a recurring token, add it
+		if ( isset( $this->wallet['token'] ) ) {
+			$queueMsg['recurring_payment_token'] = $this->wallet['token'];
+		}
+
+		// TODO: this needs to be different for refunds and chargebacks
+		// Send PAID messages to the jobs queue to get info from the pending table
+		$job = [
+			'class' => '\SmashPig\PaymentProviders\dlocal\Jobs\PaidMessageJob',
+			'payload' => $queueMsg
+		];
+		return $job;
 	}
 }
