@@ -106,6 +106,13 @@ data-store:
     donations:
         <<: *QUEUE
 
+    upi-donations:
+        class: PHPQueue\Backend\PDO
+        constructor-parameters:
+            -
+                connection_string: 'sqlite::memory:'
+                queue: upi_donations
+
     pending-db:
         <<: *DB
 
