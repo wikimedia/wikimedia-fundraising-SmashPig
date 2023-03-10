@@ -16,9 +16,13 @@ class HostedPaymentProvider extends PaymentProvider implements IPaymentProvider 
 	 */
 	public function createPayment( array $params ): CreatePaymentResponse {
 		try {
-			$response = new CreatePaymentResponse();
 			$this->validateCreateHostedPaymentParams( $params );
-			$rawResponse = $this->api->redirectPayment( $params );
+			if ( empty( $params['recurring_payment_token'] ) ) {
+				$rawResponse = $this->api->redirectPayment( $params );
+			} else {
+				// subsequent recurring will contain the token
+				$rawResponse = $this->api->createPaymentFromToken( $params );
+			}
 			$response = DlocalCreatePaymentResponseFactory::fromRawResponse( $rawResponse );
 		} catch ( ValidationException $validationException ) {
 			$response = new CreatePaymentResponse();

@@ -19,7 +19,11 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 		$response = new CreatePaymentResponse();
 		try {
 			$this->validateCreatePaymentParams( $params );
-			$rawResponse = $this->api->authorizePayment( $params );
+			if ( !empty( $params['recurring_payment_token'] ) ) {
+				$rawResponse = $this->api->makeRecurringPayment( $params );
+			} else {
+				$rawResponse = $this->api->authorizePayment( $params );
+			}
 			$response = DlocalCreatePaymentResponseFactory::fromRawResponse( $rawResponse );
 		} catch ( ValidationException $validationException ) {
 			$this->addPaymentResponseValidationErrors( $validationException->getData(), $response );
@@ -72,12 +76,17 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 	 * @throws ValidationException
 	 */
 	private function validateCreatePaymentParams( array $params ): void {
+		if ( empty( $params['payment_token'] ) && empty( $params['recurring_payment_token'] ) ) {
+			$invalidFields = [
+				'payment_token' => 'required'
+			];
+			throw new ValidationException( "Invalid input", $invalidFields );
+		}
 		$requiredFields = [
 			'amount',
 			'currency',
 			'country',
 			'order_id',
-			'payment_token',
 			'first_name',
 			'last_name',
 			'email',
