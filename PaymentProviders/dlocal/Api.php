@@ -142,7 +142,7 @@ class Api {
 	}
 
 	/**
-	 * 48 hours before the payment is due, must send pre-debit notification (prenotification).
+	 * 24 hours before the payment is due, must send pre-debit notification (prenotification).
 	 * After the prenotification is approved by the issuer, the user will be notified that they will be charged
 	 * the amount specified in the request. 48 hours after the prenotification is approved, dLocal will automatically
 	 * trigger the charge.
@@ -398,22 +398,22 @@ class Api {
 	 * @throws \Exception
 	 */
 	protected function mapUPIRecurringParam( array &$apiParams ): void {
-		$apiParams["payment_method_id"] = "IR"; // in india, only IR support recurring
+		$apiParams['payment_method_id'] = 'IR'; // in india, only IR support recurring
 		$date = new DateTime( 'now', new DateTimeZone( self::INDIA_TIME_ZONE ) );
-		$apiParams["wallet"] = [
-			"save" => true,
-			"capture" => true,
-			"verify" => false,
-			"username" => $apiParams['payer']['name'],
-			"email" => $apiParams['payer']['email'],
-			"recurring_info" => [
-				// "ONDEMAND" has less limitation for prenotify compare with "MONTH"
+		$apiParams['wallet'] = [
+			'save' => true,
+			'capture' => true,
+			'verify' => false,
+			'username' => $apiParams['payer']['name'],
+			'email' => $apiParams['payer']['email'],
+			'recurring_info' => [
+				// 'ONDEMAND' has less limitation for prenotify compare with 'MONTH'
 				// ( allow recharge send on the same month, since needs 2 days to process),
 				// while we need to add a text for client to indicate this is only monthly
-				"subscription_frequency_unit" => self::SUBSCRIPTION_FREQUENCY_UNIT,
-				"subscription_frequency" => 1,
-				"subscription_start_at" => $date->format( 'Ymd' ),
-				"subscription_end_at" => "20991231" // if more than year 2100, dlocal reject txn so use 20991231
+				'subscription_frequency_unit' => self::SUBSCRIPTION_FREQUENCY_UNIT,
+				'subscription_frequency' => 1,
+				'subscription_start_at' => $date->format( 'Ymd' ),
+				'subscription_end_at' => '20991231' // if more than year 2100, dlocal reject txn so use 20991231
 			]
 		];
 	}
@@ -441,14 +441,10 @@ class Api {
 					'prenotify' => true,
 				],
 			],
-			'description' => 'charge recurring',
+			'description' => $params['description'] ?? 'recurring charge',
 			'order_id' => $params['order_id'],
 			'notification_url' => $params['notification_url'],
 		];
-
-		if ( array_key_exists( 'description', $params ) ) {
-			$apiParams['description'] = $params['description'];
-		}
 
 		return $apiParams;
 	}
