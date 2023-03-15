@@ -8,6 +8,7 @@ class ErrorMapper {
 	// Payment status codes for erroneous payments
 	// Source: https://docs.dlocal.com/reference/http-errors-payments#errors
 	public static $paymentStatusErrorCodes = [
+			'100' => ErrorCode::UNKNOWN, // Other error
 			'300' => ErrorCode::UNKNOWN, // The payment was rejected.
 			'301' => ErrorCode::UNKNOWN, // Rejected by bank.
 			'302' => ErrorCode::UNKNOWN, // Insufficient amount.
