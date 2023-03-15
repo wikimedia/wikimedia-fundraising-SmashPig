@@ -7,6 +7,7 @@ use SmashPig\Core\ApiException;
 use SmashPig\Core\Context;
 use SmashPig\Core\Helpers\UniqueId;
 use SmashPig\Core\Http\OutboundRequest;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\dlocal\ApiMappers\CapturePaymentApiRequestMapper;
 use SmashPig\PaymentProviders\dlocal\ApiMappers\DirectCardAuthorizePaymentApiRequestMapper;
 use SmashPig\PaymentProviders\dlocal\ApiMappers\HostedPaymentApiRequestMapper;
@@ -107,6 +108,7 @@ class Api {
 
 		$this->setRequestHeaders( $request );
 		$rawResponse = $request->execute();
+		Logger::debug( 'Raw response from dlocal: ' . $rawResponse['body'] );
 
 		if ( $this->responseHasErrorStatusCode( $rawResponse ) ) {
 			throw new ApiException(
