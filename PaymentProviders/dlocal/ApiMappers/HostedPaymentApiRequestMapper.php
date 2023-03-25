@@ -26,6 +26,7 @@ class HostedPaymentApiRequestMapper extends PaymentApiRequestMapper {
 			$mapperOutput['wallet']['recurring_info']['subscription_frequency'] = 1;
 			$date = new DateTime( 'now', new DateTimeZone( Api::INDIA_TIME_ZONE ) );
 			$mapperOutput['wallet']['recurring_info']['subscription_start_at'] = $date->format( 'Ymd' );
+			$mapperOutput['wallet']['recurring_info']['subscription_max_amount'] = $params['amount']; // set the max recurring amount to init donation's amount
 			$this->validateAndMapSubscriptionEnd( $params, $mapperOutput );
 		}
 		return $mapperOutput;
