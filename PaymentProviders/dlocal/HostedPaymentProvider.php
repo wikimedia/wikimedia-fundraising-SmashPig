@@ -18,7 +18,14 @@ class HostedPaymentProvider extends PaymentProvider implements IPaymentProvider 
 			// add placeholder params here for countries that need them
 			$this->addPlaceholderCreateHostedPaymentParams( $params );
 			$this->validateCreateHostedPaymentParams( $params );
-			if ( empty( $params['recurring_payment_token'] ) ) {
+			// if upi_id exist, means direct UPI bank transfer needs to verify it first
+			if ( !empty( $params['upi_id'] ) ) {
+				$rawResponse = $this->api->verifyUpiId( $params );
+				// if valid upi, then collect
+				if ( $rawResponse['status'] === BankTransferPaymentProvider::UPI_ID_VERIFY_STATUS_VERIFIED ) {
+					$rawResponse = $this->api->collectDirectBankTransfer( $params );
+				}
+			} elseif ( empty( $params['recurring_payment_token'] ) ) {
 				$rawResponse = $this->api->redirectHostedPayment( $params );
 			} else {
 				// subsequent recurring will contain the token
