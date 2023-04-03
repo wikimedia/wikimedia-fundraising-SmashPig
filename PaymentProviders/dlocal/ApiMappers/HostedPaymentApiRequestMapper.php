@@ -34,9 +34,9 @@ class HostedPaymentApiRequestMapper extends PaymentApiRequestMapper {
 	}
 
 	protected function validateAndMapFrequencyUnit( $params, &$mapperOutput ) {
-		$unit = $params['upi_subscription_frequency'] ?? Api::SUBSCRIPTION_FREQUENCY_UNIT_ONDEMAND;
+		$unit = $params['upi_subscription_frequency'] ?? BankTransferPaymentProvider::SUBSCRIPTION_FREQUENCY_UNIT_ONDEMAND;
 		if ( !in_array( $unit,
-			[ Api::SUBSCRIPTION_FREQUENCY_UNIT_ONDEMAND, Api::SUBSCRIPTION_FREQUENCY_UNIT_MONTHLY ]
+			[ BankTransferPaymentProvider::SUBSCRIPTION_FREQUENCY_UNIT_ONDEMAND, BankTransferPaymentProvider::SUBSCRIPTION_FREQUENCY_UNIT_MONTHLY ]
 		) ) {
 			throw new UnexpectedValueException(
 				'Bad upi_subscription_frequency ' . $unit

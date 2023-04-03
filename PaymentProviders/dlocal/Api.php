@@ -41,16 +41,6 @@ class Api {
 	/**
 	 * @var string
 	 */
-	public const SUBSCRIPTION_FREQUENCY_UNIT_ONDEMAND = 'ONDEMAND';
-
-	/**
-	 * @var string
-	 */
-	public const SUBSCRIPTION_FREQUENCY_UNIT_MONTHLY = 'MONTH';
-
-	/**
-	 * @var string
-	 */
 	protected $endpoint;
 
 	/**
