@@ -5,7 +5,7 @@ use SmashPig\Core\DataFiles\AuditParser;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UtcDate;
-use SmashPig\PaymentProviders\AstroPay\ReferenceData;
+use SmashPig\PaymentProviders\dlocal\ReferenceData;
 
 class AstroPayAudit implements AuditParser {
 
