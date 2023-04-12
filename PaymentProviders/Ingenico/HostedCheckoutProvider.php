@@ -3,14 +3,19 @@
 namespace SmashPig\PaymentProviders\Ingenico;
 
 use BadMethodCallException;
+use Exception;
 use OutOfBoundsException;
+use Psr\Log\LogLevel;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Mapper\Mapper;
+use SmashPig\Core\PaymentError;
 use SmashPig\Core\SmashPigException;
 use SmashPig\PaymentData\DonorDetails;
+use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
+use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 use SmashPig\PaymentProviders\RiskScorer;
 
 /**
@@ -160,15 +165,16 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 		// https://epayments-api.developer-ingenico.com/s2sapi/v1/en_US/java/hostedcheckouts/create.html
 		$mappedParams = $this->mapCreatePaymentSessionParams( $params );
 		$path = 'hostedcheckouts';
-		$response = $this->api->makeApiCall( $path, 'POST', $mappedParams );
 		$sessionResponse = new CreatePaymentSessionResponse();
-		// TODO check $response['invalidTokens'] and map to ValidationErrors
-		$sessionResponse->setRawResponse( $response );
-		$sessionResponse->setSuccessful( true );
-		$sessionResponse->setPaymentSession( $response['hostedCheckoutId'] );
-		$sessionResponse->setRedirectUrl(
-			$this->getHostedPaymentUrl( $response['partialRedirectUrl'] )
-		);
+		$rawResponse = $this->makeApiCallAndSetBasicResponseProperties( $sessionResponse, $path, 'POST', $mappedParams );
+		if ( $rawResponse ) {
+			// TODO check $rawResponse['invalidTokens'] and map to ValidationErrors
+			$sessionResponse->setSuccessful( true );
+			$sessionResponse->setPaymentSession( $rawResponse['hostedCheckoutId'] );
+			$sessionResponse->setRedirectUrl(
+				$this->getHostedPaymentUrl( $rawResponse['partialRedirectUrl'] )
+			);
+		}
 		return $sessionResponse;
 	}
 
@@ -181,6 +187,32 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 			null,
 			true
 		);
+	}
+
+	/**
+	 * Makes an API call, setting rawResponse on success and translating exceptions to
+	 * PaymentErrors on failure. Returns the raw response array if successful.
+	 *
+	 * @param PaymentProviderResponse $responseObject
+	 * @param string $path
+	 * @param string $method
+	 * @param array|null $params
+	 * @return array|null
+	 */
+	protected function makeApiCallAndSetBasicResponseProperties(
+		PaymentProviderResponse $responseObject, string $path, string $method = 'GET', ?array $params = null
+	): ?array {
+		try {
+			$rawResponse = $this->api->makeApiCall( $path, $method, $params );
+			$responseObject->setRawResponse( $rawResponse );
+			return $rawResponse;
+		} catch ( Exception $ex ) {
+			$responseObject->addErrors( new PaymentError(
+				ErrorCode::NO_RESPONSE, $ex->getMessage(), LogLevel::ERROR
+			) );
+			$responseObject->setSuccessful( false );
+			return null;
+		}
 	}
 
 	/**
