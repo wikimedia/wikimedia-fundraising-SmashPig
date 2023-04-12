@@ -154,4 +154,175 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertFalse( $response->isSuccessful() );
 	}
 
+	public function testCreatePaymentSession() {
+		$params = [
+			'use_3d_secure' => false,
+			'amount' => 10,
+			'currency' => 'USD',
+			'recurring' => 0,
+			'return_url' => 'https://example.com',
+			'processor_form' => 'blah',
+			'city' => 'Twin Peaks',
+			'street_address' => '708 Northwestern Street',
+			'state_province' => 'WA',
+			'postal_code' => '98045',
+			'email' => 'lpalmer@example.com',
+			'order_id' => '19900408',
+			'description' => 'Donation to Stop Ghostwood campaign',
+			'user_ip' => '127.0.0.1',
+			'country' => 'US',
+			'language' => 'en_US',
+		];
+		$this->setUpResponse( __Dir__ . '/../Data/newHostedCheckout.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo( 'https://eu.sandbox.api-ingenico.com/v1/1234/hostedcheckouts' ),
+				$this->equalTo( 'POST' ),
+				$this->anything(),
+				$this->callback( function ( $curlData ) {
+					$decoded = json_decode( $curlData, true );
+					$this->assertSame( [
+							'cardPaymentMethodSpecificInput' => [
+								'threeDSecure' => [
+									'skipAuthentication' => 'true',
+								],
+							],
+							'hostedCheckoutSpecificInput' => [
+								'locale' => 'en_US',
+								'returnCancelState' => true,
+								'paymentProductFilters' => [
+									'restrictTo' => [
+										'groups' => [ 'cards' ],
+									]
+								],
+								'returnUrl' => 'https://example.com',
+								'showResultPage' => false,
+								'variant' => 'blah',
+							],
+							'fraudFields' => [
+								'customerIpAddress' => '127.0.0.1',
+							],
+							'order' => [
+								'amountOfMoney' => [
+									'amount' => '1000',
+									'currencyCode' => 'USD',
+								],
+								'customer' => [
+									'billingAddress' => [
+										'city' => 'Twin Peaks',
+										'countryCode' => 'US',
+										'state' => 'WA',
+										'street' => '708 Northwestern Street',
+										'zip' => '98045',
+									],
+									'contactDetails' => [
+										'emailAddress' => 'lpalmer@example.com'
+									],
+									'locale' => 'en_US',
+								],
+								'references' => [
+									'descriptor' => 'Donation to Stop Ghostwood campaign',
+									'merchantReference' => '19900408',
+								]
+							]
+						],
+						$decoded
+					);
+					return true;
+				} )
+			);
+		$response = $this->provider->createPaymentSession( $params );
+		$this->assertEquals( '8915-28e5b79c889641c8ba770f1ba576c1fe', $response->getPaymentSession() );
+		$this->assertEquals(
+			'https://payments.test.pay1.secured-by-ingenico.com/pay8915-53ebca407e6b4a1dbd086aad4f10354d:8915-28e5b79c889641c8ba770f1ba576c1fe:9798f4c44ac6406e8288494332d1daa0',
+			$response->getRedirectUrl()
+		);
+	}
+
+	public function testCreatePaymentSessionRecurring() {
+		$params = [
+			'use_3d_secure' => true,
+			'amount' => 10,
+			'currency' => 'USD',
+			'recurring' => 1,
+			'return_url' => 'https://example.com',
+			'processor_form' => 'blah',
+			'city' => 'Twin Peaks',
+			'street_address' => '708 Northwestern Street',
+			'state_province' => 'WA',
+			'postal_code' => '98045',
+			'email' => 'lpalmer@example.com',
+			'order_id' => '19900408',
+			'description' => 'Monthly donation to Stop Ghostwood campaign',
+			'user_ip' => '127.0.0.1',
+			'country' => 'US',
+			'language' => 'en_US',
+		];
+		$this->setUpResponse( __Dir__ . '/../Data/newHostedCheckout.response', 200 );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )->with(
+				$this->equalTo( 'https://eu.sandbox.api-ingenico.com/v1/1234/hostedcheckouts' ),
+				$this->equalTo( 'POST' ),
+				$this->anything(),
+				$this->callback( function ( $curlData ) {
+					$decoded = json_decode( $curlData, true );
+					$this->assertSame( [
+							'cardPaymentMethodSpecificInput' => [
+								'tokenize' => 'true',
+								'recurring' => [
+									'recurringPaymentSequenceIndicator' => 'first',
+								]
+							],
+							'hostedCheckoutSpecificInput' => [
+								'isRecurring' => 'true',
+								'locale' => 'en_US',
+								'returnCancelState' => true,
+								'paymentProductFilters' => [
+									'restrictTo' => [
+										'groups' => [ 'cards' ],
+									]
+								],
+								'returnUrl' => 'https://example.com',
+								'showResultPage' => false,
+								'variant' => 'blah',
+							],
+							'fraudFields' => [
+								'customerIpAddress' => '127.0.0.1',
+							],
+							'order' => [
+								'amountOfMoney' => [
+									'amount' => '1000',
+									'currencyCode' => 'USD',
+								],
+								'customer' => [
+									'billingAddress' => [
+										'city' => 'Twin Peaks',
+										'countryCode' => 'US',
+										'state' => 'WA',
+										'street' => '708 Northwestern Street',
+										'zip' => '98045',
+									],
+									'contactDetails' => [
+										'emailAddress' => 'lpalmer@example.com'
+									],
+									'locale' => 'en_US',
+								],
+								'references' => [
+									'descriptor' => 'Monthly donation to Stop Ghostwood campaign',
+									'merchantReference' => '19900408',
+								]
+							]
+						],
+						$decoded
+					);
+					return true;
+				} )
+			);
+		$response = $this->provider->createPaymentSession( $params );
+		$this->assertEquals( '8915-28e5b79c889641c8ba770f1ba576c1fe', $response->getPaymentSession() );
+		$this->assertEquals(
+			'https://payments.test.pay1.secured-by-ingenico.com/pay8915-53ebca407e6b4a1dbd086aad4f10354d:8915-28e5b79c889641c8ba770f1ba576c1fe:9798f4c44ac6406e8288494332d1daa0',
+			$response->getRedirectUrl()
+		);
+	}
 }
