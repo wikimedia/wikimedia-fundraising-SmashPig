@@ -19,7 +19,6 @@ class RecurringChargeCardPaymentApiRequestMapper extends DirectCardPaymentApiReq
 				throw new UnexpectedValueException( "Unknown CURRENCY" . $params['currency'] );
 			}
 			$mapperOutput['country'] = $country;
-			// todd: needs to record fiscal_number do not use the default one from donor
 		}
 
 		return $mapperOutput;
