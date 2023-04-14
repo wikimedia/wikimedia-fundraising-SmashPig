@@ -107,6 +107,18 @@ class ReferenceData {
 		'WP' => 'webpay',
 	];
 
+	protected static $defaultCountryFromCurrency = [
+		'ARS' => 'AR',
+		'BRL' => 'BR',
+		'CLP' => 'CL',
+		'COP' => 'CO',
+		'INR' => 'IN',
+		'MXN' => 'MX',
+		'PEN' => 'PE',
+		'UYU' => 'UY',
+		'ZAR' => 'ZA',
+	];
+
 	public static function decodePaymentMethod( $type, $bankCode ) {
 		if ( !array_key_exists( $type, self::$methods ) ) {
 			throw new OutOfBoundsException( "Unknown payment method type: {$type}" );
@@ -165,4 +177,20 @@ class ReferenceData {
 		// submethods, such as 'CARD'
 		return null;
 	}
+
+	/**
+	 * Since we do not have country and fiscal number saved for contribution
+	 * check \CRM_Core_Payment_SmashPigRecurringProcessor::getPaymentParams
+	 * @param string $currency
+	 * @return string|null
+	 */
+	public static function getPairedCountryFromCurrency( string $currency ): ?string {
+		foreach ( self::$defaultCountryFromCurrency as $defaultCurrency => $country ) {
+			if ( $defaultCurrency === $currency ) {
+				return $country;
+			}
+		}
+		return null;
+	}
+
 }
