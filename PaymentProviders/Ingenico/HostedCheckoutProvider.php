@@ -79,22 +79,9 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 			$response->setAmount( $paymentOutput['amountOfMoney']['amount'] / 100 );
 			$response->setCurrency( $paymentOutput['amountOfMoney']['currencyCode'] );
 
-			$cardOutput = $paymentOutput['cardPaymentMethodSpecificOutput'];
-			try {
-				$decoded = ReferenceData::decodePaymentMethod( $cardOutput['paymentProductId'] );
-				$response->setPaymentSubmethod( $decoded['payment_submethod'] );
-			} catch ( OutOfBoundsException $ex ) {
-				Logger::warning( $ex->getMessage() );
-			}
-
-			// Fraud results and tokens only come back when a payment has been created
-			$fraudResults = $cardOutput['fraudResults'] ?? null;
-			if ( $fraudResults ) {
-				$response->setRiskScores(
-					( new RiskScorer() )->getRiskScores(
-						$fraudResults['avsResult'] ?? null,
-						$fraudResults['cvvResult'] ?? null
-					)
+			if ( !empty( $paymentOutput['cardPaymentMethodSpecificOutput'] ) ) {
+				$this->mapCardSpecificStatusProperties(
+					$response, $paymentOutput['cardPaymentMethodSpecificOutput']
 				);
 			}
 			// Though the 'tokens' response property is plural, its data type is
@@ -104,16 +91,6 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 					$rawResponse['createdPaymentOutput']['tokens']
 				);
 			}
-			if ( !empty( $cardOutput['card']['cardholderName'] ) ) {
-				$donorDetails = new DonorDetails();
-				$donorDetails->setFullName( $cardOutput['card']['cardholderName'] );
-				$response->setDonorDetails( $donorDetails );
-			}
-			$response->setInitialSchemeTransactionId(
-				$cardOutput['initialSchemeTransactionId'] ??
-				// Worldline docs say to "Use this value in case the initialSchemeTransactionId property is empty."
-				$cardOutput['schemeTransactionId'] ?? null
-			);
 		} elseif ( isset( $rawResponse['status'] ) ) {
 			// If no payment has been created, the GET response only
 			// has a single status property - {"status": "IN_PROGRESS"}
@@ -125,6 +102,40 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 		}
 
 		return $response;
+	}
+
+	protected function mapCardSpecificStatusProperties(
+		PaymentDetailResponse $response,
+		array $cardOutput
+	) {
+		try {
+			$decoded = ReferenceData::decodePaymentMethod( $cardOutput['paymentProductId'] );
+			$response->setPaymentSubmethod( $decoded['payment_submethod'] );
+		} catch ( OutOfBoundsException $ex ) {
+			Logger::warning( $ex->getMessage() );
+		}
+
+		// Fraud results and tokens only come back when a payment has been created
+		$fraudResults = $cardOutput['fraudResults'] ?? null;
+		if ( $fraudResults ) {
+			$response->setRiskScores(
+				( new RiskScorer() )->getRiskScores(
+					$fraudResults['avsResult'] ?? null,
+					$fraudResults['cvvResult'] ?? null
+				)
+			);
+		}
+
+		if ( !empty( $cardOutput['card']['cardholderName'] ) ) {
+			$donorDetails = new DonorDetails();
+			$donorDetails->setFullName( $cardOutput['card']['cardholderName'] );
+			$response->setDonorDetails( $donorDetails );
+		}
+		$response->setInitialSchemeTransactionId(
+			$cardOutput['initialSchemeTransactionId'] ??
+			// Worldline docs say to "Use this value in case the initialSchemeTransactionId property is empty."
+			$cardOutput['schemeTransactionId'] ?? null
+		);
 	}
 
 	/**
