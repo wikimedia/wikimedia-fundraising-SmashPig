@@ -63,7 +63,7 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $expectedUrl, $hostedPaymentUrl );
 	}
 
-	public function testGetHostedPaymentStatus() {
+	public function testGetLatestPaymentStatus() {
 		$hostedPaymentId = '8915-28e5b79c889641c8ba770f1ba576c1fe';
 		$this->setUpResponse( __DIR__ . "/../Data/hostedPaymentStatus.response", 200 );
 		$this->curlWrapper->expects( $this->once() )
@@ -71,7 +71,7 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/hostedcheckouts/$hostedPaymentId" ),
 				$this->equalTo( 'GET' )
 			);
-		$response = $this->provider->getHostedPaymentStatus( $hostedPaymentId );
+		$response = $this->provider->getLatestPaymentStatus( [ 'gateway_session_id' => $hostedPaymentId ] );
 		$rawResponse = $response->getRawResponse();
 		$this->assertEquals( 'PAYMENT_CREATED', $rawResponse['status'] );
 		// checking the PaymentDetailResponse
@@ -87,9 +87,9 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 	 * Test that we prefer the explicitly specified initialSchemeTransactionId
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function testGetHostedPaymentStatusWithInitialSchemeTransactionId() {
+	public function testGetLatestPaymentStatusWithInitialSchemeTransactionId() {
 		$this->setUpResponse( __DIR__ . "/../Data/hostedPaymentStatusWithInitialSchemeId.response", 200 );
-		$response = $this->provider->getHostedPaymentStatus( '8915-28e5b79c889641c8ba770f1ba576c1fe' );
+		$response = $this->provider->getLatestPaymentStatus( [ 'gateway_session_id' => '8915-28e5b79c889641c8ba770f1ba576c1fe' ] );
 		$this->assertEquals( "asdf1234asdf1234Sdasdf1234", $response->getInitialSchemeTransactionId() );
 	}
 
@@ -97,16 +97,16 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 	 * Test that we map the fallback schemeTransactionId
 	 * @throws \SmashPig\Core\ApiException
 	 */
-	public function testGetHostedPaymentStatusWithSchemeTransactionId() {
+	public function testGetLatestPaymentStatusWithSchemeTransactionId() {
 		$this->setUpResponse( __DIR__ . "/../Data/hostedPaymentStatusWithSchemeId.response", 200 );
-		$response = $this->provider->getHostedPaymentStatus( '8915-28e5b79c889641c8ba770f1ba576c1fe' );
+		$response = $this->provider->getLatestPaymentStatus( [ 'gateway_session_id' => '8915-28e5b79c889641c8ba770f1ba576c1fe' ] );
 		$this->assertEquals( "lkjh0987lkjh0987lkjh0987", $response->getInitialSchemeTransactionId() );
 	}
 
 	/**
 	 * @dataProvider hostedPaymentStatusRejectedErrors
 	 */
-	public function testGetHostedPaymentStatusFailuresReturnErrors( $errorCode, $errorDescription ) {
+	public function testGetLatestPaymentStatusFailuresReturnErrors( $errorCode, $errorDescription ) {
 		$hostedPaymentId = 'DUMMY-ID-8915-28e5b79c889641c8ba770f1ba576c1fe';
 		$this->setUpResponse( __DIR__ . "/../Data/hostedPaymentStatusRejected$errorCode.response", 200 );
 		$this->curlWrapper->expects( $this->once() )
@@ -115,7 +115,7 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 				$this->equalTo( 'GET' )
 			);
 
-		$response = $this->provider->getHostedPaymentStatus( $hostedPaymentId );
+		$response = $this->provider->getLatestPaymentStatus( [ 'gateway_session_id' => $hostedPaymentId ] );
 		$rawResponse = $response->getRawResponse();
 		$this->assertNotEmpty( $rawResponse['errors'] );
 		$this->assertEquals( $errorCode, $rawResponse['errors'][0]['code'] );
@@ -138,7 +138,7 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 		];
 	}
 
-	public function testGetHostedPaymentStatusInProgress() {
+	public function testGetLatestPaymentStatusInProgress() {
 		$hostedPaymentId = '8915-28e5b79c889641c8ba770f1ba576c1fe';
 		$this->setUpResponse( __DIR__ . "/../Data/hostedPaymentStatusIN_PROGRESS.response", 200 );
 		$this->curlWrapper->expects( $this->once() )
@@ -146,7 +146,7 @@ class HostedCheckoutProviderTest extends BaseSmashPigUnitTestCase {
 				$this->equalTo( "https://eu.sandbox.api-ingenico.com/v1/1234/hostedcheckouts/$hostedPaymentId" ),
 				$this->equalTo( 'GET' )
 			);
-		$response = $this->provider->getHostedPaymentStatus( $hostedPaymentId );
+		$response = $this->provider->getLatestPaymentStatus( [ 'gateway_session_id' => $hostedPaymentId ] );
 		$rawResponse = $response->getRawResponse();
 		$this->assertEquals( 'IN_PROGRESS', $rawResponse['status'] );
 		$this->assertEquals( 'IN_PROGRESS', $response->getRawStatus() );

@@ -45,67 +45,12 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 	 * @return PaymentDetailResponse
 	 */
 	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
-		return $this->getHostedPaymentStatus( $params['gateway_session_id'] );
-	}
-
-	/**
-	 * @deprecated use createPaymentSession instead
-	 * @param array $params
-	 *
-	 * @return array
-	 * @throws \SmashPig\Core\ApiException
-	 */
-	public function createHostedPayment( array $params ): array {
-		if ( empty( $params ) ) {
+		if ( empty( $params['gateway_session_id'] ) ) {
 			throw new BadMethodCallException(
-				'Called createHostedPayment with empty parameters'
+				'Called getLatestPaymentStatus with empty hostedPaymentId'
 			);
 		}
-		$path = 'hostedcheckouts';
-		$response = $this->api->makeApiCall( $path, 'POST', $params );
-		return $response;
-	}
-
-	public function createPaymentSession( array $params ): CreatePaymentSessionResponse {
-		// https://epayments-api.developer-ingenico.com/s2sapi/v1/en_US/java/hostedcheckouts/create.html
-		$mappedParams = $this->mapCreatePaymentSessionParams( $params );
-		$path = 'hostedcheckouts';
-		$response = $this->api->makeApiCall( $path, 'POST', $mappedParams );
-		$sessionResponse = new CreatePaymentSessionResponse();
-		// TODO check $response['invalidTokens'] and map to ValidationErrors
-		$sessionResponse->setRawResponse( $response );
-		$sessionResponse->setSuccessful( true );
-		$sessionResponse->setPaymentSession( $response['hostedCheckoutId'] );
-		$sessionResponse->setRedirectUrl(
-			$this->getHostedPaymentUrl( $response['partialRedirectUrl'] )
-		);
-		return $sessionResponse;
-	}
-
-	protected function mapCreatePaymentSessionParams( $params ) {
-		$mapConfig = $this->providerConfiguration->val( 'maps/create-payment-session' );
-		return Mapper::map(
-			$params,
-			$mapConfig['path'],
-			$mapConfig['transformers'],
-			null,
-			true
-		);
-	}
-
-	/**
-	 * @param string $hostedPaymentId
-	 *
-	 * @return PaymentDetailResponse
-	 * @throws \SmashPig\Core\ApiException
-	 */
-	public function getHostedPaymentStatus( string $hostedPaymentId ): PaymentDetailResponse {
-		if ( !$hostedPaymentId ) {
-			throw new BadMethodCallException(
-				'Called getHostedPaymentStatus with empty hostedPaymentId'
-			);
-		}
-		$path = "hostedcheckouts/$hostedPaymentId";
+		$path = "hostedcheckouts/{$params['gateway_session_id']}";
 		$rawResponse = $this->api->makeApiCall( $path, 'GET' );
 
 		$response = new PaymentDetailResponse();
@@ -165,6 +110,62 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 		}
 
 		return $response;
+	}
+
+	/**
+	 * @deprecated use createPaymentSession instead
+	 * @param array $params
+	 *
+	 * @return array
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	public function createHostedPayment( array $params ): array {
+		if ( empty( $params ) ) {
+			throw new BadMethodCallException(
+				'Called createHostedPayment with empty parameters'
+			);
+		}
+		$path = 'hostedcheckouts';
+		$response = $this->api->makeApiCall( $path, 'POST', $params );
+		return $response;
+	}
+
+	public function createPaymentSession( array $params ): CreatePaymentSessionResponse {
+		// https://epayments-api.developer-ingenico.com/s2sapi/v1/en_US/java/hostedcheckouts/create.html
+		$mappedParams = $this->mapCreatePaymentSessionParams( $params );
+		$path = 'hostedcheckouts';
+		$response = $this->api->makeApiCall( $path, 'POST', $mappedParams );
+		$sessionResponse = new CreatePaymentSessionResponse();
+		// TODO check $response['invalidTokens'] and map to ValidationErrors
+		$sessionResponse->setRawResponse( $response );
+		$sessionResponse->setSuccessful( true );
+		$sessionResponse->setPaymentSession( $response['hostedCheckoutId'] );
+		$sessionResponse->setRedirectUrl(
+			$this->getHostedPaymentUrl( $response['partialRedirectUrl'] )
+		);
+		return $sessionResponse;
+	}
+
+	protected function mapCreatePaymentSessionParams( $params ) {
+		$mapConfig = $this->providerConfiguration->val( 'maps/create-payment-session' );
+		return Mapper::map(
+			$params,
+			$mapConfig['path'],
+			$mapConfig['transformers'],
+			null,
+			true
+		);
+	}
+
+	/**
+	 * @deprecated use getLatestPaymentStatus directly
+	 * @param string $hostedPaymentId
+	 *
+	 * @return PaymentDetailResponse
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	public function getHostedPaymentStatus( string $hostedPaymentId ): PaymentDetailResponse {
+		return $this->getLatestPaymentStatus( [ 'gateway_session_id' => $hostedPaymentId ] );
 	}
 
 	/**
