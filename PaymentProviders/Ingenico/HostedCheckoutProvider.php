@@ -3,6 +3,8 @@
 namespace SmashPig\PaymentProviders\Ingenico;
 
 use BadMethodCallException;
+use OutOfBoundsException;
+use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Mapper\Mapper;
 use SmashPig\Core\SmashPigException;
 use SmashPig\PaymentData\DonorDetails;
@@ -47,7 +49,7 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
 		if ( empty( $params['gateway_session_id'] ) ) {
 			throw new BadMethodCallException(
-				'Called getLatestPaymentStatus with empty hostedPaymentId'
+				'Called getLatestPaymentStatus with empty gateway_session_id'
 			);
 		}
 		$path = "hostedcheckouts/{$params['gateway_session_id']}";
@@ -71,7 +73,20 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 		// property.
 		$this->prepareResponseObject( $response, $rawResponse );
 		if ( $paymentCreated ) {
-			$cardOutput = $rawResponse['createdPaymentOutput']['payment']['paymentOutput']['cardPaymentMethodSpecificOutput'];
+			$paymentOutput = $rawResponse['createdPaymentOutput']['payment']['paymentOutput'];
+			// Returned amount is in 'cents', multiplied by 100
+			// even if the currency has no minor unit
+			$response->setAmount( $paymentOutput['amountOfMoney']['amount'] / 100 );
+			$response->setCurrency( $paymentOutput['amountOfMoney']['currencyCode'] );
+
+			$cardOutput = $paymentOutput['cardPaymentMethodSpecificOutput'];
+			try {
+				$decoded = ReferenceData::decodePaymentMethod( $cardOutput['paymentProductId'] );
+				$response->setPaymentSubmethod( $decoded['payment_submethod'] );
+			} catch ( OutOfBoundsException $ex ) {
+				Logger::warning( $ex->getMessage() );
+			}
+
 			// Fraud results and tokens only come back when a payment has been created
 			$fraudResults = $cardOutput['fraudResults'] ?? null;
 			if ( $fraudResults ) {
