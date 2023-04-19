@@ -108,6 +108,10 @@ class ReferenceData {
 		'WP' => 'webpay',
 	];
 
+	public static function getSimpleSubmethods() {
+		return self::$simpleSubmethods;
+	}
+
 	public static function decodePaymentMethod( $type, $bankCode ) {
 		if ( !array_key_exists( $type, self::$methods ) ) {
 			throw new OutOfBoundsException( "Unknown payment method type: {$type}" );
