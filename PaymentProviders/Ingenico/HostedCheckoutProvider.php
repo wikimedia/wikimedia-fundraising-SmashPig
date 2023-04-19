@@ -3,9 +3,11 @@
 namespace SmashPig\PaymentProviders\Ingenico;
 
 use BadMethodCallException;
+use SmashPig\Core\Mapper\Mapper;
 use SmashPig\Core\SmashPigException;
 use SmashPig\PaymentData\DonorDetails;
 use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
+use SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use SmashPig\PaymentProviders\RiskScorer;
 
@@ -47,6 +49,7 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 	}
 
 	/**
+	 * @deprecated use createPaymentSession instead
 	 * @param array $params
 	 *
 	 * @return array
@@ -61,6 +64,33 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 		$path = 'hostedcheckouts';
 		$response = $this->api->makeApiCall( $path, 'POST', $params );
 		return $response;
+	}
+
+	public function createPaymentSession( array $params ): CreatePaymentSessionResponse {
+		// https://epayments-api.developer-ingenico.com/s2sapi/v1/en_US/java/hostedcheckouts/create.html
+		$mappedParams = $this->mapCreatePaymentSessionParams( $params );
+		$path = 'hostedcheckouts';
+		$response = $this->api->makeApiCall( $path, 'POST', $mappedParams );
+		$sessionResponse = new CreatePaymentSessionResponse();
+		// TODO check $response['invalidTokens'] and map to ValidationErrors
+		$sessionResponse->setRawResponse( $response );
+		$sessionResponse->setSuccessful( true );
+		$sessionResponse->setPaymentSession( $response['hostedCheckoutId'] );
+		$sessionResponse->setRedirectUrl(
+			$this->getHostedPaymentUrl( $response['partialRedirectUrl'] )
+		);
+		return $sessionResponse;
+	}
+
+	protected function mapCreatePaymentSessionParams( $params ) {
+		$mapConfig = $this->providerConfiguration->val( 'maps/create-payment-session' );
+		return Mapper::map(
+			$params,
+			$mapConfig['path'],
+			$mapConfig['transformers'],
+			null,
+			true
+		);
 	}
 
 	/**
