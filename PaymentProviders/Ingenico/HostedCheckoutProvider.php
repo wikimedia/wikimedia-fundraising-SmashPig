@@ -58,9 +58,13 @@ class HostedCheckoutProvider extends PaymentProvider implements IGetLatestPaymen
 			);
 		}
 		$path = "hostedcheckouts/{$params['gateway_session_id']}";
-		$rawResponse = $this->api->makeApiCall( $path, 'GET' );
-
 		$response = new PaymentDetailResponse();
+		$rawResponse = $this->makeApiCallAndSetBasicResponseProperties( $response, $path );
+		if ( $rawResponse === null ) {
+			// Just return the failed PaymentDetailResponse with the NO_RESPONSE error
+			return $response;
+		}
+
 		// When the donor has entered card details, we get a createdPaymentOutput array
 		// in the hostedcheckouts GET response.
 		$paymentCreated = isset( $rawResponse['createdPaymentOutput'] );
