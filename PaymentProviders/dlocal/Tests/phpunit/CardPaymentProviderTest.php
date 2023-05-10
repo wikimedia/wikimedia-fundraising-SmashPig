@@ -335,6 +335,26 @@ class CardPaymentProviderTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( 'visa', $response->getPaymentSubmethod() );
 	}
 
+	public function testPaymentWithFiscalNumberValidationError(): void {
+		$params = $this->getCreatePaymentRequestParams();
+		$exception = new ApiException();
+		$exception->setRawErrors( [
+			'code' => 5001,
+			'message' => 'Invalid parameter: payer.document',
+			'param' => 'payer.document',
+		] );
+		$this->api->expects( $this->once() )
+			->method( 'cardAuthorizePayment' )
+			->with( $params )
+			->will( $this->throwException( $exception ) );
+		$provider = new CardPaymentProvider();
+		$response = $provider->createPayment( $params );
+		$this->assertTrue( $response->hasErrors() );
+		$errors = $response->getValidationErrors();
+		$this->assertCount( 1, $errors );
+		$this->assertSame( 'fiscal_number', $errors[0]->getField() );
+	}
+
 	public function testPaymentWithCompleteParamsAndRecurringPaymentToken(): void {
 		$params = $this->getCreatePaymentRequestParams();
 		unset( $params['payment_token'] );
