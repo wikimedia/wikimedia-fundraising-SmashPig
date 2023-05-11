@@ -19,6 +19,13 @@ class RestResponseValidator extends HttpStatusValidator {
 			Logger::warning( "Request returned (403) FORBIDDEN: $body" );
 			return false;
 		}
+		if ( $parsedResponse['status'] === Response::HTTP_BAD_REQUEST ) {
+			$body = json_decode( $parsedResponse['body'], true );
+			if ( ErrorMapper::getValidationError( $body ) ) {
+				// No sense retrying validation errors or sending failmail.
+				return false;
+			}
+		}
 		return parent::shouldRetry( $parsedResponse );
 	}
 }
