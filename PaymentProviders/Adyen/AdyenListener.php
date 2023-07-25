@@ -1,5 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen;
 
+use SmashPig\Core\Context;
 use SmashPig\Core\Listeners\ListenerSecurityException;
 use SmashPig\Core\Listeners\SoapListener;
 use SmashPig\Core\Logging\Logger;
@@ -8,7 +9,7 @@ use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\AdyenMessage;
 
 class AdyenListener extends SoapListener {
 
-	protected $wsdlpath = "https://ca-live.adyen.com/ca/services/Notification?wsdl";
+	protected $wsdlpath;
 
 	protected $classmap = [
 		'NotificationRequest'      => 'SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequest',
@@ -25,6 +26,9 @@ class AdyenListener extends SoapListener {
 
 	public function __construct() {
 		require_once 'WSDL/Notification.php';
+		$c = Context::get()->getProviderConfiguration();
+		$this->wsdlpath = $c->val( 'notifications-wsdl' );
+
 		parent::__construct();
 	}
 
