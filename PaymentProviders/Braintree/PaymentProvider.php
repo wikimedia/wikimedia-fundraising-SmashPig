@@ -13,6 +13,8 @@ use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse;
+use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
+use SmashPig\PaymentProviders\Responses\RefundPaymentResponse;
 
 class PaymentProvider implements IPaymentProvider {
 
@@ -97,16 +99,7 @@ class PaymentProvider implements IPaymentProvider {
 			$rawResponse = $this->api->authorizePaymentMethod( $transformParams );
 			$response->setRawResponse( $rawResponse );
 			if ( !empty( $rawResponse['errors'] ) ) {
-				$response->setSuccessful( false );
-				$response->setStatus( FinalStatus::FAILED );
-				foreach ( $rawResponse['errors'] as $error ) {
-					$mappedError = $this->mapErrors( $error['extensions'], $error['message'] );
-					if ( $mappedError instanceof ValidationError ) {
-						$response->addValidationError( $mappedError );
-					} else {
-						$response->addErrors( $mappedError );
-					}
-				}
+				$this->setResponseFailedWithErrors( $response, $rawResponse['errors'] );
 			} else {
 				$transaction = $rawResponse['data']['authorizePaymentMethod']['transaction'];
 				// If it's recurring need to know when to set the token in setCreatePaymentSuccessfulResponseDetails
@@ -135,16 +128,7 @@ class PaymentProvider implements IPaymentProvider {
 		$response = new ApprovePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 		if ( !empty( $rawResponse['errors'] ) ) {
-			$response->setSuccessful( false );
-			$response->setStatus( FinalStatus::FAILED );
-			foreach ( $rawResponse['errors'] as $error ) {
-				$mappedError = $this->mapErrors( $error['extensions'], $error['message'] );
-				if ( $mappedError instanceof ValidationError ) {
-					$response->addValidationError( $mappedError );
-				} else {
-					$response->addErrors( $mappedError );
-				}
-			}
+			$this->setResponseFailedWithErrors( $response, $rawResponse['errors'] );
 		} else {
 			$transaction = $rawResponse['data']['captureTransaction']['transaction'];
 			$this->setApprovePaymentSuccessfulResponseDetails( $transaction, $response );
@@ -299,5 +283,57 @@ class PaymentProvider implements IPaymentProvider {
 		$response->setSuccessful( in_array( $mappedStatus, $successfulStatuses ) );
 		$response->setGatewayTxnId( $transaction['id'] );
 		$response->setStatus( $mappedStatus );
+	}
+
+	/**
+	 * if error, to response add errors and set it to not success with failed status
+	 * @param PaymentProviderResponse $response
+	 * @param array $errors
+	 *
+	 * @return void
+	 */
+	protected function setResponseFailedWithErrors(
+		PaymentProviderResponse $response,
+		array $errors
+	) {
+		$response->setSuccessful( false );
+		$response->setStatus( FinalStatus::FAILED );
+		foreach ( $errors as $error ) {
+			if ( isset( $error['extensions'] ) ) {
+				$mappedError = $this->mapErrors( $error['extensions'], $error['message'] );
+				if ( $mappedError instanceof ValidationError ) {
+					$response->addValidationError( $mappedError );
+				} else {
+					$response->addErrors( $mappedError );
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param array $params
+	 * if refundTransaction, then success
+	 * @return RefundPaymentResponse
+	 */
+	public function refundPayment( array $params ): RefundPaymentResponse {
+		$rawResponse = $this->api->refundPayment( $params );
+		$response = new RefundPaymentResponse();
+		$response->setRawResponse( $rawResponse );
+		if ( !empty( $rawResponse['errors'] ) ) {
+			$this->setResponseFailedWithErrors( $response, $rawResponse['errors'] );
+		} else {
+			$detail = $rawResponse['data']['refundTransaction'][ 'refund' ];
+			$response->setRawStatus( $detail[ 'status' ] );
+			$response->setStatus( PaymentStatus::normalizeStatus( $detail[ 'status' ] ) );
+			$response->setSuccessful( $response->getStatus() === FinalStatus::COMPLETE );
+			if ( !$response->isSuccessful() ) {
+				// look message from status history and add to error message
+				if ( isset( $detail['statusHistory'] ) && !empty( $detail['statusHistory'][0]['processorResponse']['message'] ) ) {
+					$response->addErrors( $this->mapErrors( [], $detail['statusHistory'][0]['processorResponse']['message'] ) );
+				}
+			}
+		}
+
+		return $response;
 	}
 }
