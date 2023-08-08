@@ -108,30 +108,19 @@ class Api {
 	 * @param array $input
 	 * @return array
 	 */
-	public function chargePayment( array $input ): array {
-		$query = $this->getQuery( 'ChargePaymentMethod' );
-		$variables = [ 'input' => $input ];
-		return $this->makeApiCall( $query, $variables );
-	}
-
-	/**
-	 *
-	 * @param array $input
-	 * @return array
-	 */
-	public function authorizePayment( array $input ): array {
-		$query = $this->getQuery( 'AuthorizePaymentMethod' );
-		$variables = [ 'input' => $input ];
-		return $this->makeApiCall( $query, $variables );
-	}
-
-	/**
-	 *
-	 * @param array $input
-	 * @return array
-	 */
 	public function captureTransaction( array $input ): array {
 		$query = $this->getQuery( 'CaptureTransaction' );
+		$variables = [ 'input' => $input ];
+		return $this->makeApiCall( $query, $variables );
+	}
+
+	/**
+	 *
+	 * @param array $input
+	 * @return array
+	 */
+	public function authorizePaymentMethod( array $input ): array {
+		$query = $this->getQuery( 'AuthorizePaymentMethod' );
 		$variables = [ 'input' => $input ];
 		return $this->makeApiCall( $query, $variables );
 	}
