@@ -324,8 +324,7 @@ class PaymentProvider implements IPaymentProvider {
 		} else {
 			$detail = $rawResponse['data']['refundTransaction'][ 'refund' ];
 			$response->setRawStatus( $detail[ 'status' ] );
-			$mappedStatus = ( new PaymentStatus() )->normalizeStatus( $detail['status'] );
-			$response->setStatus( $mappedStatus );
+			$response->setStatus( PaymentStatus::normalizeStatus( $detail[ 'status' ] ) );
 			$response->setSuccessful( $response->getStatus() === FinalStatus::COMPLETE );
 			if ( !$response->isSuccessful() ) {
 				// look message from status history and add to error message
