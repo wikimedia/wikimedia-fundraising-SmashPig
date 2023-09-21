@@ -233,6 +233,14 @@ class PaymentProvider implements IPaymentProvider {
 			'amount' => $params['amount'],
 			'riskData' => [
 				"deviceData" => $params['device_data'] ?? '{}', // do device_data then it's recurring donation
+			],
+			'customerDetails' => [
+				'email' => $params['email'], // for venmo
+				'phoneNumber' => $params['phone'] ?? ''
+			],
+			'customFields' => [
+				"name" => "fullname",
+				"value" => $params['first_name'] . ' ' . $params['last_name'],
 			]
 		];
 
