@@ -24,7 +24,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	public function testProcessDonations() {
 		$processor = new FundraiseupAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/Donations/export_donations_2023-test.csv' );
-		$this->assertSame( 3, count( $output ), 'Should have found three successful donations' );
+		$this->assertSame( 4, count( $output ), 'Should have found four successful donations' );
 		$creditCardDonation = $output[0];
 		$achDonation = $output[2];
 		$expectedCreditCardDonation = [
