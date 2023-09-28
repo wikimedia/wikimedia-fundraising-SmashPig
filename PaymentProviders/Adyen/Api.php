@@ -392,7 +392,7 @@ class Api {
 	public function getPaymentMethods( $params ) {
 		$restParams = [
 			'merchantAccount' => $this->account,
-			'channel' => 'Web',
+			'channel' => $params['channel'] ?? 'Web',
 		];
 
 		if ( !empty( $params['amount'] ) && !empty( $params['currency'] ) ) {
