@@ -47,7 +47,12 @@ class DonationsImport extends FundraiseupImports {
 	 * @param HeadedCsvReader $csv
 	 */
 	protected function parseLine( HeadedCsvReader $csv ) {
-		if ( $csv->currentCol( 'Donation Status' ) == 'success' ) {
+		// Only allow successful donations in,
+		// for donations refunded on the same day as the donation,
+		// FRUP sets the status to refunded in the exports
+		$allowedDonationStatus = [ 'success', 'refunded' ];
+		$status = $csv->currentCol( 'Donation Status' );
+		if ( in_array( $status, $allowedDonationStatus ) ) {
 			$msg = parent::parseLine( $csv );
 			$msg['type'] = 'donations';
 			if ( empty( $msg['email'] ) ) {
