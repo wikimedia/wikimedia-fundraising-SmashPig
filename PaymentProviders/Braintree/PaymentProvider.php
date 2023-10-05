@@ -239,7 +239,7 @@ class PaymentProvider implements IPaymentProvider {
 				'phoneNumber' => $params['phone'] ?? ''
 			],
 			'descriptor' => [
-				'name' => 'Wikimedia Foundation',
+				'name' => $params['description'] ?? 'Wikimedia Foundation', // only used in USD in us, so should be fine to hard code if not provided
 			],
 			'customFields' => [
 				"name" => "fullname",
