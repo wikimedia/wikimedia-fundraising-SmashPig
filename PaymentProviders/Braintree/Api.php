@@ -147,6 +147,52 @@ class Api {
 	}
 
 	/**
+	 * search customer id to use it as key to delete from vault for one-time tokenized donor
+	 * @param string $email
+	 * @return array
+	 */
+	public function searchCustomer( string $email ): array {
+		$query = $this->getQuery( 'SearchCustomer' );
+		$variables = [ 'input' => [
+			'email' => [
+				'is' => $email
+			]
+		] ];
+		return $this->makeApiCall( $query, $variables );
+	}
+
+	/**
+	 * delete recurring token if turn on post MC but declined
+	 * @param string $paymentTxnId
+	 * @return array
+	 */
+	public function deletePaymentMethodFromVault( string $paymentTxnId ): array {
+		$query = $this->getQuery( 'DeletePaymentMethodFromVault' );
+		$variables = [ "input" => [
+			"clientMutationId" => $paymentTxnId,
+			"paymentMethodId" => $paymentTxnId,
+			"fraudRelated" => false,
+			"deleteRelatedPaymentMethods" => false,
+			"initiatedBy" => "MERCHANT"
+		] ];
+		return $this->makeApiCall( $query, $variables );
+	}
+
+	/**
+	 * remove customer if turn on post MC but declined
+	 * @param string $customerId
+	 * @return array
+	 */
+	public function deleteCustomer( string $customerId ): array {
+		$query = $this->getQuery( 'DeleteCustomer' );
+		$variables = [ 'input' => [
+			'clientMutationId' => $customerId,
+			'customerId' => $customerId
+		] ];
+		return $this->makeApiCall( $query, $variables );
+	}
+
+	/**
 	 *
 	 * @param array $input
 	 * @return array
