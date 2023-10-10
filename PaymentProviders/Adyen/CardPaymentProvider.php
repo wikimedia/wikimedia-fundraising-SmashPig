@@ -98,6 +98,7 @@ class CardPaymentProvider extends PaymentProvider {
 		// New style recurrings will have both the token and processor_contact_id (shopper reference)
 		// set, old style just the token
 		$params['payment_method'] = 'scheme';
+		$params['manual_capture'] = true;
 		$rawResponse = $this->api->createPaymentFromToken(
 			$params
 		);

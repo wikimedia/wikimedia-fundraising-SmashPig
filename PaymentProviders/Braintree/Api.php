@@ -136,6 +136,17 @@ class Api {
 	}
 
 	/**
+	 * fetch customer info if client side failed to return for auth
+	 * @param string $id
+	 * @return array
+	 */
+	public function fetchCustomer( string $id ): array {
+		$query = $this->getQuery( 'fetchCustomer' );
+		$variables = [ 'id' => $id ];
+		return $this->makeApiCall( $query, $variables );
+	}
+
+	/**
 	 *
 	 * @param array $input
 	 * @return array
