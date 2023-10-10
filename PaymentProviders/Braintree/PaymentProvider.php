@@ -229,6 +229,16 @@ class PaymentProvider implements IPaymentProvider {
 
 		$apiParams['paymentMethodId'] = $params['payment_token'];
 
+		if ( !$params['email'] ) {
+			$donorDetails = $this->fetchCustomerData( $params['gateway_session_id'] );
+			if ( $donorDetails ) {
+				$params['email'] = $donorDetails->getEmail();
+				$params['first_name'] = $donorDetails->getFirstName();
+				$params['last_name'] = $donorDetails->getLastName();
+				$params['phone'] = $donorDetails->getPhone();
+			}
+		}
+
 		$apiParams['transaction'] = [
 			'amount' => $params['amount'],
 			'riskData' => [
@@ -263,6 +273,26 @@ class PaymentProvider implements IPaymentProvider {
 		}
 
 		return $apiParams;
+	}
+
+	/**
+	 * @param string $id
+	 * todo: check if other braintree payment methods can and need use this
+	 * @return \SmashPig\PaymentData\DonorDetails
+	 */
+	public function fetchCustomerData( string $id ) {
+		// venmo is using client side return for email, if not return for some reason, fetch again
+		$rawResponse = $this->api->fetchCustomer( $id )['data']['node']['payerInfo'];
+		$donorDetails = new DonorDetails();
+		if ( $rawResponse ) {
+			$donorDetails->setUserName( $rawResponse['userName'] ?? null );
+			$donorDetails->setCustomerId( $rawResponse['externalId'] ?? null );
+			$donorDetails->setEmail( $rawResponse['email'] ?? null );
+			$donorDetails->setFirstName( $rawResponse['firstName'] ?? null );
+			$donorDetails->setLastName( $rawResponse['lastName'] ?? null );
+			$donorDetails->setPhone( $rawResponse['phoneNumber'] ?? null );
+		}
+		return $donorDetails;
 	}
 
 	protected function setCreatePaymentSuccessfulResponseDetails( array $transaction, CreatePaymentResponse $response, array $params ) {
