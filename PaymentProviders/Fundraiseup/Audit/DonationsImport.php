@@ -34,6 +34,7 @@ class DonationsImport extends FundraiseupImports {
 		'Mailing Country Code' => 'country',
 		'Supporter Language' => 'language',
 		'Supporter IP Address' => 'user_ip',
+		'Supporter ID' => 'external_identifier',
 		'UTM Medium' => 'utm_medium',
 		'UTM Source' => 'utm_source',
 		'UTM Campaign' => 'utm_campaign',
