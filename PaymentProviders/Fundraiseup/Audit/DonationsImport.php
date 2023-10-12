@@ -62,6 +62,7 @@ class DonationsImport extends FundraiseupImports {
 					$msg['email'] = $paypalEmail;
 				}
 			}
+			$msg['fee'] += $csv->currentCol( 'Donation Platform Fee' );
 			return $msg;
 		}
 		return [];
