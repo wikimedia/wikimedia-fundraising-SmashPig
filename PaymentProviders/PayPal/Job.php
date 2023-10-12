@@ -25,6 +25,13 @@ class Job extends RunnableJob {
 				}
 			}
 		}
+		if ( $this->providerConfiguration->val( 'reject-likely-givelively-ipns' ) ) {
+			$txnType = $this->payload->txn_type ?? '';
+			if ( empty( $this->payload->custom ) && $txnType == 'cart' ) {
+				Logger::info( 'Dropping IPN from a GiveLively donation, per https://phabricator.wikimedia.org/T295726' );
+				return true;
+			}
+		}
 		return false;
 	}
 
