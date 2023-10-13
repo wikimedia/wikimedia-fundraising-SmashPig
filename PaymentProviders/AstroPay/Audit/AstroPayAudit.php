@@ -1,13 +1,14 @@
-<?php namespace smashpig\PaymentProviders\dlocal\Audit;
+<?php namespace SmashPig\PaymentProviders\AstroPay\Audit;
 
 use OutOfBoundsException;
+use SmashPig\Core\Context;
 use SmashPig\Core\DataFiles\AuditParser;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\dlocal\ReferenceData;
 
-class DlocalAudit implements AuditParser {
+class AstroPayAudit implements AuditParser {
 
 	protected $columnHeaders = [
 		'Type', // 'Payment' or 'Refund'
@@ -74,7 +75,7 @@ class DlocalAudit implements AuditParser {
 
 		// Common to all types
 		$msg['date'] = UtcDate::getUtcTimestamp( $row['Creation date'] );
-		$msg['gateway'] = 'dlocal';
+		$msg['gateway'] = $this->getGateway( $msg['date'] );
 		$msg['gross'] = $row['Net Amount (local)'];
 
 		switch ( $row['Type'] ) {
@@ -124,7 +125,7 @@ class DlocalAudit implements AuditParser {
 		$msg['settled_fee'] = $row['Fee']; // settled_fee since it's given in USD
 		$msg['gateway_txn_id'] = $row['Reference'];
 		$msg['invoice_id'] = $row['Invoice'];
-		[ $method, $submethod ] = ReferenceData::decodePaymentMethod(
+		list( $method, $submethod ) = ReferenceData::decodePaymentMethod(
 			$row['Payment Method Type'],
 			$row['Payment Method']
 		);
@@ -142,5 +143,21 @@ class DlocalAudit implements AuditParser {
 	protected function getContributionTrackingId( $invoice ) {
 		$parts = explode( '.', $invoice );
 		return $parts[0];
+	}
+
+	protected function getGateway( int $timestamp ): string {
+		static $cutoverDate;
+		if ( $cutoverDate === null ) {
+			$config = Context::get()->getProviderConfiguration();
+			if ( $config->nodeExists( 'api-cutover-date' ) ) {
+				$cutoverDate = UtcDate::getUtcTimestamp( $config->val( 'api-cutover-date' ) );
+			} else {
+				$cutoverDate = false;
+			}
+		}
+		if ( $cutoverDate === false ) {
+			return 'astropay';
+		}
+		return ( $timestamp > $cutoverDate ) ? 'dlocal' : 'astropay';
 	}
 }
