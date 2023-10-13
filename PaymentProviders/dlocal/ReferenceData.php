@@ -14,11 +14,6 @@ class ReferenceData {
 		'CARD' => 'cc',
 		'TICKET' => 'cash',
 		'WALLET' => 'bt',
-		// api version 1 (AstroPay) style for the audit
-		'Bank Transfer' => 'bt',
-		'Cash Payment' => 'cash',
-		'Credit Card' => 'cc',
-		'Debit Card' => 'cc',
 	];
 
 	// At least one dLocal bank code is used for both credit cards
