@@ -308,4 +308,32 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 			$this->assertNull( $msg );
 		}
 	}
+
+	/**
+	 * Test that likely GiveLively donations are ignored
+	 */
+	public function testIgnoreGiveLively() {
+		$this->getCurlMock( 'VERIFIED' );
+		$payload = json_decode(
+			file_get_contents( __DIR__ . '/../Data/give_lively.json' ),
+			true
+		);
+		$this->capture( $payload );
+		$jobQueue = $this->config->object( 'data-store/jobs-paypal' );
+		$jobMessage = $jobQueue->pop();
+
+		$job = JsonSerializableObject::fromJsonProxy(
+			$jobMessage['php-message-class'],
+			json_encode( $jobMessage )
+		);
+
+		$success = $job->execute();
+		// Job should succeed
+		$this->assertTrue( $success );
+		// ...but not send any messages
+		foreach ( [ 'donations', 'recurring', 'refund' ] as $queue ) {
+			$msg = $this->config->object( "data-store/$queue" )->pop();
+			$this->assertNull( $msg );
+		}
+	}
 }
