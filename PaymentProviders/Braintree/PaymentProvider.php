@@ -222,13 +222,6 @@ class PaymentProvider implements IPaymentProvider {
 			}
 		}
 
-		// use the set recurring payment token as the payment_token for subsequent recurring charges
-		if ( !empty( $params['recurring_payment_token'] ) ) {
-			$params['payment_token'] = $params['recurring_payment_token'];
-		}
-
-		$apiParams['paymentMethodId'] = $params['payment_token'];
-
 		if ( !$params['email'] ) {
 			$donorDetails = $this->fetchCustomerData( $params['gateway_session_id'] );
 			if ( $donorDetails ) {
@@ -244,10 +237,6 @@ class PaymentProvider implements IPaymentProvider {
 			'riskData' => [
 				"deviceData" => $params['device_data'] ?? '{}', // do device_data then it's recurring donation
 			],
-			'customerDetails' => [
-				'email' => $params['email'], // for venmo
-				'phoneNumber' => $params['phone'] ?? ''
-			],
 			'descriptor' => [
 				'name' => $params['description'] ?? 'Wikimedia Foundation', // only used in USD in us, so should be fine to hard code if not provided
 			],
@@ -257,6 +246,17 @@ class PaymentProvider implements IPaymentProvider {
 			]
 		];
 
+		// use the set recurring payment token as the payment_token for subsequent recurring charges, if not recurring, pass customerDetails
+		if ( !empty( $params['recurring_payment_token'] ) ) {
+			$params['payment_token'] = $params['recurring_payment_token'];
+		} else {
+			$apiParams['transaction']['customerDetails'] = [
+				'email' => $params['email'], // for venmo
+				'phoneNumber' => $params['phone'] ?? ''
+			];
+		}
+
+		$apiParams['paymentMethodId'] = $params['payment_token'];
 		$this->indicateMerchant( $params, $apiParams );
 
 		$apiParams['transaction']['orderId'] = $params['order_id'];

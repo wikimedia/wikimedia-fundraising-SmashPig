@@ -77,6 +77,9 @@ var_map:
     amount3: gross
     mc_fee: fee
 
+# See https://phabricator.wikimedia.org/T295726
+reject-likely-givelively-ipns: true
+
 rejects:
     txn_type:
         - new_case
