@@ -310,10 +310,11 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 	}
 
 	/**
-	 * Test that likely GiveLively donations are ignored
+	 * Test that likely GiveLively donations are tagged correctly
 	 */
-	public function testIgnoreGiveLively() {
+	public function testTagGiveLively() {
 		$this->getCurlMock( 'VERIFIED' );
+		$this->providerConfig->override( [ 'givelively-appeal' => 'TeddyBearsPicnic' ] );
 		$payload = json_decode(
 			file_get_contents( __DIR__ . '/../Data/give_lively.json' ),
 			true
@@ -330,10 +331,13 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		$success = $job->execute();
 		// Job should succeed
 		$this->assertTrue( $success );
-		// ...but not send any messages
-		foreach ( [ 'donations', 'recurring', 'refund' ] as $queue ) {
+		// And send one message to the donations queue but no others
+		foreach ( [ 'recurring', 'refund' ] as $queue ) {
 			$msg = $this->config->object( "data-store/$queue" )->pop();
 			$this->assertNull( $msg );
 		}
+		$msg = $this->config->object( 'data-store/donations' )->pop();
+		$this->assertEquals( 'TeddyBearsPicnic', $msg['direct_mail_appeal'] );
+		$this->assertEquals( 'GiveLively', $msg['no_thank_you'] );
 	}
 }
