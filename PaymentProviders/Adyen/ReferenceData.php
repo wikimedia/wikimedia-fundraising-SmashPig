@@ -266,7 +266,7 @@ class ReferenceData {
 	 */
 	public static function decodePaymentMethod( $method, $variant ) {
 		if ( !array_key_exists( $method, self::$methods ) ) {
-			throw new OutOfBoundsException( "Unknown Payment Method $method " );
+			throw new OutOfBoundsException( "Unknown Payment Method '$method'" );
 		}
 		$entry = self::$methods[$method];
 		$ourMethod = $entry['method'];
