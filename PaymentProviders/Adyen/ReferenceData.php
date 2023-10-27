@@ -204,6 +204,16 @@ class ReferenceData {
 			'method' => 'rtbt',
 			'submethod' => 'rtbt_ideal',
 		],
+		'star' => [
+			'method' => 'cc',
+			'submethod' => 'visa',
+			'variants' => [
+				'visa_applepay' => [
+					'method' => 'apple',
+					'submethod' => 'visa',
+				],
+			]
+		],
 		'tenpay' => [
 			'method' => 'ew',
 			'submethod' => 'ew_tenpay',
