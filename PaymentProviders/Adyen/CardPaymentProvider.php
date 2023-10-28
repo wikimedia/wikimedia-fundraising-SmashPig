@@ -9,6 +9,7 @@ use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
+use SmashPig\PaymentProviders\Responses\CreatePaymentWithProcessorRetryResponse;
 
 class CardPaymentProvider extends PaymentProvider {
 
@@ -102,7 +103,12 @@ class CardPaymentProvider extends PaymentProvider {
 		$rawResponse = $this->api->createPaymentFromToken(
 			$params
 		);
-		$response = new CreatePaymentResponse();
+		if ( isset( $rawResponse['additionalData']['retry.rescueScheduled'] ) ) {
+			$response = new CreatePaymentWithProcessorRetryResponse();
+			$response->setIsProcessorRetryScheduled( (bool)$rawResponse['additionalData']['retry.rescueScheduled'] );
+		} else {
+			$response = new CreatePaymentResponse();
+		}
 		$response->setRawResponse( $rawResponse );
 		$rawStatus = $rawResponse['resultCode'];
 		$this->mapStatus(
