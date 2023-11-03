@@ -106,6 +106,9 @@ class CardPaymentProvider extends PaymentProvider {
 		if ( isset( $rawResponse['additionalData']['retry.rescueScheduled'] ) ) {
 			$response = new CreatePaymentWithProcessorRetryResponse();
 			$response->setIsProcessorRetryScheduled( (bool)$rawResponse['additionalData']['retry.rescueScheduled'] );
+			if ( !$response->getIsProcessorRetryScheduled() ) {
+				$response->setProcessorRetryRefusalReason( $rawResponse['refusalReason'] );
+			}
 		} else {
 			$response = new CreatePaymentResponse();
 		}

@@ -17,6 +17,12 @@ class CreatePaymentWithProcessorRetryResponse extends CreatePaymentResponse {
 	 */
 	protected $isProcessorRetryScheduled;
 
+	/**
+	 * When processor retry stop, record reason.
+	 * @var string
+	 */
+	protected $processorRetryRefusalReason;
+
 	public function setIsProcessorRetryScheduled(
 		bool $isProcessorRetryScheduled
 	): CreatePaymentWithProcessorRetryResponse {
@@ -28,4 +34,14 @@ class CreatePaymentWithProcessorRetryResponse extends CreatePaymentResponse {
 		return $this->isProcessorRetryScheduled;
 	}
 
+	public function setProcessorRetryRefusalReason(
+		string $processorRetryRefusalReason
+	): CreatePaymentWithProcessorRetryResponse {
+		$this->processorRetryRefusalReason = $processorRetryRefusalReason;
+		return $this;
+	}
+
+	public function getProcessorRetryRefusalReason(): string {
+		return $this->processorRetryRefusalReason;
+	}
 }
