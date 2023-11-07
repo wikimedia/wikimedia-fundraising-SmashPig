@@ -105,6 +105,54 @@ class VenmoPaymentProviderTest extends BaseBraintreeTest {
 		$this->assertEquals( $customer['venmoUserName'], $donor_details->getUserName() );
 	}
 
+	public function testAuthorizePaymentVenmoErrordueToInvalidField() {
+		$txn_id = "dHJhbnNhY3Rpb25fYXIxMTNuZzQ";
+
+		$customer = [
+			'venmoUserId' => '12345',
+			'venmoUserName' => 'venmojoe',
+			'firstName' => 'Jimmy',
+			'lastName' => 'Wales',
+			'phoneNumber' => '131313131',
+			'email' => 'mockjwales@wikimedia.org',
+		];
+		$request = [
+			"payment_token" => "fake-valid-nonce",
+			"order_id" => '123.3',
+			"amount" => '1.00',
+			"device_data" => '{}',
+			'first_name' => $customer['firstName'],
+			'last_name' => $customer['lastName'],
+			'email' => $customer['email'],
+			'phone' => $customer['phoneNumber'],
+			"currency" => 'USD'
+		];
+		$this->api->expects( $this->once() )
+			->method( 'authorizePaymentMethod' )
+			->willReturn( [
+					'errors' => [
+						[
+							'message' => "Validation error of type FieldUndefined: Field 'user_name' in type 'PayPalAccountDetails' is undefined @ 'authorizePaymentMethod/transaction/paymentMethodSnapshot/payer/user_name'",
+							'locations' => [
+								[
+									'line' => 31,
+									'columen' => 13
+								]
+							]
+						]
+					],
+				'extensions' => [
+					'requestId' => 'ffea98e0-29d5-49d1-a9fd-ad316192a59c'
+			] ] );
+
+		$provider = new VenmoPaymentProvider();
+		$response = $provider->createPayment( $request );
+		$this->assertEquals( FinalStatus::FAILED, $response->getStatus() );
+		$this->assertNull( $response->getDonorDetails() );
+		$this->assertTrue( $response->hasErrors() );
+		$this->assertCount( 1, $response->getErrors() );
+	}
+
 	public function testApprovePayment() {
 		$txn_id = "dHJhbnNhY3Rpb25fYXIxMTNuZzQ";
 		$request = [

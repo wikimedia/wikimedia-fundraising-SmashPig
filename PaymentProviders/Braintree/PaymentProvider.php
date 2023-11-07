@@ -391,6 +391,9 @@ class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaymentTokenP
 				} else {
 					$response->addErrors( $mappedError );
 				}
+			} elseif ( isset( $error['message'] ) ) {
+				$mappedError = $this->mapErrors( $error, $error['message'] );
+				$response->addErrors( $mappedError );
 			}
 		}
 	}
