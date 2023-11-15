@@ -593,6 +593,7 @@ abstract class PaymentProvider implements
 	}
 
 	/**
+	 * The only required param is country
 	 * @param array $params
 	 * @return array
 	 */
@@ -603,13 +604,13 @@ abstract class PaymentProvider implements
 		if ( !array_key_exists( $params['country'], NationalCurrencies::getNationalCurrencies() ) ) {
 			$badParams[] = 'country';
 		}
-		if ( !array_key_exists( $params['currency'], CurrencyRates::getCurrencyRates() ) ) {
+		if ( isset( $params['currency'] ) && !array_key_exists( $params['currency'], CurrencyRates::getCurrencyRates() ) ) {
 			$badParams[] = 'currency';
 		}
 		if ( isset( $params['amount'] ) && !is_numeric( $params['amount'] ) ) {
 			$badParams[] = 'amount';
 		}
-		if ( empty( $params['language'] ) ) {
+		if ( isset( $params['language'] ) && empty( $params['language'] ) ) {
 			$badParams[] = 'language';
 		}
 		return $badParams;
