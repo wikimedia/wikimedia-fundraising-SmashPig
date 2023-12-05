@@ -3,23 +3,12 @@
 class AdyenPaymentsAccountingReport extends AdyenAudit {
 
 	public function __construct() {
-		$this->columnHeaders = [
-			'Company Account',
-			'Merchant Account',
-			'Psp Reference',
-			'Merchant Reference',
-			'Payment Method',
-			'Payment Method Variant',
+		$this->requiredColumns += [
 			'Booking Date',
-			'TimeZone',
 			'Record Type',
 			'Modification Psp Reference', // this is the Modification Reference
-			'Main Currency',
-			'Main Amount',
 			'Payment Currency',
-			'Received (PC)',
 			'Exchange Rate',
-			'Authorised (PC)',
 			'Captured (PC)',
 			'Settlement Currency',
 			'Payable (SC)',
@@ -27,21 +16,9 @@ class AdyenPaymentsAccountingReport extends AdyenAudit {
 			'Markup (SC)',
 			'Scheme Fees (SC)',
 			'Interchange (SC)',
-			'Processing Fee Currency',
-			'Processing Fee (FC)',
-			'Modification Merchant Reference',
 			'Original Amount',
-			'Merchant Order Reference',
-			'Shopper Reference',
-			'Reserved3',
-			'Reserved4',
-			'Reserved5',
-			'Reserved6',
-			'Reserved7',
-			'Reserved8',
-			'Reserved9',
-			'Reserved10',
 		];
+
 		$this->type = 'Record Type';
 		// in this report the latest payment status date is in Booking Date, it has the same value as
 		// Creation Date for the settlement detail report
@@ -73,10 +50,20 @@ class AdyenPaymentsAccountingReport extends AdyenAudit {
 	}
 
 	protected function parseRefund( array $row, array $msg ): array {
-		// Captured (PC) and Original Amount both have the amount refunded
+		// For refunds, captured (PC) and Original Amount both have the amount refunded
 		// For some currencies (JPY) Original Amount seems to be off by 100x
-		$msg['gross'] = $row['Captured (PC)'];
-		$msg['gross_currency'] = $row['Payment Currency'];
+		if ( !empty( $row['Captured (PC)'] ) ) {
+			$msg['gross'] = $row['Captured (PC)'];
+			$msg['gross_currency'] = $row['Payment Currency'];
+		} else {
+			// For chargebacks, subtract off a couple fees to get the same number as we're getting from
+			// the settlement report's 'Gross Debit' field.
+			$msg['gross_currency'] = $row['Main Currency'];
+			// Doing math on floats, need to round to thousandths place to keep sanity
+			$msg['gross'] = round(
+				$row['Main Amount'] - $row['Markup (SC)'] - $row['Interchange (SC)'], 3
+			);
+		}
 
 		$msg['gateway_parent_id'] = $row['Psp Reference'];
 		$msg['gateway_refund_id'] = $row['Modification Psp Reference'];
