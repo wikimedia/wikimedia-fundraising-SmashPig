@@ -162,7 +162,8 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'frequency_unit' => 'month',
 			'cancel_date' => 1695140630,
 			'create_date' => 1695063200,
-			'frequency_interval' => 1
+			'frequency_interval' => 1,
+			'country' => 'GB'
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
@@ -216,7 +217,8 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'frequency_unit' => 'month',
 			'txn_type' => 'subscr_signup',
 			'create_date' => 1695035319,
-			'frequency_interval' => 1
+			'frequency_interval' => 1,
+			'country' => 'GB'
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
@@ -239,5 +241,17 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$output = $processor->parseFile( __DIR__ . '/../Data/Donations/export_donations_2023-country-fallback-is-empty-test.csv' );
 		$this->assertSame( '', $output[0]['country'] );
 		$this->assertSame( '', $output[1]['country'] );
+	}
+
+	public function testNewRecurringEmptyCountryUseFallbackFromDonationURL() : void {
+		$processor = new FundraiseupAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/Recurring/New/export_recurring_2023-empty-country-test.csv' );
+		$this->assertEquals( 'GB', $output[0]['country'] );
+	}
+
+	public function testNewRecurringEmptyCountryAndFallbackIsUnavailable() : void {
+		$processor = new FundraiseupAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/Recurring/New/export_recurring_2023-country-fallback-is-empty-test.csv' );
+		$this->assertSame( '', $output[0]['country'] );
 	}
 }
