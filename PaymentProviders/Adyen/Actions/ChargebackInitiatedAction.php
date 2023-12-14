@@ -22,7 +22,7 @@ class ChargebackInitiatedAction implements IListenerMessageAction {
 	public function normalizeChargebackForQueue( Chargeback $msg ): array {
 		$queueMsg = [
 			'gateway_refund_id' => $msg->pspReference,
-			'gateway_parent_id' => $msg->parentPspReference,
+			'gateway_parent_id' => $this->getGatewayParentId( $msg ),
 			'gross_currency' => $msg->currency,
 			'gross' => $msg->amount,
 			'date' => strtotime( $msg->eventDate ),
@@ -58,5 +58,21 @@ class ChargebackInitiatedAction implements IListenerMessageAction {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Decide on a Gateway Parent ID.
+	 *
+	 * If the parentPspReference is available on the Chargeback $msg then it will be returned.
+	 * Otherwise, the pspReference will be returned.
+	 *
+	 * Note: parentPspReference is not available for SecondChargeback
+	 *
+	 * @param Chargeback $msg The chargeback message object.
+	 *
+	 * @return string The parent gateway ID for the chargeback.
+	 */
+	private function getGatewayParentId( Chargeback $msg ): string {
+		return !empty( $msg->parentPspReference ) ? $msg->parentPspReference : $msg->pspReference;
 	}
 }
