@@ -17,6 +17,7 @@ use SmashPig\PaymentData\ReferenceData\NationalCurrencies;
 use SmashPig\PaymentData\SavedPaymentDetails;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\ICancelablePaymentProvider;
+use SmashPig\PaymentProviders\ICancelAutoRescueProvider;
 use SmashPig\PaymentProviders\IDeleteDataProvider;
 use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
@@ -43,7 +44,8 @@ abstract class PaymentProvider implements
 	IDeleteDataProvider,
 	IPaymentProvider,
 	IRefundablePaymentProvider,
-	IGetLatestPaymentStatusProvider
+	IGetLatestPaymentStatusProvider,
+	ICancelAutoRescueProvider
 {
 	/**
 	 * @var Api
