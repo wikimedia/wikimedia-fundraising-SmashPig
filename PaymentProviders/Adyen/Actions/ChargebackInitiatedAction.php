@@ -11,26 +11,7 @@ use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\RequestForInformation;
  * When any kind of chargeback initiated (or completion) message arrives, this will
  * be fired.
  */
-class ChargebackInitiatedAction implements IListenerMessageAction {
-
-	/**
-	 * Map Adyen's fields to ours
-	 *
-	 * @param Chargeback $msg
-	 * @return array $queueMsg
-	 */
-	public function normalizeChargebackForQueue( Chargeback $msg ): array {
-		$queueMsg = [
-			'gateway_refund_id' => $msg->pspReference,
-			'gateway_parent_id' => $this->getGatewayParentId( $msg ),
-			'gross_currency' => $msg->currency,
-			'gross' => $msg->amount,
-			'date' => strtotime( $msg->eventDate ),
-			'gateway' => 'adyen',
-			'type' => 'chargeback',
-		];
-		return $queueMsg;
-	}
+class ChargebackInitiatedAction extends BaseRefundAction implements IListenerMessageAction {
 
 	public function execute( ListenerMessage $msg ): bool {
 		$tl = new TaggedLogger( 'ChargebackInitiatedAction' );
@@ -40,7 +21,7 @@ class ChargebackInitiatedAction implements IListenerMessageAction {
 				$tl->info(
 					"Adding chargeback for {$msg->currency} {$msg->amount} with psp reference {$msg->pspReference} and originalReference {$msg->parentPspReference}."
 				);
-				$queueMessage = $this->normalizeChargebackForQueue( $msg );
+				$queueMessage = $this->normalizeMessageForQueue( $msg );
 				QueueWrapper::push( 'refund', $queueMessage );
 			} else {
 				$tl->info(
@@ -60,19 +41,7 @@ class ChargebackInitiatedAction implements IListenerMessageAction {
 		return true;
 	}
 
-	/**
-	 * Decide on a Gateway Parent ID.
-	 *
-	 * If the parentPspReference is available on the Chargeback $msg then it will be returned.
-	 * Otherwise, the pspReference will be returned.
-	 *
-	 * Note: parentPspReference is not available for SecondChargeback
-	 *
-	 * @param Chargeback $msg The chargeback message object.
-	 *
-	 * @return string The parent gateway ID for the chargeback.
-	 */
-	private function getGatewayParentId( Chargeback $msg ): string {
-		return !empty( $msg->parentPspReference ) ? $msg->parentPspReference : $msg->pspReference;
+	protected function getTypeForQueueMessage(): string {
+		return 'chargeback';
 	}
 }

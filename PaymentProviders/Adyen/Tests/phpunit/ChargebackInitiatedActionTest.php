@@ -40,6 +40,7 @@ class ChargebackInitiatedActionTest extends BaseAdyenTestCase {
 		$refund = $this->refundQueue->pop();
 		$this->assertEquals( $chargeback->parentPspReference, $refund['gateway_parent_id'] );
 		$this->assertEquals( $chargeback->pspReference, $refund['gateway_refund_id'] );
+		$this->assertEquals( 'chargeback', $refund['type'] );
 	}
 
 	public function testFailedChargeback() {
