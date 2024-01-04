@@ -85,6 +85,14 @@ data-store:
                 <<: *REDIS
                 queue: email-preferences
 
+
+    recurring-upgrade:
+        class: PHPQueue\Backend\Predis
+        constructor-parameters:
+            -
+                <<: *REDIS
+                queue: recurring-upgrade
+
     jobs-paypal:
         class: PHPQueue\Backend\Predis
         constructor-parameters:
