@@ -9,6 +9,7 @@ use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
+use SmashPig\PaymentProviders\IRefundablePaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CancelPaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
@@ -16,7 +17,7 @@ use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 use SmashPig\PaymentProviders\Responses\RefundPaymentResponse;
 
-class PaymentProvider implements IGetLatestPaymentStatusProvider, ICancelablePaymentProvider {
+class PaymentProvider implements IGetLatestPaymentStatusProvider, ICancelablePaymentProvider, IRefundablePaymentProvider {
 	/**
 	 * @var Api
 	 */
