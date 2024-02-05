@@ -66,7 +66,29 @@ class PaymentProvider implements IGetLatestPaymentStatusProvider, ICancelablePay
 	 */
 	public function refundPayment( array $params ): RefundPaymentResponse {
 		try {
-			$result = $this->api->refundPayment( $params );
+			if ( empty( $params['gateway_txn_id'] ) && empty( $params['payment_id'] ) ) {
+				return DlocalRefundPaymentResponseFactory::fromErrorResponse( [
+					'error' => 'Missing required fields'
+				] );
+			}
+			$apiParams = [];
+			if ( !empty( $params['gateway_txn_id'] ) ) {
+				$apiParams['payment_id'] = $params['gateway_txn_id'];
+			}
+			if ( !empty( $params['payment_id'] ) ) {
+				$apiParams['payment_id'] = $params['payment_id'];
+			}
+			if ( !empty( $params['currency'] ) ) {
+				$apiParams['currency'] = $params['currency'];
+			}
+			if ( !empty( $params['gross'] ) ) {
+				$apiParams['amount'] = $params['gross'];
+			}
+			if ( !empty( $params['amount'] ) ) {
+				$apiParams['amount'] = $params['amount'];
+			}
+
+			$result = $this->api->refundPayment( $apiParams );
 			return DlocalRefundPaymentResponseFactory::fromRawResponse( $result );
 		} catch ( ApiException $apiException ) {
 			return DlocalRefundPaymentResponseFactory::fromErrorResponse( $apiException->getRawErrors() );
