@@ -66,7 +66,7 @@ class PaymentProvider implements IGetLatestPaymentStatusProvider, ICancelablePay
 	 */
 	public function refundPayment( array $params ): RefundPaymentResponse {
 		try {
-			if ( empty( $params['gateway_txn_id'] ) && empty( $params['payment_id'] ) ) {
+			if ( empty( $params['gateway_txn_id'] ) ) {
 				return DlocalRefundPaymentResponseFactory::fromErrorResponse( [
 					'error' => 'Missing required fields'
 				] );
@@ -74,9 +74,6 @@ class PaymentProvider implements IGetLatestPaymentStatusProvider, ICancelablePay
 			$apiParams = [];
 			if ( !empty( $params['gateway_txn_id'] ) ) {
 				$apiParams['payment_id'] = $params['gateway_txn_id'];
-			}
-			if ( !empty( $params['payment_id'] ) ) {
-				$apiParams['payment_id'] = $params['payment_id'];
 			}
 			if ( !empty( $params['currency'] ) ) {
 				$apiParams['currency'] = $params['currency'];
