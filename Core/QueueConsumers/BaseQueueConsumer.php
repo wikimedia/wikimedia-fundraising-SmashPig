@@ -110,7 +110,7 @@ abstract class BaseQueueConsumer {
 			} catch ( JsonException $ex ) {
 				// Set a non-null value so as not to exit the loop
 				$data = false;
-				$this->sendToDamagedStore( null, $ex );
+				$this->sendToDamagedStore( [], $ex );
 			}
 			$timeOk = $this->timeLimit === 0 || time() <= $startTime + $this->timeLimit;
 			$countOk = $this->messageLimit === 0 || $processed < $this->messageLimit;
