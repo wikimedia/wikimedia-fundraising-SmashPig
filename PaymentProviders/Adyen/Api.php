@@ -555,45 +555,6 @@ class Api {
 	}
 
 	/**
-	 * Requests a direct debit payment. As with the card payment, this function currently only
-	 * supports recurring payments.
-	 * Documentation for the classic integration is no longer available, but there's this:
-	 * https://docs.adyen.com/payment-methods/sepa-direct-debit/api-only#recurring-payments
-	 *
-	 * @param array $params needs 'recurring_payment_token', 'order_id', 'recurring', 'amount', and 'currency'
-	 * @return bool|WSDL\directdebitFuncResponse
-	 */
-	public function createDirectDebitPayment( $params ) {
-		$data = new WSDL\directdebit();
-		$data->request = new WSDL\DirectDebitRequest();
-		$data->request->amount = $this->getWsdlAmountObject( $params );
-
-		$isRecurring = $params['recurring'] ?? false;
-		if ( $isRecurring ) {
-			$data->request->recurring = $this->getRecurring();
-			$data->request->shopperInteraction = self::RECURRING_SHOPPER_INTERACTION;
-			$data->request->selectedRecurringDetailReference = self::RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE;
-			$data->request->shopperReference = $params['recurring_payment_token'];
-		}
-
-		$data->request->reference = $params['order_id'];
-		$data->request->merchantAccount = $this->account;
-
-		$tl = new TaggedLogger( 'RawData' );
-		$tl->info( 'Launching SOAP directdebit request', $data );
-
-		try {
-			$response = $this->getSoapClient()->directdebit( $data );
-			Logger::debug( $this->getSoapClient()->__getLastRequest() );
-		} catch ( \Exception $ex ) {
-			Logger::error( 'SOAP directdebit request threw exception!', null, $ex );
-			return false;
-		}
-
-		return $response;
-	}
-
-	/**
 	 * Approve a payment that has been authorized. In credit-card terms, this
 	 * captures the payment.
 	 *
