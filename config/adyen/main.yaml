@@ -21,9 +21,6 @@ soap-listener:
 api:
     class: SmashPig\PaymentProviders\Adyen\Api
 
-payments-wsdl: https://pal-live.adyen.com/pal/Payment.wsdl
-#payments-wsdl: https://pal-test.adyen.com/pal/Payment.wsdl
-
 rest-base-url: https://checkout-test.adyen.com/v68
 
 recurring-base-url: https://pal-test.adyen.com/pal/servlet/Recurring/v68
@@ -51,8 +48,6 @@ accounts: {}
     #
     # example-account-name:
     #   ws-api-key: ""
-    #   ws-username: ""
-    #   ws-password: ""
     #   report-username: ""
     #   report-password: ""
     #   report-location: "/tmp"
