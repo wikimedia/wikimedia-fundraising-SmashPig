@@ -510,51 +510,6 @@ class Api {
 	}
 
 	/**
-	 * Requests authorisation of a credit card payment.
-	 * https://docs.adyen.com/classic-integration/recurring-payments/authorise-a-recurring-payment#recurring-payments
-	 *
-	 * TODO: This authorise request is currently specific to recurring. Might we want to make non-recurring calls
-	 * in the future?
-	 *
-	 * @param array $params needs 'recurring_payment_token', 'order_id', 'recurring', 'amount', and 'currency'
-	 * @return bool|WSDL\authoriseResponse
-	 */
-	public function createPayment( $params ) {
-		$data = new WSDL\authorise();
-		$data->paymentRequest = new WSDL\PaymentRequest();
-		$data->paymentRequest->amount = $this->getWsdlAmountObject( $params );
-
-		$isRecurring = $params['recurring'] ?? false;
-		if ( $isRecurring ) {
-			$data->paymentRequest->recurring = $this->getRecurring();
-			$data->paymentRequest->shopperInteraction = static::RECURRING_SHOPPER_INTERACTION;
-			$data->paymentRequest->selectedRecurringDetailReference = static::RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE;
-			$data->paymentRequest->shopperReference = $params['recurring_payment_token'];
-		}
-
-		$data->paymentRequest->additionalData = new WSDL\anyType2anyTypeMap();
-		$data->paymentRequest->additionalData->entry = new WSDL\entry();
-		$data->paymentRequest->additionalData->entry->key = 'manualCapture';
-		$data->paymentRequest->additionalData->entry->value = true;
-
-		// additional required fields that aren't listed in the docs as being required
-		$data->paymentRequest->reference = $params['order_id'];
-		$data->paymentRequest->merchantAccount = $this->account;
-
-		$tl = new TaggedLogger( 'RawData' );
-		$tl->info( 'Launching SOAP authorise request', $data );
-
-		try {
-			$response = $this->getSoapClient()->authorise( $data );
-		} catch ( \Exception $ex ) {
-			Logger::error( 'SOAP authorise request threw exception!', null, $ex );
-			return false;
-		}
-
-		return $response;
-	}
-
-	/**
 	 * Approve a payment that has been authorized. In credit-card terms, this
 	 * captures the payment.
 	 *

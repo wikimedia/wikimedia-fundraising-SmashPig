@@ -28,6 +28,7 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 			'recurring' => true,
 			'order_id' => 'RECURRING-TEST-' . rand( 0, 10000 ),
 			'recurring_payment_token' => 'TEST-TOKEN-123',
+			'processor_contact_id' => '1234566767',
 			'currency' => 'USD',
 			'amount' => '9.99',
 		];
@@ -35,11 +36,10 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 
 	public function testGoodRecurringCreatePaymentCall() {
 		$this->mockApi->expects( $this->once() )
-			->method( 'createPayment' )
-			->willReturn( (object)[ 'paymentResult' => (object)[
+			->method( 'createPaymentFromToken' )
+			->willReturn( [
 				'resultCode' => 'Authorised',
 				'pspReference' => '00000000000000AB'
-			]
 			] );
 
 		$params = $this->getTestParams();
@@ -59,12 +59,11 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 	 */
 	public function testNonRetryableFailedRecurringCreatePaymentCall( $refusalReason ) {
 		$this->mockApi->expects( $this->once() )
-			->method( 'createPayment' )
-			->willReturn( (object)[ 'paymentResult' => (object)[
+			->method( 'createPaymentFromToken' )
+			->willReturn( [
 				'resultCode' => 'Refused',
 				'refusalReason' => $refusalReason,
 				'pspReference' => '00000000000000AB'
-			]
 			] );
 
 		$params = $this->getTestParams();
@@ -85,12 +84,11 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 	 */
 	public function testRetryableFailedRecurringCreatePaymentCall( $refusalReason ) {
 		$this->mockApi->expects( $this->once() )
-			->method( 'createPayment' )
-			->willReturn( (object)[ 'paymentResult' => (object)[
+			->method( 'createPaymentFromToken' )
+			->willReturn( [
 				'resultCode' => 'Refused',
 				'refusalReason' => $refusalReason,
 				'pspReference' => '00000000000000AB'
-			]
 			] );
 
 		$params = $this->getTestParams();
