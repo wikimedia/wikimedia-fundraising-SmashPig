@@ -9,11 +9,6 @@ use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\PaymentData\RecurringModel;
 use UnexpectedValueException;
 
-// FIXME: get off of WSDL pronto
-// We have to include this manually because Composer 2 doesn't autoload
-// multiple classes in one file.
-include_once 'WSDL/Payment.php';
-
 class Api {
 
 	/**
@@ -25,7 +20,7 @@ class Api {
 	const RECURRING_CONTRACT = 'RECURRING';
 	const RECURRING_SHOPPER_INTERACTION = 'ContAuth';
 	const RECURRING_SHOPPER_INTERACTION_SETUP = 'Ecommerce';
-	const RECURRING_SELECTED_RECURRING_DETAIL_REFERENCE = 'LATEST';
+
 	/**
 	 * These two happen to have the same string values as the cross-processor constants in RecurringModel, but
 	 * we define Adyen-specific constants here in case Adyen ever decides to change their strings. Code that
@@ -33,11 +28,6 @@ class Api {
 	 */
 	const RECURRING_MODEL_SUBSCRIPTION = 'Subscription';
 	const RECURRING_MODEL_CARD_ON_FILE = 'CardOnFile';
-
-	/**
-	 * @var WSDL\Payment
-	 */
-	protected $soapClient;
 
 	/**
 	 * @var string Name of the merchant account
@@ -77,27 +67,9 @@ class Api {
 	 */
 	protected $dataProtectionBaseUrl;
 
-	/**
-	 * @var string
-	 */
-	protected $wsdlEndpoint;
-
-	/**
-	 * @var string
-	 */
-	protected $wsdlUser;
-
-	/**
-	 * @var string
-	 */
-	protected $wsdlPass;
-
 	public function __construct() {
 		$c = Context::get()->getProviderConfiguration();
 		$this->account = array_keys( $c->val( 'accounts' ) )[0]; // this feels fragile
-		$this->wsdlEndpoint = $c->val( 'payments-wsdl' );
-		$this->wsdlUser = $c->val( "accounts/{$this->account}/ws-username" );
-		$this->wsdlPass = $c->val( "accounts/{$this->account}/ws-password" );
 		$this->restBaseUrl = $c->val( 'rest-base-url' );
 		$this->recurringBaseUrl = $c->val( 'recurring-base-url' );
 		$this->paymentBaseUrl = $c->val( 'payment-base-url' );
@@ -105,23 +77,6 @@ class Api {
 		$this->apiKey = $c->val( "accounts/{$this->account}/ws-api-key" );
 		$this->enableAutoRescue = $c->val( 'enable-auto-rescue' );
 		$this->maxDaysToRescue = $c->val( 'max-days-to-rescue' );
-	}
-
-	/**
-	 * @return WSDL\Payment
-	 */
-	public function getSoapClient(): WSDL\Payment {
-		if ( !$this->soapClient ) {
-			$this->soapClient = new WSDL\Payment(
-				$this->wsdlEndpoint,
-				[
-					'cache_wsdl' => WSDL_CACHE_NONE,
-					'login' => $this->wsdlUser,
-					'password' => $this->wsdlPass,
-				]
-			);
-		}
-		return $this->soapClient;
 	}
 
 	/**
@@ -583,17 +538,6 @@ class Api {
 	}
 
 	/**
-	 * @param array $params
-	 * @return WSDL\Amount
-	 */
-	private function getWsdlAmountObject( array $params ): WSDL\Amount {
-		$amount = new WSDL\Amount();
-		$amount->value = $this->getAmountInMinorUnits( $params['amount'], $params['currency'] );
-		$amount->currency = $params['currency'];
-		return $amount;
-	}
-
-	/**
 	 * Convenience function for formatting amounts in REST calls
 	 *
 	 * @param array $params
@@ -627,15 +571,6 @@ class Api {
 		// PHP does indeed need us to round it off before casting to int.
 		// For example, try $36.80
 		return (int)round( $amount );
-	}
-
-	/**
-	 * @return WSDL\Recurring
-	 */
-	private function getRecurring() {
-		$recurring = new WSDL\Recurring();
-		$recurring->contract = static::RECURRING_CONTRACT;
-		return $recurring;
 	}
 
 	/**
