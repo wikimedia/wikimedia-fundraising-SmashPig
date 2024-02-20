@@ -2,10 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Adyen;
 
-use Psr\Log\LogLevel;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\PaymentError;
-use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
@@ -39,7 +36,10 @@ class CardPaymentProvider extends PaymentProvider {
 		} elseif ( !empty( $params['recurring_payment_token'] ) && !empty( $params['processor_contact_id'] ) ) {
 			return $this->createRecurringPaymentWithShopperReference( $params );
 		} else {
-			return $this->createRecurringPaymentFromToken( $params );
+			throw new \RuntimeException(
+				'Authorization needs either encrypted_payment_data, or both ' .
+				'recurring_payment_token and processor_contact_id'
+			);
 		}
 	}
 
@@ -125,41 +125,6 @@ class CardPaymentProvider extends PaymentProvider {
 		);
 
 		$this->mapGatewayTxnIdAndErrors( $response, $rawResponse );
-		return $response;
-	}
-
-	/**
-	 * @param array $params
-	 * @return CreatePaymentResponse
-	 */
-	protected function createRecurringPaymentFromToken( array $params ): CreatePaymentResponse {
-		$rawResponse = $this->api->createPayment( $params );
-		$response = new CreatePaymentResponse();
-		$response->setRawResponse( $rawResponse );
-
-		if ( !empty( $rawResponse->paymentResult ) ) {
-			$this->mapTxnIdAndErrors(
-				$response,
-				$rawResponse->paymentResult
-			);
-			$this->mapStatus(
-				$response,
-				$rawResponse,
-				new ApprovalNeededCreatePaymentStatus(),
-				$rawResponse->paymentResult->resultCode ?? null
-			);
-		} else {
-			$responseError = 'paymentResult element missing from Adyen createPayment response.';
-			$response->addErrors(
-				new PaymentError(
-					ErrorCode::MISSING_REQUIRED_DATA,
-					$responseError,
-					LogLevel::ERROR
-				)
-			);
-			$response->setSuccessful( false );
-			Logger::debug( $responseError, $rawResponse );
-		}
 		return $response;
 	}
 }
