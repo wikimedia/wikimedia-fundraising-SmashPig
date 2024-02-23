@@ -208,4 +208,55 @@ class RecurringPaymentTest extends BaseAdyenTestCase {
 		$this->assertEquals( '800 Contract not found', $firstError->getDebugMessage() );
 	}
 
+	public function testFailRecurringCreatePaymentCallWithNoAutoRescue() {
+		$params = $this->getTestParams();
+		$msg = [
+			'merchantReference' => $params['order_id'],
+			'pspReference' => 'testPspReference',
+			'resultCode' => 'Refused',
+			'success' => false,
+			'refusalReason' => 'Issuer Suspected Fraud',
+			'additionalData' => [
+				'retry.rescueScheduled' => 'false',
+				'retry.rescueReference' => null,
+			],
+		];
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPaymentFromToken' )
+			->willReturn( $msg );
+
+		$createPaymentResponse = $this->provider->createPayment( $params );
+
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
+			$createPaymentResponse );
+		$this->assertFalse( $createPaymentResponse->isSuccessful() );
+		$this->assertFalse( $createPaymentResponse->getIsProcessorRetryScheduled() );
+		$this->assertEmpty( $createPaymentResponse->getProcessorRetryRescueReference() );
+	}
+
+	public function testFailRecurringCreatePaymentCallWithAutoRescueScheduled() {
+		$params = $this->getTestParams();
+		$msg = [
+			'merchantReference' => $params['order_id'],
+			'pspReference' => 'testPspReference',
+			'resultCode' => 'Refused',
+			'success' => false,
+			'refusalReason' => 'Issuer Suspected Fraud',
+			'additionalData' => [
+				'retry.rescueScheduled' => 'true',
+				'retry.rescueReference' => 'testRescueReference',
+			],
+		];
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPaymentFromToken' )
+			->willReturn( $msg );
+
+		$createPaymentResponse = $this->provider->createPayment( $params );
+
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
+			$createPaymentResponse );
+		$this->assertFalse( $createPaymentResponse->isSuccessful() );
+		$this->assertTrue( $createPaymentResponse->getIsProcessorRetryScheduled() );
+		$this->assertNotEmpty( $createPaymentResponse->getProcessorRetryRescueReference() );
+	}
 }
