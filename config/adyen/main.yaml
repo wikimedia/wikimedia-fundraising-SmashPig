@@ -59,6 +59,9 @@ common-cache-parameters: &CACHE
                 key-base: SMASHPIG_ADYEN_METHODS
 
 payment-provider:
+    ach:
+        class: SmashPig\PaymentProviders\Adyen\ACHDirectDebitPaymentProvider
+        <<: *CACHE
     bt:
         class: SmashPig\PaymentProviders\Adyen\BankTransferPaymentProvider
         <<: *CACHE
