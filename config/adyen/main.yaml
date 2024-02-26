@@ -121,7 +121,8 @@ payment-provider:
 # value should be true. When we are confident we no longer need the HPP
 # integration, this setting can be deleted along with the code to send
 # PaymentCaptureJobs.
-capture-from-ipn-listener: true
+# Setting value to false to mirror production configuration
+capture-from-ipn-listener: false
 
 # Number of job queues to use in parallel for capture jobs. If this is left
 # at the default 1, all jobs go to jobs-adyen. If this is anything greater,
