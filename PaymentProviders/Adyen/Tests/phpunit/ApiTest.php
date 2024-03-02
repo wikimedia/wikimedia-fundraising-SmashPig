@@ -148,6 +148,12 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				'returnUrl' => $params['return_url'],
 				'origin' => 'https://paymentstest2.wmcloud.org',
 				'channel' => 'Web',
+				'shopperEmail' => 'wkramer@mc5.net',
+				'shopperIP' => '127.0.0.1',
+				'shopperName' => [
+					'firstName' => 'Wayne',
+					'lastName' => 'Kramer'
+				],
 				'billingAddress' => [
 					'city' => 'Detroit',
 					'country' => 'US',
@@ -155,12 +161,6 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 					'postalCode' => '48204',
 					'stateOrProvince' => 'MI',
 					'street' => '8952 Grand River Avenue',
-				],
-				'shopperEmail' => 'wkramer@mc5.net',
-				'shopperIP' => '127.0.0.1',
-				'shopperName' => [
-					'firstName' => 'Wayne',
-					'lastName' => 'Kramer'
 				],
 				'shopperStatement' => 'Wikimedia Foundation',
 			] ) )
