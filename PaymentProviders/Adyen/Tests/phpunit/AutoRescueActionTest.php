@@ -52,9 +52,9 @@ class AutoRescueActionTest extends BaseAdyenTestCase {
 		$this->assertEquals( "SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob", $msg['php-message-class'] );
 	}
 
-	public function testSuccessfulAutoRescueAuth(): void {
+	public function testSuccessfulAutoRescueAuthorisationMessageCapture(): void {
 		$authorisation = JsonSerializableObject::fromJsonProxy(
-			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Autorescue',
+			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
 			file_get_contents( __DIR__ . '/../Data/successful_auto_rescue_auth.json' )
 		);
 		$action = new PaymentCaptureAction();
@@ -83,6 +83,24 @@ class AutoRescueActionTest extends BaseAdyenTestCase {
 		$this->assertEquals( $recurringMsg['gateway_txn_id'], $approvePaymentResult['pspReference'] );
 		$this->assertEquals( $recurringMsg['txn_type'], 'subscr_payment' );
 		$this->assertTrue( $recurringMsg['is_successful_autorescue'] );
+	}
+
+	public function testNoCaptureForAutoRescueMessage(): void {
+		$authorisation = JsonSerializableObject::fromJsonProxy(
+			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Autorescue',
+			file_get_contents( __DIR__ . '/../Data/successful_auto_rescue_auth.json' )
+		);
+		$action = new PaymentCaptureAction();
+		$action->execute( $authorisation );
+
+		$msg = $this->jobsAdyenQueue->pop();
+
+		$capture = JsonSerializableObject::fromJsonProxy( $msg['php-message-class'], json_encode( $msg ) );
+
+		$capture->execute();
+
+		$recurringMsg = $this->recurringQueue->pop();
+		$this->assertNull( $recurringMsg );
 	}
 
 	public function testEndedAutoRescueAuth(): void {
