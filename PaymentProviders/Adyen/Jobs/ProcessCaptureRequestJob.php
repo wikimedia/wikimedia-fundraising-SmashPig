@@ -44,6 +44,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 	protected $propertiesExcludedFromExport = [ 'logger' ];
 
 	protected $isSuccessfulAutoRescue = false;
+	protected $processAutoRescueCapture = false;
 	protected $isEndedAutoRescue = false;
 	const ACTION_DUPLICATE = 'duplicate'; // duplicate payment attempt - cancel the authorization
 	const ACTION_END = 'end'; // end payment attempt from failed auto rescue - cancel the authorization
@@ -63,6 +64,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 		$obj->avsResult = $authMessage->avsResult;
 		$obj->paymentMethod = $authMessage->paymentMethod;
 		$obj->isSuccessfulAutoRescue = $authMessage->isSuccessfulAutoRescue();
+		$obj->processAutoRescueCapture = $authMessage->processAutoRescueCapture();
 		$obj->isEndedAutoRescue = $authMessage->isEndedAutoRescue();
 		$obj->retryRescueReference = $authMessage->retryRescueReference;
 		return $obj;
@@ -186,7 +188,11 @@ class ProcessCaptureRequestJob extends RunnableJob {
 
 	protected function determineAction( $dbMessage ) {
 		if ( $this->isSuccessfulAutoRescue ) {
-			 return ValidationAction::PROCESS;
+			if ( $this->processAutoRescueCapture ) {
+				return ValidationAction::PROCESS;
+			} else {
+				return self::ACTION_IGNORE;
+			}
 		}
 		if ( $this->isEndedAutoRescue ) {
 			$this->logger->debug( 'Ended Auto Rescue process' );

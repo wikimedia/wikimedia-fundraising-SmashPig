@@ -137,6 +137,20 @@ class Api {
 		return $result['body'];
 	}
 
+	protected function getBillingAddress( array $params ) {
+		$billingInfo = [
+			'billingAddress' => [
+				'city' => $params['city'] ?? 'NA',
+				'country' => $params['country'] ?? 'ZZ',
+				'houseNumberOrName' => $params['supplemental_address_1'] ?? 'NA',
+				'postalCode' => $params['postal_code'] ?? 'NA',
+				'stateOrProvince' => $params['state_province'] ?? 'NA',
+				'street' => $params['street_address'] ?? 'NA'
+			]
+		];
+		return $billingInfo;
+	}
+
 	/**
 	 * Formats contact info for payment creation. Takes our normalized
 	 * parameter names and maps them across to Adyen's parameter names,
@@ -147,22 +161,21 @@ class Api {
 	 */
 	protected function getContactInfo( array $params ) {
 		$contactInfo = [
-			'billingAddress' => [
-				'city' => $params['city'] ?? 'NA',
-				'country' => $params['country'] ?? 'ZZ',
-				// FIXME do we have to split this out of $params['street_address'] ?
-				'houseNumberOrName' => 'NA',
-				'postalCode' => $params['postal_code'] ?? 'NA',
-				'stateOrProvince' => $params['state_province'] ?? 'NA',
-				'street' => $params['street_address'] ?? 'NA'
-			],
 			'shopperEmail' => $params['email'] ?? '',
 			'shopperIP' => $params['user_ip'] ?? '',
 		];
+		if ( !empty( $params['full_name'] ) && ( empty( $params['first_name'] ) || empty( $params['last_name'] ) ) ) {
+			$nameParts = explode( ' ', $params['full_name'], 2 );
+			$params['first_name'] = $nameParts[0];
+			if ( count( $nameParts ) > 1 ) {
+				$params['last_name'] = $nameParts[1];
+			}
+		}
 		$contactInfo['shopperName'] = [
 			'firstName' => $params['first_name'] ?? '',
 			'lastName' => $params['last_name'] ?? ''
 		];
+		$contactInfo = array_merge( $contactInfo, $this->getBillingAddress( $params ) );
 		return $contactInfo;
 	}
 
@@ -193,6 +206,12 @@ class Api {
 		$restParams['shopperInteraction'] = static::RECURRING_SHOPPER_INTERACTION;
 		$restParams['recurringProcessingModel'] = static::RECURRING_MODEL_SUBSCRIPTION;
 		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
+		if ( $params['payment_method'] === 'ach' ) {
+			// ach billing address optional,
+			// if pass needs to pass country and state,
+			// for recurring token charge we have no state info, so do not pass
+			unset( $restParams['billingAddress'] );
+		}
 		// T351340 we will do credit card which have method scheme first and then add SEPA which use sepadirectdebit later
 		if ( $this->enableAutoRescue && $params['payment_method'] !== 'sepadirectdebit' ) {
 			$restParams['additionalData'] = [
@@ -242,6 +261,34 @@ class Api {
 		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
 		$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
+		return $result['body'];
+	}
+
+	public function createACHDirectDebitPayment( $params ) {
+		$restParams = [
+			'amount' => $this->getArrayAmount( $params ),
+			'reference' => $params['order_id'],
+			'merchantAccount' => $this->account,
+			'paymentMethod' => [
+				'type' => 'ach',
+				'encryptedBankAccountNumber' => $params['encrypted_bank_account_number'], // encrypted account number
+				'bankAccountType' => $params['bank_account_type'], // checking or savings
+				'encryptedBankLocationId' => $params['encrypted_bank_location_id'], // encrypted ACH routing number of the account
+				'ownerName' => $params['full_name'] // the name on the bank account
+			]
+		];
+		$isRecurring = $params['recurring'] ?? '';
+		if ( $isRecurring ) {
+			$restParams = array_merge( $restParams, $this->addRecurringParams( $params, true ) );
+		}
+		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
+
+		$result = $this->makeRestApiCall(
+			$restParams,
+			'payments',
+			'POST'
+		);
+
 		return $result['body'];
 	}
 
