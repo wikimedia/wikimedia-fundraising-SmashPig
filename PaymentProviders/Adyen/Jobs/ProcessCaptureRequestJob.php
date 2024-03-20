@@ -138,7 +138,7 @@ class ProcessCaptureRequestJob extends RunnableJob {
 							'order_id' => $this->merchantReference,
 							'gross' => $this->amount,
 							'currency' => $this->currency,
-							'gateway_txn_id' => $captureResult->getGatewayTxnId(),
+							'gateway_txn_id' => $this->pspReference,
 							'gateway' => 'adyen'
 						];
 
