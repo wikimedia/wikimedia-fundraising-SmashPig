@@ -105,11 +105,18 @@ class ProcessCaptureRequestJob extends RunnableJob {
 			case ValidationAction::PROCESS:
 				// Attempt to capture the payment
 				$provider = $this->getProvider();
+
+				/**
+				 * Currently all amounts are divided by 100 in the AdyenMessage JSON construction, PaymentProviders/Adyen/ExpatriatedMessages/AdyenMessage.php::L141
+				 * This adjusts the captured amount for JPY payments as it is currently skipped, PaymentProviders/Adyen/Api.php::L615
+				 */
+				if ( strtoupper( $this->currency ) === "JPY" ) {
+					$this->amount *= 100;
+				}
 				$this->logger->info(
 					"Attempting capture API call for currency '{$this->currency}', " .
 					"amount '{$this->amount}', reference '{$this->pspReference}'."
 				);
-
 				$captureResult = $provider->approvePayment( [
 					'gateway_txn_id' => $this->pspReference,
 					'currency' => $this->currency,
