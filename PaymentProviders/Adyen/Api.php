@@ -283,6 +283,9 @@ class Api {
 		}
 		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
+		$tl = new TaggedLogger( 'RawData' );
+		$tl->info( "Making request for {$params['gateway_txn_id']}", $restParams );
+
 		$result = $this->makeRestApiCall(
 			$restParams,
 			'payments',
