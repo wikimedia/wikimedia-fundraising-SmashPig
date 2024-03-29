@@ -200,7 +200,7 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 	 */
 	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
 		$rawResponse = $this->api->getExpressCheckoutDetails( $params['gateway_session_id'] );
-		return $this->mapGetDetailsResponse( $rawResponse );
+		return $this->mapGetDetailsResponse( $rawResponse, $params['gateway_session_id'] );
 	}
 
 	/**
@@ -212,11 +212,10 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 	 * BILLINGAGREEMENTACCEPTEDSTATUS, REDIRECTREQUIRED, PAYMENTREQUEST_0_AMT, PAYMENTREQUEST_0_CURRENCYCODE
 	 *
 	 * @param array $rawResponse
-	 *
+	 * @param string $token
 	 * @return PaymentDetailResponse
-	 * @throws UnexpectedValueException
 	 */
-	protected function mapGetDetailsResponse( array $rawResponse ): PaymentDetailResponse {
+	protected function mapGetDetailsResponse( array $rawResponse, string $token ): PaymentDetailResponse {
 		$response = ( new PaymentDetailResponse() )
 			->setRawResponse( $rawResponse );
 
@@ -243,6 +242,12 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 			// when the API call fails we don't get a result in CHECKOUTSTATUS,
 			// while if the error code is just a timeout, we do not want to make status failed, so no need to set the status here yet.
 			$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
+
+			if ( $response->hasError( ErrorCode::DECLINED ) ) {
+				// For PayPal, the 'declined' error code 10486 means we can send the donor back to PayPal to
+				// retry with a different funding source
+				$response->setRedirectUrl( $this->createRedirectUrl( $token ) );
+			}
 		}
 
 		return $response;
@@ -378,7 +383,7 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 			case '10412':
 				$mappedCode = ErrorCode::DUPLICATE_ORDER_ID;
 				break;
-			case '10486': // First attempt failed
+			case '10486': // This transaction couldn't be completed. Please redirect your customer to PayPal.
 				$mappedCode = ErrorCode::DECLINED;
 				break;
 			case '10411': // Timeout
