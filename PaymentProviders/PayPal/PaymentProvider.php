@@ -6,6 +6,7 @@ use Psr\Log\LogLevel;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\PaymentError;
+use SmashPig\Core\ProviderConfiguration;
 use SmashPig\PaymentData\Address;
 use SmashPig\PaymentData\DonorDetails;
 use SmashPig\PaymentData\ErrorCode;
@@ -29,9 +30,11 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 	 */
 	protected $api;
 
+	protected ProviderConfiguration $providerConfiguration;
+
 	public function __construct() {
-		$providerConfiguration = Context::get()->getProviderConfiguration();
-		$this->api = $providerConfiguration->object( 'api' );
+		$this->providerConfiguration = Context::get()->getProviderConfiguration();
+		$this->api = $this->providerConfiguration->object( 'api' );
 	}
 
 	/**
@@ -60,6 +63,7 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 
 		if ( isset( $rawResponse['TOKEN'] ) ) {
 			$response->setPaymentSession( $rawResponse['TOKEN'] );
+			$response->setRedirectUrl( $this->createRedirectUrl( $rawResponse['TOKEN'] ) );
 		}
 
 		return $response;
@@ -394,5 +398,9 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 				break;
 		}
 		return $mappedCode;
+	}
+
+	protected function createRedirectUrl( string $token ): string {
+		return $this->providerConfiguration->val( 'redirect-url' ) . $token . '&useraction=commit';
 	}
 }
