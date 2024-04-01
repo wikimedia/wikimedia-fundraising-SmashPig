@@ -61,6 +61,8 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 			$response->setRawStatus( $rawResponse['ACK'] );
 		}
 
+		$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
+
 		if ( isset( $rawResponse['TOKEN'] ) ) {
 			$response->setPaymentSession( $rawResponse['TOKEN'] );
 			$response->setRedirectUrl( $this->createRedirectUrl( $rawResponse['TOKEN'] ) );
