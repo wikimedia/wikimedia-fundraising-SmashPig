@@ -125,8 +125,8 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 			$response->setSuccessful( false );
 			// when the API call fails we don't get a result in PAYMENTINFO_0_PAYMENTSTATUS so set the status here.
 			$response->setStatus( FinalStatus::FAILED );
-			$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
 		}
+		$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
 
 		return $response;
 	}
