@@ -94,6 +94,7 @@ class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvid
 		} else {
 			$response->setStatus( FinalStatus::FAILED );
 		}
+		$response->addErrors( $this->mapErrorsInResponse( $rawResponse ) );
 
 		return $response;
 	}
