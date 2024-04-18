@@ -28,7 +28,7 @@ class RecurringUpdateImport extends FundraiseupImports {
 	 */
 	protected function parseLine( HeadedCsvReader $csv ) {
 		$msg = parent::parseLine( $csv );
-		$msg['type'] = 'recurring';
+		$msg['type'] = 'recurring-modify';
 		$msg['txn_type'] = 'external_recurring_modification';
 		if ( $this->isCancelled( $csv ) || $this->isFailed( $csv ) ) {
 			$msg['cancel_date'] = strtotime( $csv->currentCol( 'Cancelled Date' ) );

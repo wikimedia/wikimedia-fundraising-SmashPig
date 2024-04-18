@@ -237,7 +237,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'first_name' => 'Jimmy',
 			'last_name' => 'Wales Updated',
 			'email' => 'jwales@example.org',
-			'type' => 'recurring',
+			'type' => 'recurring-modify',
 			'amount' => '11',
 			'employer' => '',
 			'txn_type' => 'external_recurring_modification',
