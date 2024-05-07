@@ -24,7 +24,7 @@ class AdyenRestListener extends RestListener {
 		$rawRequest = $request->getRawRequest();
 		// remove expiryDate from rawRequest for reason and additionalData
 		// replace mm/yyyy with blank for logging
-		$patterns = [ '/(\d{1,2})\/(19|20)(\d{2})/',
+		$patterns = [ '/(\d{1,2})\\\\\/20(\d{2})/',
 			'/^\s*{(\w+)}\s*=/' ];
 		$replace = [ '', '$\1 =' ];
 		Logger::getTaggedLogger( 'RawData' )->info( preg_replace( $patterns, $replace, $rawRequest ) );
