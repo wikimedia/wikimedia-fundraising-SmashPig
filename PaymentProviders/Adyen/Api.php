@@ -264,6 +264,40 @@ class Api {
 		return $result['body'];
 	}
 
+	/**
+	 * Uses the rest API to create a SEPA direct deposit transfer
+	 *
+	 * @param array $params
+	 * amount, currency, order_id, iban, full_name
+	 * @throws \SmashPig\Core\ApiException
+	 */
+	public function createSEPABankTransferPayment( $params ) {
+		$restParams = [
+			'amount' => $this->getArrayAmount( $params ),
+			'reference' => $params['order_id'],
+			'merchantAccount' => $this->account,
+			'paymentMethod' => [
+				'type' => 'sepadirectdebit',
+				'sepa.ownerName' => $params['full_name'], // the name on the SEPA bank account.
+				'sepa.ibanNumber' => $params['iban'], // the IBAN of the bank account, (do not encrypt)
+			]
+		];
+		$isRecurring = $params['recurring'] ?? '';
+		if ( $isRecurring ) {
+			$restParams = array_merge( $restParams, $this->addRecurringParams( $params, true ) );
+		}
+		// billing address optional
+		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
+
+		$result = $this->makeRestApiCall(
+			$restParams,
+			'payments',
+			'POST'
+		);
+
+		return $result['body'];
+	}
+
 	public function createACHDirectDebitPayment( $params ) {
 		$restParams = [
 			'amount' => $this->getArrayAmount( $params ),
@@ -282,6 +316,9 @@ class Api {
 			$restParams = array_merge( $restParams, $this->addRecurringParams( $params, true ) );
 		}
 		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
+
+		$tl = new TaggedLogger( 'RawData' );
+		$tl->info( "Making request for {$params['gateway_txn_id']}", $restParams );
 
 		$result = $this->makeRestApiCall(
 			$restParams,
