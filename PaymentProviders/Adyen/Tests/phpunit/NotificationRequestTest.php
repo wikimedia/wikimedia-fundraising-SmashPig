@@ -388,10 +388,8 @@ class NotificationRequestTest extends BaseAdyenTestCase {
 		ob_end_clean();
 		$message = $this->jobsAdyenQueue->pop();
 		$this->assertNotNull( $message );
-		$this->assertEquals( 'adyen', $message['gateway'] );
-		$this->assertEquals( $reportMessage['merchantAccountCode'], $message['account'] );
-		$this->assertEquals( $reportMessage['reason'], $message['reportUrl'] );
-		$this->assertCount( 2, $message['propertiesExcludedFromExport'] );
+		$this->assertEquals( $reportMessage['merchantAccountCode'], $message['payload']['account'] );
+		$this->assertEquals( $reportMessage['reason'], $message['payload']['reportUrl'] );
 		$this->assertStringContainsString( "[accepted]", $getContent );
 	}
 
