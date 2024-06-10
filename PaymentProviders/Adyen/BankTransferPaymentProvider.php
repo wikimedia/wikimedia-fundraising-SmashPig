@@ -20,35 +20,74 @@ class BankTransferPaymentProvider extends PaymentProvider {
 	 * @throws \SmashPig\Core\ApiException
 	 */
 	public function createPayment( array $params ): CreatePaymentResponse {
+		if ( isset( $params['payment_submethod'] ) && $params['payment_submethod'] === 'ach' ) {
+			return $this->createACHPayment( $params );
+		}
 		if ( !empty( $params['issuer_id'] ) ) {
 			// one time and initial iDEAL will have an issuer_id set
 			$rawResponse = $this->api->createBankTransferPaymentFromCheckout( $params );
+			$hasIbanOrIssuer = true;
 		} elseif ( !empty( $params['iban'] ) ) {
 			// The IBAN of the bank account for SEPA, do not encrypt
 			$rawResponse = $this->api->createSEPABankTransferPayment( $params );
+			$hasIbanOrIssuer = true;
 		} else {
 			// subsequent recurring will have recurring_payment_token as storedPaymentMethodId,
 			// which is the pspReference from the RECURRING_CONTRACT webhook
 			$params['payment_method'] = 'sepadirectdebit';
 			$params['manual_capture'] = false;
 			$rawResponse = $this->api->createPaymentFromToken( $params );
+			$hasIbanOrIssuer = false;
 		}
 		$response = new CreatePaymentResponse();
 		$response->setRawResponse( $rawResponse );
 		$rawStatus = $rawResponse['resultCode'];
+		// When we are creating an initial recurring bank transfer payment, we do not get
+		// the recurring token on the createPayment response so we can't call the payment
+		// complete. For these payments the initial successful response should be pending.
+		if ( $hasIbanOrIssuer && !empty( $params['recurring'] ) ) {
+			$statusMapper = new DelayedTokenStatus();
+		} else {
+			$statusMapper = new CreatePaymentStatus();
+		}
 
 		$this->mapStatus(
 			$response,
 			$rawResponse,
-			new CreatePaymentStatus(),
+			$statusMapper,
 			$rawStatus,
-			[ FinalStatus::PENDING, FinalStatus::PENDING_POKE, FinalStatus::COMPLETE ]
+			[ FinalStatus::PENDING, FinalStatus::COMPLETE ]
 		);
 
 		if ( $rawStatus === 'RedirectShopper' ) {
 			$response->setRedirectUrl( $rawResponse['action']['url'] );
 		}
 		$this->mapGatewayTxnIdAndErrors( $response, $rawResponse );
+
+		return $response;
+	}
+
+	protected function createACHPayment( array $params ) : CreatePaymentResponse {
+		if ( !empty( $params['recurring_payment_token'] ) ) {
+			$params['payment_method'] = 'ach';
+			$rawResponse = $this->api->createPaymentFromToken( $params );
+		} else {
+			$rawResponse = $this->api->createACHDirectDebitPayment( $params );
+		}
+		$response = new CreatePaymentResponse();
+		$response->setRawResponse( $rawResponse );
+
+		$this->mapStatus(
+			$response,
+			$rawResponse,
+			new ApprovalNeededCreatePaymentStatus(),
+			$rawResponse['resultCode'] ?? null
+		);
+		$this->mapGatewayTxnIdAndErrors( $response, $rawResponse );
+		// additionalData has the recurring details
+		if ( isset( $rawResponse['additionalData'] ) ) {
+			$this->mapAdditionalData( $rawResponse['additionalData'], $response );
+		}
 
 		return $response;
 	}
