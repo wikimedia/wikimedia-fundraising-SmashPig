@@ -145,7 +145,7 @@ abstract class AdyenMessage extends ListenerMessage {
 		$this->merchantReference = $notification['merchantReference'];
 		$this->parentPspReference = $notification['originalReference'] ?? null;
 		$this->pspReference = $notification['pspReference'];
-		$this->success = (bool)$notification['success'];
+		$this->success = ( $notification['success'] === 'true' );
 		$this->reason = $notification['reason'];
 	}
 
