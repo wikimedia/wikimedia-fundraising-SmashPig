@@ -145,17 +145,6 @@ class AutoRescueActionTest extends BaseAdyenTestCase {
 		$action->execute( $authorisation );
 
 		$msg = $this->jobsAdyenQueue->pop();
-		$this->assertTrue( $msg['isEndedAutoRescue'] );
-		$this->assertEquals( $msg['merchantReference'], $authorisation->merchantReference );
-		$this->assertEquals( $msg['pspReference'], $authorisation->pspReference );
-
-		$capture = JsonSerializableObject::fromJsonProxy( $msg['php-message-class'], json_encode( $msg ) );
-		$this->mockApi->expects( $this->once() )
-			->method( 'cancel' )
-			->with( $msg['pspReference'] )
-			->willReturn( AdyenTestConfiguration::getSuccessfulCancelResult() );
-
-		$successfulCancelResult = $capture->execute();
-		$this->assertTrue( $successfulCancelResult );
+		$this->assertNull( $msg );
 	}
 }

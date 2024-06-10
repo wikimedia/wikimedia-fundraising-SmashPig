@@ -149,7 +149,6 @@ class NotificationRequestTest extends BaseAdyenTestCase {
 		$this->assertEquals( $autorescue['amount']['currency'], $message['currency'] );
 		$this->assertEquals( $autorescue['amount']['value'] / 100, $message['amount'] );
 		$this->assertTrue( $message['isSuccessfulAutoRescue'] );
-		$this->assertFalse( $message['isEndedAutoRescue'] );
 		$this->assertFalse( $message['processAutoRescueCapture'] );
 		$this->assertStringContainsString( "[accepted]", $getContent );
 	}
@@ -175,7 +174,6 @@ class NotificationRequestTest extends BaseAdyenTestCase {
 		$this->assertEquals( $autorescue['amount']['currency'], $message['currency'] );
 		$this->assertEquals( $autorescue['amount']['value'] / 100, $message['amount'] );
 		$this->assertTrue( $message['isSuccessfulAutoRescue'] );
-		$this->assertFalse( $message['isEndedAutoRescue'] );
 		$this->assertFalse( $message['processAutoRescueCapture'] );
 		$this->assertStringContainsString( "[accepted]", $getContent );
 	}
