@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\Gravy\Factories;
 
 use Psr\Log\LogLevel;
 use SmashPig\Core\PaymentError;
+use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
@@ -29,9 +30,31 @@ abstract class GravyPaymentResponseFactory {
 			static::addPaymentFailureError( $paymentProviderResponse, $response[ 'message' ] . ':' . $response[ 'description' ], $response[ 'code' ] );
 			return $paymentProviderResponse;
 		}
-		$paymentProviderResponse->setRawStatus( $response['raw_status'] );
+		$paymentProviderResponse->setRawStatus( $response['raw_status'] ?? '' );
 		static::decorateResponse( $paymentProviderResponse, $response );
 		return $paymentProviderResponse;
+	}
+
+	/**
+	 * @param PaymentProviderResponse $paymentResponse
+	 * @param array $error
+	 * @return void
+	 */
+	public static function handleValidationException( PaymentProviderResponse $paymentResponse, array $error ): void {
+		self::addPaymentValidationErrors( $paymentResponse, $error );
+		$paymentResponse->setStatus( FinalStatus::FAILED );
+		$paymentResponse->setSuccessful( false );
+	}
+
+	/**
+	 * @param PaymentProviderResponse $paymentResponse
+	 * @param array $error
+	 * @return void
+	 */
+	public static function handleException( PaymentProviderResponse $paymentResponse, ?string $error = '', ?string $errorCode = null ): void {
+		self::addPaymentFailureError( $paymentResponse, $error, $errorCode );
+		$paymentResponse->setStatus( FinalStatus::FAILED );
+		$paymentResponse->setSuccessful( false );
 	}
 
 	/**
@@ -56,6 +79,21 @@ abstract class GravyPaymentResponseFactory {
 				LogLevel::ERROR
 			)
 		);
+	}
+
+	/**
+	 * @param PaymentProviderResponse $paymentResponse
+	 * @param array $params
+	 * @return void
+	 */
+	protected static function addPaymentValidationErrors(
+		PaymentProviderResponse $paymentResponse, array $params
+	): void {
+		foreach ( $params as $param => $message ) {
+			$paymentResponse->addValidationError(
+				new ValidationError( $param, null, [], $message )
+			);
+		}
 	}
 
 	/**
