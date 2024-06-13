@@ -4,6 +4,8 @@ namespace SmashPig\PaymentProviders\Adyen\Test;
 
 use SmashPig\Core\Context;
 use SmashPig\Core\DataStores\JsonSerializableObject;
+use SmashPig\Core\DataStores\QueueWrapper;
+use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
@@ -137,14 +139,23 @@ class AutoRescueActionTest extends BaseAdyenTestCase {
 	}
 
 	public function testEndedAutoRescueAuth(): void {
-		$authorisation = JsonSerializableObject::fromJsonProxy(
-			'SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation',
-			file_get_contents( __DIR__ . '/../Data/ended_auto_rescue_auth.json' )
+		$authorisation = Authorisation::getInstanceFromJSON(
+			json_decode( file_get_contents( __DIR__ . '/../Data/ended_auto_rescue_auth.json' ), true )
 		);
-		$action = new PaymentCaptureAction();
-		$action->execute( $authorisation );
+		/** @var Authorisation $authorisation $action */
+		$authorisation->runActionChain();
 
-		$msg = $this->jobsAdyenQueue->pop();
-		$this->assertNull( $msg );
+		$jobMsg = $this->jobsAdyenQueue->pop();
+		$this->assertNull( $jobMsg );
+		$recurMsg = QueueWrapper::getQueue( 'recurring' )->pop();
+		$this->assertNotNull( $recurMsg );
+
+		SourceFields::removeFromMessage( $recurMsg );
+		$this->assertEquals( [
+			'txn_type' => 'subscr_cancel',
+			'rescue_reference' => $authorisation->retryRescueReference,
+			'is_autorescue' => true,
+			'cancel_reason' => 'Payment cannot be rescued: maximum failures reached'
+		], $recurMsg );
 	}
 }
