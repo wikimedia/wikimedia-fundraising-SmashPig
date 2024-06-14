@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Gravy;
 
 use SmashPig\Core\Logging\Logger;
+use SmashPig\PaymentProviders\Gravy\Factories\GravyApprovePaymentResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentSessionResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
@@ -56,7 +57,38 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 	}
 
 	public function approvePayment( array $params ) : ApprovePaymentResponse {
-		// TODO: Implement approvePayment() method.
+		// create our standard response object from the normalized response
+		$approvePaymentResponse = new ApprovePaymentResponse();
+
+		try {
+			// extract out the validation of input out to a separate class
+			$validator = new Validator();
+			$validator->approvePaymentInputIsValid( $params );
+
+			// map local params to external format, ideally only changing key names and minor input format transformations
+			$gravyRequestMapper = new RequestMapper();
+			$gravyApprovePaymentRequest = $gravyRequestMapper->mapToCardApprovePaymentRequest( $params );
+
+			// dispatch api call to external API using mapped params
+			$rawGravyApprovePaymentResponse = $this->api->approvePayment( $params['gateway_txn_id'], $gravyApprovePaymentRequest );
+
+			// map the response from the external format back to our normalized structure.
+			$gravyResponseMapper = new ResponseMapper();
+			$normalizedResponse = $gravyResponseMapper->mapFromApprovePaymentResponse( $rawGravyApprovePaymentResponse );
+
+			// populate our standard response object from the normalized response
+			// this could be extracted out to a factory as we do for dlocal
+			$approvePaymentResponse = GravyApprovePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
+		} catch ( ValidationException $e ) {
+			// it threw an exception!
+			GravyApprovePaymentResponseFactory::handleValidationException( $approvePaymentResponse, $e->getData() );
+		} catch ( \Exception $e ) {
+			// it threw an exception!
+			Logger::info( 'Processor failed to create new payment session with response:' . $e->getMessage() );
+			GravyApprovePaymentResponseFactory::handleException( $approvePaymentResponse, $e->getMessage(), $e->getCode() );
+		}
+
+		return $approvePaymentResponse;
 	}
 
 	protected function createPaymentFromSecureFields( array $params ) : CreatePaymentResponse {

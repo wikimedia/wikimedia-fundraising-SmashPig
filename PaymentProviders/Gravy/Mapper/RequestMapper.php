@@ -80,8 +80,10 @@ class RequestMapper {
 	/**
 	 * @return array
 	 */
-	public function mapToCardApprovePaymentRequest(): array {
-		$request = [];
+	public function mapToCardApprovePaymentRequest( array $params ): array {
+		$request = [
+			'amount' => $this->convertAmountToGravyAmountFormat( $params['amount'] ),
+		];
 		return $request;
 	}
 

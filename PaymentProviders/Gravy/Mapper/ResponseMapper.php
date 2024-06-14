@@ -88,7 +88,19 @@ class ResponseMapper {
 		return $params;
 	}
 
-	public function mapDonorResponse( ?array $response = [] ) : array {
+	/**
+	 * @return array
+	 * @link https://docs.gr4vy.com/reference/transactions/capture-transaction
+	 */
+	public function mapFromApprovePaymentResponse( array $response ): array {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+			return $this->mapErrorFromResponse( $response );
+		}
+
+		return $this->mapFromCreatePaymentResponse( $response );
+	}
+
+	public function mapDonorResponse( array $response ) : array {
 		$buyer = $response;
 		$donorDetails = $buyer['billing_details'] ?? [];
 		$params = [
@@ -159,10 +171,10 @@ class ResponseMapper {
 	 */
 	private function normalizeStatus( string $paymentProcessorStatus ): string {
 		switch ( $paymentProcessorStatus ) {
-			case 'processing':
 			case 'authorization_succeeded':
 				$normalizedStatus = FinalStatus::PENDING_POKE;
 				break;
+			case 'processing':
 			case 'buyer_approval_pending':
 			case 'authorization_void_pending':
 			case 'capture_pending':
@@ -175,7 +187,7 @@ class ResponseMapper {
 			case 'authorization_voided':
 				$normalizedStatus = FinalStatus::CANCELLED;
 				break;
-			case 'capture_succeeded	':
+			case 'capture_succeeded':
 				$normalizedStatus = FinalStatus::COMPLETE;
 				break;
 			default:

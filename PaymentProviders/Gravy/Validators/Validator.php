@@ -39,6 +39,19 @@ class Validator {
 	/**
 	 * @throws ValidationException
 	 */
+	public function approvePaymentInputIsValid( array $params ) {
+		$required = [
+			'gateway_txn_id',
+			'amount'
+		];
+
+		$this->checkFields( $required, $params );
+		return true;
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
 	public function createDonorInputIsValid( array $params ) {
 		$required = [
 			'first_name',

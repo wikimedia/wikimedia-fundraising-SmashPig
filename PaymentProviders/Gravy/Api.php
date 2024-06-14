@@ -3,7 +3,6 @@
 namespace SmashPig\PaymentProviders\Gravy;
 
 use Gr4vy\Gr4vyConfig;
-use SmashPig\Core\ApiException;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\TaggedLogger;
 
@@ -93,27 +92,18 @@ class Api {
 	 * Uses the rest API to capture the payment using the transaction ID
 	 * received from the createPayment request
 	 *
+	 * @param string $trxn_id
 	 * @param array $params
 	 * gateway_txn_id, amount
 	 * @throws \SmashPig\Core\ApiException
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/capture-transaction Documentation to approve payment
 	 */
-	public function approvePayment( array $params ): array {
-		$trxn_id = $params['gateway_txn_id'];
-		if ( empty( $trxn_id ) ) {
-			throw new ApiException( "Transaction ID is required" );
-		}
-
-		$requestBody = [];
-		if ( !empty( $params['amount'] ) ) {
-			$requestBody['amount'] = $params['amount'];
-		}
-
+	public function approvePayment( string $trxn_id, array $requestBody ): array {
 		$tl = new TaggedLogger( 'RawData' );
-		$tl->info( "Launching REST capture request for Gravy transaction with ID: {$params['gateway_txn_id']} and parameters {$requestBody}" );
-
 		$response = $this->gravyApiClient->captureTransaction( $trxn_id, $requestBody );
+		$response_string = json_encode( $response );
+		$tl->info( "Approve payment response for Transaction ID {$trxn_id} $response_string" );
 		return $response;
 	}
 }
