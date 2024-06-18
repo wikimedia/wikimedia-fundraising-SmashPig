@@ -15,23 +15,23 @@ abstract class GravyPaymentResponseFactory {
 	 * @param mixed $rawResponse
 	 * @return PaymentProviderResponse
 	 */
-	public static function fromRawResponse( array $normalizedResponse ): PaymentProviderResponse {
-		$response = static::createBasicResponse();
+	public static function fromNormalizedResponse( array $response ): PaymentProviderResponse {
+		$paymentProviderResponse = static::createBasicResponse();
 
-		$rawResponse = $normalizedResponse['raw_response'];
-		$isSuccessful = $normalizedResponse['is_successful'];
+		$rawResponse = $response['raw_response'];
+		$isSuccessful = $response['is_successful'];
 
-		$response->setRawResponse( $rawResponse );
-		$response->setNormalizedResponse( $normalizedResponse );
-		$response->setStatus( $normalizedResponse['status'] );
-		$response->setSuccessful( $isSuccessful );
-		if ( static::isFailedTransaction( $response->getStatus() ) ) {
-			static::addPaymentFailureError( $response, $normalizedResponse[ 'message' ] . ':' . $normalizedResponse[ 'description' ], $normalizedResponse[ 'code' ] );
-			return $response;
+		$paymentProviderResponse->setRawResponse( $rawResponse );
+		$paymentProviderResponse->setNormalizedResponse( $response );
+		$paymentProviderResponse->setStatus( $response['status'] );
+		$paymentProviderResponse->setSuccessful( $isSuccessful );
+		if ( static::isFailedTransaction( $paymentProviderResponse->getStatus() ) ) {
+			static::addPaymentFailureError( $paymentProviderResponse, $response[ 'message' ] . ':' . $response[ 'description' ], $response[ 'code' ] );
+			return $paymentProviderResponse;
 		}
-		$response->setRawStatus( $normalizedResponse['raw_status'] );
-		static::decorateResponse( $response, $normalizedResponse );
-		return $response;
+		$paymentProviderResponse->setRawStatus( $response['raw_status'] );
+		static::decorateResponse( $paymentProviderResponse, $response );
+		return $paymentProviderResponse;
 	}
 
 	/**

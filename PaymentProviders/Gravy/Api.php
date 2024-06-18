@@ -2,7 +2,6 @@
 
 namespace SmashPig\PaymentProviders\Gravy;
 
-use Gr4vy;
 use SmashPig\Core\ApiException;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\TaggedLogger;

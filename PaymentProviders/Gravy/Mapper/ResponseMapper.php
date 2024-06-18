@@ -4,7 +4,6 @@ namespace SmashPig\PaymentProviders\Gravy\Mapper;
 
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Gravy\ReferenceData;
-use UnexpectedValueException;
 
 class ResponseMapper {
 	/**

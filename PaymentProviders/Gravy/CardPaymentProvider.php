@@ -39,7 +39,7 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 
 				// populate our standard response object from the normalized response
 				// this could be extracted out to a factory as we do for dlocal
-				$createPaymentResponse = GravyCreatePaymentResponseFactory::fromRawResponse( $normalizedResponse );
+				$createPaymentResponse = GravyCreatePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
 			} else {
 				// it failed!
 				$createPaymentResponse->setSuccessful( false );
@@ -64,7 +64,7 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 			$gravyResponseMapper = new ResponseMapper();
 			$normalizedResponse = $gravyResponseMapper->mapFromCreatePaymentSessionResponse( $rawResponse );
 
-			$sessionResponse = GravyCreatePaymentSessionResponseFactory::fromRawResponse( $normalizedResponse );
+			$sessionResponse = GravyCreatePaymentSessionResponseFactory::fromNormalizedResponse( $normalizedResponse );
 			return $sessionResponse;
 		} catch ( \Exception $e ) {
 			// it threw an exception!

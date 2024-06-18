@@ -3,10 +3,9 @@
 namespace SmashPig\PaymentProviders\Gravy\Factories;
 
 use SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse;
-use SmashPig\PaymentProviders\Responses\IPaymentResponseFactory;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
-class GravyCreatePaymentSessionResponseFactory extends GravyPaymentResponseFactory implements IPaymentResponseFactory {
+class GravyCreatePaymentSessionResponseFactory extends GravyPaymentResponseFactory {
 
 	protected static function createBasicResponse(): CreatePaymentSessionResponse {
 		return new CreatePaymentSessionResponse();
