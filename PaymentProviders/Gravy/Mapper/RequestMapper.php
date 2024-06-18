@@ -6,7 +6,7 @@ class RequestMapper {
 
 	public function mapToCreatePaymentRequest( array $params ): array {
 		$request = [
-			'amount' => (float)$params['amount'] * 100,
+			'amount' => $this->convertAmountToGravyAmountFormat( $params['amount'] ),
 			'currency' => $params['currency'],
 			'country' => $params['country'],
 			'payment_method' => [
@@ -47,6 +47,17 @@ class RequestMapper {
 	public function mapToCardApprovePaymentRequest(): array {
 		$request = [];
 		return $request;
+	}
+
+	/**
+	 * Gravy requires amounts to be sent over in cents.
+	 *
+	 * @see https://docs.gr4vy.com/reference/transactions/new-transaction
+	 * @param string $amount
+	 * @return float
+	 */
+	protected function convertAmountToGravyAmountFormat( string $amount ): float {
+		return (float)$amount * 100;
 	}
 
 }
