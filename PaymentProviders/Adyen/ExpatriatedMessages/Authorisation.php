@@ -2,7 +2,6 @@
 
 use SmashPig\PaymentProviders\Adyen\Actions\CancelRecurringAction;
 use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
-use SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem;
 
 class Authorisation extends AdyenMessage {
 
@@ -29,68 +28,6 @@ class Authorisation extends AdyenMessage {
 	public $retryRescueReference = '';
 	public $retryOrderAttemptNumber = 0;
 	public $retryNextAttemptDate = '';
-
-	/**
-	 * Overloads the generic Adyen method adding fields specific to the Authorization message
-	 * type.
-	 *
-	 * @param \SmashPig\PaymentProviders\Adyen\WSDL\NotificationRequestItem $msgObj
-	 */
-	protected function constructFromWSDL( NotificationRequestItem $msgObj ) {
-		parent::constructFromWSDL( $msgObj );
-
-		$this->paymentMethod = $msgObj->paymentMethod;
-
-		if ( $msgObj->operations ) {
-			$this->operations = (array)$msgObj->operations->string;
-		} else {
-			$this->operations = [];
-		}
-
-		$this->reason = $msgObj->reason;
-
-		// Add AVS, CVV results, recurringProcessingModel, and recurringDetailReference from additionalData if any is provided
-		if ( $msgObj->additionalData === null || !is_array( $msgObj->additionalData->entry ) ) {
-			return;
-		}
-
-		$firstSegment = function ( $value ) {
-			$parts = explode( ' ', $value );
-			return $parts[0];
-		};
-
-		foreach ( $msgObj->additionalData->entry as $entry ) {
-			switch ( $entry->key ) {
-				case 'cvcResult':
-					$this->cvvResult = $firstSegment( $entry->value );
-					break;
-				case 'avsResult':
-					$this->avsResult = $firstSegment( $entry->value );
-					break;
-				case 'recurringProcessingModel':
-					$this->recurringProcessingModel = $firstSegment( $entry->value );
-					break;
-				case 'recurring.recurringDetailReference':
-					$this->recurringDetailReference = $firstSegment( $entry->value );
-					break;
-				case 'recurring.shopperReference':
-					$this->shopperReference = $firstSegment( $entry->value );
-					break;
-				case 'retry.rescueScheduled':
-					$this->retryRescueScheduled = $firstSegment( $entry->value );
-					break;
-				case 'retry.rescueReference':
-					$this->retryRescueReference = $firstSegment( $entry->value );
-					break;
-				case 'retry.orderAttemptNumber':
-					$this->retryOrderAttemptNumber = $firstSegment( $entry->value );
-					break;
-				case 'retry.nextAttemptDate':
-					$this->retryNextAttemptDate = $firstSegment( $entry->value );
-					break;
-			}
-		}
-	}
 
 	/**
 	 * Overloads the generic Adyen method adding fields specific to the Authorization message
