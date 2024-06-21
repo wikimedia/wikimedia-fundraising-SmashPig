@@ -323,12 +323,12 @@ class NotificationRequestTest extends BaseAdyenTestCase {
 		$getContent = ob_get_contents();
 		ob_end_clean();
 		$message = $this->jobsAdyenQueue->pop();
-		$this->assertEquals( $recurringContract['originalReference'], $message['gatewayTxnId'] );
-		$this->assertEquals( $recurringContract['merchantReference'], $message['merchantReference'] );
-		$this->assertEquals( $recurringContract['eventDate'], $message['eventDate'] );
-		$this->assertEquals( $recurringContract['pspReference'], $message['recurringPaymentToken'] );
-		$this->assertEquals( $recurringContract['merchantReference'], $message['processorContactId'] );
-		$this->assertEquals( $recurringContract['paymentMethod'], $message['paymentMethod'] );
+		$this->assertEquals( $recurringContract['originalReference'], $message['payload']['gatewayTxnId'] );
+		$this->assertEquals( $recurringContract['merchantReference'], $message['payload']['merchantReference'] );
+		$this->assertEquals( $recurringContract['eventDate'], $message['payload']['eventDate'] );
+		$this->assertEquals( $recurringContract['pspReference'], $message['payload']['recurringPaymentToken'] );
+		$this->assertEquals( $recurringContract['merchantReference'], $message['payload']['processorContactId'] );
+		$this->assertEquals( $recurringContract['paymentMethod'], $message['payload']['paymentMethod'] );
 		$this->assertStringContainsString( "[accepted]", $getContent );
 	}
 
