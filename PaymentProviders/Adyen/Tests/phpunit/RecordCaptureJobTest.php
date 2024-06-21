@@ -41,7 +41,8 @@ class RecordCaptureJobTest extends BaseAdyenTestCase {
 			file_get_contents( __DIR__ . '/../Data/capture.json' )
 		);
 
-		$job = RecordCaptureJob::factory( $capture );
+		$job = new RecordCaptureJob();
+		$job->payload = RecordCaptureJob::factory( $capture )['payload'];
 		$this->assertTrue( $job->execute() );
 
 		$donorData = $this->pendingDatabase->fetchMessageByGatewayOrderId(
