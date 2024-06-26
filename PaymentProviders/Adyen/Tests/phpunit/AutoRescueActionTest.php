@@ -8,13 +8,14 @@ use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
 use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Authorisation;
+use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\Autorescue;
 use SmashPig\PaymentProviders\Adyen\Tests\AdyenTestConfiguration;
 use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
 
 class AutoRescueActionTest extends BaseAdyenTestCase {
- private $jobsAdyenQueue;
+	private $jobsAdyenQueue;
 
-	public function setUp() : void {
+	public function setUp(): void {
 		parent::setUp();
 		$this->jobsAdyenQueue = Context::get()->getGlobalConfiguration()
 			->object( 'data-store/jobs-adyen' );
@@ -51,7 +52,10 @@ class AutoRescueActionTest extends BaseAdyenTestCase {
 
 		$this->assertEquals( $msg['retryRescueReference'], $authorisation->retryRescueReference );
 		$this->assertEquals( $msg['pspReference'], $authorisation->pspReference );
-		$this->assertEquals( "SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob", $msg['php-message-class'] );
+		$this->assertEquals(
+			"SmashPig\PaymentProviders\Adyen\Jobs\ProcessCaptureRequestJob",
+			$msg['php-message-class']
+		);
 	}
 
 	public function testSuccessfulAutoRescueAuthorisationMessageCapture(): void {
@@ -138,6 +142,33 @@ class AutoRescueActionTest extends BaseAdyenTestCase {
 		$this->assertNull( $recurringMsg );
 	}
 
+	/**
+	 * We should send a subscr_cancel message when we get a failed autorescue IPN
+	 */
+	public function testEndedAutoRescue(): void {
+		$autorescue = Autorescue::getInstanceFromJSON(
+			json_decode( file_get_contents( __DIR__ . '/../Data/ipn_Autorescue_failed.json' ), true )
+		);
+		/** @var Autorescue $autorescue $action */
+		$autorescue->runActionChain();
+
+		$jobMsg = $this->jobsAdyenQueue->pop();
+		$this->assertNull( $jobMsg );
+		$recurMsg = QueueWrapper::getQueue( 'recurring' )->pop();
+		$this->assertNotNull( $recurMsg );
+
+		SourceFields::removeFromMessage( $recurMsg );
+		$this->assertEquals( [
+			'txn_type' => 'subscr_cancel',
+			'rescue_reference' => $autorescue->retryRescueReference,
+			'is_autorescue' => true,
+			'cancel_reason' => 'Payment cannot be rescued: maximum failures reached'
+		], $recurMsg );
+	}
+
+	/**
+	 * Don't send an extra subscr_cancel message on the failed auth
+	 */
 	public function testEndedAutoRescueAuth(): void {
 		$authorisation = Authorisation::getInstanceFromJSON(
 			json_decode( file_get_contents( __DIR__ . '/../Data/ended_auto_rescue_auth.json' ), true )
@@ -148,14 +179,6 @@ class AutoRescueActionTest extends BaseAdyenTestCase {
 		$jobMsg = $this->jobsAdyenQueue->pop();
 		$this->assertNull( $jobMsg );
 		$recurMsg = QueueWrapper::getQueue( 'recurring' )->pop();
-		$this->assertNotNull( $recurMsg );
-
-		SourceFields::removeFromMessage( $recurMsg );
-		$this->assertEquals( [
-			'txn_type' => 'subscr_cancel',
-			'rescue_reference' => $authorisation->retryRescueReference,
-			'is_autorescue' => true,
-			'cancel_reason' => 'Payment cannot be rescued: maximum failures reached'
-		], $recurMsg );
+		$this->assertNull( $recurMsg );
 	}
 }

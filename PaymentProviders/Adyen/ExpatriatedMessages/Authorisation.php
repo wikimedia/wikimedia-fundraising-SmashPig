@@ -1,6 +1,5 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\ExpatriatedMessages;
 
-use SmashPig\PaymentProviders\Adyen\Actions\CancelRecurringAction;
 use SmashPig\PaymentProviders\Adyen\Actions\PaymentCaptureAction;
 
 class Authorisation extends AdyenMessage {
@@ -94,11 +93,7 @@ class Authorisation extends AdyenMessage {
 	 * @return bool True if all actions were successful. False otherwise.
 	 */
 	public function runActionChain() {
-		if ( $this->isEndedAutoRescue() ) {
-			$action = new CancelRecurringAction();
-		} else {
-			$action = new PaymentCaptureAction();
-		}
+		$action = new PaymentCaptureAction();
 		$result = $action->execute( $this );
 
 		if ( $result === true ) {
@@ -114,10 +109,10 @@ class Authorisation extends AdyenMessage {
 	 * @return bool True if successful auto rescue
 	 */
 	public function isSuccessfulAutoRescue(): bool {
-			if ( $this->success && $this->retryOrderAttemptNumber > 0 ) {
-				return true;
-			}
-			return false;
+		if ( $this->success && $this->retryOrderAttemptNumber > 0 ) {
+			return true;
+		}
+		return false;
 	}
 
 	/**

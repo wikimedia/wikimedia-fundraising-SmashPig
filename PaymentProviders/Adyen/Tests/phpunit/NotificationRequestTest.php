@@ -79,21 +79,12 @@ class NotificationRequestTest extends BaseAdyenTestCase {
 		->getMock();
 		$request->method( 'getRawRequest' )
 		->willReturn( file_get_contents( __DIR__ . '/../Data/ipn_Autorescue.json' ) );
-		$obj = json_decode( file_get_contents( __DIR__ . '/../Data/ipn_Autorescue.json' ), true );
-		$autorescue = $obj['notificationItems'][0]['NotificationRequestItem'];
 		ob_start();
 		$this->rest_listener->execute( $request, $response );
 		$getContent = ob_get_contents();
 		ob_end_clean();
 		$message = $this->jobsAdyenQueue->pop();
-		$this->assertNotNull( $message );
-		$this->assertEquals( $autorescue['pspReference'], $message['pspReference'] );
-		$this->assertEquals( $autorescue['merchantReference'], $message['merchantReference'] );
-		$this->assertEquals( $autorescue['additionalData']['retry.rescueReference'], $message['retryRescueReference'] );
-		$this->assertEquals( $autorescue['amount']['currency'], $message['currency'] );
-		$this->assertEquals( $autorescue['amount']['value'] / 100, $message['amount'] );
-		$this->assertTrue( $message['isSuccessfulAutoRescue'] );
-		$this->assertFalse( $message['processAutoRescueCapture'] );
+		$this->assertNull( $message );
 		$this->assertStringContainsString( "[accepted]", $getContent );
 	}
 
