@@ -316,7 +316,11 @@ class Api {
 			$restParams = array_merge( $restParams, $this->addRecurringParams( $params, true ) );
 		}
 		$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
-
+		if ( $restParams['billingAddress']['stateOrProvince'] === 'NA' ) {
+			// ach billing address optional,
+			// if pass needs to pass country and state, for T360825 no need to pass
+			unset( $restParams['billingAddress'] );
+		}
 		$result = $this->makeRestApiCall(
 			$restParams,
 			'payments',
