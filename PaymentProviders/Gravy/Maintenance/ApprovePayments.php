@@ -30,7 +30,7 @@ class ApprovePayments extends MaintenanceBase {
 		$headerList = implode( ',', $reader->headers() );
 		Logger::info( "Opened CSV $filePath and found columns $headerList" );
 
-		$required = [ 'gateway_txn_id', 'amount' ];
+		$required = [ 'gateway_txn_id', 'amount', 'currency' ];
 		foreach ( $required as $columnName ) {
 			if ( array_search( $columnName, $reader->headers() ) === false ) {
 				throw new \RuntimeException(

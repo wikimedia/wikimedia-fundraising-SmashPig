@@ -108,11 +108,12 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 
 	public function testSuccessfulApprovePayment() {
 		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/capture-transaction.json' ), true );
+		$params = $this->getApproveTrxnParams();
+
 		$this->mockApi->expects( $this->once() )
 			->method( 'approvePayment' )
+			->with( $params['gateway_txn_id'], [ 'amount' => 1299 ] )
 			->willReturn( $responseBody );
-
-		$params = $this->getApproveTrxnParams();
 
 		$response = $this->provider->approvePayment( $params );
 
@@ -336,7 +337,7 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		$this->assertCount( 0, $errors );
 	}
 
-	private function getCreateTrxnParams( string $checkoutSessionId, ?string $donor_id = '123', ?string $amount = '1299' ) {
+	private function getCreateTrxnParams( string $checkoutSessionId, ?string $donor_id = '123', ?string $amount = '12.99' ) {
 		$params = [];
 		$params['country'] = 'US';
 		$params['currency'] = 'USD';
@@ -353,9 +354,10 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		return $params;
 	}
 
-	private function getApproveTrxnParams( $amount = '1299' ) {
+	private function getApproveTrxnParams( $amount = '12.99' ) {
 		return [
 			'amount' => $amount,
+			'currency' => 'USD',
 			'gateway_txn_id' => 'random-id'
 		];
 	}

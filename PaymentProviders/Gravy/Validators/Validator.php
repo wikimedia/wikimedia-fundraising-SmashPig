@@ -40,6 +40,7 @@ class Validator {
 	public function checkApprovePaymentInput( array $params ): void {
 		$required = [
 			'gateway_txn_id',
+			'currency',
 			'amount'
 		];
 

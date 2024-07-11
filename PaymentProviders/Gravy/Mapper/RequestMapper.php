@@ -2,11 +2,15 @@
 
 namespace SmashPig\PaymentProviders\Gravy\Mapper;
 
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
+
 class RequestMapper {
 
 	public function mapToCreatePaymentRequest( array $params ): array {
 		$request = [
-			'amount' => $this->convertAmountToGravyAmountFormat( $params['amount'] ),
+			// Gravy requires amount to be sent in the smallest unit for the given currency
+			// See https://docs.gr4vy.com/reference/transactions/new-transaction
+			'amount' => CurrencyRoundingHelper::getAmountInMinorUnits( $params['amount'], $params['currency'] ),
 			'currency' => $params['currency'],
 			'country' => $params['country'],
 			'payment_method' => [
@@ -82,20 +86,9 @@ class RequestMapper {
 	 */
 	public function mapToCardApprovePaymentRequest( array $params ): array {
 		$request = [
-			'amount' => $this->convertAmountToGravyAmountFormat( $params['amount'] ),
+			'amount' => CurrencyRoundingHelper::getAmountInMinorUnits( $params['amount'], $params['currency'] ),
 		];
 		return $request;
-	}
-
-	/**
-	 * Gravy requires amounts to be sent over in cents.
-	 *
-	 * @see https://docs.gr4vy.com/reference/transactions/new-transaction
-	 * @param string $amount
-	 * @return float
-	 */
-	protected function convertAmountToGravyAmountFormat( string $amount ): float {
-		return (float)$amount * 100;
 	}
 
 }
