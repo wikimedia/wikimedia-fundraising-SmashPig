@@ -9,19 +9,18 @@ class Validator {
 	/**
 	 * @throws ValidationException
 	 */
-	public function getDonorInputIsValid( array $params ) {
+	public function checkDonorInput( array $params ): void {
 		$required = [
 			'email',
 		];
 
 		$this->checkFields( $required, $params );
-		return true;
 	}
 
 	/**
 	 * @throws ValidationException
 	 */
-	public function createPaymentInputIsValid( array $params ) {
+	public function checkCreatePaymentInput( array $params ): void {
 		$required = [
 			'gateway_session_id',
 			'amount',
@@ -33,26 +32,24 @@ class Validator {
 		];
 
 		$this->checkFields( $required, $params );
-		return true;
 	}
 
 	/**
 	 * @throws ValidationException
 	 */
-	public function approvePaymentInputIsValid( array $params ) {
+	public function checkApprovePaymentInput( array $params ): void {
 		$required = [
 			'gateway_txn_id',
 			'amount'
 		];
 
 		$this->checkFields( $required, $params );
-		return true;
 	}
 
 	/**
 	 * @throws ValidationException
 	 */
-	public function createDonorInputIsValid( array $params ) {
+	public function checkCreateDonorInput( array $params ): void {
 		$required = [
 			'first_name',
 			'last_name',
@@ -60,7 +57,6 @@ class Validator {
 		];
 
 		$this->checkFields( $required, $params );
-		return true;
 	}
 
 	/**

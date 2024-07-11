@@ -35,7 +35,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 		try {
 			// extract out the validation of input out to a separate class
 			$validator = new Validator();
-			$validator->getDonorInputIsValid( $params );
+			$validator->checkDonorInput( $params );
 			// map local params to external format, ideally only changing key names and minor input format transformations
 			$gravyRequestMapper = new RequestMapper();
 			$gravyGetDonorRequest = $gravyRequestMapper->mapToGetDonorRequest( $params );
@@ -65,7 +65,7 @@ abstract class PaymentProvider implements IPaymentProvider {
 		try {
 			// extract out the validation of input out to a separate class
 			$validator = new Validator();
-			$validator->createDonorInputIsValid( $params );
+			$validator->checkCreateDonorInput( $params );
 
 			// map local params to external format, ideally only changing key names and minor input format transformations
 			$gravyRequestMapper = new RequestMapper();
