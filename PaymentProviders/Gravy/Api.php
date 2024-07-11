@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Gravy;
 
+use Gr4vy\Gr4vyConfig;
 use SmashPig\Core\ApiException;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\TaggedLogger;
@@ -10,7 +11,7 @@ class Api {
 
 	private $merchantAccountId;
 
-	private $GravyApiClient;
+	private $gravyApiClient;
 
 	public function __construct() {
 		$c = Context::get()->getProviderConfiguration();
@@ -20,14 +21,14 @@ class Api {
 		$apiPrefix = $c->val( 'api-prefix' );
 
 		$this->merchantAccountId = $c->val( 'merchantAccountId' );
-		$this->GravyApiClient = new Gr4vy\Gr4vyConfig( $gravyId, $privateKeyLocation, true, $apiPrefix, $this->merchantAccountId );
+		$this->gravyApiClient = new Gr4vyConfig( $gravyId, $privateKeyLocation, true, $apiPrefix, $this->merchantAccountId );
 	}
 
 	/**
 	 * Creates a new checkout session
 	 */
 	public function createPaymentSession( $params = [] ) {
-		$response = $this->GravyApiClient->newCheckoutSession( $params );
+		$response = $this->gravyApiClient->newCheckoutSession( $params );
 		$tl = new TaggedLogger( 'RawData' );
 		$response_string = json_encode( $response );
 		$tl->info( "New Checkout Session response $response_string" );
@@ -45,7 +46,7 @@ class Api {
 	 * @link https://docs.gr4vy.com/reference/transactions/new-transaction Gr4vy Documentation to create a new transaction
 	 */
 	public function createPayment( array $params ): array {
-		$response = $this->GravyApiClient->authorizeNewTransaction( $params );
+		$response = $this->gravyApiClient->authorizeNewTransaction( $params );
 		$tl = new TaggedLogger( 'RawData' );
 		$response_string = json_encode( $response );
 		$tl->info( "Create payment response $response_string" );
@@ -76,7 +77,7 @@ class Api {
 		$tl = new TaggedLogger( 'RawData' );
 		$tl->info( "Launching REST capture request for Gravy transaction with ID: {$params['gateway_txn_id']} and parameters {$requestBody}" );
 
-		$response = $this->GravyApiClient->captureTransaction( $trxn_id, $requestBody );
+		$response = $this->gravyApiClient->captureTransaction( $trxn_id, $requestBody );
 		return $response;
 	}
 }
