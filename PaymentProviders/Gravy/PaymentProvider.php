@@ -10,12 +10,10 @@ use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
 use SmashPig\PaymentProviders\Gravy\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Validators\Validator;
 use SmashPig\PaymentProviders\IPaymentProvider;
-use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
-use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use SmashPig\PaymentProviders\ValidationException;
 
-class PaymentProvider implements IPaymentProvider {
+abstract class PaymentProvider implements IPaymentProvider {
 	/**
 	 * @var Api
 	 */
@@ -90,14 +88,6 @@ class PaymentProvider implements IPaymentProvider {
 		}
 
 		return $donorResponse;
-	}
-
-	public function createPayment( array $params ) : CreatePaymentResponse {
-		// TODO: Implement createPayment() method.
-	}
-
-	public function approvePayment( array $params ) : ApprovePaymentResponse {
-		// TODO: Implement approvePayment() method.
 	}
 
 }
