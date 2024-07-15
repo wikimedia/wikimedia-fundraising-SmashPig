@@ -5,9 +5,18 @@ namespace SmashPig\PaymentProviders\Gravy\Factories;
 use SmashPig\PaymentData\Address;
 use SmashPig\PaymentData\DonorDetails;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
+use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
 class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
+
+	public static function handlePaymentErrorFromDonorRespone( CreatePaymentResponse $createPaymentResponse, PaymentDetailResponse $donorResponse ): CreatePaymentResponse {
+		$createPaymentResponse->setRawResponse( $donorResponse->getRawResponse() );
+		$createPaymentResponse->addErrors( $donorResponse->getErrors() );
+		$createPaymentResponse->setSuccessful( false );
+		$createPaymentResponse->setStatus( 'Failed' );
+		return $createPaymentResponse;
+	}
 
 	protected static function createBasicResponse(): CreatePaymentResponse {
 		return new CreatePaymentResponse();
@@ -86,9 +95,9 @@ class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
 			->setLastName( $donorDetails['last_name'] ?? '' )
 			->setEmail( $donorDetails['email_address'] ?? '' )
 			->setPhone( $donorDetails['phone_number'] ?? '' )
-			->setCustomerId( $donorDetails['external_identifier'] ?? '' )
+			->setCustomerId( $donorDetails['processor_contact_id'] ?? '' )
 			->setBillingAddress( $address );
-
+		$paymentResponse->setProcessorContactID( $donorDetails['processor_contact_id'] ?? '' );
 		$paymentResponse->setDonorDetails( $details );
 	}
 }

@@ -2,7 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Gravy;
 
-use SmashPig\Core\ApiException;
+use Gr4vy\Gr4vyConfig;
 use SmashPig\Core\Context;
 use SmashPig\Core\Logging\TaggedLogger;
 
@@ -10,7 +10,7 @@ class Api {
 
 	private $merchantAccountId;
 
-	private $GravyApiClient;
+	private $gravyApiClient;
 
 	public function __construct() {
 		$c = Context::get()->getProviderConfiguration();
@@ -20,17 +20,53 @@ class Api {
 		$apiPrefix = $c->val( 'api-prefix' );
 
 		$this->merchantAccountId = $c->val( 'merchantAccountId' );
-		$this->GravyApiClient = new Gr4vy\Gr4vyConfig( $gravyId, $privateKeyLocation, true, $apiPrefix, $this->merchantAccountId );
+		$this->gravyApiClient = new Gr4vyConfig( $gravyId, $privateKeyLocation, true, $apiPrefix, $this->merchantAccountId );
 	}
 
 	/**
 	 * Creates a new checkout session
 	 */
 	public function createPaymentSession( $params = [] ) {
-		$response = $this->GravyApiClient->newCheckoutSession( $params );
+		$response = $this->gravyApiClient->newCheckoutSession( $params );
 		$tl = new TaggedLogger( 'RawData' );
 		$response_string = json_encode( $response );
 		$tl->info( "New Checkout Session response $response_string" );
+		return $response;
+	}
+
+	/**
+	 * Get donor record to map transactions to on Gr4vy
+	 *
+	 *
+	 * @param array $params
+	 *
+	 * @throws \SmashPig\Core\ApiException
+	 * @return array
+	 * @link https://docs.gr4vy.com/reference/buyers/list-buyers Gr4vy Documentation to get an existing buyer
+	 */
+	public function getDonor( array $params ): array {
+		$response = $this->gravyApiClient->listBuyers( $params );
+		$tl = new TaggedLogger( 'RawData' );
+		$response_string = json_encode( $response );
+		$tl->info( "Get donor response $response_string" );
+		return $response;
+	}
+
+	/**
+	 * Create donor record to map transactions to on Gr4vy
+	 *
+	 *
+	 * @param array $params
+	 *
+	 * @throws \SmashPig\Core\ApiException
+	 * @return array
+	 * @link https://docs.gr4vy.com/reference/buyers/new-buyer Gr4vy Documentation to create a new buyer
+	 */
+	public function createDonor( array $params ): array {
+		$response = $this->gravyApiClient->addBuyer( $params );
+		$tl = new TaggedLogger( 'RawData' );
+		$response_string = json_encode( $response );
+		$tl->info( "Create donor response $response_string" );
 		return $response;
 	}
 
@@ -45,7 +81,7 @@ class Api {
 	 * @link https://docs.gr4vy.com/reference/transactions/new-transaction Gr4vy Documentation to create a new transaction
 	 */
 	public function createPayment( array $params ): array {
-		$response = $this->GravyApiClient->authorizeNewTransaction( $params );
+		$response = $this->gravyApiClient->authorizeNewTransaction( $params );
 		$tl = new TaggedLogger( 'RawData' );
 		$response_string = json_encode( $response );
 		$tl->info( "Create payment response $response_string" );
@@ -56,27 +92,18 @@ class Api {
 	 * Uses the rest API to capture the payment using the transaction ID
 	 * received from the createPayment request
 	 *
+	 * @param string $trxn_id
 	 * @param array $params
 	 * gateway_txn_id, amount
 	 * @throws \SmashPig\Core\ApiException
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/capture-transaction Documentation to approve payment
 	 */
-	public function approvePayment( array $params ): array {
-		$trxn_id = $params['gateway_txn_id'];
-		if ( empty( $trxn_id ) ) {
-			throw new ApiException( "Transaction ID is required" );
-		}
-
-		$requestBody = [];
-		if ( !empty( $params['amount'] ) ) {
-			$requestBody['amount'] = $params['amount'];
-		}
-
+	public function approvePayment( string $trxn_id, array $requestBody ): array {
 		$tl = new TaggedLogger( 'RawData' );
-		$tl->info( "Launching REST capture request for Gravy transaction with ID: {$params['gateway_txn_id']} and parameters {$requestBody}" );
-
-		$response = $this->GravyApiClient->captureTransaction( $trxn_id, $requestBody );
+		$response = $this->gravyApiClient->captureTransaction( $trxn_id, $requestBody );
+		$response_string = json_encode( $response );
+		$tl->info( "Approve payment response for Transaction ID {$trxn_id} $response_string" );
 		return $response;
 	}
 }

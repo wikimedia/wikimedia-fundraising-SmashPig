@@ -9,11 +9,54 @@ class Validator {
 	/**
 	 * @throws ValidationException
 	 */
-	public function createPaymentInputIsValid( array $params ): bool {
+	public function getDonorInputIsValid( array $params ) {
+		$required = [
+			'email',
+		];
+
+		$this->checkFields( $required, $params );
+		return true;
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function createPaymentInputIsValid( array $params ) {
 		$required = [
 			'gateway_session_id',
 			'amount',
-			'currency'
+			'currency',
+			'order_id',
+			'email',
+			'first_name',
+			'last_name'
+		];
+
+		$this->checkFields( $required, $params );
+		return true;
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function approvePaymentInputIsValid( array $params ) {
+		$required = [
+			'gateway_txn_id',
+			'amount'
+		];
+
+		$this->checkFields( $required, $params );
+		return true;
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function createDonorInputIsValid( array $params ) {
+		$required = [
+			'first_name',
+			'last_name',
+			'email'
 		];
 
 		$this->checkFields( $required, $params );

@@ -15,7 +15,7 @@ class ResponseMapper {
 	 * @link https://docs.gr4vy.com/reference/checkout-sessions/new-checkout-session
 	 */
 	public function mapFromCreatePaymentSessionResponse( array $response ): array {
-		if ( $response['type'] == 'error' || isset( $response['error_code'] ) ) {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 		$params = [
@@ -34,7 +34,7 @@ class ResponseMapper {
 	 * @link https://docs.gr4vy.com/reference/transactions/new-transaction
 	 */
 	public function mapFromCreatePaymentResponse( array $response ): array {
-		if ( $response['type'] == 'error' || isset( $response['error_code'] ) ) {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 
@@ -71,7 +71,7 @@ class ResponseMapper {
 				'phone_number' => $donorDetails['phone_number'] ?? '',
 				'email_address' => $donorDetails['email_address'] ?? '',
 				'employer' => $response['buyer']['organization'] ?? '',
-				'external_identifier' => $response['buyer']['id'] ?? '',
+				'processor_contact_id' => $response['buyer']['id'] ?? '',
 				];
 			if ( !empty( $donorDetails['address'] ) ) {
 				$donorAddress = $donorDetails['address'];
@@ -90,6 +90,74 @@ class ResponseMapper {
 
 	/**
 	 * @return array
+	 * @link https://docs.gr4vy.com/reference/transactions/capture-transaction
+	 */
+	public function mapFromApprovePaymentResponse( array $response ): array {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+			return $this->mapErrorFromResponse( $response );
+		}
+
+		return $this->mapFromCreatePaymentResponse( $response );
+	}
+
+	public function mapDonorResponse( array $response ) : array {
+		$buyer = $response;
+		$donorDetails = $buyer['billing_details'] ?? [];
+		$params = [
+			'status' => FinalStatus::COMPLETE,
+			'is_successful' => true,
+			'donor_details' => [
+				'processor_contact_id' => $buyer['id'] ?? '',
+			],
+			'raw_response' => $response
+		];
+
+		if ( !empty( $donorDetails ) ) {
+			$params['donor_details'] = array_merge( $params['donor_details'], [
+				'first_name' => $donorDetails['first_name'] ?? '',
+				'last_name' => $donorDetails['last_name'] ?? '',
+				'phone_number' => $donorDetails['phone_number'] ?? '',
+				'email_address' => $donorDetails['email_address'] ?? '',
+				] );
+			if ( !empty( $donorDetails['address'] ) ) {
+				$donorAddress = $donorDetails['address'];
+				$params['donor_details']['address'] = [
+					'address_line1' => $donorAddress['line1'] ?? '',
+					'postal_code' => $donorAddress['postal_code'] ?? '',
+					'state' => $donorAddress['state'] ?? '',
+					'city' => $donorAddress['city'] ?? '',
+					'country' => $donorAddress['country'] ?? '',
+				];
+			}
+		} else {
+			$params['is_successful'] = false;
+		}
+
+		return $params;
+	}
+
+	public function mapFromCreateDonorResponse( array $response ): array {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+			return $this->mapErrorFromResponse( $response );
+		}
+		return $this->mapDonorResponse( $response );
+	}
+
+	public function mapFromGetDonorResponse( array $response ): array {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+			return $this->mapErrorFromResponse( $response );
+		}
+
+		$donorResponse = [];
+		if ( !empty( $response['items'] ) ) {
+			$donorResponse = $response['items'][0];
+		}
+
+		return $this->mapDonorResponse( $donorResponse );
+	}
+
+	/**
+	 * @return array
 	 */
 	public function mapFromCardApprovePaymentResponse(): array {
 		$request = [];
@@ -103,10 +171,10 @@ class ResponseMapper {
 	 */
 	private function normalizeStatus( string $paymentProcessorStatus ): string {
 		switch ( $paymentProcessorStatus ) {
-			case 'processing':
 			case 'authorization_succeeded':
 				$normalizedStatus = FinalStatus::PENDING_POKE;
 				break;
+			case 'processing':
 			case 'buyer_approval_pending':
 			case 'authorization_void_pending':
 			case 'capture_pending':
@@ -119,7 +187,7 @@ class ResponseMapper {
 			case 'authorization_voided':
 				$normalizedStatus = FinalStatus::CANCELLED;
 				break;
-			case 'capture_succeeded	':
+			case 'capture_succeeded':
 				$normalizedStatus = FinalStatus::COMPLETE;
 				break;
 			default:
