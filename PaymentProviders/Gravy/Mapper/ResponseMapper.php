@@ -173,6 +173,15 @@ class ResponseMapper {
 		return $request;
 	}
 
+	public function mapFromDeletePaymentTokenResponse( array $response ): array {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+			return $this->mapErrorFromResponse( $response );
+		}
+		return [
+			"is_successful" => true
+		];
+	}
+
 	/**
 	 * @param string $paymentProcessorStatus
 	 * @return string

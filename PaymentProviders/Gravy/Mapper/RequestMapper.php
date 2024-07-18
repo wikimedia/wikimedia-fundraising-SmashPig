@@ -91,4 +91,14 @@ class RequestMapper {
 		return $request;
 	}
 
+	/**
+	 * @return array
+	 */
+	public function mapToDeletePaymentTokenRequest( array $params ): array {
+		$request = [
+			'payment_method_id' => $params['recurring_payment_token'],
+		];
+		return $request;
+	}
+
 }

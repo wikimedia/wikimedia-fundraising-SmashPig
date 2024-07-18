@@ -47,6 +47,15 @@ class Validator {
 		$this->validateFields( $required, $params );
 	}
 
+	public function validateDeletePaymentTokenInput( array $params ) {
+		$required = [
+			'recurring_payment_token'
+		];
+
+		$this->validateFields( $required, $params );
+		return true;
+	}
+
 	/**
 	 * @throws ValidationException
 	 */
