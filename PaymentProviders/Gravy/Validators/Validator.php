@@ -9,18 +9,18 @@ class Validator {
 	/**
 	 * @throws ValidationException
 	 */
-	public function checkDonorInput( array $params ): void {
+	public function validateDonorInput( array $params ): void {
 		$required = [
 			'email',
 		];
 
-		$this->checkFields( $required, $params );
+		$this->validateFields( $required, $params );
 	}
 
 	/**
 	 * @throws ValidationException
 	 */
-	public function checkCreatePaymentInput( array $params ): void {
+	public function validateCreatePaymentInput( array $params ): void {
 		$required = [
 			'gateway_session_id',
 			'amount',
@@ -31,39 +31,39 @@ class Validator {
 			'last_name'
 		];
 
-		$this->checkFields( $required, $params );
+		$this->validateFields( $required, $params );
 	}
 
 	/**
 	 * @throws ValidationException
 	 */
-	public function checkApprovePaymentInput( array $params ): void {
+	public function validateApprovePaymentInput( array $params ): void {
 		$required = [
 			'gateway_txn_id',
 			'currency',
 			'amount'
 		];
 
-		$this->checkFields( $required, $params );
+		$this->validateFields( $required, $params );
 	}
 
 	/**
 	 * @throws ValidationException
 	 */
-	public function checkCreateDonorInput( array $params ): void {
+	public function validateCreateDonorInput( array $params ): void {
 		$required = [
 			'first_name',
 			'last_name',
 			'email'
 		];
 
-		$this->checkFields( $required, $params );
+		$this->validateFields( $required, $params );
 	}
 
 	/**
 	 * @throws ValidationException
 	 */
-	protected function checkFields( array $requiredFields, array $params ) {
+	protected function validateFields( array $requiredFields, array $params ) {
 		$invalidFields = [];
 		foreach ( $requiredFields as $field ) {
 			if ( empty( $params[$field] ) ) {
