@@ -4,7 +4,9 @@ namespace SmashPig\PaymentProviders\Gravy\Tests\phpunit;
 
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Gravy\CardPaymentProvider;
+use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Mapper\ErrorMapper;
+use SmashPig\PaymentProviders\Gravy\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Tests\BaseGravyTestCase;
 
 /**
@@ -52,6 +54,22 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		$this->assertEquals( $responseBody['buyer']['id'], $response->getDonorDetails()->getCustomerId() );
 		$this->assertEquals( $responseBody['buyer']['billing_details']['address']['line1'], $response->getDonorDetails()->getBillingAddress()->getStreetAddress() );
 		$this->assertTrue( $response->isSuccessful() );
+	}
+
+	public function testCorrectMappedRiskScores() {
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
+		$gravyResponseMapper = new ResponseMapper();
+		$normalizedResponse = $gravyResponseMapper->mapFromCreatePaymentResponse( $responseBody );
+
+		$response = GravyCreatePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
+
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
+			$response );
+		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( [
+			'avs' => 75,
+			'cvv' => 0
+		], $response->getRiskScores() );
 	}
 
 	public function testSuccessfulCreatePaymentFailCreateDonor() {
