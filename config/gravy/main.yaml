@@ -11,6 +11,10 @@ gravy-id: wikimedia
 
 api-prefix: sandbox
 
+endpoints:
+    listener:
+        class: SmashPig\PaymentProviders\Gravy\GravyListener
+
 merchantAccountId: default
 
 privateKeyLocation: /srv/config/private/gr4vy/private_key.pem
