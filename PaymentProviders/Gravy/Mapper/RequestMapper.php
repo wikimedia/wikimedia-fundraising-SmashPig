@@ -35,22 +35,32 @@ class RequestMapper {
 		return $request;
 	}
 
+	/**
+	 * @param array $params
+	 * @return array
+	 * T370700 Gravy treat buyer email case-sensitive
+	 */
 	public function mapToGetDonorRequest( array $params ): array {
 		$request = [
-			'external_identifier' => $params['email']
+			'external_identifier' => strtolower( $params['email'] )
 		];
 
 		return $request;
 	}
 
+	/**
+	 * @param array $params
+	 * @return array
+	 * T370700 Make sure buyer email all lowercase to avoid duplicate buyer creation in gravy
+	 */
 	public function mapToCreateDonorRequest( array $params ): array {
 		$request = [
 			'display_name' => $params['first_name'] . ' ' . $params['last_name'],
-			'external_identifier' => $params['email'],
+			'external_identifier' => strtolower( $params['email'] ),
 			'billing_details' => [
 				'first_name' => $params['first_name'],
 				'last_name' => $params['last_name'],
-				'email_address' => $params['email'],
+				'email_address' => strtolower( $params['email'] ),
 				'phone_number' => $params['phone_number'] ?? null,
 				'address' => [
 					'city' => $params['city'] ?? " ",
