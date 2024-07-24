@@ -9,7 +9,7 @@ use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
 class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
 
-	protected static function createBasicResponse(): CreatePaymentResponse {
+	protected static function createBasicResponse(): PaymentProviderResponse {
 		return new CreatePaymentResponse();
 	}
 

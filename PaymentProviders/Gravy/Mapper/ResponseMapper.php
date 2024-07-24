@@ -35,7 +35,9 @@ class ResponseMapper {
 	 * @link https://docs.gr4vy.com/reference/transactions/new-transaction
 	 */
 	public function mapFromPaymentResponse( array $response ): array {
-		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' )
+		|| isset( $response['error_code'] )
+		|| $response['intent_outcome'] == 'failed' ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 
@@ -207,7 +209,7 @@ class ResponseMapper {
 				$normalizedStatus = FinalStatus::COMPLETE;
 				break;
 			default:
-				throw new UnexpectedValueException( "Unknown status $paymentProcessorStatus" );
+				throw new \UnexpectedValueException( "Unknown status $paymentProcessorStatus" );
 		}
 
 		return $normalizedStatus;
@@ -219,13 +221,15 @@ class ResponseMapper {
 	 */
 	private function mapErrorFromResponse( array $params ): array {
 		 $error = $params;
-		 $code = null;
+		 $code = '';
 		 $message = '';
 		 $description = '';
 		if ( $error['type'] == 'error' ) {
 			$code = $error['status'];
 			$message = $error['code'];
 			$description = $error['message'];
+		} elseif ( $error['intent_outcome'] == 'failed' ) {
+			$message = $error['status'];
 		} else {
 			$code = $error['error_code'];
 			$message = $error['raw_response_code'];
@@ -244,5 +248,4 @@ class ResponseMapper {
 
 		];
 	}
-
 }
