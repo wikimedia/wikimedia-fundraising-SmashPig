@@ -86,6 +86,17 @@ class Validator {
 	/**
 	 * @throws ValidationException
 	 */
+	public function validateCancelPaymentInput( array $params ): void {
+		$required = [
+			'gateway_txn_id'
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
 	public function validateApprovePaymentInput( array $params ): void {
 		$required = [
 			'gateway_txn_id',
