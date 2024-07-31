@@ -3,7 +3,7 @@
   "contribution_tracking_id": "12354846",
   "country": "US",
   "currency": "USD",
-  "date": 1458060070,
+  "date": 1721678182,
   "email": "jwales@example.com",
   "fee": "0",
   "first_name": "Jimmy",
@@ -28,6 +28,5 @@
   "user_ip": "127.0.0.1",
   "utm_campaign": "",
   "utm_medium": "",
-  "utm_source": "..cc",
-  "propertiesExcludedFromExport": []
+  "utm_source": "..cc"
 }
