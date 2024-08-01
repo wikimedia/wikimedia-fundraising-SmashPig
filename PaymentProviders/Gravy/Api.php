@@ -155,4 +155,22 @@ class Api {
 		$tl->info( "Cancel transaction response for transaction with ID $gatewayTxnId $response_string" );
 		return $response;
 	}
+
+	/**
+	 * Uses the rest API to refund a transaction on Gravy
+	 * @param array $params
+	 * @return array
+	 * @throws \SmashPig\Core\ApiException
+	 * @link https://docs.gr4vy.com/reference/transactions/refund-transaction
+	 */
+	public function refundTransaction( array $params ): array {
+		$tl = new TaggedLogger( 'RawData' );
+		$gatewayTxnId = $params['gateway_txn_id'];
+		$requestBody = $params['body'];
+
+		$response = $this->gravyApiClient->refundTransaction( $gatewayTxnId, $requestBody );
+		$response_string = json_encode( $response );
+		$tl->info( "Refund transaction response for transaction with ID $gatewayTxnId $response_string" );
+		return $response;
+	}
 }

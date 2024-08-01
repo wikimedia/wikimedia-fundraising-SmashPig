@@ -183,6 +183,27 @@ class ResponseMapper {
 	}
 
 	/**
+	 * @param array $response
+	 * @return array
+	 */
+	public function mapFromRefundPaymentResponse( array $response ): array {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+			return $this->mapErrorFromResponse( $response );
+		}
+		return [
+			"is_successful" => true,
+			"gateway_parent_id" => $response["transaction_id"],
+			"gateway_refund_id" => $response["id"],
+			"currency" => $response["currency"],
+			"amount" => $response["amount"] / 100,
+			"reason" => $response["reason"],
+			"status" => $this->normalizeStatus( $response["status"] ),
+			"raw_status" => $response["status"],
+			'raw_response' => $response
+		];
+	}
+
+	/**
 	 * @param string $paymentProcessorStatus
 	 * @return string
 	 * @link https://docs.gr4vy.com/guides/api/resources/transactions/statuses
