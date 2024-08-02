@@ -47,7 +47,7 @@ class RecurringContractJob implements Runnable {
 				"'{$this->payload['merchantReference']}' and recurring token '{$this->payload['recurringPaymentToken']}'"
 			);
 
-			if ( $dbMessage && ( isset( $dbMessage['gateway_txn_id'] ) ) ) {
+			if ( $dbMessage ) {
 				$logger->debug(
 					'A valid message was obtained from the pending queue. Sending message to donations queue.'
 				);
@@ -55,6 +55,7 @@ class RecurringContractJob implements Runnable {
 				// Add the recurring setup information
 				$dbMessage['recurring_payment_token'] = $this->payload['recurringPaymentToken'];
 				$dbMessage['processor_contact_id'] = $this->payload['processorContactId'];
+				$dbMessage['gateway_txn_id'] = $this->payload['gatewayTxnId'];
 
 				QueueWrapper::push( 'donations', $dbMessage );
 
