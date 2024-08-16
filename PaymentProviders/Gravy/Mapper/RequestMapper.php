@@ -24,7 +24,12 @@ class RequestMapper {
 		}
 
 		if ( !empty( $params['recurring'] ) ) {
-			$request['store'] = true;
+			if ( !$this->isRecurringCharge( $params ) ) {
+				$request['store'] = true;
+			} else {
+				$request['merchant_initiated'] = true;
+				$request['is_subsequent_payment'] = true;
+			}
 			$request['payment_source'] = 'recurring';
 		}
 
@@ -82,11 +87,19 @@ class RequestMapper {
 	 */
 	public function mapToCardCreatePaymentRequest( array $params ): array {
 		$request = $this->mapToCreatePaymentRequest( $params );
-
-		$request['payment_method'] = array_merge( $request['payment_method'], [
-			'method' => 'checkout-session',
-			'id' => $params['gateway_session_id'],
-		] );
+		$payment_method = [];
+		if ( isset( $params['gateway_session_id'] ) ) {
+			$payment_method = [
+				'method' => 'checkout-session',
+				'id' => $params['gateway_session_id'],
+			];
+		} elseif ( isset( $params['recurring_payment_token'] ) ) {
+			$payment_method = [
+				'method' => 'id',
+				'id' => $params['recurring_payment_token'],
+			];
+		}
+		$request['payment_method'] = array_merge( $request['payment_method'], $payment_method );
 
 		return $request;
 	}
@@ -109,6 +122,15 @@ class RequestMapper {
 			'payment_method_id' => $params['recurring_payment_token'],
 		];
 		return $request;
+	}
+
+	/**
+	 * Check if payment params is for recurring charge
+	 * @param array $params
+	 * @return bool
+	 */
+	private function isRecurringCharge( array $params ): bool {
+		return isset( $params['recurring_payment_token'] );
 	}
 
 }
