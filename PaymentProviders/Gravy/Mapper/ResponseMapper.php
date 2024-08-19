@@ -35,9 +35,11 @@ class ResponseMapper {
 	 * @link https://docs.gr4vy.com/reference/transactions/new-transaction
 	 */
 	public function mapFromPaymentResponse( array $response ): array {
+		$is_3ds_error = ( isset( $response['three_d_secure'] ) && $response['three_d_secure']['status'] === 'error' );
 		if ( ( isset( $response['type'] ) && $response['type'] == 'error' )
 		|| isset( $response['error_code'] )
-		|| $response['intent_outcome'] == 'failed' ) {
+		|| $response['intent_outcome'] == 'failed'
+		|| $is_3ds_error ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 
@@ -266,7 +268,6 @@ class ResponseMapper {
 			case 'authorization_voided':
 				$normalizedStatus = FinalStatus::CANCELLED;
 				break;
-			case 'succeeded':
 			case 'capture_succeeded':
 			case 'succeeded':
 				$normalizedStatus = FinalStatus::COMPLETE;
@@ -282,34 +283,50 @@ class ResponseMapper {
 	 * @param array $params
 	 * @return array
 	 */
-	private function mapErrorFromResponse( array $params ): array {
-		 $error = $params;
-		 $code = '';
-		 $message = '';
-		 $description = '';
+	private function mapErrorFromResponse( array $error ): array {
+		$errorParameters = [
+			"code" => '',
+			"message" => '',
+			"description" => ''
+		];
 		if ( $error['type'] == 'error' ) {
-			$code = $error['status'];
-			$message = $error['code'];
-			$description = $error['message'];
+			$errorParameters['code'] = $error['status'] ?? '';
+			$errorParameters['message'] = $error['code'] ?? '';
+			$errorParameters['description'] = $error['message'] ?? '';
 		} elseif ( $error['intent_outcome'] == 'failed' ) {
-			$message = $error['status'];
+			$errorParameters['code'] = $error['error_code'] ?? '';
+			$errorParameters['message'] = $error['status'] ?? '';
 		} else {
-			$code = $error['error_code'];
-			$message = $error['raw_response_code'];
-			$description = $error['raw_response_description'];
+			$errorParameters['code'] = $error['error_code'] ?? '';
+			$errorParameters['message'] = $error['raw_response_code'] ?? '';
+			$errorParameters['description'] = $error['raw_response_description'] ?? '';
 		}
 
-		$error_code = ErrorMapper::getError( $code );
+		if ( ( isset( $error['three_d_secure'] ) && $error['three_d_secure']['status'] === 'error' ) ) {
+			$errorParameters = $this->mapFrom3DSecureErrorResponse( $error['three_d_secure'] );
+		}
+
+		$error_code = ErrorMapper::getError( $errorParameters['code'] );
 
 		return [
 			'is_successful' => false,
 			'status' => FinalStatus::FAILED,
 			'code' => $error_code,
-			'message' => $message,
-			'description' => $description,
+			'message' => $errorParameters['message'],
+			'description' => $errorParameters['description'],
 			'raw_response' => $error
 
 		];
 	}
 
+	protected function mapFrom3DSecureErrorResponse( array $params ) {
+		$error_data = $params['error_data'];
+		$error = [
+			"code" => $error_data['code'],
+			"message" => $error_data['description'],
+			"description" => $error_data['detail']
+		];
+
+		return $error;
+	}
 }
