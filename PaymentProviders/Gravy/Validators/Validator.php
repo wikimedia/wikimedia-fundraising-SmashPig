@@ -38,6 +38,24 @@ class Validator {
 	/**
 	 * @throws ValidationException
 	 */
+	public function validateCreatePaymentFromTokenInput( array $params ): void {
+		$required = [
+			'recurring_payment_token',
+			'processor_contact_id',
+			'amount',
+			'currency',
+			'order_id',
+			'email',
+			'first_name',
+			'last_name'
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
 	public function validateApprovePaymentInput( array $params ): void {
 		$required = [
 			'gateway_txn_id',

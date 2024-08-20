@@ -5,18 +5,9 @@ namespace SmashPig\PaymentProviders\Gravy\Factories;
 use SmashPig\PaymentData\Address;
 use SmashPig\PaymentData\DonorDetails;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
-use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
 class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
-
-	public static function handlePaymentErrorFromDonorRespone( CreatePaymentResponse $createPaymentResponse, PaymentDetailResponse $donorResponse ): CreatePaymentResponse {
-		$createPaymentResponse->setRawResponse( $donorResponse->getRawResponse() );
-		$createPaymentResponse->addErrors( $donorResponse->getErrors() );
-		$createPaymentResponse->setSuccessful( false );
-		$createPaymentResponse->setStatus( 'Failed' );
-		return $createPaymentResponse;
-	}
 
 	protected static function createBasicResponse(): CreatePaymentResponse {
 		return new CreatePaymentResponse();
