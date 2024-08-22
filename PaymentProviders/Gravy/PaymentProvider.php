@@ -222,4 +222,26 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		}
 		return $refundResponse;
 	}
+
+	public function getRefundDetails( array $params ): RefundPaymentResponse {
+		$refundResponse = new RefundPaymentResponse();
+		try {
+			$validator = new Validator();
+			$validator->validateGetRefundInput( $params );
+
+			$rawGravyRefundResponse = $this->api->getRefund( $params );
+			// map the response from the external format back to our normalized structure.
+			$gravyResponseMapper = new ResponseMapper();
+			$normalizedResponse = $gravyResponseMapper->mapFromRefundPaymentResponse( $rawGravyRefundResponse );
+			$refundResponse = GravyRefundResponseFactory::fromNormalizedResponse( $normalizedResponse );
+		} catch ( ValidationException $e ) {
+			// it threw an exception!
+			GravyRefundResponseFactory::handleValidationException( $refundResponse, $e->getData() );
+		} catch ( \Exception $e ) {
+			// it threw an exception!
+			Logger::error( "Processor failed to fetch refund with refund id {$params['gateway_refund_id']}. returned response:" . $e->getMessage() );
+			GravyRefundResponseFactory::handleException( $refundResponse, $e->getMessage(), $e->getCode() );
+		}
+		return $refundResponse;
+	}
 }

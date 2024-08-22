@@ -199,7 +199,8 @@ class ResponseMapper {
 			"reason" => $response["reason"],
 			"status" => $this->normalizeStatus( $response["status"] ),
 			"raw_status" => $response["status"],
-			'raw_response' => $response
+			"type" => 'refund',
+			"raw_response" => $response,
 		];
 	}
 
@@ -269,4 +270,9 @@ class ResponseMapper {
 
 		];
 	}
+
+	protected function isRefundMessage( string $type ) {
+		return $type === 'refund';
+	}
+
 }

@@ -157,6 +157,22 @@ class Api {
 	}
 
 	/**
+	 * Uses the rest API to get a refund
+	 * @param array $params
+	 * @throws \SmashPig\Core\ApiException
+	 * @return array
+	 * @link https://docs.gr4vy.com/reference/transactions/list-transaction-events Documentation to delete payment token
+	 */
+	public function getRefund( array $params ): array {
+		$refund_id = $params['gateway_refund_id'];
+		$tl = new TaggedLogger( 'RawData' );
+		$response = $this->gravyApiClient->getRefund( $refund_id );
+		$response_string = json_encode( $response );
+		$tl->info( "Transaction details for transaction with ID {$refund_id} $response_string" );
+		return $response;
+	}
+
+	/**
 	 * Uses the rest API to refund a transaction on Gravy
 	 * @param array $params
 	 * @return array
