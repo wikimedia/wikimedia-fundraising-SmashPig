@@ -91,6 +91,12 @@ class ResponseMapper {
 			}
 		}
 
+		if ( !empty( $response['payment_service'] ) ) {
+			if ( !empty( $response['payment_service']['payment_service_definition_id'] ) ) {
+				$params['backend_processor'] = explode( '-', $response['payment_service']['payment_service_definition_id'] )[0];
+			}
+		}
+
 		return $params;
 	}
 
