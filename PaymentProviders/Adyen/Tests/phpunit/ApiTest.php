@@ -126,7 +126,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 					$this->assertArrayHasKey( 'Idempotency-Key', $actualHeaders );
 					unset( $actualHeaders['Idempotency-Key'] );
 					$this->assertEquals( [
-						'Content-Length' => '4702',
+						'Content-Length' => '4700',
 						'x-API-key' => 'K1ck0utTh3J4ms',
 						'content-type' => 'application/json'
 					], $actualHeaders );
@@ -157,7 +157,7 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 				'billingAddress' => [
 					'city' => 'Detroit',
 					'country' => 'US',
-					'houseNumberOrName' => 'NA',
+					'houseNumberOrName' => '',
 					'postalCode' => '48204',
 					'stateOrProvince' => 'MI',
 					'street' => '8952 Grand River Avenue',

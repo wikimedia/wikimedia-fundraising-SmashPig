@@ -142,7 +142,7 @@ class Api {
 			'billingAddress' => [
 				'city' => $params['city'] ?? 'NA',
 				'country' => $params['country'] ?? 'ZZ',
-				'houseNumberOrName' => $params['supplemental_address_1'] ?? 'NA',
+				'houseNumberOrName' => $params['supplemental_address_1'] ?? '', // optional, blank would be fine
 				'postalCode' => $params['postal_code'] ?? 'NA',
 				'stateOrProvince' => $params['state_province'] ?? 'NA',
 				'street' => $params['street_address'] ?? 'NA'
