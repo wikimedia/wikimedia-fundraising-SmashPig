@@ -206,6 +206,44 @@ class ResponseMapper {
 	}
 
 	/**
+	 * @param array $response
+	 * @return array
+	 */
+	public function mapFromReportExecutionResponse( array $response ): array {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+			return $this->mapErrorFromResponse( $response );
+		}
+		$report = $response["report"];
+		return [
+			"is_successful" => true,
+			"report_execution_id" => $response["id"],
+			"report_id" => $report["id"],
+			"raw_response" => $response,
+			"status" => $this->normalizeStatus( $response["status"] ),
+			"raw_status" => $response["status"]
+		];
+	}
+
+	/**
+	 * @param array $response
+	 * @return array
+	 */
+	public function mapFromGenerateReportUrlResponse( array $response ): array {
+		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+			return $this->mapErrorFromResponse( $response );
+		}
+
+		return [
+			"is_successful" => true,
+			"report_url" => $response["url"],
+			"expires" => $response["expires_at"],
+			"raw_response" => $response,
+			"status" => $this->normalizeStatus( "succeeded" ),
+			"raw_status" => "succeeded"
+		];
+	}
+
+	/**
 	 * @param string $paymentProcessorStatus
 	 * @return string
 	 * @link https://docs.gr4vy.com/guides/api/resources/transactions/statuses
@@ -228,6 +266,7 @@ class ResponseMapper {
 			case 'authorization_voided':
 				$normalizedStatus = FinalStatus::CANCELLED;
 				break;
+			case 'succeeded':
 			case 'capture_succeeded':
 			case 'succeeded':
 				$normalizedStatus = FinalStatus::COMPLETE;
@@ -271,10 +310,6 @@ class ResponseMapper {
 			'raw_response' => $error
 
 		];
-	}
-
-	protected function isRefundMessage( string $type ) {
-		return $type === 'refund';
 	}
 
 }
