@@ -59,7 +59,7 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 	public function testCorrectMappedRiskScores() {
 		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
 		$gravyResponseMapper = new ResponseMapper();
-		$normalizedResponse = $gravyResponseMapper->mapFromCreatePaymentResponse( $responseBody );
+		$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $responseBody );
 
 		$response = GravyCreatePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
 
@@ -286,7 +286,7 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		$this->assertFalse( $response->isSuccessful() );
 		$valErrors = $response->getValidationErrors();
 		$errors = $response->getErrors();
-		$this->assertCount( 6, $valErrors );
+		$this->assertCount( 7, $valErrors );
 		$this->assertCount( 0, $errors );
 	}
 

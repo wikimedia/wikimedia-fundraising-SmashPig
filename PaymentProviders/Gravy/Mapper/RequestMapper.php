@@ -5,6 +5,7 @@ namespace SmashPig\PaymentProviders\Gravy\Mapper;
 use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 
 class RequestMapper {
+	private const CAPTURE_INTENT = 'capture';
 
 	public function mapToCreatePaymentRequest( array $params ): array {
 		$request = [
@@ -33,8 +34,8 @@ class RequestMapper {
 			$request['payment_source'] = 'recurring';
 		}
 
-		if ( !empty( $params['redirect_url'] ) ) {
-			$request['payment_method']['redirect_url'] = $params['redirect_url'];
+		if ( !empty( $params['return_url'] ) ) {
+			$request['payment_method']['redirect_url'] = $params['return_url'];
 		}
 
 		return $request;
@@ -79,6 +80,29 @@ class RequestMapper {
 			]
 		];
 
+		return $request;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function mapToBankCreatePaymentRequest( array $params ): array {
+		$request = $this->mapToCreatePaymentRequest( $params );
+		if ( isset( $params['recurring_payment_token'] ) ) {
+			$payment_method = [
+				'method' => 'id',
+				'id' => $params['recurring_payment_token'],
+			];
+		} else {
+			$payment_method = [
+				'method' => $this->mapPaymentMethodToGravyPaymentMethod( $params['payment_submethod'] ),
+				'country' => $params['country'],
+				'currency' => $params['currency'],
+			];
+		}
+		$request['payment_method'] = array_merge( $request['payment_method'], $payment_method );
+
+		$request['intent'] = self::CAPTURE_INTENT;
 		return $request;
 	}
 
@@ -133,4 +157,17 @@ class RequestMapper {
 		return isset( $params['recurring_payment_token'] );
 	}
 
+	/**
+	 * Maps our payment submethod to gravy's
+	 * @param mixed $payment_submethod
+	 * @return string
+	 */
+	private function mapPaymentMethodToGravyPaymentMethod( $payment_submethod ): string {
+		switch ( $payment_submethod ) {
+			case 'ach':
+				return 'trustly';
+			default:
+				return '';
+		}
+	}
 }

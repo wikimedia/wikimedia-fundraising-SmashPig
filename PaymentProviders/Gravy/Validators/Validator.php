@@ -26,10 +26,28 @@ class Validator {
 			'gateway_session_id',
 			'amount',
 			'currency',
+			'country',
 			'order_id',
 			'email',
 			'first_name',
 			'last_name'
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateRedirectCreatePaymentInput( array $params ): void {
+		$required = [
+			'amount',
+			'currency',
+			'country',
+			'order_id',
+			'email',
+			'first_name',
+			'last_name',
 		];
 
 		$this->validateFields( $required, $params );
@@ -44,6 +62,7 @@ class Validator {
 			'processor_contact_id',
 			'amount',
 			'currency',
+			'country',
 			'order_id',
 			'email',
 			'first_name',
@@ -61,6 +80,17 @@ class Validator {
 			'gateway_txn_id',
 			'currency',
 			'amount'
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateGetPaymentDetailsInput( array $params ): void {
+		$required = [
+			'gateway_txn_id'
 		];
 
 		$this->validateFields( $required, $params );
