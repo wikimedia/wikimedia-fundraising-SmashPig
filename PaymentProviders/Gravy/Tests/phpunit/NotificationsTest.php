@@ -105,9 +105,9 @@ class NotificationsTest extends BaseGravyTestCase {
 		$this->assertTrue( $result );
 	}
 
-	public function testRefundMessage(): void {
+	public function testRefundMessageWithProcessingStatusIsSkipped(): void {
 		[ $request, $response ] = $this->getValidRequestResponseObjects();
-		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/successful-refund.json' ), true );
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/pending-refund.json' ), true );
 		$message = json_decode( $this->getValidGravyRefundMessage(), true );
 		$request->method( 'getRawRequest' )->willReturn( json_encode( $message ) );
 		$this->mockApi->expects( $this->once() )
@@ -115,9 +115,25 @@ class NotificationsTest extends BaseGravyTestCase {
 			->willReturn( $responseBody );
 		$result = $this->gravyListener->execute( $request, $response );
 		$queued_message = $this->refundQueue->pop();
+		$this->assertNull( $queued_message, "Queue message shoud be skipped due to pending refund IPN" );
+	}
+
+	public function testRefundMessageComplete(): void {
+		[ $request, $response ] = $this->getValidRequestResponseObjects();
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/successful-refund.json' ), true );
+		$message = json_decode( $this->getValidGravyRefundMessage(), true );
+		$request->method( 'getRawRequest' )->willReturn( json_encode( $message ) );
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'getRefund' )
+			->willReturn( $responseBody );
+
+		$result = $this->gravyListener->execute( $request, $response );
+		$queued_message = $this->refundQueue->pop();
 		$normalized_details = ( new ResponseMapper() )->mapFromRefundPaymentResponse( $responseBody );
 		unset( $normalized_details['raw_response'] );
 		$normalized_details["date"] = strtotime( $message["created_at"] );
+
 		$this->assertEquals( $normalized_details['gateway_parent_id'], $queued_message['gateway_parent_id'] );
 		$this->assertEquals( $normalized_details['gateway_refund_id'], $queued_message['gateway_refund_id'] );
 		$this->assertEquals( $normalized_details['currency'], $queued_message['currency'] );

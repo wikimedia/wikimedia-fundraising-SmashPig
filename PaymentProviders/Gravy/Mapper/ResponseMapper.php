@@ -229,6 +229,7 @@ class ResponseMapper {
 				$normalizedStatus = FinalStatus::CANCELLED;
 				break;
 			case 'capture_succeeded':
+			case 'succeeded':
 				$normalizedStatus = FinalStatus::COMPLETE;
 				break;
 			default:
