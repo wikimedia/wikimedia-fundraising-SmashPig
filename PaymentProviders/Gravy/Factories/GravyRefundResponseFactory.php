@@ -25,11 +25,8 @@ class GravyRefundResponseFactory extends GravyPaymentResponseFactory {
 	}
 
 	protected static function setRefundReason( RefundPaymentResponse $refundResponse, array $normalizedResponse ): void {
-		# Gravy sends us two IPNs per refund, a 'processing' and 'succeeded' IPN.
-		# Currently, they send over the reason property for the first but not the latter, so for now, we handle it here
-		# until they can fix the bug on their side.
+		# refund reason is optional so when blank we drop in a placeholder
 		$normalizedResponse['reason'] = $normalizedResponse['reason'] ?? 'Reason not provided';
-
 		$refundResponse->setReason( $normalizedResponse['reason'] );
 	}
 
