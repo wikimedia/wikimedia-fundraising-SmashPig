@@ -98,6 +98,7 @@ class ResponseMapper {
 				$params['backend_processor'] = explode( '-', $response['payment_service']['payment_service_definition_id'] )[0];
 			}
 		}
+		$params['backend_processor_transaction_id'] = $response['payment_service_transaction_id'] ?? null;
 
 		return $params;
 	}
