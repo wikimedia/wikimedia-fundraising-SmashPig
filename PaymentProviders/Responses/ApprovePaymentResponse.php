@@ -18,7 +18,7 @@ class ApprovePaymentResponse extends PaymentProviderResponse {
 	 * Settlement currency
 	 * @var string|null
 	 */
-	protected $settledCurrency;
+	protected ?string $settledCurrency = null;
 
 	/**
 	 * @var numeric|null
@@ -29,5 +29,5 @@ class ApprovePaymentResponse extends PaymentProviderResponse {
 	 * If not given, fee is assumed to be in the settlement currency
 	 * @var string|null
 	 */
-	protected $feeCurrency;
+	protected ?string $feeCurrency = null;
 }
