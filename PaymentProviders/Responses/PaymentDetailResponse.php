@@ -56,9 +56,9 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	protected ?DonorDetails $donorDetails = null;
 
 	/**
-	 * @var numeric|null
+	 * @var float|null
 	 */
-	protected $amount = null;
+	protected ?float $amount = null;
 
 	/**
 	 * @var string|null
@@ -180,14 +180,14 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 	}
 
 	/**
-	 * @return numeric|null
+	 * @return float|null
 	 */
-	public function getAmount() {
+	public function getAmount(): ?float {
 		return $this->amount;
 	}
 
 	/**
-	 * @param numeric|null $amount
+	 * @param float|null $amount
 	 * @return PaymentDetailResponse
 	 */
 	public function setAmount( $amount ): PaymentDetailResponse {

@@ -10,9 +10,9 @@ class ApprovePaymentResponse extends PaymentProviderResponse {
 
 	/**
 	 * Net amount, may have been converted to settlement currency
-	 * @var numeric|null
+	 * @var float|null
 	 */
-	protected $settledAmount;
+	protected ?float $settledAmount = null;
 
 	/**
 	 * Settlement currency
@@ -21,9 +21,9 @@ class ApprovePaymentResponse extends PaymentProviderResponse {
 	protected ?string $settledCurrency = null;
 
 	/**
-	 * @var numeric|null
+	 * @var float|null
 	 */
-	protected $fee;
+	protected ?float $fee = null;
 
 	/**
 	 * If not given, fee is assumed to be in the settlement currency
