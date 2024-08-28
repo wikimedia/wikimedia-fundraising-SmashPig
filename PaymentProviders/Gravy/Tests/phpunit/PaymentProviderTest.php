@@ -228,4 +228,26 @@ class PaymentProviderTest extends BaseGravyTestCase {
 		$this->assertEquals( $responseBody['reason'], $response->getReason() );
 		$this->assertTrue( $response->isSuccessful() );
 	}
+
+	public function testGetSuccessfulRefundPayment() {
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/successful-refund.json' ), true );
+		$params = [
+			'gateway_refund_id' => $responseBody['id']
+		];
+		$this->mockApi->expects( $this->once() )
+			->method( 'getRefund' )
+			->with( $params )
+			->willReturn( $responseBody );
+
+		$response = $this->provider->getRefundDetails( $params );
+
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\RefundPaymentResponse',
+			$response );
+		$this->assertEquals( $responseBody['amount'] / 100, $response->getAmount() );
+		$this->assertEquals( $responseBody['id'], $response->getGatewayRefundId() );
+		$this->assertEquals( $responseBody['transaction_id'], $response->getGatewayParentId() );
+		$this->assertEquals( $responseBody['currency'], $response->getCurrency() );
+		$this->assertEquals( $responseBody['reason'], $response->getReason() );
+		$this->assertTrue( $response->isSuccessful() );
+	}
 }
