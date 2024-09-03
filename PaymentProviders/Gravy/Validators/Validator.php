@@ -26,10 +26,118 @@ class Validator {
 			'gateway_session_id',
 			'amount',
 			'currency',
+			'country',
 			'order_id',
 			'email',
 			'first_name',
 			'last_name'
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateRedirectCreatePaymentInput( array $params ): void {
+		$required = [
+			'amount',
+			'currency',
+			'country',
+			'order_id',
+			'email',
+			'first_name',
+			'last_name',
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateCreatePaymentFromTokenInput( array $params ): void {
+		$required = [
+			'recurring_payment_token',
+			'processor_contact_id',
+			'amount',
+			'currency',
+			'country',
+			'order_id',
+			'email',
+			'first_name',
+			'last_name'
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateGetPaymentDetailsInput( array $params ): void {
+		$required = [
+			'gateway_txn_id'
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateGetRefundInput( array $params ): void {
+		$required = [
+			'gateway_refund_id',
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateGetReportExecutionInput( array $params ): void {
+		$required = [
+			'report_execution_id'
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateGenerateReportUrlInput( array $params ): void {
+		$required = [
+			'report_execution_id',
+			'report_id'
+		];
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateRefundInput( array $params ): void {
+		$required = [
+			'gateway_txn_id',
+		];
+
+		if ( isset( $params['amount'] ) && !empty( $params['amount'] ) ) {
+			$required[] = 'currency';
+		}
+
+		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * @throws ValidationException
+	 */
+	public function validateCancelPaymentInput( array $params ): void {
+		$required = [
+			'gateway_txn_id'
 		];
 
 		$this->validateFields( $required, $params );

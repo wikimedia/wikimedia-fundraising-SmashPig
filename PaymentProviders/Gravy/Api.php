@@ -123,4 +123,103 @@ class Api {
 		$tl->info( "Delete payment token response for token {$payment_method_id} $response_string" );
 		return $response;
 	}
+
+	/**
+	 * Uses the rest API to get the transaction details from Gravy
+	 *
+	 * @param array $params
+	 * @throws \SmashPig\Core\ApiException
+	 * @return array
+	 * @link https://docs.gr4vy.com/reference/transactions/list-transaction-events Documentation to delete payment token
+	 */
+	public function getTransaction( array $params ): array {
+		$txn_id = $params['gateway_txn_id'];
+		$tl = new TaggedLogger( 'RawData' );
+		$response = $this->gravyApiClient->getTransaction( $txn_id );
+		$response_string = json_encode( $response );
+		$tl->info( "Transaction details for transaction with ID {$txn_id} $response_string" );
+		return $response;
+	}
+
+	/**
+	 * Uses the rest API to cancel an authorized transaction on Gravy
+	 * @param string $gatewayTxnId
+	 * @return array
+	 * @throws \SmashPig\Core\ApiException
+	 * @link https://docs.gr4vy.com/reference/transactions/void-transaction
+	 */
+	public function cancelTransaction( string $gatewayTxnId ): array {
+		$tl = new TaggedLogger( 'RawData' );
+		$response = $this->gravyApiClient->voidTransaction( $gatewayTxnId, [] );
+		$response_string = json_encode( $response );
+		$tl->info( "Cancel transaction response for transaction with ID $gatewayTxnId $response_string" );
+		return $response;
+	}
+
+	/**
+	 * Uses the rest API to get a refund
+	 * @param array $params
+	 * @throws \SmashPig\Core\ApiException
+	 * @return array
+	 * @link https://docs.gr4vy.com/reference/transactions/list-transaction-events Documentation to delete payment token
+	 */
+	public function getRefund( array $params ): array {
+		$refund_id = $params['gateway_refund_id'];
+		$tl = new TaggedLogger( 'RawData' );
+		$response = $this->gravyApiClient->getRefund( $refund_id );
+		$response_string = json_encode( $response );
+		$tl->info( "Transaction details for transaction with ID {$refund_id} $response_string" );
+		return $response;
+	}
+
+	/**
+	 * Uses the rest API to refund a transaction on Gravy
+	 * @param array $params
+	 * @return array
+	 * @throws \SmashPig\Core\ApiException
+	 * @link https://docs.gr4vy.com/reference/transactions/refund-transaction
+	 */
+	public function refundTransaction( array $params ): array {
+		$tl = new TaggedLogger( 'RawData' );
+		$gatewayTxnId = $params['gateway_txn_id'];
+		$requestBody = $params['body'];
+
+		$response = $this->gravyApiClient->refundTransaction( $gatewayTxnId, $requestBody );
+		$response_string = json_encode( $response );
+		$tl->info( "Refund transaction response for transaction with ID $gatewayTxnId $response_string" );
+		return $response;
+	}
+
+	/**
+	 * Uses the rest API to get a report execution id
+	 * @param array $params
+	 * @throws \SmashPig\Core\ApiException
+	 * @return array
+	 * @link https://docs.gr4vy.com/reference/reports/get-report-execution Documentation to get report execution details
+	 */
+	public function getReportExecutionDetails( array $params ): array {
+		$report_execution_id = $params['report_execution_id'];
+		$tl = new TaggedLogger( 'RawData' );
+		$response = $this->gravyApiClient->getReportExecution( $report_execution_id );
+		$response_string = json_encode( $response );
+		$tl->info( "Report execution details for execution with ID {$report_execution_id} $response_string" );
+		return $response;
+	}
+
+	/**
+	 * Uses the rest API to generate a report from url
+	 * @param array $params
+	 * @throws \SmashPig\Core\ApiException
+	 * @return array
+	 * @link https://docs.gr4vy.com/reference/reports/get-report-execution Documentation to get report execution details
+	 */
+	public function generateReportDownloadUrl( array $params ): array {
+		$report_id = $params['report_id'];
+		$report_execution_id = $params['report_execution_id'];
+		$tl = new TaggedLogger( 'RawData' );
+		$response = $this->gravyApiClient->generateReportDownloadUrl( $report_id, $report_execution_id );
+		$response_string = json_encode( $response );
+		$tl->info( "Report url for report with execution ID {$report_execution_id} $response_string" );
+		return $response;
+	}
 }

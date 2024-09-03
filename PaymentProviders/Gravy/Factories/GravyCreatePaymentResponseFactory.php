@@ -5,20 +5,11 @@ namespace SmashPig\PaymentProviders\Gravy\Factories;
 use SmashPig\PaymentData\Address;
 use SmashPig\PaymentData\DonorDetails;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
-use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
 class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
 
-	public static function handlePaymentErrorFromDonorRespone( CreatePaymentResponse $createPaymentResponse, PaymentDetailResponse $donorResponse ): CreatePaymentResponse {
-		$createPaymentResponse->setRawResponse( $donorResponse->getRawResponse() );
-		$createPaymentResponse->addErrors( $donorResponse->getErrors() );
-		$createPaymentResponse->setSuccessful( false );
-		$createPaymentResponse->setStatus( 'Failed' );
-		return $createPaymentResponse;
-	}
-
-	protected static function createBasicResponse(): CreatePaymentResponse {
+	protected static function createBasicResponse(): PaymentProviderResponse {
 		return new CreatePaymentResponse();
 	}
 
@@ -37,6 +28,7 @@ class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
 		self::setRecurringPaymentToken( $paymentResponse, $normalizedResponse );
 		self::setPaymentSubmethod( $paymentResponse, $normalizedResponse );
 		self::setDonorDetails( $paymentResponse, $normalizedResponse );
+		self::setBackendProcessorAndId( $paymentResponse, $normalizedResponse );
 	}
 
 	/**
@@ -85,7 +77,7 @@ class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
 	protected static function setDonorDetails( CreatePaymentResponse $paymentResponse, array $normalizedResponse ) {
 		$donorDetails = $normalizedResponse['donor_details'];
 
-		$address = ( new Address )
+		$address = ( new Address() )
 			->setStreetAddress( $donorDetails['address']['address_line1'] ?? '' )
 			->setPostalCode( $donorDetails['address']['postal_code'] ?? '' )
 			->setStateOrProvinceCode( $donorDetails['address']['state'] ?? '' )
@@ -104,5 +96,14 @@ class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
 
 	protected static function setRiskScores( CreatePaymentResponse $paymentResponse, array $normalizedResponse ) {
 		$paymentResponse->setRiskScores( $normalizedResponse['risk_scores'] );
+	}
+
+	protected static function setBackendProcessorAndId(
+		CreatePaymentResponse $paymentResponse, array $normalizedResponse
+	) {
+		$paymentResponse->setBackendProcessor( $normalizedResponse['backend_processor'] ?? null );
+		$paymentResponse->setBackendProcessorTransactionId(
+			$normalizedResponse['backend_processor_transaction_id'] ?? null
+		);
 	}
 }
