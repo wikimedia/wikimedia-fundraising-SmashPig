@@ -49,7 +49,7 @@ abstract class GravyPaymentResponseFactory {
 
 	/**
 	 * @param PaymentProviderResponse $paymentResponse
-	 * @param array $error
+	 * @param string $error
 	 * @return void
 	 */
 	public static function handleException( PaymentProviderResponse $paymentResponse, ?string $error = '', ?string $errorCode = null ): void {
