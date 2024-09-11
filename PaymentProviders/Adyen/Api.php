@@ -254,7 +254,7 @@ class Api {
 			],
 		];
 		if ( isset( $params['issuer_id'] ) ) {
-			$restParams['paymentMethod']['issuerId'] = $params['issuer_id'];
+			$restParams['paymentMethod']['issuer'] = $params['issuer_id'];
 		}
 		$isRecurring = $params['recurring'] ?? '';
 		if ( $isRecurring ) {
