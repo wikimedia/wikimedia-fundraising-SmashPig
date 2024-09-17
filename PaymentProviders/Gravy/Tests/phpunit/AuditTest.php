@@ -33,6 +33,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settled_gross' => 10,
 			'settled_currency' => 'USD',
 			'gross_currency' => 'USD',
+			'backend_processor' => 'adyen',
 			'contribution_tracking_id' => '42'
 		];
 
