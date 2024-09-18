@@ -24,39 +24,6 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		$this->provider = $this->config->object( 'payment-provider/cc' );
 	}
 
-	public function testSuccessfulCreatePaymentCreateDonor() {
-		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
-		$getDonorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/list-buyer.json' ), true );
-		$createDonorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-buyer.json' ), true );
-
-		$getDonorResponseBody['items'] = [];
-		$this->mockApi->expects( $this->once() )
-			->method( 'getDonor' )
-			->willReturn( $getDonorResponseBody );
-		$this->mockApi->expects( $this->once() )
-			->method( 'createDonor' )
-			->willReturn( $createDonorResponseBody );
-		$this->mockApi->expects( $this->once() )
-			->method( 'createPayment' )
-			->willReturn( $responseBody );
-
-		$params = $this->getCreateTrxnParams( $responseBody['checkout_session_id'], $responseBody['amount'] );
-
-		$response = $this->provider->createPayment( $params );
-
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
-			$response );
-		$this->assertEquals( $responseBody['amount'] / 100, $response->getAmount() );
-		$this->assertEquals( $responseBody['id'], $response->getGatewayTxnId() );
-		$this->assertEquals( $responseBody['payment_service_transaction_id'], $response->getBackendProcessorTransactionId() );
-		$this->assertEquals( $responseBody['buyer']['billing_details']['first_name'], $response->getDonorDetails()->getFirstName() );
-		$this->assertEquals( $responseBody['buyer']['billing_details']['last_name'], $response->getDonorDetails()->getLastName() );
-		$this->assertEquals( $responseBody['buyer']['billing_details']['email_address'], $response->getDonorDetails()->getEmail() );
-		$this->assertEquals( $responseBody['buyer']['id'], $response->getDonorDetails()->getCustomerId() );
-		$this->assertEquals( $responseBody['buyer']['billing_details']['address']['line1'], $response->getDonorDetails()->getBillingAddress()->getStreetAddress() );
-		$this->assertTrue( $response->isSuccessful() );
-	}
-
 	public function testCorrectMappedRiskScores() {
 		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
 		$gravyResponseMapper = new ResponseMapper();
@@ -73,59 +40,7 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		], $response->getRiskScores() );
 	}
 
-	public function testSuccessfulCreatePaymentFailCreateDonor() {
-		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
-		$getDonorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/list-buyer.json' ), true );
-		$createDonorResponseErrorBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-buyer-error-dup.json' ), true );
-
-		$getDonorResponseBody['items'] = [];
-		$this->mockApi->expects( $this->once() )
-			->method( 'getDonor' )
-			->willReturn( $getDonorResponseBody );
-		$this->mockApi->expects( $this->once() )
-			->method( 'createDonor' )
-			->willReturn( $createDonorResponseErrorBody );
-
-		$params = $this->getCreateTrxnParams( $responseBody['checkout_session_id'], $responseBody['amount'] );
-
-		$response = $this->provider->createPayment( $params );
-
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
-			$response );
-		$this->assertFalse( $response->isSuccessful() );
-		$errors = $response->getErrors();
-		$this->assertCount( 1, $errors );
-		$error_code = $createDonorResponseErrorBody['status'];
-		$this->assertEquals( ErrorMapper::$errorCodes[$error_code], $errors[0]->getErrorCode() );
-	}
-
-	public function testSuccessfulCreatePaymentNoCreateDonor() {
-		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
-		$getDonorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/list-buyer.json' ), true );
-		$this->mockApi->expects( $this->once() )
-			->method( 'getDonor' )
-			->willReturn( $getDonorResponseBody );
-		$this->mockApi->expects( $this->once() )
-			->method( 'createPayment' )
-			->willReturn( $responseBody );
-
-		$params = $this->getCreateTrxnParams( $responseBody['checkout_session_id'], $responseBody['amount'] );
-
-		$response = $this->provider->createPayment( $params );
-
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
-			$response );
-		$this->assertEquals( $responseBody['amount'] / 100, $response->getAmount() );
-		$this->assertEquals( $responseBody['id'], $response->getGatewayTxnId() );
-		$this->assertEquals( $responseBody['buyer']['billing_details']['first_name'], $response->getDonorDetails()->getFirstName() );
-		$this->assertEquals( $responseBody['buyer']['billing_details']['last_name'], $response->getDonorDetails()->getLastName() );
-		$this->assertEquals( $responseBody['buyer']['billing_details']['email_address'], $response->getDonorDetails()->getEmail() );
-		$this->assertEquals( $responseBody['buyer']['id'], $response->getDonorDetails()->getCustomerId() );
-		$this->assertEquals( $responseBody['buyer']['billing_details']['address']['line1'], $response->getDonorDetails()->getBillingAddress()->getStreetAddress() );
-		$this->assertTrue( $response->isSuccessful() );
-	}
-
-	public function testSuccessfulCreatePaymentFromTokenNoCreateDonorNoGetDonor() {
+	public function testSuccessfulCreatePaymentFromTokenWithProcessorContactId() {
 		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
 		$params = $this->getCreateTrxnFromTokenParams( $responseBody['amount'] / 100 );
 		$this->mockApi->expects( $this->once() )
@@ -142,7 +57,96 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 				'is_subsequent_payment' => true,
 				'merchant_initiated' => true,
 				'external_identifier' => $params['order_id'],
-				'buyer_id' => $params['processor_contact_id']
+				'buyer_id' => $params['processor_contact_id'],
+			] )
+			->willReturn( $responseBody );
+
+		$response = $this->provider->createPayment( $params );
+
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
+			$response );
+		$this->assertEquals( $responseBody['amount'] / 100, $response->getAmount() );
+		$this->assertEquals( $responseBody['id'], $response->getGatewayTxnId() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['first_name'], $response->getDonorDetails()->getFirstName() );
+		$this->assertEquals( $responseBody['payment_service_transaction_id'], $response->getBackendProcessorTransactionId() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['last_name'], $response->getDonorDetails()->getLastName() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['email_address'], $response->getDonorDetails()->getEmail() );
+		$this->assertEquals( $responseBody['buyer']['id'], $response->getDonorDetails()->getCustomerId() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['address']['line1'], $response->getDonorDetails()->getBillingAddress()->getStreetAddress() );
+		$this->assertTrue( $response->isSuccessful() );
+	}
+
+	public function testSuccessfulCreatePaymentFromTokenGuest() {
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
+		$params = $this->getCreateTrxnFromTokenParams( $responseBody['amount'] / 100 );
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPayment' )
+			->with( [
+				'amount' => $params['amount'] * 100,
+				'currency' => $params['currency'],
+				'country' => $params['country'],
+				'payment_method' => [
+					'method' => 'id',
+					'id' => $params['recurring_payment_token']
+				],
+				'payment_source' => 'recurring',
+				'is_subsequent_payment' => true,
+				'merchant_initiated' => true,
+				'external_identifier' => $params['order_id'],
+				'buyer_id' => $params['processor_contact_id'],
+			] )
+			->willReturn( $responseBody );
+
+		$response = $this->provider->createPayment( $params );
+
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
+			$response );
+		$this->assertEquals( $responseBody['amount'] / 100, $response->getAmount() );
+		$this->assertEquals( $responseBody['id'], $response->getGatewayTxnId() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['first_name'], $response->getDonorDetails()->getFirstName() );
+		$this->assertEquals( $responseBody['payment_service_transaction_id'], $response->getBackendProcessorTransactionId() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['last_name'], $response->getDonorDetails()->getLastName() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['email_address'], $response->getDonorDetails()->getEmail() );
+		$this->assertEquals( $responseBody['buyer']['id'], $response->getDonorDetails()->getCustomerId() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['address']['line1'], $response->getDonorDetails()->getBillingAddress()->getStreetAddress() );
+		$this->assertTrue( $response->isSuccessful() );
+	}
+
+	public function testSuccessfulCreatePaymentFromTokenGuestCheckout() {
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
+		$params = $this->getCreateTrxnFromTokenParams( $responseBody['amount'] / 100, true );
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPayment' )
+			->with( [
+				'amount' => $params['amount'] * 100,
+				'currency' => $params['currency'],
+				'country' => $params['country'],
+				'payment_method' => [
+					'method' => 'id',
+					'id' => $params['recurring_payment_token']
+				],
+				'payment_source' => 'recurring',
+				'is_subsequent_payment' => true,
+				'merchant_initiated' => true,
+				'external_identifier' => $params['order_id'],
+				'buyer' => [
+					'external_identifier' => strtolower( $params['email'] ),
+					'billing_details' => [
+						'first_name' => $params['first_name'],
+						'last_name' => $params['last_name'],
+						'email_address' => strtolower( $params['email'] ),
+						'phone_number' => $params['phone_number'] ?? null,
+						'address' => [
+							'city' => $params['city'] ?? " ",
+							'country' => $params['country'] ?? " ",
+							'postal_code' => $params['postal_code'] ?? " ",
+							'state' => $params['state_province'] ?? " ",
+							'line1' => $params['street_address'] ?? " ",
+							'line2' => " ",
+							'organization' => $params['employer'] ?? " "
+						]
+					]
+				]
 			] )
 			->willReturn( $responseBody );
 
@@ -183,11 +187,6 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 	public function testErrorCreatePayment() {
 		$apiErrorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction-api-fail.json' ), true );
 		$params = $this->getCreateTrxnParams( 'random-session-id' );
-		$getDonorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/list-buyer.json' ), true );
-
-		$this->mockApi->expects( $this->once() )
-			->method( 'getDonor' )
-			->willReturn( $getDonorResponseBody );
 
 		$this->mockApi->expects( $this->once() )
 			->method( 'createPayment' )
@@ -207,11 +206,6 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 	public function testError3DSecureCreatePayment() {
 		$apiErrorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction-3dsecure-error.json' ), true );
 		$params = $this->getCreateTrxnParams( 'random-session-id' );
-		$getDonorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/list-buyer.json' ), true );
-
-		$this->mockApi->expects( $this->once() )
-			->method( 'getDonor' )
-			->willReturn( $getDonorResponseBody );
 
 		$this->mockApi->expects( $this->once() )
 			->method( 'createPayment' )
@@ -234,11 +228,6 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 	public function testDupErrorCreatePayment() {
 		$dupTrxnErrorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction-duplicate-transaction-fail.json' ), true );
 		$params = $this->getCreateTrxnParams( 'random-session-id' );
-		$getDonorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/list-buyer.json' ), true );
-
-		$this->mockApi->expects( $this->once() )
-			->method( 'getDonor' )
-			->willReturn( $getDonorResponseBody );
 
 		$this->mockApi->expects( $this->once() )
 			->method( 'createPayment' )
@@ -259,11 +248,6 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		$requestErrorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction-request-fail.json' ), true );
 		$params = $this->getCreateTrxnParams( 'random-session-id' );
 
-		$getDonorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/list-buyer.json' ), true );
-		$this->mockApi->expects( $this->once() )
-			->method( 'getDonor' )
-			->willReturn( $getDonorResponseBody );
-
 		$this->mockApi->expects( $this->once() )
 			->method( 'createPayment' )
 			->willReturn( $requestErrorResponseBody );
@@ -282,11 +266,6 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 	public function testValidationErrorCreatePayment() {
 		$validationErrorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction-validation-fail.json' ), true );
 		$params = $this->getCreateTrxnParams( 'random-session-id' );
-		$getDonorResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/list-buyer.json' ), true );
-
-		$this->mockApi->expects( $this->once() )
-			->method( 'getDonor' )
-			->willReturn( $getDonorResponseBody );
 
 		$this->mockApi->expects( $this->once() )
 			->method( 'createPayment' )
@@ -368,14 +347,16 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		return $params;
 	}
 
-	private function getCreateTrxnFromTokenParams( $amount ) {
+	private function getCreateTrxnFromTokenParams( $amount, $guest = false ) {
 		$params = $this->getCreateTrxnParams( "", $amount );
 
 		unset( $params['gateway_session_id'] );
 
 		$params['recurring'] = 1;
 		$params['recurring_payment_token'] = "random_token";
-		$params['processor_contact_id'] = "random_contact_id";
+		if ( !$guest ) {
+			$params['processor_contact_id'] = "random_contact_id";
+		}
 
 		return $params;
 	}
