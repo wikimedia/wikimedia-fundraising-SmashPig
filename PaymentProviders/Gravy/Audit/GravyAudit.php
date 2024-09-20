@@ -6,6 +6,7 @@ use SmashPig\Core\DataFiles\AuditParser;
 use SmashPig\Core\DataFiles\HeadedCsvReader;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\UtcDate;
+use SmashPig\PaymentProviders\Gravy\GravyHelper;
 
 class GravyAudit implements AuditParser {
 
@@ -22,8 +23,8 @@ class GravyAudit implements AuditParser {
 			'last_name' => 'billing_details_last_name',
 			'settled_gross' => 'captured_amount',
 			'settled_currency' => 'currency',
-			'gross_currency' => 'currency'
-// 'backend_processor' => 'payment_service_display_id',
+			'gross_currency' => 'currency',
+			'payment_service_definition_id' => 'payment_service_definition_id',
 	];
 
 	public function parseFile( string $path ): array {
@@ -50,6 +51,15 @@ class GravyAudit implements AuditParser {
 		$normalizedLineData['gateway'] = 'gravy';
 		foreach ( $this->fieldMappings as $localFieldName => $gravyFieldName ) {
 			$normalizedLineData[$localFieldName] = $csv->currentCol( $gravyFieldName );
+		}
+
+		// extract payment processor from payment_service_definition_id and
+		// add to 'backend_processor' field.
+		if ( isset( $normalizedLineData['payment_service_definition_id'] ) ) {
+			$paymentServiceDefinitionId = $normalizedLineData['payment_service_definition_id'];
+			$normalizedLineData['backend_processor'] = GravyHelper::extractProcessorNameFromServiceDefinitionId( $paymentServiceDefinitionId );
+			// no longer needed
+			unset( $normalizedLineData['payment_service_definition_id'] );
 		}
 
 		// pull ct_id from order_id
