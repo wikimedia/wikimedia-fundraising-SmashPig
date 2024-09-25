@@ -51,7 +51,7 @@ class TransactionAction extends GravyAction {
 		$providerConfiguration = Context::get()->getProviderConfiguration();
 		$provider = $providerConfiguration->object( 'payment-provider/cc' );
 
-		$transactionDetails = $provider->getPaymentDetails( [
+		$transactionDetails = $provider->getLatestPaymentStatus( [
 			"gateway_txn_id" => $msg->getTransactionId()
 		] );
 
