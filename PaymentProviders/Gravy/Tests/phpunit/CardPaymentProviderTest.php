@@ -2,7 +2,6 @@
 
 namespace SmashPig\PaymentProviders\Gravy\Tests\phpunit;
 
-use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Gravy\CardPaymentProvider;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Mapper\ErrorMapper;
@@ -163,25 +162,6 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		$this->assertEquals( $responseBody['buyer']['id'], $response->getDonorDetails()->getCustomerId() );
 		$this->assertEquals( $responseBody['buyer']['billing_details']['address']['line1'], $response->getDonorDetails()->getBillingAddress()->getStreetAddress() );
 		$this->assertTrue( $response->isSuccessful() );
-	}
-
-	public function testSuccessfulApprovePayment() {
-		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/capture-transaction.json' ), true );
-		$params = $this->getApproveTrxnParams();
-
-		$this->mockApi->expects( $this->once() )
-			->method( 'approvePayment' )
-			->with( $params['gateway_txn_id'], [ 'amount' => 1299 ] )
-			->willReturn( $responseBody );
-
-		$response = $this->provider->approvePayment( $params );
-
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\ApprovePaymentResponse',
-			$response );
-
-		$this->assertTrue( $response->isSuccessful() );
-		$this->assertEquals( FinalStatus::PENDING, $response->getStatus() );
-		$this->assertEquals( $responseBody['id'], $response->getGatewayTxnId() );
 	}
 
 	public function testErrorCreatePayment() {
@@ -359,13 +339,5 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		}
 
 		return $params;
-	}
-
-	private function getApproveTrxnParams( $amount = '12.99' ) {
-		return [
-			'amount' => $amount,
-			'currency' => 'USD',
-			'gateway_txn_id' => 'random-id'
-		];
 	}
 }

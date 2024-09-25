@@ -6,7 +6,14 @@ use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\PaymentData\RecurringModel;
 
 class RequestMapper {
-	private const CAPTURE_INTENT = 'capture';
+
+	private const INTENT_CAPTURE = 'capture';
+
+	/**
+	 * Trustly is currently a capture-only payment method, so we set the 'intent'
+	 * flag on Gravy API calls to capture
+	 */
+	private const CAPTURE_ONLY_PAYMENT_METHOD = [ 'trustly' ];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
 		$request = [
@@ -100,7 +107,7 @@ class RequestMapper {
 	/**
 	 * @return array
 	 */
-	public function mapToBankCreatePaymentRequest( array $params ): array {
+	public function mapToRedirectCreatePaymentRequest( array $params ): array {
 		$request = $this->mapToCreatePaymentRequest( $params );
 		if ( isset( $params['recurring_payment_token'] ) ) {
 			$payment_method = [
@@ -108,15 +115,30 @@ class RequestMapper {
 				'id' => $params['recurring_payment_token'],
 			];
 		} else {
+			$method = $params['payment_submethod'];
+			if ( empty( $method ) ) {
+				$method = $params['payment_method'];
+			}
 			$payment_method = [
-				'method' => $this->mapPaymentMethodToGravyPaymentMethod( $params['payment_submethod'] ),
+				'method' => $this->mapPaymentMethodToGravyPaymentMethod( $method ),
 				'country' => $params['country'],
 				'currency' => $params['currency'],
 			];
 		}
 		$request['payment_method'] = array_merge( $request['payment_method'], $payment_method );
 
-		$request['intent'] = self::CAPTURE_INTENT;
+		if ( in_array( $payment_method['method'], self::CAPTURE_ONLY_PAYMENT_METHOD ) ) {
+			/**
+			 * Defines the intent of a Gravy API call
+			 *
+			 * Available options:
+			 * - `authorize` (Default): Optionally approves and then authorizes a
+			 * transaction, but does not capture the funds.
+			 * - `capture`: Optionally approves and then authorizes and captures the
+			 * funds of the transaction.
+			 */
+			$request['intent'] = self::INTENT_CAPTURE;
+		}
 		return $request;
 	}
 
@@ -145,7 +167,7 @@ class RequestMapper {
 	/**
 	 * @return array
 	 */
-	public function mapToCardApprovePaymentRequest( array $params ): array {
+	public function mapToApprovePaymentRequest( array $params ): array {
 		$request = [
 			'amount' => CurrencyRoundingHelper::getAmountInMinorUnits( $params['amount'], $params['currency'] ),
 		];
@@ -177,11 +199,13 @@ class RequestMapper {
 	 * @return string
 	 */
    private function mapPaymentMethodToGravyPaymentMethod( $payment_submethod ): string {
-	   switch ( $payment_submethod ) {
-		   case 'ach':
-			   return 'trustly';
-		   default:
-			   return '';
+	   switch ( strtolower( $payment_submethod ) ) {
+			case 'ach':
+				return 'trustly';
+			case 'venmo':
+				return 'venmo';
+			default:
+				throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $payment_submethod" );
 	   }
    }
 
