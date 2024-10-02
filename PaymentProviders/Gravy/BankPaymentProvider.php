@@ -39,8 +39,6 @@ class BankPaymentProvider extends PaymentProvider implements IPaymentProvider {
 			// map local params to external format, ideally only changing key names and minor input format transformations
 			$gravyRequestMapper = new RequestMapper();
 
-			$this->setProcessorContactId( $params );
-
 			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToBankCreatePaymentRequest( $params );
 
 			// dispatch api call to external API using mapped params

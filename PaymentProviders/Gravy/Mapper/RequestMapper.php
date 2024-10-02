@@ -18,11 +18,30 @@ class RequestMapper {
 			'payment_method' => [
 				'method' => $params['method'] ?? '',
 			],
-			'external_identifier' => $params['order_id'],
+			'external_identifier' => $params['order_id']
 		];
 
 		if ( !empty( $params['processor_contact_id'] ) ) {
 			$request['buyer_id'] = $params['processor_contact_id'];
+		} else {
+			$request['buyer'] = [
+				'external_identifier' => strtolower( $params['email'] ),
+				'billing_details' => [
+					'first_name' => $params['first_name'],
+					'last_name' => $params['last_name'],
+					'email_address' => strtolower( $params['email'] ),
+					'phone_number' => $params['phone_number'] ?? null,
+					'address' => [
+						'city' => $params['city'] ?? " ",
+						'country' => $params['country'] ?? " ",
+						'postal_code' => $params['postal_code'] ?? " ",
+						'state' => $params['state_province'] ?? " ",
+						'line1' => $params['street_address'] ?? " ",
+						'line2' => " ",
+						'organization' => $params['employer'] ?? " "
+					]
+				]
+			];
 		}
 
 		if ( !empty( $params['recurring'] ) ) {
