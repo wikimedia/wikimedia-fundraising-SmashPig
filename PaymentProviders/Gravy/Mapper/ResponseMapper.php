@@ -66,11 +66,11 @@ class ResponseMapper {
 		if ( !empty( $response['payment_method'] ) ) {
 			$result['recurring_payment_token'] = $response['payment_method']['id'];
 
-			$paymentMethod = $response['payment_method']['method'] ?? '';
-			$paymentSubmethod = $response['payment_method']['scheme'] ?? '';
-			[ $method, $submethod ] = ReferenceData::decodePaymentMethod( $paymentMethod, $paymentSubmethod );
-			$result['payment_method'] = $method;
-			$result['payment_submethod'] = $submethod;
+			$gravyPaymentMethod = $response['payment_method']['method'] ?? '';
+			$gravyPaymentSubmethod = $response['payment_method']['scheme'] ?? '';
+			[ $normalizedPaymentMethod, $normalizedPaymentSubmethod ] = ReferenceData::decodePaymentMethod( $gravyPaymentMethod, $gravyPaymentSubmethod );
+			$result['payment_method'] = $normalizedPaymentMethod;
+			$result['payment_submethod'] = $normalizedPaymentSubmethod;
 
 			if ( !empty( $response['payment_method']['approval_url'] ) ) {
 				$result['redirect_url'] = $response['payment_method']['approval_url'];
@@ -88,7 +88,7 @@ class ResponseMapper {
 				'processor_contact_id' => $response['buyer']['id'] ?? '',
 				];
 
-			if ( in_array( $paymentMethod, self::METHODS_WITH_USERNAME ) ) {
+			if ( in_array( $gravyPaymentMethod, self::METHODS_WITH_USERNAME ) ) {
 				$result['donor_details']['username'] = $response['payment_method']['label'];
 			}
 
