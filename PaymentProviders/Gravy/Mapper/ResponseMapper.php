@@ -39,11 +39,7 @@ class ResponseMapper {
 	 * @link https://docs.gr4vy.com/reference/transactions/new-transaction
 	 */
 	public function mapFromPaymentResponse( array $response ): array {
-		$is_3ds_error = ( isset( $response['three_d_secure'] ) && $response['three_d_secure']['status'] === 'error' );
-		if ( ( isset( $response['type'] ) && $response['type'] == 'error' )
-		|| isset( $response['error_code'] )
-		|| $response['intent_outcome'] == 'failed'
-		|| $is_3ds_error ) {
+		if ( $this->paymentResponseContainsError( $response ) ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 
@@ -338,5 +334,21 @@ class ResponseMapper {
 		];
 
 		return $error;
+	}
+
+	/**
+	 * @param array $response
+	 * @return bool
+	 */
+	protected function paymentResponseContainsError( array $response ): bool {
+		return (
+			// response type = error
+			isset( $response['type'] ) && $response['type'] === 'error' )
+			// contains error code
+			|| isset( $response['error_code'] )
+			// failure
+			|| $response['intent_outcome'] === 'failed'
+			// 3d secure errors
+			|| ( isset( $response['three_d_secure'] ) && $response['three_d_secure']['status'] === 'error' );
 	}
 }
