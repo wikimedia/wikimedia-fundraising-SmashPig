@@ -47,7 +47,7 @@ class ResponseMapper {
 			return $this->mapErrorFromResponse( $response );
 		}
 
-		$params = [
+		$result = [
 			'is_successful' => true,
 			'gateway_txn_id' => $response['id'],
 			'amount' => $response['amount'] / 100,
@@ -59,27 +59,27 @@ class ResponseMapper {
 			'risk_scores' => $this->getRiskScores( $response['avs_response_code'] ?? null, $response['cvv_response_code'] ?? null )
 		];
 
-		if ( $params['status'] == FinalStatus::FAILED ) {
-			$params['is_successful'] = false;
+		if ( $result['status'] == FinalStatus::FAILED ) {
+			$result['is_successful'] = false;
 		}
 
 		if ( !empty( $response['payment_method'] ) ) {
-			$params['recurring_payment_token'] = $response['payment_method']['id'];
+			$result['recurring_payment_token'] = $response['payment_method']['id'];
 
 			$paymentMethod = $response['payment_method']['method'] ?? '';
 			$paymentSubmethod = $response['payment_method']['scheme'] ?? '';
 			[ $method, $submethod ] = ReferenceData::decodePaymentMethod( $paymentMethod, $paymentSubmethod );
-			$params['payment_method'] = $method;
-			$params['payment_submethod'] = $submethod;
+			$result['payment_method'] = $method;
+			$result['payment_submethod'] = $submethod;
 
 			if ( !empty( $response['payment_method']['approval_url'] ) ) {
-				$params['redirect_url'] = $response['payment_method']['approval_url'];
+				$result['redirect_url'] = $response['payment_method']['approval_url'];
 			}
 		}
 
 		if ( !empty( $response['buyer'] ) && !empty( $response['buyer']['billing_details'] ) ) {
 			$donorDetails = $response['buyer']['billing_details'];
-			$params['donor_details'] = [
+			$result['donor_details'] = [
 				'first_name' => $donorDetails['first_name'] ?? '',
 				'last_name' => $donorDetails['last_name'] ?? '',
 				'phone_number' => $donorDetails['phone_number'] ?? '',
@@ -89,12 +89,12 @@ class ResponseMapper {
 				];
 
 			if ( in_array( $paymentMethod, self::METHODS_WITH_USERNAME ) ) {
-				$params['donor_details']['username'] = $response['payment_method']['label'];
+				$result['donor_details']['username'] = $response['payment_method']['label'];
 			}
 
 			if ( !empty( $donorDetails['address'] ) ) {
 				$donorAddress = $donorDetails['address'];
-				$params['donor_details']['address'] = [
+				$result['donor_details']['address'] = [
 					'address_line1' => $donorAddress['line1'] ?? '',
 					'postal_code' => $donorAddress['postal_code'] ?? '',
 					'state' => $donorAddress['state'] ?? '',
@@ -107,12 +107,12 @@ class ResponseMapper {
 		if ( !empty( $response['payment_service'] ) ) {
 			if ( !empty( $response['payment_service']['payment_service_definition_id'] ) ) {
 				$paymentServiceDefinitionId = $response['payment_service']['payment_service_definition_id'];
-				$params['backend_processor'] = GravyHelper::extractProcessorNameFromServiceDefinitionId( $paymentServiceDefinitionId );
+				$result['backend_processor'] = GravyHelper::extractProcessorNameFromServiceDefinitionId( $paymentServiceDefinitionId );
 			}
 		}
-		$params['backend_processor_transaction_id'] = $response['payment_service_transaction_id'] ?? null;
+		$result['backend_processor_transaction_id'] = $response['payment_service_transaction_id'] ?? null;
 
-		return $params;
+		return $result;
 	}
 
 	public function mapDonorResponse( array $response ) : array {
