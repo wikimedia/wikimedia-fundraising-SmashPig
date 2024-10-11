@@ -32,7 +32,7 @@ class DownloadReportJob implements Runnable {
 		$reportResponse = GravyReportResponseFactory::fromNormalizedResponse( $this->payload );
 
 		// generate the filename using the current time and data
-		$date = date( 'Y_m_d' );
+		$date = date( 'Y_m_d-His' );
 		$fileName = "gravy_settlement_report_{$date}.csv";
 
 		$this->downloadLoc =
