@@ -119,6 +119,7 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 			$response );
 		$this->assertEquals( $responseBody['amount'] / 100, $response->getAmount() );
 		$this->assertEquals( $responseBody['id'], $response->getGatewayTxnId() );
+		$this->assertEquals( $responseBody['reconciliation_id'], $response->getPaymentOrchestratorReconciliationId() );
 		$this->assertEquals( $responseBody['buyer']['billing_details']['first_name'], $response->getDonorDetails()->getFirstName() );
 		$this->assertEquals( $responseBody['payment_service_transaction_id'], $response->getBackendProcessorTransactionId() );
 		$this->assertEquals( $responseBody['buyer']['billing_details']['last_name'], $response->getDonorDetails()->getLastName() );
