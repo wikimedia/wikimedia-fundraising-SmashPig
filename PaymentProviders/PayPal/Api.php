@@ -181,6 +181,9 @@ class Api {
 			'PROFILEID' => $params[ 'subscr_id' ],
 			'ACTION' => 'Cancel'
 		];
+		if ( !empty( $params['note'] ) ) {
+			$requestParams['NOTE'] = $params['note'];
+		}
 		return $this->makeApiCall( $requestParams );
 	}
 
