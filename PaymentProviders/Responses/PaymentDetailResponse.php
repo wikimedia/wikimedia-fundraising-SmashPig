@@ -301,8 +301,9 @@ class PaymentDetailResponse extends PaymentProviderResponse {
 		return $this->paymentOrchestratorReconciliationId;
 	}
 
-	public function setPaymentOrchestratorReconciliationId( ?string $paymentOrchestratorReconciliationId ): void {
+	public function setPaymentOrchestratorReconciliationId( ?string $paymentOrchestratorReconciliationId ): PaymentDetailResponse {
 		$this->paymentOrchestratorReconciliationId = $paymentOrchestratorReconciliationId;
+		return $this;
 	}
 
 }
