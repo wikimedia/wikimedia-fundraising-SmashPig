@@ -29,6 +29,7 @@ class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
 		self::setPaymentSubmethod( $paymentResponse, $normalizedResponse );
 		self::setDonorDetails( $paymentResponse, $normalizedResponse );
 		self::setBackendProcessorAndId( $paymentResponse, $normalizedResponse );
+		self::setPaymentOrchestrationReconciliationId( $paymentResponse, $normalizedResponse );
 	}
 
 	/**
@@ -89,6 +90,7 @@ class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
 			->setEmail( $donorDetails['email_address'] ?? '' )
 			->setPhone( $donorDetails['phone_number'] ?? '' )
 			->setCustomerId( $donorDetails['processor_contact_id'] ?? '' )
+			->setUserName( $donorDetails['username'] ?? '' )
 			->setBillingAddress( $address );
 		$paymentResponse->setProcessorContactID( $donorDetails['processor_contact_id'] ?? '' );
 		$paymentResponse->setDonorDetails( $details );
@@ -105,5 +107,12 @@ class GravyCreatePaymentResponseFactory extends GravyPaymentResponseFactory {
 		$paymentResponse->setBackendProcessorTransactionId(
 			$normalizedResponse['backend_processor_transaction_id'] ?? null
 		);
+	}
+
+	protected static function setPaymentOrchestrationReconciliationId(
+		PaymentProviderResponse $paymentResponse,
+		array $normalizedResponse
+	): void {
+		$paymentResponse->setPaymentOrchestratorReconciliationId( $normalizedResponse['payment_orchestrator_reconciliation_id'] );
 	}
 }

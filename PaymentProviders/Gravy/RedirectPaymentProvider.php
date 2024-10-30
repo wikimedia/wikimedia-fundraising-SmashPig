@@ -4,16 +4,13 @@ namespace SmashPig\PaymentProviders\Gravy;
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
-use SmashPig\PaymentProviders\Gravy\Mapper\BankResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
-use SmashPig\PaymentProviders\Gravy\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Validators\Validator;
 use SmashPig\PaymentProviders\IPaymentProvider;
-use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 use SmashPig\PaymentProviders\ValidationException;
 
-class BankPaymentProvider extends PaymentProvider implements IPaymentProvider {
+class RedirectPaymentProvider extends PaymentProvider implements IPaymentProvider {
 	/**
 	 * @param array $params
 	 * * amount
@@ -65,12 +62,4 @@ class BankPaymentProvider extends PaymentProvider implements IPaymentProvider {
 		return $createPaymentResponse;
 	}
 
-	public function approvePayment( array $params ): ApprovePaymentResponse {
-		// Trustly payments are intent capture only
-		return new ApprovePaymentResponse();
-	}
-
-	protected function getResponseMapper(): ResponseMapper {
-		return new BankResponseMapper();
-	}
 }
