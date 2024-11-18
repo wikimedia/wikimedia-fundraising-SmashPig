@@ -42,8 +42,11 @@ class GravyListener implements IHttpActionHandler {
 				$message = GravyMessage::getInstanceFromNormalizedNotification( $normalizedNotification );
 
 				if ( $message ) {
-					$action = GravyAction::getInstanceOf( $message->getAction() );
-					$action->execute( $message );
+					$actionClass = $message->getAction();
+					if ( $actionClass ) {
+						$action = GravyAction::getInstanceOf( $actionClass );
+						$action->execute( $message );
+					}
 					Logger::info( 'Finished processing listener request' );
 					return true;
 				}
@@ -105,6 +108,8 @@ class GravyListener implements IHttpActionHandler {
 				return 'RefundMessage';
 			case 'report-execution':
 				return 'ReportExecutionMessage';
+			case 'payment-method':
+				return 'PaymentMethodMessage';
 			default:
 				throw new \UnexpectedValueException( "Listener received unknown message type $type" );
 		}
