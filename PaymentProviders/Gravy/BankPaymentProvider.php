@@ -5,7 +5,6 @@ namespace SmashPig\PaymentProviders\Gravy;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Mapper\BankResponseMapper;
-use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
 use SmashPig\PaymentProviders\Gravy\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Validators\Validator;
 use SmashPig\PaymentProviders\IPaymentProvider;
@@ -38,7 +37,6 @@ class BankPaymentProvider extends PaymentProvider implements IPaymentProvider {
 
 			// map local params to external format, ideally only changing key names and minor input format transformations
 			$gravyRequestMapper = $this->getRequestMapper();
-
 			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToRedirectCreatePaymentRequest( $params );
 
 			// dispatch api call to external API using mapped params
@@ -68,7 +66,4 @@ class BankPaymentProvider extends PaymentProvider implements IPaymentProvider {
 		return new BankResponseMapper();
 	}
 
-	protected function getRequestMapper(): RequestMapper {
-		return new RequestMapper();
-	}
 }

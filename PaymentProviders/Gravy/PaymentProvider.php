@@ -213,14 +213,6 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		return $reportResponse;
 	}
 
-	public function getPaymentRequest( array $params ): array {
-		// map local params to external format, ideally only changing key names and minor input format transformations
-		$gravyRequestMapper = new RequestMapper();
-
-		$gravyCreatePaymentRequest = $gravyRequestMapper->mapToCardCreatePaymentRequest( $params );
-		return $gravyCreatePaymentRequest;
-	}
-
 	public function validateInput( Validator $validator, array $params ): void {
 		$validator->validateCreatePaymentInput( $params );
 	}
@@ -238,7 +230,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 				$this->validateInput( $validator, $params );
 			}
 
-			$gravyCreatePaymentRequest = $this->getPaymentRequest( $params );
+			$gravyRequestMapper = $this->getRequestMapper();
+			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToCreatePaymentRequest( $params );
 
 			// dispatch api call to external API using mapped params
 			$rawGravyCreatePaymentResponse = $this->api->createPayment( $gravyCreatePaymentRequest );
@@ -300,5 +293,9 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 
 	protected function getResponseMapper(): ResponseMapper {
 		return new ResponseMapper();
+	}
+
+	protected function getRequestMapper(): RequestMapper {
+		return new RequestMapper();
 	}
 }
