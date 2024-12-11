@@ -57,6 +57,15 @@ class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaymentTokenP
 	}
 
 	/**
+	 * If any important params can re-fetch based on session
+	 *
+	 * @param array $params
+	 * @return void
+	 */
+	public function getMissingParams( array &$params ): void {
+	}
+
+	/**
 	 * @return CreatePaymentSessionResponse
 	 */
 	public function createPaymentSession(): CreatePaymentSessionResponse {
@@ -96,6 +105,7 @@ class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaymentTokenP
 				);
 			}
 		} else {
+			$this->getMissingParams( $params );
 			$transformParams = $this->transformToApiParams( $params );
 			$rawResponse = $this->api->authorizePaymentMethod( $transformParams );
 			$response->setRawResponse( $rawResponse );
