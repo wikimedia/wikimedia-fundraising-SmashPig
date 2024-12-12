@@ -98,7 +98,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 			$validator = new Validator();
 			$validator->validateDeletePaymentTokenInput( $params );
 
-			$gravyRequestMapper = new RequestMapper();
+			$gravyRequestMapper = $this->getRequestMapper();
 			$gravyDeleteToken = $gravyRequestMapper->mapToDeletePaymentTokenRequest( $params );
 
 			$rawGravyDeletePaymentTokenResponse = $this->api->deletePaymentToken( $gravyDeleteToken );
@@ -128,7 +128,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 			$validator = new Validator();
 			$validator->validateRefundInput( $params );
 
-			$gravyRequestMapper = new RequestMapper();
+			$gravyRequestMapper = $this->getRequestMapper();
 			$gravyRefundRequest = $gravyRequestMapper->mapToRefundPaymentRequest( $params );
 
 			$rawGravyRefundResponse = $this->api->refundTransaction( $gravyRefundRequest );
@@ -266,7 +266,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 			$validator->validateApprovePaymentInput( $params );
 
 			// map local params to external format, ideally only changing key names and minor input format transformations
-			$gravyRequestMapper = new RequestMapper();
+			$gravyRequestMapper = $this->getRequestMapper();
 			$gravyApprovePaymentRequest = $gravyRequestMapper->mapToApprovePaymentRequest( $params );
 
 			// dispatch api call to external API using mapped params

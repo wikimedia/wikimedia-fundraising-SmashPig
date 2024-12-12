@@ -3,6 +3,8 @@ namespace SmashPig\PaymentProviders\Gravy;
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
+use SmashPig\PaymentProviders\Gravy\Mapper\GooglePayPaymentProviderRequestMapper;
+use SmashPig\PaymentProviders\Gravy\Mapper\GooglePayPaymentProviderResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Validators\Validator;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 use SmashPig\PaymentProviders\ValidationException;
@@ -26,7 +28,7 @@ class GooglePayPaymentProvider extends PaymentProvider {
 			}
 
 			$gravyRequestMapper = $this->getRequestMapper();
-			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToGoogleCreatePaymentRequest( $params );
+			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToCreatePaymentRequest( $params );
 
 			// dispatch api call to external API using mapped params
 			$rawGravyCreatePaymentResponse = $this->api->createPayment( $gravyCreatePaymentRequest );
@@ -51,4 +53,13 @@ class GooglePayPaymentProvider extends PaymentProvider {
 
 		return $createPaymentResponse;
 	}
+
+	protected function getRequestMapper(): GooglePayPaymentProviderRequestMapper {
+		return new GooglePayPaymentProviderRequestMapper();
+	}
+
+	protected function getResponseMapper(): GooglePayPaymentProviderResponseMapper {
+		return new GooglePayPaymentProviderResponseMapper();
+	}
+
 }

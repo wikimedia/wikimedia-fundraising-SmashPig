@@ -5,7 +5,8 @@ namespace SmashPig\PaymentProviders\Gravy;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentSessionResponseFactory;
-use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
+use SmashPig\PaymentProviders\Gravy\Mapper\CardPaymentProviderRequestMapper;
+use SmashPig\PaymentProviders\Gravy\Mapper\CardPaymentProviderResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Validators\Validator;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
@@ -62,9 +63,9 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 			}
 
 			// map local params to external format, ideally only changing key names and minor input format transformations
-			$gravyRequestMapper = new RequestMapper();
+			$gravyRequestMapper = $this->getRequestMapper();
 
-			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToCardCreatePaymentRequest( $params );
+			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToCreatePaymentRequest( $params );
 
 			// dispatch api call to external API using mapped params
 			$rawGravyCreatePaymentResponse = $this->api->createPayment( $gravyCreatePaymentRequest );
@@ -89,4 +90,11 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 		return $createPaymentResponse;
 	}
 
+	protected function getRequestMapper(): CardPaymentProviderRequestMapper {
+		return new CardPaymentProviderRequestMapper();
+	}
+
+	protected function getResponseMapper(): CardPaymentProviderResponseMapper {
+		return new CardPaymentProviderResponseMapper();
+	}
 }
