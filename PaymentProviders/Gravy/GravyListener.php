@@ -8,7 +8,7 @@ use SmashPig\Core\Http\Response;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\Gravy\Actions\GravyAction;
 use SmashPig\PaymentProviders\Gravy\ExpatriatedMessages\GravyMessage;
-use SmashPig\PaymentProviders\Gravy\Validators\Validator;
+use SmashPig\PaymentProviders\Gravy\Validators\ListenerValidator;
 use SmashPig\PaymentProviders\ValidationException;
 
 class GravyListener implements IHttpActionHandler {
@@ -30,7 +30,7 @@ class GravyListener implements IHttpActionHandler {
 		$headers = $request->server->getHeaders();
 
 		try {
-			$validator = new Validator();
+			$validator = new ListenerValidator();
 			$validator->validateWebhookEventHeader( $headers, $this->providerConfiguration );
 			Logger::info( 'Received Gravy webhook notification' );
 			$parsed = json_decode( $requestValues, true );
