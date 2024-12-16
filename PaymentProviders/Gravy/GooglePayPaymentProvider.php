@@ -1,57 +1,14 @@
 <?php
 namespace SmashPig\PaymentProviders\Gravy;
 
-use SmashPig\Core\Logging\Logger;
-use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Mapper\GooglePayPaymentProviderRequestMapper;
 use SmashPig\PaymentProviders\Gravy\Mapper\GooglePayPaymentProviderResponseMapper;
-use SmashPig\PaymentProviders\Gravy\Validators\Validator;
-use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
-use SmashPig\PaymentProviders\ValidationException;
+use SmashPig\PaymentProviders\Gravy\Validators\GooglePayPaymentProviderValidator;
+use SmashPig\PaymentProviders\Gravy\Validators\PaymentProviderValidator;
 
 class GooglePayPaymentProvider extends PaymentProvider {
-	public function validateInput( Validator $validator, array $params ): void {
-		$validator->validateGoogleCreatePaymentInput( $params );
-	}
-
-	public function createPayment( array $params ) : CreatePaymentResponse {
-		$createPaymentResponse = new createPaymentResponse();
-		try {
-			// extract out the validation of input out to a separate class
-			$validator = new Validator();
-
-			// recurring charge is same across all methods
-			if ( isset( $params['recurring_payment_token'] ) ) {
-				$validator->validateCreatePaymentFromTokenInput( $params );
-			} else {
-				$this->validateInput( $validator, $params );
-			}
-
-			$gravyRequestMapper = $this->getRequestMapper();
-			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToCreatePaymentRequest( $params );
-
-			// dispatch api call to external API using mapped params
-			$rawGravyCreatePaymentResponse = $this->api->createPayment( $gravyCreatePaymentRequest );
-
-			// normalize gravy response
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $rawGravyCreatePaymentResponse );
-
-			// populate our standard response object from the normalized response
-			// this could be extracted out to a factory as we do for dlocal
-			$createPaymentResponse = GravyCreatePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
-
-		}  catch ( ValidationException $e ) {
-			// it threw an exception!
-			GravyCreatePaymentResponseFactory::handleValidationException( $createPaymentResponse, $e->getData() );
-		}
-		catch ( \Exception $e ) {
-			// it threw an exception that isn't validation!
-			Logger::error( 'Processor failed to create new payment with response:' . $e->getMessage() );
-			GravyCreatePaymentResponseFactory::handleException( $createPaymentResponse, $e->getMessage(), $e->getCode() );
-		}
-
-		return $createPaymentResponse;
+	protected function getValidator(): PaymentProviderValidator {
+		return new GooglePayPaymentProviderValidator();
 	}
 
 	protected function getRequestMapper(): GooglePayPaymentProviderRequestMapper {
