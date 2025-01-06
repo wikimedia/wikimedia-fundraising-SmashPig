@@ -52,10 +52,7 @@ abstract class PaymentProvider implements
 	 */
 	protected $api;
 
-	/**
-	 * @var \SmashPig\Core\ProviderConfiguration
-	 */
-	protected $providerConfiguration;
+	protected \SmashPig\Core\ProviderConfiguration $providerConfiguration;
 
 	/**
 	 * @var array
@@ -583,7 +580,7 @@ abstract class PaymentProvider implements
 	 * @param string $refusalReason
 	 * @return bool
 	 */
-	private function canRetryRefusalReason( $refusalReason ) {
+	private function canRetryRefusalReason( $refusalReason ): bool {
 		// They may prefix the refusal reason with a numeric code
 		$trimmedReason = preg_replace( '/^[0-9:]+ /', '', $refusalReason );
 		$noRetryReasons = [
