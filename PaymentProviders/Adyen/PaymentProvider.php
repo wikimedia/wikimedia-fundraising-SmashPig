@@ -96,8 +96,8 @@ abstract class PaymentProvider implements
 		// the same values regardless of value.
 		$cacheKey = $this->cacheParameters['key-base'] . '_'
 			. $params['country'] . '_'
-			. $params['currency'] . '_'
-			. $params['language'];
+			. ( $params['currency'] ?? '' ) . '_'
+			. ( $params['language'] ?? '' );
 
 		$rawResponse = CacheHelper::getWithSetCallback( $cacheKey, $this->cacheParameters['duration'], $callback );
 		$response = new PaymentMethodResponse();
