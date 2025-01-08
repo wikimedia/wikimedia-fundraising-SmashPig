@@ -251,6 +251,10 @@ class ReferenceData {
 			'method' => 'apple',
 			'submethod' => 'visa',
 		],
+		'visadebit_applepay' => [
+			'method' => 'apple',
+			'submethod' => 'visa',
+		],
 		'visa_googlepay' => [
 			'method' => 'google',
 			'submethod' => 'visa',
