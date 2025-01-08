@@ -176,7 +176,7 @@ class ProcessCaptureRequestJob implements Runnable {
 		return PaymentProviderFactory::getProviderForMethod( 'cc' );
 	}
 
-	protected function determineAction( $dbMessage, PaymentDetailResponse $transactionDetails ) {
+	protected function determineAction( $dbMessage, PaymentDetailResponse $transactionDetails ): string {
 		if ( $dbMessage && isset( $dbMessage['order_id'] ) ) {
 			$this->logger->debug( 'Found a valid message.' );
 		} else {
