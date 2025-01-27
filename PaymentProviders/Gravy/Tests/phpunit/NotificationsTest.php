@@ -2,6 +2,7 @@
 
 use SmashPig\Core\Context;
 use SmashPig\Core\Http\Request;
+use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Gravy\GravyListener;
 use SmashPig\PaymentProviders\Gravy\Jobs\DownloadReportJob;
 use SmashPig\PaymentProviders\Gravy\Jobs\ProcessCaptureRequestJob;
@@ -146,6 +147,29 @@ class NotificationsTest extends BaseGravyTestCase {
 		$jobsMessage = $this->jobsGravyQueue->pop();
 		$this->assertNull( $refundMessage, 'No message shoud be queued to refund queue' );
 		$this->assertNull( $jobsMessage, 'No message shoud be queued to jobs queue' );
+	}
+
+	public function testTrustlyPaymentMFailedMessageIsSentToRefund(): void {
+		[ $request, $response ] = $this->getValidRequestResponseObjects();
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/trustly-create-transaction-failed.json' ), true );
+		$message = json_decode( $this->getValidGravyTransactionMessage(), true );
+		$request->method( 'getRawRequest' )->willReturn( json_encode( $message ) );
+		$this->mockApi->expects( $this->once() )
+			->method( 'getTransaction' )
+			->willReturn( $responseBody );
+		$this->gravyListener->execute( $request, $response );
+		$refundMessage = $this->refundQueue->pop();
+		$jobsMessage = $this->jobsGravyQueue->pop();
+		$normalized_details = ( new ResponseMapper() )->mapFromPaymentResponse( $responseBody );
+
+		$this->assertNotNull( $refundMessage, '1 message for the failed ACH payment shoud be queued to refund queue' );
+		$this->assertNull( $jobsMessage, 'No message shoud be queued to jobs queue' );
+		$this->assertEquals( $normalized_details['gateway_parent_id'], $refundMessage['gateway_parent_id'] );
+		$this->assertEquals( $normalized_details['gateway_refund_id'], $refundMessage['gateway_refund_id'] );
+		$this->assertEquals( $normalized_details['currency'], $refundMessage['currency'] );
+		$this->assertEquals( $normalized_details['amount'], $refundMessage['amount'] );
+		$this->assertEquals( 'chargeback', $refundMessage['type'] );
+		$this->assertEquals( FinalStatus::COMPLETE, $refundMessage['status'] );
 	}
 
 	public function testRefundMessageComplete(): void {
