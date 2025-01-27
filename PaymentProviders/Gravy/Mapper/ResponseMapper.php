@@ -283,25 +283,25 @@ class ResponseMapper {
 			$errorParameters = $this->mapFrom3DSecureErrorResponse( $error['three_d_secure'] );
 		}
 
-		$error_code = ErrorMapper::getError( $errorParameters['code'] );
+		$errorCode = ErrorMapper::getError( $errorParameters['code'] );
 
-		return [
+		$errorResponse = [
 			'is_successful' => false,
 			'status' => FinalStatus::FAILED,
-			'code' => $error_code,
+			'code' => $errorCode,
 			'message' => $errorParameters['message'],
 			'description' => $errorParameters['description'],
 			'raw_response' => $error
-
 		];
+		return $errorResponse;
 	}
 
 	protected function mapFrom3DSecureErrorResponse( array $params ): array {
-		$error_data = $params['error_data'];
+		$errorData = $params['error_data'];
 		$error = [
-			"code" => $error_data['code'],
-			"message" => $error_data['description'],
-			"description" => $error_data['detail']
+			"code" => $errorData['code'],
+			"message" => $errorData['description'],
+			"description" => $errorData['detail']
 		];
 
 		return $error;
