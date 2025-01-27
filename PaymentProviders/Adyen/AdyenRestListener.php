@@ -10,17 +10,17 @@ use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\AdyenMessage;
 
 class AdyenRestListener extends RestListener {
 
-	protected function doMessageSecurity( ListenerMessage $msg ) {
+	protected function doMessageSecurity( ListenerMessage $msg ): bool {
 		// TODO: Implement doMessageSecurity() method.
 		return true;
 	}
 
-	protected function ackMessage( ListenerMessage $msg ) {
+	protected function ackMessage( ListenerMessage $msg ): bool {
 		// TODO: Implement ackMessage() method.
 		return true;
 	}
 
-	protected function parseEnvelope( Request $request ) {
+	protected function parseEnvelope( Request $request ): array {
 		$rawRequest = $request->getRawRequest();
 		// remove expiryDate from rawRequest for reason and additionalData
 		// replace mm/yyyy with blank for logging

@@ -21,6 +21,8 @@ class GravyApprovePaymentResponseFactory extends GravyPaymentResponseFactory {
 		}
 
 		self::setPaymentDetails( $paymentResponse, $normalizedResponse );
+		self::setBackendProcessorAndId( $paymentResponse, $normalizedResponse );
+		self::setPaymentOrchestrationReconciliationId( $paymentResponse, $normalizedResponse );
 	}
 
 	/**
