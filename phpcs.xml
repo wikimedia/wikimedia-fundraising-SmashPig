@@ -11,13 +11,11 @@
 		<exclude name="MediaWiki.Commenting.PropertyDocumentation.MissingDocumentationPrivate"/>
 		<exclude name="MediaWiki.Commenting.PropertyDocumentation.MissingDocumentationProtected"/>
 		<exclude name="MediaWiki.Commenting.PropertyDocumentation.MissingDocumentationPublic"/>
-		<exclude name="MediaWiki.Commenting.PropertyDocumentation.WrongStyle"/>
 		<exclude name="MediaWiki.NamingConventions.ValidGlobalName.wgPrefix"/>
 		<exclude name="MediaWiki.WhiteSpace.SpaceBeforeSingleLineComment.NewLineComment"/>
 		<exclude name="MediaWiki.Commenting.FunctionComment.ParamNameNoMatch"/>
 		<exclude name="MediaWiki.ControlStructures.AssignmentInControlStructures.AssignmentInControlStructures"/>
 		<exclude name="MediaWiki.NamingConventions.LowerCamelFunctionsName.FunctionName"/>
-		<exclude name="MediaWiki.Commenting.FunctionComment.WrongStyle"/>
 		<exclude name="MediaWiki.Usage.ScalarTypeHintUsage.Found"/>
 		<exclude name="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
 		<exclude name="MediaWiki.Commenting.FunctionComment.MissingParamName"/>
