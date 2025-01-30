@@ -270,6 +270,194 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		);
 	}
 
+	public function testFiscalNumberCountryIdentifierCorrectlyMappedToGravyTaxId(): void {
+		$params = $this->getCreateTrxnParams( 'ABC123-c067-4cd6-a3c8-aec67899d5af' );
+		$params['amount'] = '1000';
+		$params['currency'] = 'CLP';
+
+		// this country and fiscal number format should give us a tax_id type of 'ar.dni'
+		$params['country'] = 'CL';
+		$params['fiscal_number'] = '9999999';
+
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction-fiscal-number.json' ),
+			true );
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPayment' )
+			->with( [
+					'amount' => 1000,
+					'currency' => 'CLP',
+					'country' => 'CL',
+					'payment_method' => [
+						'method' => 'checkout-session',
+						'id' => 'ABC123-c067-4cd6-a3c8-aec67899d5af',
+					],
+					'external_identifier' => $params['order_id'],
+					'buyer' => [
+						'external_identifier' => 'lorem@ipsum',
+						'billing_details' => [
+							'first_name' => 'Lorem',
+							'last_name' => 'Ipsum',
+							'email_address' => 'lorem@ipsum',
+							'phone_number' => null,
+							'address' => [
+								'city' => null,
+								'country' => 'CL',
+								'postal_code' => '1234',
+								'state' => null,
+								'line1' => '10 hopewell street',
+								'line2' => null,
+								'organization' => 'Wikimedia Foundation',
+							],
+							'tax_id' => [
+								'value' => '9999999',
+								'kind' => 'cl.tin', // this is what we care about!
+							],
+						],
+					],
+				]
+			)
+			->willReturn( $responseBody );
+
+		$response = $this->provider->createPayment( $params );
+		$this->assertTrue( $response->isSuccessful() );
+	}
+
+	public function testFiscalNumberCountryIdentifierCorrectlyMappedToGravyTaxIdWhenMultipleAvailable(): void {
+		$params = $this->getCreateTrxnParams( 'ABC123-c067-4cd6-a3c8-aec67899d5af' );
+		$params['amount'] = '1000';
+		$params['currency'] = 'ARS';
+
+		// this country and fiscal number format should give us a tax_id type of 'ar.dni'
+		$params['country'] = 'AR';
+		$params['fiscal_number'] = '9999999';
+
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction-fiscal-number-multiple.json' ),
+			true );
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPayment' )
+			->with( [
+					'amount' => 100000,
+					'currency' => 'ARS',
+					'country' => 'AR',
+					'payment_method' => [
+						'method' => 'checkout-session',
+						'id' => 'ABC123-c067-4cd6-a3c8-aec67899d5af',
+					],
+					'external_identifier' => $params['order_id'],
+					'buyer' => [
+						'external_identifier' => 'lorem@ipsum',
+						'billing_details' => [
+							'first_name' => 'Lorem',
+							'last_name' => 'Ipsum',
+							'email_address' => 'lorem@ipsum',
+							'phone_number' => null,
+							'address' => [
+								'city' => null,
+								'country' => 'AR',
+								'postal_code' => '1234',
+								'state' => null,
+								'line1' => '10 hopewell street',
+								'line2' => null,
+								'organization' => 'Wikimedia Foundation',
+							],
+							'tax_id' => [
+								'value' => '9999999',
+								'kind' => 'ar.dni', // this is what we care about!
+							],
+						],
+					],
+				]
+			)
+			->willReturn( $responseBody );
+
+		$response = $this->provider->createPayment( $params );
+		$this->assertTrue( $response->isSuccessful() );
+	}
+
+	public function testFiscalNumberCountryIdentifierCorrectlyMappedToDefaultWhenNoExactMatchForGravyTaxId(): void {
+		$params = $this->getCreateTrxnParams( 'ABC123-c067-4cd6-a3c8-aec67899d5af' );
+		$params['amount'] = '1000';
+		$params['currency'] = 'BRL';
+
+		// this country and fiscal number pair should give us a defauly tax_id type of 'br.cnpj'
+		// this is selected because the 7-char ID doesn't match any of the patterns expected so
+		// we default to assigning the first tax_id in the list when this occurs, which is 'br.cnpj'
+		$params['country'] = 'BR';
+		$params['fiscal_number'] = '1234567';
+
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction-fiscal-number.json' ),
+			true );
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPayment' )
+			->with( [
+					'amount' => 100000,
+					'currency' => 'BRL',
+					'country' => 'BR',
+					'payment_method' => [
+						'method' => 'checkout-session',
+						'id' => 'ABC123-c067-4cd6-a3c8-aec67899d5af',
+					],
+					'external_identifier' => $params['order_id'],
+					'buyer' => [
+						'external_identifier' => 'lorem@ipsum',
+						'billing_details' => [
+							'first_name' => 'Lorem',
+							'last_name' => 'Ipsum',
+							'email_address' => 'lorem@ipsum',
+							'phone_number' => null,
+							'address' => [
+								'city' => null,
+								'country' => 'BR',
+								'postal_code' => '1234',
+								'state' => null,
+								'line1' => '10 hopewell street',
+								'line2' => null,
+								'organization' => 'Wikimedia Foundation',
+							],
+							'tax_id' => [
+								'value' => '1234567',
+								'kind' => 'br.cnpj', // this is what we care about!
+							],
+						],
+					],
+				]
+			)
+			->willReturn( $responseBody );
+
+		$response = $this->provider->createPayment( $params );
+		$this->assertTrue( $response->isSuccessful() );
+	}
+
+	public function testErrorBogusFiscalNumberAndCountryParams(): void {
+		$params = $this->getCreateTrxnParams( 'ABC123-c067-4cd6-a3c8-aec67899d5af' );
+		$params['amount'] = '1000';
+		$params['currency'] = 'ARS';
+
+		// this country and fiscal number format should give us an exception as it can't be mapped
+		$params['country'] = 'XX';
+		$params['fiscal_number'] = 'THIS-ISNT-A-VALID-1';
+
+		$response = $this->provider->createPayment( $params );
+
+		// assert that createPayment call is unsuccessful and that an error for fiscal_number being invalid is present
+		$this->assertFalse( $response->isSuccessful() );
+		$errors = $response->getErrors();
+		$foundFiscalNumberError = false;
+		foreach ( $errors as $error ) {
+			if ( $error->getDebugMessage() === "Can't map fiscal number to Gravy Tax ID type.  (XX:THIS-ISNT-A-VALID-1)" ) {
+				$foundFiscalNumberError = true;
+				break;
+			}
+		}
+		$this->assertTrue(
+			$foundFiscalNumberError,
+			"Expected error for invalid fiscal_number for country AR."
+		);
+	}
+
 	public function testSuccessfulCreateSession() {
 		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/new-checkout-session-response.json' ), true );
 		$this->mockApi->expects( $this->once() )
