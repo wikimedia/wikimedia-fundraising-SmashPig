@@ -243,6 +243,33 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 		$this->assertCount( 0, $errors );
 	}
 
+	public function testValidationErrorForMissingFiscalNumberForCountryRequiringIt(): void {
+		$params = $this->getCreateTrxnParams( 'ABC123-c067-4cd6-a3c8-aec67899d5af' );
+
+		// set country to BR (which requires fiscal_number)
+		$params['country'] = 'BR';
+		// ensure fiscal_number is missing
+		unset( $params['fiscal_number'] );
+
+		// attempt to create a payment. validation should fail because fiscal_number is required
+		$response = $this->provider->createPayment( $params );
+
+		// assert that createPayment call is unsuccessful and that a validation error for fiscal_number being 'required' is present
+		$this->assertFalse( $response->isSuccessful() );
+		$validationErrors = $response->getValidationErrors();
+		$foundFiscalNumberError = false;
+		foreach ( $validationErrors as $error ) {
+			if ( $error->getField() === 'fiscal_number' && $error->getDebugMessage() === 'required' ) {
+				$foundFiscalNumberError = true;
+				break;
+			}
+		}
+		$this->assertTrue(
+			$foundFiscalNumberError,
+			"Expected validation error for missing fiscal_number for country BR."
+		);
+	}
+
 	public function testSuccessfulCreateSession() {
 		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/new-checkout-session-response.json' ), true );
 		$this->mockApi->expects( $this->once() )

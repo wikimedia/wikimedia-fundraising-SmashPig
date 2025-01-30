@@ -10,7 +10,7 @@ class CardPaymentProviderValidator extends PaymentProviderValidator {
 	 * @throws ValidationException
 	 */
 	public function validateOneTimeCreatePaymentInput( array $params ): void {
-		$required = [
+		$defaultRequiredFields = [
 			'gateway_session_id',
 			'amount',
 			'currency',
@@ -18,8 +18,13 @@ class CardPaymentProviderValidator extends PaymentProviderValidator {
 			'order_id',
 			'email',
 			'first_name',
-			'last_name'
+			'last_name',
 		];
+
+		$required = array_merge(
+			$defaultRequiredFields,
+			$this->addCountrySpecificRequiredFields( $params )
+		);
 
 		$this->validateFields( $required, $params );
 	}
