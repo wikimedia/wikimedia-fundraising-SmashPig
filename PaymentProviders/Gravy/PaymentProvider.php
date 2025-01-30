@@ -52,8 +52,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		$paymentDetailResponse = new PaymentDetailResponse();
 		try {
 			// extract out the validation of input out to a separate class
-			$validator = $this->getValidator();
-			$validator->validateGetLatestPaymentStatusInput( $params );
+			$this->getValidator()->validateGetLatestPaymentStatusInput( $params );
 
 			$rawGravyGetPaymentDetailResponse = $this->api->getTransaction( $params );
 
@@ -97,8 +96,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function deleteRecurringPaymentToken( array $params ): bool {
 		$response = false;
 		try {
-			$validator = $this->getValidator();
-			$validator->validateDeletePaymentTokenInput( $params );
+			$this->getValidator()->validateDeletePaymentTokenInput( $params );
 
 			$gravyRequestMapper = $this->getRequestMapper();
 			$gravyDeleteToken = $gravyRequestMapper->mapToDeletePaymentTokenRequest( $params );
@@ -127,8 +125,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function refundPayment( array $params ): RefundPaymentResponse {
 		$refundResponse = new RefundPaymentResponse();
 		try {
-			$validator = $this->getValidator();
-			$validator->validateRefundInput( $params );
+			$this->getValidator()->validateRefundInput( $params );
 
 			$gravyRequestMapper = $this->getRequestMapper();
 			$gravyRefundRequest = $gravyRequestMapper->mapToRefundPaymentRequest( $params );
@@ -152,8 +149,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function getRefundDetails( array $params ): RefundPaymentResponse {
 		$refundResponse = new RefundPaymentResponse();
 		try {
-			$validator = $this->getValidator();
-			$validator->validateGetRefundInput( $params );
+			$this->getValidator()->validateGetRefundInput( $params );
 
 			$rawGravyRefundResponse = $this->api->getRefund( $params );
 			// map the response from the external format back to our normalized structure.
@@ -174,8 +170,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function getReportExecutionDetails( array $params ): ReportResponse {
 		$reportResponse = new ReportResponse();
 		try {
-			$validator = $this->getValidator();
-			$validator->validateGetReportExecutionInput( $params );
+			$this->getValidator()->validateGetReportExecutionInput( $params );
 
 			$rawGravyReportExecutionResponse = $this->api->getReportExecutionDetails( $params );
 			// map the response from the external format back to our normalized structure.
@@ -196,8 +191,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function generateReportDownloadUrl( array $params ): ReportResponse {
 		$reportResponse = new ReportResponse();
 		try {
-			$validator = $this->getValidator();
-			$validator->validateGenerateReportUrlInput( $params );
+			$this->getValidator()->validateGenerateReportUrlInput( $params );
 
 			$rawGravyReportDownloadResponse = $this->api->generateReportDownloadUrl( $params );
 			// map the response from the external format back to our normalized structure.
@@ -218,10 +212,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function createPayment( array $params ) : CreatePaymentResponse {
 		$createPaymentResponse = new createPaymentResponse();
 		try {
-			// extract out the validation of input out to a separate class
-			$validator = $this->getValidator();
-
-			$validator->validateCreatePaymentInput( $params );
+			$this->getValidator()->validateCreatePaymentInput( $params );
 
 			$gravyRequestMapper = $this->getRequestMapper();
 			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToCreatePaymentRequest( $params );
@@ -254,9 +245,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		$approvePaymentResponse = new ApprovePaymentResponse();
 
 		try {
-			// extract out the validation of input out to a separate class
-			$validator = $this->getValidator();
-			$validator->validateApprovePaymentInput( $params );
+			$this->getValidator()->validateApprovePaymentInput( $params );
 
 			// map local params to external format, ideally only changing key names and minor input format transformations
 			$gravyRequestMapper = $this->getRequestMapper();
