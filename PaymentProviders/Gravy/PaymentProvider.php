@@ -70,15 +70,12 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	}
 
 	public function cancelPayment( string $gatewayTxnId ) : CancelPaymentResponse {
-		// create our standard response object from the normalized response
 		$cancelPaymentResponse = new CancelPaymentResponse();
 		try {
+			// dispatch api call to external API
 			$rawGravyGetPaymentDetailResponse = $this->api->cancelTransaction( $gatewayTxnId );
-
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
-
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
 			$cancelPaymentResponse = GravyCancelPaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( \Exception $e ) {
 			// it threw an exception!
