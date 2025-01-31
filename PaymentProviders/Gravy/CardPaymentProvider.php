@@ -18,7 +18,6 @@ class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 		$sessionResponse = new CreatePaymentSessionResponse();
 		try {
 			// dispatch api call to external API using mapped params
-			$sessionResponse = new CreatePaymentSessionResponse();
 			$rawResponse = $this->api->createPaymentSession();
 
 			// map the response from the external format back to our normalized structure.
