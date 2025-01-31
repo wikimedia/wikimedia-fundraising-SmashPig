@@ -15,24 +15,20 @@ use SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse;
 class CardPaymentProvider extends PaymentProvider implements IPaymentProvider {
 
 	public function createPaymentSession() : CreatePaymentSessionResponse {
-		$sessionResponse = new CreatePaymentSessionResponse();
+		$createPaymentSessionResponse = new CreatePaymentSessionResponse();
 		try {
-			// dispatch api call to external API using mapped params
-			$rawResponse = $this->api->createPaymentSession();
-
+			// dispatch api call to external API
+			$createPaymentSessionRawResponse = $this->api->createPaymentSession();
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromCreatePaymentSessionResponse( $rawResponse );
-
-			$sessionResponse = GravyCreatePaymentSessionResponseFactory::fromNormalizedResponse( $normalizedResponse );
-			return $sessionResponse;
+			$normalizedResponse = $this->getResponseMapper()->mapFromCreatePaymentSessionResponse( $createPaymentSessionRawResponse );
+			$createPaymentSessionResponse = GravyCreatePaymentSessionResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( \Exception $e ) {
 			// it threw an exception!
 			Logger::error( 'Processor failed to create new payment session with response:' . $e->getMessage() );
-			GravyCreatePaymentSessionResponseFactory::handleException( $sessionResponse, $e->getMessage(), $e->getCode() );
+			GravyCreatePaymentSessionResponseFactory::handleException( $createPaymentSessionResponse, $e->getMessage(), $e->getCode() );
 		}
 
-		return $sessionResponse;
+		return $createPaymentSessionResponse;
 	}
 
 	protected function getValidator(): PaymentProviderValidator {
