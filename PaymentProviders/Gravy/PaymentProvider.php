@@ -157,11 +157,10 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		$reportResponse = new ReportResponse();
 		try {
 			$this->getValidator()->validateGetReportExecutionInput( $params );
-
+			// dispatch api call to external API
 			$rawGravyReportExecutionResponse = $this->api->getReportExecutionDetails( $params );
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromReportExecutionResponse( $rawGravyReportExecutionResponse );
+			$normalizedResponse = $this->getResponseMapper()->mapFromReportExecutionResponse( $rawGravyReportExecutionResponse );
 			$reportResponse = GravyReportResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
