@@ -90,15 +90,11 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		$response = false;
 		try {
 			$this->getValidator()->validateDeletePaymentTokenInput( $params );
-
-			$gravyRequestMapper = $this->getRequestMapper();
-			$gravyDeleteToken = $gravyRequestMapper->mapToDeletePaymentTokenRequest( $params );
-
+			$gravyDeleteToken = $this->getRequestMapper()->mapToDeletePaymentTokenRequest( $params );
+			// dispatch api call to external API
 			$rawGravyDeletePaymentTokenResponse = $this->api->deletePaymentToken( $gravyDeleteToken );
-
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromDeletePaymentTokenResponse( $rawGravyDeletePaymentTokenResponse );
+			$normalizedResponse = $this->getResponseMapper()->mapFromDeletePaymentTokenResponse( $rawGravyDeletePaymentTokenResponse );
 
 			if ( !$normalizedResponse['is_successful'] ) {
 				Logger::error( 'Processor failed to delete recurring token with response:' . $normalizedResponse['code'] . ', ' . $normalizedResponse['description'] );
