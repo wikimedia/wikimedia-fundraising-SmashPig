@@ -92,7 +92,7 @@ class ReferenceData {
 		"paypalpaylater" => self::PAYPAL_PAYMENT_METHOD,
 		"payto" => '',
 		"venmo" => self::VENMO_PAYMENT_METHOD,
-		"pix" => self::BT_PAYMENT_METHOD,
+		"pix" => self::CASH_PAYMENT_METHOD,
 		"rabbitlinepay" => '',
 		"scalapay" => '',
 		"sepa" => self::RTBT_PAYMENT_METHOD,
@@ -164,6 +164,10 @@ class ReferenceData {
 		"trustlyeurope" => ''
 	];
 
+	protected static $cashSubmethods = [
+		"pix" => "pix",
+	];
+
 	public static function decodePaymentMethod( string $method, ?string $scheme = '' ): array {
 		$methods = self::$methods;
 		$payment_method = $methods[$method] ?? '';
@@ -183,6 +187,9 @@ class ReferenceData {
 				break;
 			case self::DD_PAYMENT_METHOD:
 				$payment_submethod = self::$ddSubmethods[$method];
+				break;
+			case self::CASH_PAYMENT_METHOD:
+				$payment_submethod = self::$cashSubmethods[$method];
 				break;
 			default:
 				break;

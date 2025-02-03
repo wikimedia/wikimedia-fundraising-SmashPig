@@ -13,7 +13,9 @@ class RequestMapper {
 	/**
 	 * List for payment methods that do not have the 2 step auth/capture
 	 */
-	public const CAPTURE_ONLY_PAYMENT_METHOD = [];
+	public const CAPTURE_ONLY_PAYMENT_METHOD = [
+		'pix'
+	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
 		$request = [
@@ -168,6 +170,7 @@ class RequestMapper {
 			return 'trustly';
 		case 'paypal':
 		case 'venmo':
+		case 'pix':
 			return $paymentMethod;
 		default:
 				throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );

@@ -137,22 +137,6 @@ class RedirectPaymentProviderTest extends BaseGravyTestCase {
 		$this->assertSame( $responseBody['payment_method']['label'], $response->getDonorDetails()->getUserName() );
 	}
 
-	private function getCreateTrxnParams( ?string $amount = '1299' ) {
-		$params = [];
-		$params['country'] = 'US';
-		$params['currency'] = 'USD';
-		$params['amount'] = $amount;
-		$ct_id = mt_rand( 100000, 1000009 );
-		$params['order_id'] = "$ct_id.1";
-		$params['payment_method'] = "venmo";
-		$params['payment_submethod'] = "";
-
-		$donorParams = $this->getCreateDonorParams();
-		$params = array_merge( $params, $donorParams );
-
-		return $params;
-	}
-
 	public function testSuccessfulCreatePaymentFromTokenNoCreateDonorNoGetDonor() {
 		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/venmo-create-transaction-success.json' ), true );
 		$params = $this->getCreateTrxnFromTokenParams( $responseBody['amount'] / 100 );
@@ -185,8 +169,88 @@ class RedirectPaymentProviderTest extends BaseGravyTestCase {
 		$this->assertEquals( $responseBody['buyer']['billing_details']['last_name'], $response->getDonorDetails()->getLastName() );
 		$this->assertEquals( $responseBody['buyer']['billing_details']['email_address'], $response->getDonorDetails()->getEmail() );
 		$this->assertEquals( $responseBody['buyer']['id'], $response->getDonorDetails()->getCustomerId() );
-		$this->assertEquals( $responseBody['buyer']['billing_details']['address']['line1'], $response->getDonorDetails()->getBillingAddress()->getStreetAddress() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['address']['line1'],
+			$response->getDonorDetails()->getBillingAddress()->getStreetAddress() );
 		$this->assertTrue( $response->isSuccessful() );
+	}
+
+	public function testSuccessfulPixRedirect(): void {
+		$params = $this->getCreateTrxnParams( 'ABC123-c067-4cd6-a3c8-aec67899d5af' );
+		$params['amount'] = '1000';
+		$params['currency'] = 'BRL';
+		$params['country'] = 'BR';
+		$params['fiscal_number'] = '33294576609';
+		$params['payment_method'] = "cash";
+		$params['payment_submethod'] = "pix";
+		$params['return_url'] = "https://localhost:9001/index.php?title=Special:GravyGatewayResult&order_id=296.34&wmf_token=73328ebe66af242c850ac4c695e30150%2B%5C&amount=100.00&currency=BRL&payment_method=cash&payment_submethod=pix&wmf_source=..cash";
+
+		$responseBody = json_decode(
+			file_get_contents( __DIR__ . '/../Data/pix-create-transacton-response.json' ),
+			true
+		);
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPayment' )
+			->with( [
+					'amount' => 100000,
+					'currency' => 'BRL',
+					'country' => 'BR',
+					'payment_method' => [
+						'method' => 'pix',
+						'redirect_url' => 'https://localhost:9001/index.php?title=Special:GravyGatewayResult&order_id=296.34&wmf_token=73328ebe66af242c850ac4c695e30150%2B%5C&amount=100.00&currency=BRL&payment_method=cash&payment_submethod=pix&wmf_source=..cash',
+						'country' => 'BR',
+						'currency' => 'BRL',
+					],
+					'external_identifier' => $params['order_id'],
+					'buyer' => [
+						'external_identifier' => 'lorem@ipsum',
+						'billing_details' => [
+							'first_name' => 'Lorem',
+							'last_name' => 'Ipsum',
+							'email_address' => 'lorem@ipsum',
+							'phone_number' => null,
+							'address' => [
+								'city' => null,
+								'country' => 'BR',
+								'postal_code' => '1234',
+								'state' => null,
+								'line1' => '10 hopewell street',
+								'line2' => null,
+								'organization' => 'Wikimedia Foundation',
+							],
+							'tax_id' => [
+								'value' => '33294576609',
+								'kind' => 'br.cpf',
+							],
+						],
+					],
+					'intent' => 'capture',
+				]
+			)
+			->willReturn( $responseBody );
+
+		$response = $this->provider->createPayment( $params );
+
+		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( 'cash', $response->getPaymentMethod() );
+		$this->assertEquals( 'pix', $response->getPaymentSubmethod() );
+		$this->assertNotEmpty( $response->getRedirectUrl() );
+	}
+
+	private function getCreateTrxnParams( ?string $amount = '1299' ) {
+		$params = [];
+		$params['country'] = 'US';
+		$params['currency'] = 'USD';
+		$params['amount'] = $amount;
+		$ct_id = mt_rand( 100000, 1000009 );
+		$params['order_id'] = "$ct_id.1";
+		$params['payment_method'] = "venmo";
+		$params['payment_submethod'] = "";
+
+		$donorParams = $this->getCreateDonorParams();
+		$params = array_merge( $params, $donorParams );
+
+		return $params;
 	}
 
 	private function getCreateTrxnFromTokenParams( $amount ) {
