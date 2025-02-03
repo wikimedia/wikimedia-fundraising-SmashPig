@@ -7,12 +7,12 @@ use SmashPig\PaymentData\RecurringModel;
 
 class RequestMapper {
 
-	const INTENT_CAPTURE = 'capture';
+	public const INTENT_CAPTURE = 'capture';
 
 	/**
 	 * List for payment methods that do not have the 2 step auth/capture
 	 */
-	const CAPTURE_ONLY_PAYMENT_METHOD = [];
+	public const CAPTURE_ONLY_PAYMENT_METHOD = [];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
 		$request = [
@@ -69,7 +69,7 @@ class RequestMapper {
 			"reason" => $params["reason"] ?? "Refunded due to user request",
 		];
 
-		if ( isset( $params['amount'] ) && !empty( $params['amount'] ) ) {
+		if ( !empty( $params['amount'] ) ) {
 			$body["amount"] = CurrencyRoundingHelper::getAmountInMinorUnits( $params['amount'], $params['currency'] );
 		}
 
