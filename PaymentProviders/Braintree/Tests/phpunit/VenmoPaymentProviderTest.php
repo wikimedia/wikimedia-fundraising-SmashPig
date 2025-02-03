@@ -64,6 +64,74 @@ class VenmoPaymentProviderTest extends BaseBraintreeTest {
 		$this->assertEquals( $validationError[0]->getField(), 'currency' );
 	}
 
+	public function testCreatePaymentWithoutEmail() {
+		$txn_id = "dHJhbnNhY3Rpb25fYXIxMTNuZzQ";
+		$customer = [
+			'venmoUserId' => '12345',
+			'venmoUserName' => 'venmojoe',
+			'firstName' => 'Jimmy',
+			'lastName' => 'Wales',
+			'phoneNumber' => '131313131',
+			'email' => 'mockjwales@wikimedia.org',
+		];
+		$request = [
+			"payment_token" => "fake-valid-nonce",
+			"order_id" => '123.3',
+			"amount" => '1.00',
+			"device_data" => '{}',
+			"gateway_session_id" => 'xxxx',
+			"currency" => 'USD'
+		];
+		$this->api->expects( $this->once() )
+			->method( 'fetchCustomer' )
+			->willReturn( [
+				'data' => [ 'node' => [
+					'payerInfo' => [
+						'email' => $customer['email'],
+						'firstName' => $customer['firstName'],
+						'lastName' => $customer['lastName'],
+						'phoneNumber' => $customer['phoneNumber'],
+					]
+				] ]
+			] );
+		$this->api->expects( $this->once() )
+			->method( 'authorizePaymentMethod' )
+			->willReturn( [
+				'data' => [
+					'authorizePaymentMethod' => [
+						'transaction' => [
+							'id' => $txn_id,
+							'status' => "AUTHORIZED",
+							'customer' => [
+								'id' => $customer['venmoUserId'],
+								'lastName' => $customer['lastName'],
+								'firstName' => $customer['firstName'],
+								'email' => $customer['email'],
+								'phoneNumber' => $customer['phoneNumber'],
+							],
+							'paymentMethodSnapshot' => [
+								'username' => $customer['venmoUserName'],
+								'venmoUserId' => $customer['venmoUserId'],
+							]
+						]
+					] ],
+				'extensions' => [
+					'requestId' => 'ffea98e0-29d5-49d1-a9fd-ad316192a59c'
+				]
+			] );
+		$provider = new VenmoPaymentProvider();
+		$response = $provider->createPayment( $request );
+		$donor_details = $response->getDonorDetails();
+		$this->assertEquals( FinalStatus::PENDING_POKE, $response->getStatus() );
+		$this->assertEquals( $txn_id, $response->getGatewayTxnId() );
+		$this->assertEquals( $customer['firstName'], $donor_details->getFirstName() );
+		$this->assertEquals( $customer['lastName'], $donor_details->getLastName() );
+		$this->assertEquals( $customer['email'], $donor_details->getEmail() );
+		$this->assertEquals( $customer['phoneNumber'], $donor_details->getPhone() );
+		$this->assertEquals( $customer['venmoUserId'], $donor_details->getCustomerId() );
+		$this->assertEquals( $customer['venmoUserName'], $donor_details->getUserName() );
+	}
+
 	/**
 	 * Test fetch customer info if no customer email passed from client side
 	 * @return void
