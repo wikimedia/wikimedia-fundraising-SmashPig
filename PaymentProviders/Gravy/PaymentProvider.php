@@ -218,23 +218,14 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 
 	public function approvePayment( array $params ) : ApprovePaymentResponse {
 		$approvePaymentResponse = new ApprovePaymentResponse();
-
 		try {
 			$this->getValidator()->validateApprovePaymentInput( $params );
-
 			// map local params to external format, ideally only changing key names and minor input format transformations
-			$gravyRequestMapper = $this->getRequestMapper();
-			$gravyApprovePaymentRequest = $gravyRequestMapper->mapToApprovePaymentRequest( $params );
-
+			$gravyApprovePaymentRequest = $this->getRequestMapper()->mapToApprovePaymentRequest( $params );
 			// dispatch api call to external API using mapped params
 			$rawGravyApprovePaymentResponse = $this->api->approvePayment( $params['gateway_txn_id'], $gravyApprovePaymentRequest );
-
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $rawGravyApprovePaymentResponse );
-
-			// populate our standard response object from the normalized response
-			// this could be extracted out to a factory as we do for dlocal
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyApprovePaymentResponse );
 			$approvePaymentResponse = GravyApprovePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
