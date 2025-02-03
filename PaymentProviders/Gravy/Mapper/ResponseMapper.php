@@ -246,20 +246,22 @@ class ResponseMapper {
 	/**
 	 * Normalize Gravy payment refund response from Gravy format to pick out the key parameters
 	 * @param array $response
+	 * @param string $type
 	 * @return array
 	 */
-	protected function mapSuccessfulRefundMessage( array $response ): array {
+	protected function mapSuccessfulRefundMessage( array $response, string $type = "refund" ): array {
 		return [
 			"is_successful" => true,
-			"gateway_parent_id" => $response["transaction_id"],
+			"gateway_parent_id" => $response["transaction_id"] ?? $response["id"],
 			"gateway_refund_id" => $response["id"],
 			"currency" => $response["currency"],
 			"amount" => $response["amount"] / 100,
-			"reason" => $response["reason"],
+			"reason" => $response["reason"] ?? "",
 			"status" => $this->normalizeStatus( $response["status"] ),
 			"raw_status" => $response["status"],
-			"type" => 'refund',
+			"type" => $type,
 			"raw_response" => $response,
+			"backend_processor" => $this->getBackendProcessor( $response ) ?? ''
 		];
 	}
 
@@ -314,6 +316,14 @@ class ResponseMapper {
 		} elseif ( $error['intent_outcome'] == 'failed' ) {
 			$errorParameters['code'] = $error['error_code'] ?? '';
 			$errorParameters['message'] = $error['status'] ?? '';
+
+			// Only chargeback for specific payment methods
+			if ( $this->requiresChargebackIfFailed( $error ) ) {
+				// Gravy returns this failed transaction errors with the same structure as successful payments.
+				// We can map this failed transactions as a chargeback in the normalized_response
+				$errorParameters['normalized_response'] = $this->mapSuccessfulRefundMessage( $error, 'chargeback' );
+				$errorParameters['normalized_response']['reason'] = 'Payment failed';
+			}
 		} else {
 			$errorParameters['code'] = $error['error_code'] ?? '';
 			$errorParameters['message'] = $error['raw_response_code'] ?? '';
@@ -334,7 +344,11 @@ class ResponseMapper {
 			'description' => $errorParameters['description'],
 			'raw_response' => $error
 		];
-		return $errorResponse;
+		if ( !isset( $errorParameters['normalized_response'] ) ) {
+			return $errorResponse;
+		}
+
+		return array_merge( $errorParameters['normalized_response'], $errorResponse );
 	}
 
 	protected function mapFrom3DSecureErrorResponse( array $params ): array {
@@ -377,5 +391,15 @@ class ResponseMapper {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Some payment method requires a chargeback message when it fails
+	 * because they are set to complete status before getting a successful response
+	 * @param array $response
+	 * @return bool
+	 */
+	protected function requiresChargebackIfFailed( array $response ): bool {
+		return $this->getBackendProcessor( $response ) === 'trustly';
 	}
 }
