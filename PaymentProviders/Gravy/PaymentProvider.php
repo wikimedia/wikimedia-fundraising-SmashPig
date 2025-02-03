@@ -51,15 +51,11 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function getLatestPaymentStatus( array $params ) : PaymentDetailResponse {
 		$paymentDetailResponse = new PaymentDetailResponse();
 		try {
-			// extract out the validation of input out to a separate class
 			$this->getValidator()->validateGetLatestPaymentStatusInput( $params );
-
+			// dispatch api call to external API
 			$rawGravyGetPaymentDetailResponse = $this->api->getTransaction( $params );
-
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
-
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
 			$paymentDetailResponse = GravyGetLatestPaymentStatusResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		}  catch ( ValidationException $e ) {
 			// it threw an exception!
