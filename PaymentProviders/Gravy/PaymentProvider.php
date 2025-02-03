@@ -197,21 +197,12 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		$createPaymentResponse = new createPaymentResponse();
 		try {
 			$this->getValidator()->validateCreatePaymentInput( $params );
-
-			$gravyRequestMapper = $this->getRequestMapper();
-			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToCreatePaymentRequest( $params );
-
+			$gravyCreatePaymentRequest = $this->getRequestMapper()->mapToCreatePaymentRequest( $params );
 			// dispatch api call to external API using mapped params
 			$rawGravyCreatePaymentResponse = $this->api->createPayment( $gravyCreatePaymentRequest );
-
 			// normalize gravy response
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $rawGravyCreatePaymentResponse );
-
-			// populate our standard response object from the normalized response
-			// this could be extracted out to a factory as we do for dlocal
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyCreatePaymentResponse );
 			$createPaymentResponse = GravyCreatePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
-
 		}  catch ( ValidationException $e ) {
 			// it threw an exception!
 			GravyCreatePaymentResponseFactory::handleValidationException( $createPaymentResponse, $e->getData() );
