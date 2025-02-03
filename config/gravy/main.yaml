@@ -34,6 +34,8 @@ payment-provider:
     class: SmashPig\PaymentProviders\Gravy\ApplePayPaymentProvider
   dd:
     class: SmashPig\PaymentProviders\Gravy\BankPaymentProvider
+  bt:
+    class: SmashPig\PaymentProviders\Gravy\BankPaymentProvider
   venmo:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
   paypal:

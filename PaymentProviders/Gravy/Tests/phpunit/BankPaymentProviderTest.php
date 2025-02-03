@@ -47,6 +47,37 @@ class BankPaymentProviderTest extends BaseGravyTestCase {
 		$this->assertEquals( "ach", $response->getPaymentSubmethod() );
 	}
 
+	public function testSuccessfulCreatePaymentNetbanking() {
+		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/netbanking-create-transaction-response-pending.json' ), true );
+		$requestBody = json_decode( file_get_contents( __DIR__ . '/../Data/netbanking-create-transaction-request.json' ), true );
+		$params = $this->getNetbankingCreateTrxnParams( $responseBody['amount'] / 100 );
+		$requestBody['external_identifier'] = $params['order_id'];
+		$requestBody['payment_method']['redirect_url'] = $params['return_url'];
+		$requestBody['buyer']['billing_details']['phone_number'] = $params['phone'];
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPayment' )
+			->with( $requestBody )
+			->willReturn( $responseBody );
+
+		$response = $this->provider->createPayment( $params );
+
+		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
+			$response );
+		$this->assertEquals( $responseBody['amount'] / 100, $response->getAmount() );
+		$this->assertEquals( $responseBody['id'], $response->getGatewayTxnId() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['first_name'], $response->getDonorDetails()->getFirstName() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['last_name'], $response->getDonorDetails()->getLastName() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['email_address'], $response->getDonorDetails()->getEmail() );
+		$this->assertEquals( $responseBody['buyer']['id'], $response->getDonorDetails()->getCustomerId() );
+		$this->assertEquals( $responseBody['buyer']['billing_details']['address']['line1'], $response->getDonorDetails()->getBillingAddress()->getStreetAddress() );
+		$this->assertTrue( $response->requiresRedirect() );
+		$this->assertEquals( $responseBody['payment_method']['approval_url'], $response->getRedirectUrl() );
+		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( "bt", $response->getPaymentMethod() );
+		$this->assertEquals( "netbanking", $response->getPaymentSubmethod() );
+	}
+
 	public function testSuccessfulPayment() {
 		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/successful-transaction-trustly.json' ), true );
 		$this->mockApi->expects( $this->once() )
@@ -142,6 +173,23 @@ class BankPaymentProviderTest extends BaseGravyTestCase {
 		$donorParams = $this->getCreateDonorParams();
 		$params = array_merge( $params, $donorParams );
 
+		return $params;
+	}
+
+	private function getNetbankingCreateTrxnParams( ?string $amount ) {
+		$params = $this->getCreateTrxnParams( $amount );
+		$params['payment_method'] = 'bt';
+		$params['payment_submethod'] = 'netbanking';
+		$params['street_number'] = 10;
+		$params['phone'] = "+910123456789";
+		$params['country'] = 'IN';
+		$params['currency'] = 'INR';
+		$params['fiscal_number'] = 'AAAAA9999C';
+		$params['city'] = 'Mumbai';
+		$params['postal_code'] = '400393';
+		$params['state_province'] = 'MH';
+		$params['street_address'] = 'New Street';
+		$params['return_url'] = '127.0.0.1';
 		return $params;
 	}
 

@@ -14,6 +14,7 @@ class RequestMapper {
 	 * List for payment methods that do not have the 2 step auth/capture
 	 */
 	public const CAPTURE_ONLY_PAYMENT_METHOD = [
+		'netbanking',
 		'pix',
 		'oxxo'
 	];
@@ -40,7 +41,7 @@ class RequestMapper {
 					'first_name' => $params['first_name'],
 					'last_name' => $params['last_name'],
 					'email_address' => strtolower( $params['email'] ),
-					'phone_number' => $params['phone_number'] ?? null,
+					'phone_number' => $params['phone'] ?? null,
 					'address' => [
 						'city' => $params['city'] ?? null,
 						'country' => $params['country'] ?? null,
@@ -48,8 +49,8 @@ class RequestMapper {
 						'state' => $params['state_province'] ?? null,
 						'line1' => $params['street_address'] ?? null,
 						'line2' => null,
-						'organization' => $params['employer'] ?? null
-					],
+						'organization' => $params['employer'] ?? null,
+					]
 				]
 			];
 
@@ -57,6 +58,9 @@ class RequestMapper {
 				$request = $this->addFiscalNumberParams( $params, $request );
 			}
 
+			if ( !empty( $params['street_number'] ) ) {
+				$request['buyer']['billing_details']['address']['house_number_or_name'] = $params['street_number'];
+			}
 		}
 
 		if ( !empty( $params['recurring'] ) ) {
@@ -171,6 +175,7 @@ class RequestMapper {
 			return 'trustly';
 	   case 'cash_oxxo':
 		   return 'oxxo';
+		case 'netbanking':
 		case 'paypal':
 		case 'venmo':
 		case 'pix':
