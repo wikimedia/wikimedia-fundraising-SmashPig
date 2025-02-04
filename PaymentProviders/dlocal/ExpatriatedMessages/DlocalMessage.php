@@ -48,6 +48,11 @@ abstract class DlocalMessage extends ListenerMessage {
 	public $authorization;
 
 	/**
+	 * @var string
+	 */
+	public $callback_url;
+
+	/**
 	 * @var array
 	 */
 	protected $card;
@@ -78,9 +83,24 @@ abstract class DlocalMessage extends ListenerMessage {
 	protected $document;
 
 	/**
+	 * @var string
+	 */
+	protected $email;
+
+	/**
+	 * @var mixed
+	 */
+	protected $event_info;
+
+	/**
 	 * @var mixed
 	 */
 	protected $id;
+
+	/**
+	 * @var string
+	 */
+	protected $notification_url;
 
 	/**
 	 * @var mixed
@@ -126,7 +146,17 @@ abstract class DlocalMessage extends ListenerMessage {
 	/**
 	 * @var mixed
 	 */
+	protected $status_code;
+
+	/**
+	 * @var mixed
+	 */
 	protected $status_detail;
+
+	/**
+	 * @var mixed
+	 */
+	protected $type;
 
 	/**
 	 * @var mixed
