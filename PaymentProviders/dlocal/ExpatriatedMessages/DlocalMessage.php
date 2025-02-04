@@ -9,33 +9,38 @@ abstract class DlocalMessage extends ListenerMessage {
 	 * @var array
 	 */
 	protected $fields = [
-		'id',
-		'type',
-		'card',
-		'event_info',
 		'amount',
-		'status',
-		'status_detail',
-		'status_code',
-		'currency',
+		'authorization',
+		'callback_url',
+		'card',
 		'country',
+		'created_date',
+		'currency',
+		'description',
+		'document',
+		'email',
+		'event_info',
+		'id',
+		'notification_url',
+		'order_id',
+		'payer',
 		'payment_id',
+		'payment_method_flow',
 		'payment_method_id',
 		'payment_method_type',
-		'payment_method_flow',
-		'payer',
-		'user_reference',
-		'email',
-		'document',
-		'order_id',
-		'description',
-		'notification_url',
-		'callback_url',
-		'created_date',
-		'authorization',
 		'signatureInput',
+		'status',
+		'status_code',
+		'status_detail',
+		'type',
+		'user_reference',
 		'wallet'
 	];
+
+	/**
+	 * @var mixed
+	 */
+	protected $amount;
 
 	/**
 	 * @var mixed
@@ -43,24 +48,24 @@ abstract class DlocalMessage extends ListenerMessage {
 	public $authorization;
 
 	/**
-	 * @var mixed
+	 * @var array
 	 */
-	public $signatureInput;
+	protected $card;
 
 	/**
 	 * @var mixed
 	 */
-	protected $id;
+	protected $country;
 
 	/**
 	 * @var mixed
 	 */
-	protected $order_id;
+	protected $created_date;
 
 	/**
 	 * @var mixed
 	 */
-	protected $user_reference;
+	protected $currency;
 
 	/**
 	 * @var mixed
@@ -73,10 +78,30 @@ abstract class DlocalMessage extends ListenerMessage {
 	protected $document;
 
 	/**
+	 * @var mixed
+	 */
+	protected $id;
+
+	/**
+	 * @var mixed
+	 */
+	protected $order_id;
+
+	/**
+	 * @var array
+	 */
+	protected $payer;
+
+	/**
 	 * On refunds, this is the id of the original payment
 	 * @var string
 	 */
 	protected $payment_id;
+
+	/**
+	 * @var mixed
+	 */
+	protected $payment_method_flow;
 
 	/**
 	 * @var string
@@ -91,32 +116,7 @@ abstract class DlocalMessage extends ListenerMessage {
 	/**
 	 * @var mixed
 	 */
-	protected $payment_method_flow;
-
-	/**
-	 * @var mixed
-	 */
-	protected $amount;
-
-	/**
-	 * @var mixed
-	 */
-	protected $currency;
-
-	/**
-	 * @var mixed
-	 */
-	protected $country;
-
-	/**
-	 * @var array
-	 */
-	protected $payer;
-
-	/**
-	 * @var mixed
-	 */
-	protected $created_date;
+	public $signatureInput;
 
 	/**
 	 * @var mixed
@@ -129,14 +129,14 @@ abstract class DlocalMessage extends ListenerMessage {
 	protected $status_detail;
 
 	/**
-	 * @var array
+	 * @var mixed
 	 */
-	protected $wallet;
+	protected $user_reference;
 
 	/**
 	 * @var array
 	 */
-	protected $card;
+	protected $wallet;
 
 	public function validate(): bool {
 		return true;
