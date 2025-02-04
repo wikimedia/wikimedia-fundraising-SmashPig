@@ -51,16 +51,11 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function getLatestPaymentStatus( array $params ) : PaymentDetailResponse {
 		$paymentDetailResponse = new PaymentDetailResponse();
 		try {
-			// extract out the validation of input out to a separate class
-			$validator = $this->getValidator();
-			$validator->validateGetLatestPaymentStatusInput( $params );
-
+			$this->getValidator()->validateGetLatestPaymentStatusInput( $params );
+			// dispatch api call to external API
 			$rawGravyGetPaymentDetailResponse = $this->api->getTransaction( $params );
-
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
-
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
 			$paymentDetailResponse = GravyGetLatestPaymentStatusResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		}  catch ( ValidationException $e ) {
 			// it threw an exception!
@@ -75,15 +70,12 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	}
 
 	public function cancelPayment( string $gatewayTxnId ) : CancelPaymentResponse {
-		// create our standard response object from the normalized response
 		$cancelPaymentResponse = new CancelPaymentResponse();
 		try {
+			// dispatch api call to external API
 			$rawGravyGetPaymentDetailResponse = $this->api->cancelTransaction( $gatewayTxnId );
-
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
-
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
 			$cancelPaymentResponse = GravyCancelPaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( \Exception $e ) {
 			// it threw an exception!
@@ -97,17 +89,12 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function deleteRecurringPaymentToken( array $params ): bool {
 		$response = false;
 		try {
-			$validator = $this->getValidator();
-			$validator->validateDeletePaymentTokenInput( $params );
-
-			$gravyRequestMapper = $this->getRequestMapper();
-			$gravyDeleteToken = $gravyRequestMapper->mapToDeletePaymentTokenRequest( $params );
-
+			$this->getValidator()->validateDeletePaymentTokenInput( $params );
+			$gravyDeleteToken = $this->getRequestMapper()->mapToDeletePaymentTokenRequest( $params );
+			// dispatch api call to external API
 			$rawGravyDeletePaymentTokenResponse = $this->api->deletePaymentToken( $gravyDeleteToken );
-
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromDeletePaymentTokenResponse( $rawGravyDeletePaymentTokenResponse );
+			$normalizedResponse = $this->getResponseMapper()->mapFromDeletePaymentTokenResponse( $rawGravyDeletePaymentTokenResponse );
 
 			if ( !$normalizedResponse['is_successful'] ) {
 				Logger::error( 'Processor failed to delete recurring token with response:' . $normalizedResponse['code'] . ', ' . $normalizedResponse['description'] );
@@ -127,12 +114,9 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function refundPayment( array $params ): RefundPaymentResponse {
 		$refundResponse = new RefundPaymentResponse();
 		try {
-			$validator = $this->getValidator();
-			$validator->validateRefundInput( $params );
-
-			$gravyRequestMapper = $this->getRequestMapper();
-			$gravyRefundRequest = $gravyRequestMapper->mapToRefundPaymentRequest( $params );
-
+			$this->getValidator()->validateRefundInput( $params );
+			// dispatch api call to external API
+			$gravyRefundRequest = $this->getRequestMapper()->mapToRefundPaymentRequest( $params );
 			$rawGravyRefundResponse = $this->api->refundTransaction( $gravyRefundRequest );
 			// map the response from the external format back to our normalized structure.
 			$gravyResponseMapper = $this->getResponseMapper();
@@ -152,13 +136,11 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function getRefundDetails( array $params ): RefundPaymentResponse {
 		$refundResponse = new RefundPaymentResponse();
 		try {
-			$validator = $this->getValidator();
-			$validator->validateGetRefundInput( $params );
-
+			$this->getValidator()->validateGetRefundInput( $params );
+			// dispatch api call to external API
 			$rawGravyRefundResponse = $this->api->getRefund( $params );
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromRefundPaymentResponse( $rawGravyRefundResponse );
+			$normalizedResponse = $this->getResponseMapper()->mapFromRefundPaymentResponse( $rawGravyRefundResponse );
 			$refundResponse = GravyRefundResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
@@ -174,13 +156,11 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function getReportExecutionDetails( array $params ): ReportResponse {
 		$reportResponse = new ReportResponse();
 		try {
-			$validator = $this->getValidator();
-			$validator->validateGetReportExecutionInput( $params );
-
+			$this->getValidator()->validateGetReportExecutionInput( $params );
+			// dispatch api call to external API
 			$rawGravyReportExecutionResponse = $this->api->getReportExecutionDetails( $params );
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromReportExecutionResponse( $rawGravyReportExecutionResponse );
+			$normalizedResponse = $this->getResponseMapper()->mapFromReportExecutionResponse( $rawGravyReportExecutionResponse );
 			$reportResponse = GravyReportResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
@@ -196,13 +176,11 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function generateReportDownloadUrl( array $params ): ReportResponse {
 		$reportResponse = new ReportResponse();
 		try {
-			$validator = $this->getValidator();
-			$validator->validateGenerateReportUrlInput( $params );
-
+			$this->getValidator()->validateGenerateReportUrlInput( $params );
+			// dispatch api call to external API
 			$rawGravyReportDownloadResponse = $this->api->generateReportDownloadUrl( $params );
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromGenerateReportUrlResponse( $rawGravyReportDownloadResponse );
+			$normalizedResponse = $this->getResponseMapper()->mapFromGenerateReportUrlResponse( $rawGravyReportDownloadResponse );
 			$reportResponse = GravyReportResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
@@ -218,25 +196,13 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	public function createPayment( array $params ) : CreatePaymentResponse {
 		$createPaymentResponse = new createPaymentResponse();
 		try {
-			// extract out the validation of input out to a separate class
-			$validator = $this->getValidator();
-
-			$validator->validateCreatePaymentInput( $params );
-
-			$gravyRequestMapper = $this->getRequestMapper();
-			$gravyCreatePaymentRequest = $gravyRequestMapper->mapToCreatePaymentRequest( $params );
-
+			$this->getValidator()->validateCreatePaymentInput( $params );
+			$gravyCreatePaymentRequest = $this->getRequestMapper()->mapToCreatePaymentRequest( $params );
 			// dispatch api call to external API using mapped params
 			$rawGravyCreatePaymentResponse = $this->api->createPayment( $gravyCreatePaymentRequest );
-
 			// normalize gravy response
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $rawGravyCreatePaymentResponse );
-
-			// populate our standard response object from the normalized response
-			// this could be extracted out to a factory as we do for dlocal
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyCreatePaymentResponse );
 			$createPaymentResponse = GravyCreatePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
-
 		}  catch ( ValidationException $e ) {
 			// it threw an exception!
 			GravyCreatePaymentResponseFactory::handleValidationException( $createPaymentResponse, $e->getData() );
@@ -252,25 +218,14 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 
 	public function approvePayment( array $params ) : ApprovePaymentResponse {
 		$approvePaymentResponse = new ApprovePaymentResponse();
-
 		try {
-			// extract out the validation of input out to a separate class
-			$validator = $this->getValidator();
-			$validator->validateApprovePaymentInput( $params );
-
+			$this->getValidator()->validateApprovePaymentInput( $params );
 			// map local params to external format, ideally only changing key names and minor input format transformations
-			$gravyRequestMapper = $this->getRequestMapper();
-			$gravyApprovePaymentRequest = $gravyRequestMapper->mapToApprovePaymentRequest( $params );
-
+			$gravyApprovePaymentRequest = $this->getRequestMapper()->mapToApprovePaymentRequest( $params );
 			// dispatch api call to external API using mapped params
 			$rawGravyApprovePaymentResponse = $this->api->approvePayment( $params['gateway_txn_id'], $gravyApprovePaymentRequest );
-
 			// map the response from the external format back to our normalized structure.
-			$gravyResponseMapper = $this->getResponseMapper();
-			$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $rawGravyApprovePaymentResponse );
-
-			// populate our standard response object from the normalized response
-			// this could be extracted out to a factory as we do for dlocal
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyApprovePaymentResponse );
 			$approvePaymentResponse = GravyApprovePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( ValidationException $e ) {
 			// it threw an exception!

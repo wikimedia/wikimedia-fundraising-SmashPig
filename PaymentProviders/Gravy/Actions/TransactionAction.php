@@ -13,6 +13,8 @@ use SmashPig\PaymentProviders\Gravy\Jobs\RecordCaptureJob;
 use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 
 class TransactionAction extends GravyAction {
+	use RefundTrait;
+
 	 public function execute( ListenerMessage $msg ): bool {
 		$tl = new TaggedLogger( 'TransactionAction' );
 		$transactionDetails = $this->getTransactionDetails( $msg );
@@ -43,7 +45,12 @@ class TransactionAction extends GravyAction {
 			$id = $transactionDetails->getRawResponse()['id'] ?? null;
 			$message = "Skipping unsuccessful transaction";
 			if ( !empty( $id ) ) {
-				$message = "Skipping unsuccessful transaction with transaction id {$id}";
+				if ( $this->requiresChargeback( $transactionDetails ) ) {
+					$message = "Pushing failed trustly transaction with id: {$id} to refund queue for chargeback.";
+					$this->pushFailedAuthAsChargebackToRefundQueue( strtotime( $msg->getMessageDate() ), $transactionDetails );
+				} else {
+					$message = "Skipping unsuccessful transaction with transaction id {$id}";
+				}
 			}
 			$tl->info( $message );
 		}
@@ -60,5 +67,27 @@ class TransactionAction extends GravyAction {
 		] );
 
 		return $transactionDetails;
+	}
+
+	/**
+	 * Some payment method requires a chargeback message when it fails
+	 * because they are set to complete status before getting a successful response
+	 * @param PaymentDetailResponse $transaction
+	 * @return bool
+	 */
+	public function requiresChargeback( PaymentDetailResponse $transaction ): bool {
+		return $transaction->getNormalizedResponse()['backend_processor'] == 'trustly';
+	}
+
+	/**
+	 * Cancel saved contributions in civi using a chargeback
+	 * @param string $ipnMessageDate
+	 * @param \SmashPig\PaymentProviders\Responses\PaymentDetailResponse $transaction
+	 * @return void
+	 */
+	public function pushFailedAuthAsChargebackToRefundQueue( string $ipnMessageDate, PaymentDetailResponse $transaction ) {
+		$refundMessage = $this->buildRefundQueueMessage( $ipnMessageDate, $transaction->getNormalizedResponse() );
+		$refundMessage['status'] = FinalStatus::COMPLETE;
+		QueueWrapper::push( 'refund', $refundMessage );
 	}
 }
