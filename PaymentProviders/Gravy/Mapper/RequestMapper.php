@@ -16,7 +16,8 @@ class RequestMapper {
 	public const CAPTURE_ONLY_PAYMENT_METHOD = [
 		'netbanking',
 		'pix',
-		'oxxo'
+		'oxxo',
+		'pse'
 	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
@@ -179,6 +180,7 @@ class RequestMapper {
 		case 'paypal':
 		case 'venmo':
 		case 'pix':
+		case 'pse':
 			return $paymentMethod;
 		default:
 				throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );

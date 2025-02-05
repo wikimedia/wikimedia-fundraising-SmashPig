@@ -116,7 +116,8 @@ class ReferenceData {
 		"waave" => '',
 		"smartpay" => '',
 		"vipps" => "",
-		"netbanking" => self::BT_PAYMENT_METHOD
+		"netbanking" => self::BT_PAYMENT_METHOD,
+		"pse" => self::BT_PAYMENT_METHOD
 	];
 
 	protected static $cardPaymentSubmethods = [
@@ -165,7 +166,8 @@ class ReferenceData {
 	];
 
 	protected static $btSubmethods = [
-		"netbanking" => "netbanking"
+		"netbanking" => "netbanking",
+		"pse" => "pse"
 	];
 
 	protected static $cashSubmethods = [
