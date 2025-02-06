@@ -76,7 +76,8 @@ class TransactionAction extends GravyAction {
 	 * @return bool
 	 */
 	public function requiresChargeback( PaymentDetailResponse $transaction ): bool {
-		return $transaction->getNormalizedResponse()['backend_processor'] == 'trustly';
+		$normalizedResponse = $transaction->getNormalizedResponse();
+		return isset( $normalizedResponse['backend_processor'] ) && $normalizedResponse['backend_processor'] === 'trustly';
 	}
 
 	/**
