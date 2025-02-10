@@ -8,6 +8,17 @@ abstract class PaymentProviderValidator {
 	use ValidatorTrait;
 
 	/**
+	 * For some countries, additional fields are required so we check
+	 * the country code and add the required fields accordingly to our
+	 * validation checks.
+	 */
+	private const FIELD_COUNTRY_REQUIREMENTS = [
+		'fiscal_number' => [
+			'AR', 'BR', 'CL', 'CO', 'ID', 'IN', 'JP', 'MX', 'MY', 'PH', 'TH', 'ZA',
+		],
+	];
+
+	/**
 	 * @throws ValidationException
 	 */
 	abstract public function validateOneTimeCreatePaymentInput( array $params ): void;
@@ -37,7 +48,7 @@ abstract class PaymentProviderValidator {
 	 * @throws ValidationException
 	 */
 	public function validateRecurringCreatePaymentInput( array $params ): void {
-		$required = [
+		$defaultRequiredFields = [
 			'recurring_payment_token',
 			'amount',
 			'currency',
@@ -47,6 +58,11 @@ abstract class PaymentProviderValidator {
 			'first_name',
 			'last_name'
 		];
+
+		$required = array_merge(
+			$defaultRequiredFields,
+			$this->addCountrySpecificRequiredFields( $params )
+		);
 
 		$this->validateFields( $required, $params );
 	}
@@ -145,5 +161,24 @@ abstract class PaymentProviderValidator {
 		];
 
 		$this->validateFields( $required, $params );
+	}
+
+	/**
+	 * Adds country-specific required fields based on the country code.
+	 *
+	 * @param array $params
+	 * @return string[]
+	 */
+	protected function addCountrySpecificRequiredFields( array $params ): array {
+		$countrySpecificFields = [];
+		if ( isset( $params['country'] ) ) {
+			$country = $params['country'];
+			foreach ( self::FIELD_COUNTRY_REQUIREMENTS as $field => $countries ) {
+				if ( in_array( $country, $countries, true ) ) {
+					$countrySpecificFields[] = $field;
+				}
+			}
+		}
+		return $countrySpecificFields;
 	}
 }
