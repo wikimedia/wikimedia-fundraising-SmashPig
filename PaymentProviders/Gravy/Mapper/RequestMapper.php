@@ -17,7 +17,8 @@ class RequestMapper {
 		'netbanking',
 		'pix',
 		'oxxo',
-		'pse'
+		'pse',
+		'bcp'
 	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
@@ -181,6 +182,7 @@ class RequestMapper {
 		case 'venmo':
 		case 'pix':
 		case 'pse':
+		case 'bcp':
 			return $paymentMethod;
 		default:
 				throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );
@@ -245,7 +247,7 @@ class RequestMapper {
 		$identifier = CountryIdentifiers::getGravyTaxIdTypeForSuppliedCountryIdentifier( $params['country'], $params['fiscal_number'] );
 		if ( $identifier ) {
 			$request['buyer']['billing_details']['tax_id'] = [
-				'value' => $params['fiscal_number'],
+				'value' => strval( $params['fiscal_number'] ),
 				'kind' => $identifier
 			];
 		} else {
