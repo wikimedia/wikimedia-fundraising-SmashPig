@@ -60,8 +60,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
 			GravyGetLatestPaymentStatusResponseFactory::handleValidationException( $paymentDetailResponse, $e->getData() );
-		} catch ( \Exception $e ) {
-			// it threw an exception!
+		} catch ( \UnexpectedValueException $e ) {
+			// it threw an API exception!
 			Logger::error( 'Failed to get payment details, response: ' . $e->getMessage() );
 			GravyGetLatestPaymentStatusResponseFactory::handleException( $paymentDetailResponse, $e->getMessage(), $e->getCode() );
 		}
@@ -77,8 +77,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 			// map the response from the external format back to our normalized structure.
 			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
 			$cancelPaymentResponse = GravyCancelPaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
-		} catch ( \Exception $e ) {
-			// it threw an exception!
+		} catch ( \UnexpectedValueException $e ) {
+			// it threw an API exception!
 			Logger::error( 'Processor failed to cancel transaction:' . $e->getMessage() );
 			GravyCancelPaymentResponseFactory::handleException( $cancelPaymentResponse, $e->getMessage(), $e->getCode() );
 		}
@@ -104,8 +104,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
 			Logger::error( 'Missing required data' . json_encode( $e->getData() ) );
-		} catch ( \Exception $e ) {
-			// it threw an exception!
+		} catch ( \UnexpectedValueException $e ) {
+			// it threw an API exception!
 			Logger::error( 'Processor failed to delete recurring token with response:' . $e->getMessage() );
 		}
 		return $response;
@@ -125,8 +125,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
 			GravyRefundResponseFactory::handleValidationException( $refundResponse, $e->getData() );
-		} catch ( \Exception $e ) {
-			// it threw an exception!
+		} catch ( \UnexpectedValueException $e ) {
+			// it threw an API exception!
 			Logger::error( 'Processor failed to refund transaction with response:' . $e->getMessage() );
 			GravyRefundResponseFactory::handleException( $refundResponse, $e->getMessage(), $e->getCode() );
 		}
@@ -145,8 +145,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
 			GravyRefundResponseFactory::handleValidationException( $refundResponse, $e->getData() );
-		} catch ( \Exception $e ) {
-			// it threw an exception!
+		} catch ( \UnexpectedValueException $e ) {
+			// it threw an API exception!
 			Logger::error( "Processor failed to fetch refund with refund id {$params['gateway_refund_id']}. returned response:" . $e->getMessage() );
 			GravyRefundResponseFactory::handleException( $refundResponse, $e->getMessage(), $e->getCode() );
 		}
@@ -165,8 +165,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
 			GravyReportResponseFactory::handleValidationException( $reportResponse, $e->getData() );
-		} catch ( \Exception $e ) {
-			// it threw an exception!
+		} catch ( \UnexpectedValueException $e ) {
+			// it threw an API exception!
 			Logger::error( "Processor failed to fetch report execution with id {$params['report_execution_id']}. returned response:" . $e->getMessage() );
 			GravyReportResponseFactory::handleException( $reportResponse, $e->getMessage(), $e->getCode() );
 		}
@@ -185,8 +185,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
 			GravyReportResponseFactory::handleValidationException( $reportResponse, $e->getData() );
-		} catch ( \Exception $e ) {
-			// it threw an exception!
+		} catch ( \UnexpectedValueException $e ) {
+			// it threw an API exception!
 			Logger::error( "Processor failed to fetch report execution with id {$params['report_execution_id']}. returned response:" . $e->getMessage() );
 			GravyReportResponseFactory::handleException( $reportResponse, $e->getMessage(), $e->getCode() );
 		}
@@ -206,8 +206,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
 			GravyCreatePaymentResponseFactory::handleValidationException( $createPaymentResponse, $e->getData() );
-		} catch ( \Exception $e ) {
-			// it threw an exception that isn't validation!
+		} catch ( \UnexpectedValueException $e ) {
+			// it threw an API exception that isn't validation!
 			Logger::error( 'Processor failed to create new payment with response:' . $e->getMessage() );
 			GravyCreatePaymentResponseFactory::handleException( $createPaymentResponse, $e->getMessage(), $e->getCode() );
 		}
@@ -229,8 +229,8 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
 			GravyApprovePaymentResponseFactory::handleValidationException( $approvePaymentResponse, $e->getData() );
-		} catch ( \Exception $e ) {
-			// it threw an exception!
+		} catch ( \UnexpectedValueException $e ) {
+			// it threw an API exception!
 			Logger::info( 'Processor failed to approve payment with response:' . $e->getMessage() );
 			GravyApprovePaymentResponseFactory::handleException( $approvePaymentResponse, $e->getMessage(), $e->getCode() );
 		}
