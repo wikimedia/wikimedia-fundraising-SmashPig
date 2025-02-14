@@ -237,6 +237,71 @@ class RedirectPaymentProviderTest extends BaseGravyTestCase {
 		$this->assertNotEmpty( $response->getRedirectUrl() );
 	}
 
+	public function testSuccessfulOxxoRedirect(): void {
+		$params = $this->getCreateTrxnParams( 'ABC123-c067-4cd6-a3c8-aec67899d5af' );
+		$params['amount'] = '1000';
+		$params['currency'] = 'MXN';
+		$params['country'] = 'MX';
+		// dlocal tell us to send in a placeholder with 13 digits
+		// However, gravy wants it to be a string...
+		$params['fiscal_number'] = (string)'1112223334440';
+		$params['payment_method'] = "cash";
+		$params['payment_submethod'] = "cash_oxxo";
+		$params['return_url'] = "https://localhost:9001/index.php?title=Special:GravyGatewayResult&order_id=299.34&wmf_token=73328ebe66af242c850ac4c695e30150%2B%5C&amount=1000.00&currency=MXN&payment_method=cash&payment_submethod=cah_oxxo&wmf_source=..cash";
+
+		$responseBody = json_decode(
+			file_get_contents( __DIR__ . '/../Data/oxxo-create-transacton-response.json' ),
+			true
+		);
+
+		$this->mockApi->expects( $this->once() )
+			->method( 'createPayment' )
+			->with( [
+					'amount' => 100000,
+					'currency' => 'MXN',
+					'country' => 'MX',
+					'payment_method' => [
+						'method' => 'oxxo',
+						'redirect_url' => 'https://localhost:9001/index.php?title=Special:GravyGatewayResult&order_id=299.34&wmf_token=73328ebe66af242c850ac4c695e30150%2B%5C&amount=1000.00&currency=MXN&payment_method=cash&payment_submethod=cah_oxxo&wmf_source=..cash',
+						'country' => 'MX',
+						'currency' => 'MXN',
+					],
+					'external_identifier' => $params['order_id'],
+					'buyer' => [
+						'external_identifier' => 'lorem@ipsum',
+						'billing_details' => [
+							'first_name' => 'Lorem',
+							'last_name' => 'Ipsum',
+							'email_address' => 'lorem@ipsum',
+							'phone_number' => null,
+							'address' => [
+								'city' => null,
+								'country' => 'MX',
+								'postal_code' => '1234',
+								'state' => null,
+								'line1' => '10 hopewell street',
+								'line2' => null,
+								'organization' => 'Wikimedia Foundation',
+							],
+							'tax_id' => [
+								'value' => '1112223334440',
+								'kind' => 'mx.curp',
+							],
+						],
+					],
+					'intent' => 'capture',
+				]
+			)
+			->willReturn( $responseBody );
+
+		$response = $this->provider->createPayment( $params );
+
+		$this->assertTrue( $response->isSuccessful() );
+		$this->assertEquals( 'cash', $response->getPaymentMethod() );
+		$this->assertEquals( 'cash_oxxo', $response->getPaymentSubmethod() );
+		$this->assertNotEmpty( $response->getRedirectUrl() );
+	}
+
 	private function getCreateTrxnParams( ?string $amount = '1299' ) {
 		$params = [];
 		$params['country'] = 'US';

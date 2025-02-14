@@ -17,7 +17,6 @@ class ReferenceData {
 	const RTBT_PAYMENT_METHOD = 'rtbt';
 	const VENMO_PAYMENT_METHOD = 'venmo';
 	const STRIPE_PAYMENT_METHOD = 'stripe';
-	const OXXO_PAYMENT_METHOD = 'oxxo';
 	const CASH_PAYMENT_METHOD = 'cash';
 
 	protected static $methods = [
@@ -85,7 +84,7 @@ class ReferenceData {
 		"oney_10x" => '',
 		"oney_12x" => '',
 		"ovo" => '',
-		"oxxo" => self::OXXO_PAYMENT_METHOD,
+		"oxxo" => self::CASH_PAYMENT_METHOD,
 		"payid" => '',
 		"paymaya" => '',
 		"paypal" => self::PAYPAL_PAYMENT_METHOD,
@@ -166,6 +165,7 @@ class ReferenceData {
 
 	protected static $cashSubmethods = [
 		"pix" => "pix",
+		"oxxo" => "cash_oxxo",
 	];
 
 	public static function decodePaymentMethod( string $method, ?string $scheme = '' ): array {

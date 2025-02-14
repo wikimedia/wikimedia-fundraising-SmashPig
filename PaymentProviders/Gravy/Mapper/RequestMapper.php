@@ -14,7 +14,8 @@ class RequestMapper {
 	 * List for payment methods that do not have the 2 step auth/capture
 	 */
 	public const CAPTURE_ONLY_PAYMENT_METHOD = [
-		'pix'
+		'pix',
+		'oxxo'
 	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
@@ -168,6 +169,8 @@ class RequestMapper {
 	   switch ( strtolower( $paymentMethod ) ) {
 		case 'ach':
 			return 'trustly';
+	   case 'cash_oxxo':
+		   return 'oxxo';
 		case 'paypal':
 		case 'venmo':
 		case 'pix':
