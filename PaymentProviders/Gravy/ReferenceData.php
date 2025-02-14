@@ -115,7 +115,8 @@ class ReferenceData {
 		"multipago" => '',
 		"waave" => '',
 		"smartpay" => '',
-		"vipps" => ""
+		"vipps" => "",
+		"netbanking" => self::BT_PAYMENT_METHOD
 	];
 
 	protected static $cardPaymentSubmethods = [
@@ -163,6 +164,10 @@ class ReferenceData {
 		"trustlyeurope" => ''
 	];
 
+	protected static $btSubmethods = [
+		"netbanking" => "netbanking"
+	];
+
 	protected static $cashSubmethods = [
 		"pix" => "pix",
 		"oxxo" => "cash_oxxo",
@@ -183,10 +188,13 @@ class ReferenceData {
 			case self::CC_PAYMENT_METHOD:
 			case self::APPLE_PAYMENT_METHOD:
 			case self::GOOGLE_PAYMENT_METHOD:
-			$payment_submethod = self::$cardPaymentSubmethods[$scheme];
+				$payment_submethod = self::$cardPaymentSubmethods[$scheme];
 				break;
 			case self::DD_PAYMENT_METHOD:
 				$payment_submethod = self::$ddSubmethods[$method];
+				break;
+			case self::BT_PAYMENT_METHOD:
+				$payment_submethod = self::$btSubmethods[$method];
 				break;
 			case self::CASH_PAYMENT_METHOD:
 				$payment_submethod = self::$cashSubmethods[$method];
