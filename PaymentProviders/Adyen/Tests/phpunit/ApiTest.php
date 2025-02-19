@@ -280,4 +280,28 @@ class ApiTest extends BaseSmashPigUnitTestCase {
 			'user_ip' => '127.0.0.1',
 		];
 	}
+
+	public function testCreateChileanPesos() {
+		$params = $this->getCreatePaymentTestParams();
+		$params['amount'] = 10400;
+		$params['currency'] = 'CLP';
+		$responseBody = file_get_contents( __DIR__ . '/../Data/createdEncryptedPayment.json' );
+		$this->curlWrapper->expects( $this->once() )
+			->method( 'execute' )
+			->with(
+				$this->anything(),
+				'POST',
+				$this->anything(),
+				$this->callback( function ( $encodedParams ) {
+					$decodedParams = json_decode( $encodedParams, true );
+					$this->assertEquals( 1040000, $decodedParams['amount']['value']);
+					return TRUE;
+				} ) )
+			->willReturn( [
+				'body' => $responseBody,
+				'headers' => [], // This API doesn't care
+				'status' => 200
+			] );
+		$this->api->createPaymentFromEncryptedDetails( $params );
+	}
 }

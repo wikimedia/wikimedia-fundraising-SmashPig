@@ -1,7 +1,6 @@
 <?php namespace SmashPig\PaymentProviders\Adyen;
 
 use SmashPig\Core\Context;
-use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\Helpers\UniqueId;
 use SmashPig\Core\Http\OutboundRequest;
 use SmashPig\Core\Logging\Logger;
@@ -200,7 +199,7 @@ class Api {
 		$restParams = [
 			'amount' => [
 				'currency' => $params['currency'],
-				'value' => CurrencyRoundingHelper::getAmountInMinorUnits(
+				'value' => AdyenCurrencyRoundingHelper::getAmountInMinorUnits(
 					$params['amount'], $params['currency']
 				)
 			],
@@ -572,7 +571,7 @@ class Api {
 		$restParams = [
 			'amount' => [
 				'currency' => $params['currency'],
-				'value' => CurrencyRoundingHelper::getAmountInMinorUnits(
+				'value' => AdyenCurrencyRoundingHelper::getAmountInMinorUnits(
 					$params['amount'], $params['currency']
 				)
 			],
@@ -643,7 +642,7 @@ class Api {
 	private function getArrayAmount( array $params ): array {
 		return [
 			'currency' => $params['currency'],
-			'value' => CurrencyRoundingHelper::getAmountInMinorUnits(
+			'value' => AdyenCurrencyRoundingHelper::getAmountInMinorUnits(
 				$params['amount'], $params['currency']
 			)
 		];
