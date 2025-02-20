@@ -185,7 +185,7 @@ class RequestMapper {
 		case 'bcp':
 			return $paymentMethod;
 		default:
-				throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );
+			throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );
 	   }
    }
 
