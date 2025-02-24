@@ -4,15 +4,20 @@ namespace SmashPig\PaymentProviders\Gravy\Mapper;
 
 use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\PaymentData\RecurringModel;
+use SmashPig\PaymentProviders\Gravy\CountryIdentifiers;
 
 class RequestMapper {
 
-	const INTENT_CAPTURE = 'capture';
+	public const INTENT_CAPTURE = 'capture';
 
 	/**
 	 * List for payment methods that do not have the 2 step auth/capture
 	 */
-	const CAPTURE_ONLY_PAYMENT_METHOD = [];
+	public const CAPTURE_ONLY_PAYMENT_METHOD = [
+		'netbanking',
+		'pix',
+		'oxxo'
+	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
 		$request = [
@@ -36,7 +41,7 @@ class RequestMapper {
 					'first_name' => $params['first_name'],
 					'last_name' => $params['last_name'],
 					'email_address' => strtolower( $params['email'] ),
-					'phone_number' => $params['phone_number'] ?? null,
+					'phone_number' => $params['phone'] ?? null,
 					'address' => [
 						'city' => $params['city'] ?? null,
 						'country' => $params['country'] ?? null,
@@ -44,10 +49,18 @@ class RequestMapper {
 						'state' => $params['state_province'] ?? null,
 						'line1' => $params['street_address'] ?? null,
 						'line2' => null,
-						'organization' => $params['employer'] ?? null
+						'organization' => $params['employer'] ?? null,
 					]
 				]
 			];
+
+			if ( !empty( $params['fiscal_number'] ) ) {
+				$request = $this->addFiscalNumberParams( $params, $request );
+			}
+
+			if ( !empty( $params['street_number'] ) ) {
+				$request['buyer']['billing_details']['address']['house_number_or_name'] = $params['street_number'];
+			}
 		}
 
 		if ( !empty( $params['recurring'] ) ) {
@@ -69,7 +82,7 @@ class RequestMapper {
 			"reason" => $params["reason"] ?? "Refunded due to user request",
 		];
 
-		if ( isset( $params['amount'] ) && !empty( $params['amount'] ) ) {
+		if ( !empty( $params['amount'] ) ) {
 			$body["amount"] = CurrencyRoundingHelper::getAmountInMinorUnits( $params['amount'], $params['currency'] );
 		}
 
@@ -160,8 +173,12 @@ class RequestMapper {
 	   switch ( strtolower( $paymentMethod ) ) {
 		case 'ach':
 			return 'trustly';
+	   case 'cash_oxxo':
+		   return 'oxxo';
+		case 'netbanking':
 		case 'paypal':
 		case 'venmo':
+		case 'pix':
 			return $paymentMethod;
 		default:
 				throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );
@@ -210,5 +227,28 @@ class RequestMapper {
 	 */
 	protected function isRecurringCharge( array $params ): bool {
 		return isset( $params['recurring_payment_token'] );
+	}
+
+	/**
+	 * Add country-specific identifier to the request where applicable.
+	 *
+	 * NOTE: Gravy groups all the personal identifiers under the label of tax_id, which might be misleading in the future
+	 * as they are not all tax-related.
+	 *
+	 * @param array $params
+	 * @param array $request
+	 * @return array
+	 */
+	protected function addFiscalNumberParams( array $params, array $request ): array {
+		$identifier = CountryIdentifiers::getGravyTaxIdTypeForSuppliedCountryIdentifier( $params['country'], $params['fiscal_number'] );
+		if ( $identifier ) {
+			$request['buyer']['billing_details']['tax_id'] = [
+				'value' => $params['fiscal_number'],
+				'kind' => $identifier
+			];
+		} else {
+			throw new \UnexpectedValueException( "Can't map fiscal number to Gravy Tax ID type.  ({$params['country']}:{$params['fiscal_number']})" );
+		}
+		return $request;
 	}
 }

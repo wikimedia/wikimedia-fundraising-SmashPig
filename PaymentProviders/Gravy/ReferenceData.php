@@ -17,7 +17,6 @@ class ReferenceData {
 	const RTBT_PAYMENT_METHOD = 'rtbt';
 	const VENMO_PAYMENT_METHOD = 'venmo';
 	const STRIPE_PAYMENT_METHOD = 'stripe';
-	const OXXO_PAYMENT_METHOD = 'oxxo';
 	const CASH_PAYMENT_METHOD = 'cash';
 
 	protected static $methods = [
@@ -85,14 +84,14 @@ class ReferenceData {
 		"oney_10x" => '',
 		"oney_12x" => '',
 		"ovo" => '',
-		"oxxo" => self::OXXO_PAYMENT_METHOD,
+		"oxxo" => self::CASH_PAYMENT_METHOD,
 		"payid" => '',
 		"paymaya" => '',
 		"paypal" => self::PAYPAL_PAYMENT_METHOD,
 		"paypalpaylater" => self::PAYPAL_PAYMENT_METHOD,
 		"payto" => '',
 		"venmo" => self::VENMO_PAYMENT_METHOD,
-		"pix" => self::BT_PAYMENT_METHOD,
+		"pix" => self::CASH_PAYMENT_METHOD,
 		"rabbitlinepay" => '',
 		"scalapay" => '',
 		"sepa" => self::RTBT_PAYMENT_METHOD,
@@ -116,7 +115,8 @@ class ReferenceData {
 		"multipago" => '',
 		"waave" => '',
 		"smartpay" => '',
-		"vipps" => ""
+		"vipps" => "",
+		"netbanking" => self::BT_PAYMENT_METHOD
 	];
 
 	protected static $cardPaymentSubmethods = [
@@ -164,6 +164,15 @@ class ReferenceData {
 		"trustlyeurope" => ''
 	];
 
+	protected static $btSubmethods = [
+		"netbanking" => "netbanking"
+	];
+
+	protected static $cashSubmethods = [
+		"pix" => "pix",
+		"oxxo" => "cash_oxxo",
+	];
+
 	public static function decodePaymentMethod( string $method, ?string $scheme = '' ): array {
 		$methods = self::$methods;
 		$payment_method = $methods[$method] ?? '';
@@ -179,10 +188,16 @@ class ReferenceData {
 			case self::CC_PAYMENT_METHOD:
 			case self::APPLE_PAYMENT_METHOD:
 			case self::GOOGLE_PAYMENT_METHOD:
-			$payment_submethod = self::$cardPaymentSubmethods[$scheme];
+				$payment_submethod = self::$cardPaymentSubmethods[$scheme];
 				break;
 			case self::DD_PAYMENT_METHOD:
 				$payment_submethod = self::$ddSubmethods[$method];
+				break;
+			case self::BT_PAYMENT_METHOD:
+				$payment_submethod = self::$btSubmethods[$method];
+				break;
+			case self::CASH_PAYMENT_METHOD:
+				$payment_submethod = self::$cashSubmethods[$method];
 				break;
 			default:
 				break;

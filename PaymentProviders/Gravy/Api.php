@@ -229,4 +229,16 @@ class Api {
 		$tl->info( "Report url for report with execution ID {$report_execution_id} $response_string" );
 		return $response;
 	}
+
+	/**
+	 * Uses the rest API to fetch the payment service definition for specified method
+	 * @param array $params
+	 * @throws \SmashPig\Core\ApiException
+	 * @return array
+	 * @link https://docs.gr4vy.com/reference/payment-service-definitions/get-payment-service-definition#parameter-payment-service-definition-id
+	 */
+	public function getPaymentServiceDefinition( string $method = '' ): array {
+		$response = $this->gravyApiClient->getPaymentServiceDefinition( $method );
+		return $response;
+	}
 }

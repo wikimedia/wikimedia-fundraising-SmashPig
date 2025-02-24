@@ -51,9 +51,9 @@ class CurrencyRoundingHelper {
 	 * @return string rounded amount
 	 */
 	public static function round( float $amount, string $currencyCode ): string {
-		if ( self::isFractionalCurrency( $currencyCode ) ) {
+		if ( static::isFractionalCurrency( $currencyCode ) ) {
 			$precision = 2;
-			if ( self::isThreeDecimalCurrency( $currencyCode ) ) {
+			if ( static::isThreeDecimalCurrency( $currencyCode ) ) {
 				$precision = 3;
 			}
 			return number_format( $amount, $precision, '.', '' );
@@ -102,9 +102,9 @@ class CurrencyRoundingHelper {
 	 * @return int The amount in minor units
 	 */
 	public static function getAmountInMinorUnits( float $amount, string $currencyCode ): int {
-		if ( self::isThreeDecimalCurrency( $currencyCode ) ) {
+		if ( static::isThreeDecimalCurrency( $currencyCode ) ) {
 			$amount = $amount * 1000;
-		} elseif ( self::isFractionalCurrency( $currencyCode ) ) {
+		} elseif ( static::isFractionalCurrency( $currencyCode ) ) {
 			$amount = $amount * 100;
 		}
 		// PHP does indeed need us to round it off before casting to int.

@@ -7,198 +7,198 @@
 #   or edit this file if you're feeling cheeky, and be careful when upgrading.
 
 data-store:
-    redis: &REDIS
-        servers:
-            scheme: tcp
-            host: 127.0.0.1
-            port: 6379
-            read_write_timeout: -1
+  redis: &REDIS
+    servers:
+      scheme: tcp
+      host: 127.0.0.1
+      port: 6379
+      read_write_timeout: -1
 
-    payments-antifraud:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: payments-antifraud
+  payments-antifraud:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: payments-antifraud
 
-    payments-init:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
+  payments-init:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
 
-    pending:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: pending
+  pending:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: pending
 
-    # FIXME: Consolidate these two backends
-    pending-db:
-        class: PDO
-        constructor-parameters:
-            - 'mysql:host=127.0.0.1;dbname=smashpig'
+  # FIXME: Consolidate these two backends
+  pending-db:
+    class: PDO
+    constructor-parameters:
+      - 'mysql:host=127.0.0.1;dbname=smashpig'
 
-    damaged-db:
-        class: PDO
-        constructor-parameters:
-            - 'mysql:host=127.0.0.1;dbname=smashpig'
+  damaged-db:
+    class: PDO
+    constructor-parameters:
+      - 'mysql:host=127.0.0.1;dbname=smashpig'
 
-    fredge-db:
-        class: PDO
-        constructor-parameters:
-            - 'mysql:host=127.0.0.1;dbname=fredge'
+  fredge-db:
+    class: PDO
+    constructor-parameters:
+      - 'mysql:host=127.0.0.1;dbname=fredge'
 
-    recurring:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: recurring
+  recurring:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: recurring
 
-    refund:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: refund
+  refund:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: refund
 
-    unsubscribe:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: unsubscribe
+  unsubscribe:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: unsubscribe
 
-    opt-in:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: opt-in
+  opt-in:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: opt-in
 
-    email-preferences:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: email-preferences
+  email-preferences:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: email-preferences
 
 
-    recurring-modify:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: recurring-modify
+  recurring-modify:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: recurring-modify
 
-    recurring-upgrade:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: recurring-upgrade
+  recurring-upgrade:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: recurring-upgrade
 
-    jobs-paypal:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                # FIXME: This queue thing is introspected at times, and at
-                # others not.  Make it consistent (and invisible).
-                queue: jobs-paypal
+  jobs-paypal:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        # FIXME: This queue thing is introspected at times, and at
+        # others not.  Make it consistent (and invisible).
+        queue: jobs-paypal
 
-    jobs-adyen:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: jobs-adyen
+  jobs-adyen:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: jobs-adyen
 
-    jobs-amazon:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: jobs-amazon
+  jobs-amazon:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: jobs-amazon
 
-    jobs-dlocal:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: jobs-dlocal
+  jobs-dlocal:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: jobs-dlocal
 
-    jobs-ingenico:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: jobs-ingenico
+  jobs-ingenico:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: jobs-ingenico
 
-    jobs-braintree:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: jobs-braintree
+  jobs-braintree:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: jobs-braintree
 
-    jobs-gravy:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: jobs-gravy
+  jobs-gravy:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: jobs-gravy
 
-    donations:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: donations
+  donations:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: donations
 
-    # A special queue for recurring donations via India's UPI system,
-    # which need pre-processing due to local regulations.
-    upi-donations:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: upi-donations
+  # A special queue for recurring donations via India's UPI system,
+  # which need pre-processing due to local regulations.
+  upi-donations:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: upi-donations
 
-    contribution-tracking:
-        class: PHPQueue\Backend\Predis
-        constructor-parameters:
-            -
-                <<: *REDIS
-                queue: contribution-tracking
+  contribution-tracking:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: contribution-tracking
 
 sequence-generator:
-    contribution-tracking:
-        class: SmashPig\Core\SequenceGenerators\PredisSequenceGenerator
-        constructor-parameters:
-            -
-                <<: *REDIS
-                sequence: contribution-tracking
+  contribution-tracking:
+    class: SmashPig\Core\SequenceGenerators\PredisSequenceGenerator
+    constructor-parameters:
+      -
+        <<: *REDIS
+        sequence: contribution-tracking
 
 mail-backend:
-    smtp: false
+  smtp: false
 
 # Must implement Psr\Cache\CacheItemPoolInterface
 # See PSR-6: http://www.php-fig.org/psr/psr-6/
 cache:
-    class: SmashPig\Core\Cache\HashCache
+  class: SmashPig\Core\Cache\HashCache
 
 maintenance:
-    job-runner:
-        time-limit: 60
-        message-limit: 10
+  job-runner:
+    time-limit: 60
+    message-limit: 10
 
-    consume-pending:
-        time-limit: 60
-        message-limit: 0
-        wait-for-messages: false
+  consume-pending:
+    time-limit: 60
+    message-limit: 0
+    wait-for-messages: false
 
 # in seconds
 requeue-delay: 1200
