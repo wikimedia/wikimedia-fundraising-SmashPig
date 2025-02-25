@@ -207,11 +207,11 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 			// it threw an exception!
 			GravyCreatePaymentResponseFactory::handleValidationException( $createPaymentResponse, $e->getData() );
 		}
-		catch ( \Exception $e ) {
+		 catch ( \Exception $e ) {
 			// it threw an exception that isn't validation!
 			Logger::error( 'Processor failed to create new payment with response:' . $e->getMessage() );
 			GravyCreatePaymentResponseFactory::handleException( $createPaymentResponse, $e->getMessage(), $e->getCode() );
-		}
+		 }
 
 		return $createPaymentResponse;
 	}

@@ -9,7 +9,7 @@ class RedirectPaymentProviderValidator extends PaymentProviderValidator {
 	 * @throws ValidationException
 	 */
 	public function validateOneTimeCreatePaymentInput( array $params ): void {
-		$defaultRequiredFields = [
+		$required = [
 			'amount',
 			'currency',
 			'country',
@@ -18,11 +18,6 @@ class RedirectPaymentProviderValidator extends PaymentProviderValidator {
 			'first_name',
 			'last_name',
 		];
-
-		$required = array_merge(
-			$defaultRequiredFields,
-			$this->addCountrySpecificRequiredFields( $params )
-		);
 
 		$this->validateFields( $required, $params );
 	}
