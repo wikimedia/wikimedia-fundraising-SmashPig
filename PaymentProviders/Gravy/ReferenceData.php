@@ -1,120 +1,110 @@
 <?php
 namespace SmashPig\PaymentProviders\Gravy;
 
+use SmashPig\PaymentData\PaymentMethod;
+
 /**
  * These codes are listed per country here
  * https://docs.dlocal.com/docs/payment-method
  */
 class ReferenceData {
 
-	const EW_PAYMENT_METHOD = 'ew';
-	const BT_PAYMENT_METHOD = 'bt';
-	const DD_PAYMENT_METHOD = 'dd';
-	const CC_PAYMENT_METHOD = 'cc';
-	const APPLE_PAYMENT_METHOD = 'apple';
-	const GOOGLE_PAYMENT_METHOD = 'google';
-	const PAYPAL_PAYMENT_METHOD = 'paypal';
-	const RTBT_PAYMENT_METHOD = 'rtbt';
-	const VENMO_PAYMENT_METHOD = 'venmo';
-	const STRIPE_PAYMENT_METHOD = 'stripe';
-	const CASH_PAYMENT_METHOD = 'cash';
-
 	protected static $methods = [
 		'afterpay' => '',
-		'alipay' => self::EW_PAYMENT_METHOD,
-		'alipayhk' => self::EW_PAYMENT_METHOD,
-		'amex' => self::CC_PAYMENT_METHOD,
-		'applepay' => self::APPLE_PAYMENT_METHOD,
-		'bacs' => self::DD_PAYMENT_METHOD,
-		'bancontact' => self::CC_PAYMENT_METHOD,
-		'banked' => self::BT_PAYMENT_METHOD,
-		'bcp' => self::BT_PAYMENT_METHOD,
-		'becs' => self::DD_PAYMENT_METHOD,
+		'alipay' => PaymentMethod::EW,
+		'alipayhk' => PaymentMethod::EW,
+		'amex' => PaymentMethod::CC,
+		'applepay' => PaymentMethod::APPLE,
+		'bacs' => PaymentMethod::DD,
+		'bancontact' => PaymentMethod::CC,
+		'banked' => PaymentMethod::BT,
+		'bcp' => PaymentMethod::BT,
+		'becs' => PaymentMethod::DD,
 		'bitpay' => '', // Crypto payment service
-		'boleto' => self::CASH_PAYMENT_METHOD,
+		'boleto' => PaymentMethod::CASH,
 		'boost' => '',
-		'card' => self::CC_PAYMENT_METHOD,
-		'carte-bancaire' => self::CC_PAYMENT_METHOD,
+		'card' => PaymentMethod::CC,
+		'carte-bancaire' => PaymentMethod::CC,
 		'cashapp' => '',
 		'chaseorbital' => '',
 		'checkout-session' => '',
-		'cirrus' => self::CC_PAYMENT_METHOD,
+		'cirrus' => PaymentMethod::CC,
 		'clearpay' => '',
 		'click-to-pay' => '',
-		'culiance' => self::CC_PAYMENT_METHOD,
+		'culiance' => PaymentMethod::CC,
 		'dana' => '',
-		'dankort' => self::CC_PAYMENT_METHOD,
+		'dankort' => PaymentMethod::CC,
 		'dcb' => '',
-		'diners-club' => self::CC_PAYMENT_METHOD,
-		'discover' => self::CC_PAYMENT_METHOD,
+		'diners-club' => PaymentMethod::CC,
+		'discover' => PaymentMethod::CC,
 		'dlocal' => '',
 		'ebanx' => '',
-		'eftpos-australia' => self::CC_PAYMENT_METHOD,
-		'elo' => self::CC_PAYMENT_METHOD,
-		'eps' => self::RTBT_PAYMENT_METHOD,
+		'eftpos-australia' => PaymentMethod::CC,
+		'elo' => PaymentMethod::CC,
+		'eps' => PaymentMethod::RTBT,
 		'everydaypay' => '',
 		'gcash' => '',
 		'giropay' => '',
 		'givingblock' => '',
 		'gocardless' => '',
-		'googlepay' => self::GOOGLE_PAYMENT_METHOD,
+		'googlepay' => PaymentMethod::GOOGLE,
 		'gopay' => '',
 		'grabpay' => '',
-		'hipercard' => self::CC_PAYMENT_METHOD,
-		'ideal' => self::RTBT_PAYMENT_METHOD,
-		'jcb' => self::CC_PAYMENT_METHOD,
+		'hipercard' => PaymentMethod::CC,
+		'ideal' => PaymentMethod::RTBT,
+		'jcb' => PaymentMethod::CC,
 		'kakaopay' => '',
 		'klarna' => '',
 		'laybuy' => '',
 		'linepay' => '',
 		'linkaja' => '',
-		'maestro' => self::CC_PAYMENT_METHOD,
-		'mastercard' => self::CC_PAYMENT_METHOD,
+		'maestro' => PaymentMethod::CC,
+		'mastercard' => PaymentMethod::CC,
 		'maybankqrpay' => '',
-		'mir' => self::CC_PAYMENT_METHOD,
-		'multibanco' => self::RTBT_PAYMENT_METHOD,
+		'mir' => PaymentMethod::CC,
+		'multibanco' => PaymentMethod::RTBT,
 		'multipago' => '',
-		'netbanking' => self::BT_PAYMENT_METHOD,
+		'netbanking' => PaymentMethod::BT,
 		'network-token' => '',
-		'nyce' => self::CC_PAYMENT_METHOD,
+		'nyce' => PaymentMethod::CC,
 		'oney_10x' => '',
 		'oney_12x' => '',
 		'oney_3x' => '',
 		'oney_4x' => '',
 		'oney_6x' => '',
-		'other' => self::CC_PAYMENT_METHOD,
+		'other' => PaymentMethod::CC,
 		'ovo' => '',
-		'oxxo' => self::CASH_PAYMENT_METHOD,
+		'oxxo' => PaymentMethod::CASH,
 		'payid' => '',
 		'paymaya' => '',
-		'paypal' => self::PAYPAL_PAYMENT_METHOD,
-		'paypalpaylater' => self::PAYPAL_PAYMENT_METHOD,
+		'paypal' => PaymentMethod::PAYPAL,
+		'paypalpaylater' => PaymentMethod::PAYPAL,
 		'payto' => '',
-		'pix' => self::CASH_PAYMENT_METHOD,
-		'pse' => self::BT_PAYMENT_METHOD,
-		'pulse' => self::CC_PAYMENT_METHOD,
+		'pix' => PaymentMethod::CASH,
+		'pse' => PaymentMethod::BT,
+		'pulse' => PaymentMethod::CC,
 		'rabbitlinepay' => '',
 		'razorpay' => '',
-		'rupay' => self::CC_PAYMENT_METHOD,
+		'rupay' => PaymentMethod::CC,
 		'scalapay' => '',
-		'sepa' => self::RTBT_PAYMENT_METHOD,
+		'sepa' => PaymentMethod::RTBT,
 		'shopeepay' => '',
 		'singteldash' => '',
 		'smartpay' => '',
-		'sofort' => self::RTBT_PAYMENT_METHOD,
-		'star' => self::CC_PAYMENT_METHOD,
-		'stripedd' => self::STRIPE_PAYMENT_METHOD,
+		'sofort' => PaymentMethod::RTBT,
+		'star' => PaymentMethod::CC,
+		'stripedd' => PaymentMethod::STRIPE,
 		'thaiqr' => '',
 		'touchngo' => '',
 		'truemoney' => '',
-		'trustly' => self::DD_PAYMENT_METHOD,
-		'trustlyeurope' => self::DD_PAYMENT_METHOD,
-		'trustlyus' => self::DD_PAYMENT_METHOD,
-		'uatp' => self::CC_PAYMENT_METHOD,
-		'unionpay' => self::CC_PAYMENT_METHOD,
-		'venmo' => self::VENMO_PAYMENT_METHOD,
+		'trustly' => PaymentMethod::DD,
+		'trustlyeurope' => PaymentMethod::DD,
+		'trustlyus' => PaymentMethod::DD,
+		'uatp' => PaymentMethod::CC,
+		'unionpay' => PaymentMethod::CC,
+		'venmo' => PaymentMethod::VENMO,
 		'vipps' => '',
-		'visa' => self::CC_PAYMENT_METHOD,
+		'visa' => PaymentMethod::CC,
 		'waave' => '',
 		'wechat' => '',
 		'zippay' => '',
@@ -182,24 +172,24 @@ class ReferenceData {
 		$payment_submethod = '';
 
 		switch ( $payment_method ) {
-			case self::EW_PAYMENT_METHOD:
+			case PaymentMethod::EW:
 				$payment_submethod = self::$ewSubmethods[$scheme];
 				break;
-			case self::RTBT_PAYMENT_METHOD:
+			case PaymentMethod::RTBT:
 				$payment_submethod = self::$rtbtSubmethods[$scheme];
 				break;
-			case self::CC_PAYMENT_METHOD:
-			case self::APPLE_PAYMENT_METHOD:
-			case self::GOOGLE_PAYMENT_METHOD:
+			case PaymentMethod::CC:
+			case PaymentMethod::APPLE:
+			case PaymentMethod::GOOGLE:
 				$payment_submethod = self::$cardPaymentSubmethods[$scheme];
 				break;
-			case self::DD_PAYMENT_METHOD:
+			case PaymentMethod::DD:
 				$payment_submethod = self::$ddSubmethods[$method];
 				break;
-			case self::BT_PAYMENT_METHOD:
+			case PaymentMethod::BT:
 				$payment_submethod = self::$btSubmethods[$method];
 				break;
-			case self::CASH_PAYMENT_METHOD:
+			case PaymentMethod::CASH:
 				$payment_submethod = self::$cashSubmethods[$method];
 				break;
 			default:
