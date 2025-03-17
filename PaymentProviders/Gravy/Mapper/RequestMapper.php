@@ -18,7 +18,8 @@ class RequestMapper {
 		'pix',
 		'oxxo',
 		'pse',
-		'bcp'
+		'bcp',
+		'webpay'
 	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
@@ -183,6 +184,7 @@ class RequestMapper {
 		case 'pix':
 		case 'pse':
 		case 'bcp':
+		case 'webpay':
 			return $paymentMethod;
 		default:
 			throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );

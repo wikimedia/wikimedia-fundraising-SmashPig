@@ -107,6 +107,7 @@ class ReferenceData {
 		'visa' => PaymentMethod::CC,
 		'waave' => '',
 		'wechat' => '',
+		'webpay' => PaymentMethod::BT,
 		'zippay' => '',
 	];
 
