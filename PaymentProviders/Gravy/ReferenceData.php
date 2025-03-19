@@ -82,6 +82,7 @@ class ReferenceData {
 		'payto' => '',
 		'pix' => PaymentMethod::CASH,
 		'pse' => PaymentMethod::BT,
+		'pagoefectivo' => PaymentMethod::CASH,
 		'pulse' => PaymentMethod::CC,
 		'rabbitlinepay' => '',
 		'razorpay' => '',

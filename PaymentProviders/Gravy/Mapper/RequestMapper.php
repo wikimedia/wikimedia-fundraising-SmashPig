@@ -19,7 +19,8 @@ class RequestMapper {
 		'oxxo',
 		'pse',
 		'bcp',
-		'webpay'
+		'webpay',
+		'pagoefectivo'
 	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
@@ -172,24 +173,26 @@ class RequestMapper {
 	 * @param mixed $paymentMethod
 	 * @return string
 	 */
-   protected function mapPaymentMethodToGravyPaymentMethod( $paymentMethod ): string {
-	   switch ( strtolower( $paymentMethod ) ) {
-		case 'ach':
-			return 'trustly';
-	   case 'cash_oxxo':
-		   return 'oxxo';
-		case 'netbanking':
-		case 'paypal':
-		case 'venmo':
-		case 'pix':
-		case 'pse':
-		case 'bcp':
-		case 'webpay':
-			return $paymentMethod;
-		default:
-			throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );
-	   }
-   }
+	protected function mapPaymentMethodToGravyPaymentMethod( $paymentMethod ): string {
+		switch ( strtolower( $paymentMethod ) ) {
+			case 'ach':
+				return 'trustly';
+			case 'cash_oxxo':
+				return 'oxxo';
+			case 'cash_pago_efectivo':
+				return 'pagoefectivo';
+			case 'netbanking':
+			case 'paypal':
+			case 'venmo':
+			case 'pix':
+			case 'pse':
+			case 'bcp':
+			case 'webpay':
+				return $paymentMethod;
+			default:
+				throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );
+		}
+	}
 
 	/**
 	 * @param array $params
