@@ -20,7 +20,8 @@ class RequestMapper {
 		'pse',
 		'bcp',
 		'webpay',
-		'pagoefectivo'
+		'pagoefectivo',
+		'redpagos'
 	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
@@ -181,6 +182,8 @@ class RequestMapper {
 				return 'oxxo';
 			case 'cash_pago_efectivo':
 				return 'pagoefectivo';
+			case 'cash_red_pagos':
+				return 'redpagos';
 			case 'netbanking':
 			case 'paypal':
 			case 'venmo':

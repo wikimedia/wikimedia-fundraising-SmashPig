@@ -87,6 +87,7 @@ class ReferenceData {
 		'rabbitlinepay' => '',
 		'razorpay' => '',
 		'rupay' => PaymentMethod::CC,
+		'redpagos' => PaymentMethod::CASH,
 		'scalapay' => '',
 		'sepa' => PaymentMethod::RTBT,
 		'shopeepay' => '',
@@ -166,6 +167,7 @@ class ReferenceData {
 	protected static $cashSubmethods = [
 		'pix' => 'pix',
 		'oxxo' => 'cash_oxxo',
+		'redpagos' => 'redpagos',
 	];
 
 	public static function decodePaymentMethod( string $method, ?string $scheme = '' ): array {
