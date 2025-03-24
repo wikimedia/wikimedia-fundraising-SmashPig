@@ -21,7 +21,8 @@ class RequestMapper {
 		'bcp',
 		'webpay',
 		'pagoefectivo',
-		'redpagos'
+		'redpagos',
+		'abitab'
 	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
@@ -180,6 +181,8 @@ class RequestMapper {
 				return 'trustly';
 			case 'cash_oxxo':
 				return 'oxxo';
+			case 'cash_abitab':
+				return 'abitab';
 			case 'cash_pago_efectivo':
 				return 'pagoefectivo';
 			case 'cash_red_pagos':
