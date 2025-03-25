@@ -10,6 +10,7 @@ use SmashPig\PaymentData\PaymentMethod;
 class ReferenceData {
 
 	protected static $methods = [
+		'abitab' => PaymentMethod::CASH,
 		'afterpay' => '',
 		'alipay' => PaymentMethod::EW,
 		'alipayhk' => PaymentMethod::EW,
