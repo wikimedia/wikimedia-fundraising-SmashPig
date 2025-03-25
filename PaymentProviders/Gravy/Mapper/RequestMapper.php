@@ -22,7 +22,8 @@ class RequestMapper {
 		'webpay',
 		'pagoefectivo',
 		'redpagos',
-		'abitab'
+		'abitab',
+		'boleto'
 	];
 
 	public function mapToCreatePaymentRequest( array $params ): array {
@@ -187,6 +188,8 @@ class RequestMapper {
 				return 'pagoefectivo';
 			case 'cash_red_pagos':
 				return 'redpagos';
+			case 'cash_boleto':
+				return 'boleto';
 			case 'netbanking':
 			case 'paypal':
 			case 'venmo':
@@ -194,6 +197,7 @@ class RequestMapper {
 			case 'pse':
 			case 'bcp':
 			case 'webpay':
+			case 'boleto':
 				return $paymentMethod;
 			default:
 				throw new \UnexpectedValueException( "Unknown Gravy Payment Method - $paymentMethod" );
