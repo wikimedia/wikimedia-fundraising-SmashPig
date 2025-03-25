@@ -169,6 +169,7 @@ class ReferenceData {
 		'pix' => 'pix',
 		'oxxo' => 'cash_oxxo',
 		'redpagos' => 'redpagos',
+		'boleto' => 'boleto',
 	];
 
 	public static function decodePaymentMethod( string $method, ?string $scheme = '' ): array {
