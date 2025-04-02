@@ -11,7 +11,7 @@ use SmashPig\PaymentProviders\Gravy\Jobs\DownloadReportJob;
 use SmashPig\PaymentProviders\Gravy\Responses\ReportResponse;
 
 class ReportExecutionAction extends GravyAction {
-	 public function execute( ListenerMessage $msg ): bool {
+	public function execute( ListenerMessage $msg ): bool {
 		$tl = new TaggedLogger( 'TransactionAction' );
 		$reportExecutionDetails = $this->getReportExecutionDetails( $msg );
 
@@ -39,14 +39,14 @@ class ReportExecutionAction extends GravyAction {
 		}
 
 		return true;
-	 }
+	}
 
 	public function getReportExecutionDetails( ReportExecutionMessage $msg ): ReportResponse {
 		$providerConfiguration = Context::get()->getProviderConfiguration();
 		$provider = $providerConfiguration->object( 'payment-provider/cc' );
 
 		$reportExecutionDetails = $provider->getReportExecutionDetails( [
-			"report_execution_id" => $msg->getReportExecutionId()
+			'report_execution_id' => $msg->getReportExecutionId()
 		] );
 
 		return $reportExecutionDetails;
@@ -57,8 +57,8 @@ class ReportExecutionAction extends GravyAction {
 		$provider = $providerConfiguration->object( 'payment-provider/cc' );
 
 		$reportDetails = $provider->generateReportDownloadUrl( [
-			"report_execution_id" => $response->getReportExecutionId(),
-			"report_id" => $response->getReportId()
+			'report_execution_id' => $response->getReportExecutionId(),
+			'report_id' => $response->getReportId()
 		] );
 
 		return $reportDetails;

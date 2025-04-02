@@ -15,7 +15,7 @@ use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
 class TransactionAction extends GravyAction {
 	use RefundTrait;
 
-	 public function execute( ListenerMessage $msg ): bool {
+	public function execute( ListenerMessage $msg ): bool {
 		$tl = new TaggedLogger( 'TransactionAction' );
 		$transactionDetails = $this->getTransactionDetails( $msg );
 
@@ -43,7 +43,7 @@ class TransactionAction extends GravyAction {
 			}
 		} else {
 			$id = $transactionDetails->getRawResponse()['id'] ?? null;
-			$message = "Skipping unsuccessful transaction";
+			$message = 'Skipping unsuccessful transaction';
 			if ( !empty( $id ) ) {
 				if ( $this->requiresChargeback( $transactionDetails ) ) {
 					$message = "Pushing failed trustly transaction with id: {$id} to refund queue for chargeback.";
@@ -56,14 +56,14 @@ class TransactionAction extends GravyAction {
 		}
 
 		return true;
-	 }
+	}
 
 	public function getTransactionDetails( TransactionMessage $msg ): PaymentDetailResponse {
 		$providerConfiguration = Context::get()->getProviderConfiguration();
 		$provider = $providerConfiguration->object( 'payment-provider/cc' );
 
 		$transactionDetails = $provider->getLatestPaymentStatus( [
-			"gateway_txn_id" => $msg->getTransactionId()
+			'gateway_txn_id' => $msg->getTransactionId()
 		] );
 
 		return $transactionDetails;

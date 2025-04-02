@@ -1,22 +1,19 @@
 <?php namespace SmashPig\PaymentProviders\dlocal\ExpatriatedMessages;
 
-use SmashPig\PaymentProviders\dlocal\Jobs\RejectedMessageJob;
-
 /**
- * Message model for REJECTED IPN messages
+ * Message indicating a successful authorization
  */
-class RejectedMessage extends DlocalMessage {
-
-	public $status_code;
-
+class AuthorizedMessage extends DlocalMessage {
 	public function getDestinationQueue() {
 		return 'jobs-dlocal';
 	}
 
 	/**
-	 * @return array
+	 * Map dlocal's fields to ours
+	 *
+	 * @return array $queueMsg
 	 */
-	public function normalizeForQueue(): array {
+	public function normalizeForQueue() {
 		// Normalize the payment method and submethod
 		[ $method, $submethod ] = $this->decodePaymentMethod();
 
@@ -35,21 +32,22 @@ class RejectedMessage extends DlocalMessage {
 			'gross' => $this->amount,
 			'date' => strtotime( $this->created_date ),
 			'gateway_status' => $this->status,
-			'gateway_status_code' => $this->status_code,
-			'gateway_status_detail' => $this->status_detail,
 			'dlocal_payment_method' => $this->payment_method_id,
 			'payment_method' => $method,
-			'payment_submethod' => $submethod
+			'payment_submethod' => $submethod,
 		];
 
+		$token = $this->wallet['token'] ?? $this->card['token'] ?? null;
 		// If there is a recurring token, add it
-		if ( isset( $this->wallet['token'] ) ) {
-			$queueMsg['recurring_payment_token'] = $this->wallet['token'];
+		if ( $token ) {
+			$queueMsg['recurring_payment_token'] = $token;
 		}
 
-		return [
-			'class' => RejectedMessageJob::class,
+		// Send AUTHORIZED messages to the jobs queue to send info from the pending table
+		$job = [
+			'class' => '\SmashPig\PaymentProviders\dlocal\Jobs\AuthorizedMessageJob',
 			'payload' => $queueMsg
 		];
+		return $job;
 	}
 }

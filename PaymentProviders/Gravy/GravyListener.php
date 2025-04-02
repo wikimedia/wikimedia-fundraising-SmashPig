@@ -57,8 +57,7 @@ class GravyListener implements IHttpActionHandler {
 
 			$response->setStatusCode( Response::HTTP_FORBIDDEN, 'Invalid authorization' );
 			return false;
-		}
-		catch ( \Exception $e ) {
+		} catch ( \Exception $e ) {
 			// Log exception
 			Logger::error( $e->getMessage() );
 			// 403 should tell them to send it again later.
@@ -77,21 +76,21 @@ class GravyListener implements IHttpActionHandler {
 	 */
 	public function mapFromWebhookMessage( array $message ): array {
 		try {
-			$type = $message["target"]["type"];
+			$type = $message['target']['type'];
 			$normalized = [
-				'created_at' => $message["created_at"],
-				'id' => $message["target"]["id"],
+				'created_at' => $message['created_at'],
+				'id' => $message['target']['id'],
 				'message_type' => $this->normalizeMessageType( $type ),
 				'raw_response' => $message
 			];
 
 			if ( $this->isRefundMessage( $type ) ) {
-				$normalized['gateway_parent_id'] = $message["target"]["transaction_id"];
+				$normalized['gateway_parent_id'] = $message['target']['transaction_id'];
 			}
 			return $normalized;
 		} catch ( \Exception $exception ) {
-			Logger::info( "Exception thrown when normalizing type:" . json_encode( $message ) );
-			throw new \UnexpectedValueException( "Error normalizing message type: " . $exception->getMessage() );
+			Logger::info( 'Exception thrown when normalizing type:' . json_encode( $message ) );
+			throw new \UnexpectedValueException( 'Error normalizing message type: ' . $exception->getMessage() );
 		}
 	}
 
