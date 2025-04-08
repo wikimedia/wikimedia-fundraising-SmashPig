@@ -24,7 +24,7 @@ use SmashPig\PaymentProviders\IRefundablePaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CancelPaymentResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
-use SmashPig\PaymentProviders\Responses\PaymentDetailResponse;
+use SmashPig\PaymentProviders\Responses\PaymentProviderExtendedResponse;
 use SmashPig\PaymentProviders\Responses\RefundPaymentResponse;
 use SmashPig\PaymentProviders\ValidationException;
 
@@ -46,36 +46,36 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 
 	/**
 	 * @param array $params
-	 * @return PaymentDetailResponse
+	 * @return PaymentProviderExtendedResponse
 	 */
-	public function getLatestPaymentStatus( array $params ): PaymentDetailResponse {
-		$paymentDetailResponse = new PaymentDetailResponse();
+	public function getLatestPaymentStatus( array $params ): PaymentProviderExtendedResponse {
+		$PaymentProviderExtendedResponse = new PaymentProviderExtendedResponse();
 		try {
 			$this->getValidator()->validateGetLatestPaymentStatusInput( $params );
 			// dispatch api call to external API
-			$rawGravyGetPaymentDetailResponse = $this->api->getTransaction( $params );
+			$rawGravyGetPaymentProviderExtendedResponse = $this->api->getTransaction( $params );
 			// map the response from the external format back to our normalized structure.
-			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
-			$paymentDetailResponse = GravyGetLatestPaymentStatusResponseFactory::fromNormalizedResponse( $normalizedResponse );
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyGetPaymentProviderExtendedResponse );
+			$PaymentProviderExtendedResponse = GravyGetLatestPaymentStatusResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( ValidationException $e ) {
 			// it threw an exception!
-			GravyGetLatestPaymentStatusResponseFactory::handleValidationException( $paymentDetailResponse, $e->getData() );
+			GravyGetLatestPaymentStatusResponseFactory::handleValidationException( $PaymentProviderExtendedResponse, $e->getData() );
 		} catch ( \UnexpectedValueException $e ) {
 			// it threw an API exception!
 			Logger::error( 'Failed to get payment details, response: ' . $e->getMessage() );
-			GravyGetLatestPaymentStatusResponseFactory::handleException( $paymentDetailResponse, $e->getMessage(), $e->getCode() );
+			GravyGetLatestPaymentStatusResponseFactory::handleException( $PaymentProviderExtendedResponse, $e->getMessage(), $e->getCode() );
 		}
 
-		return $paymentDetailResponse;
+		return $PaymentProviderExtendedResponse;
 	}
 
 	public function cancelPayment( string $gatewayTxnId ): CancelPaymentResponse {
 		$cancelPaymentResponse = new CancelPaymentResponse();
 		try {
 			// dispatch api call to external API
-			$rawGravyGetPaymentDetailResponse = $this->api->cancelTransaction( $gatewayTxnId );
+			$rawGravyGetPaymentProviderExtendedResponse = $this->api->cancelTransaction( $gatewayTxnId );
 			// map the response from the external format back to our normalized structure.
-			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyGetPaymentDetailResponse );
+			$normalizedResponse = $this->getResponseMapper()->mapFromPaymentResponse( $rawGravyGetPaymentProviderExtendedResponse );
 			$cancelPaymentResponse = GravyCancelPaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
 		} catch ( \UnexpectedValueException $e ) {
 			// it threw an API exception!
