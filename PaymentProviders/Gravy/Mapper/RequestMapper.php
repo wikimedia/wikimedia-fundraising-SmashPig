@@ -42,7 +42,7 @@ class RequestMapper {
 		$request = [
 			// Gravy requires amount to be sent in the smallest unit for the given currency
 			// See https://docs.gr4vy.com/reference/transactions/new-transaction
-			'amount' => CurrencyRoundingHelper::getAmountInMinorUnits( $params['amount'], $params['currency'] ),
+			'amount' => CurrencyRoundingHelper::getAmountInMinorUnits( (float)$params['amount'], $params['currency'] ),
 			'currency' => $params['currency'],
 			'country' => $params['country'],
 			'payment_method' => [
