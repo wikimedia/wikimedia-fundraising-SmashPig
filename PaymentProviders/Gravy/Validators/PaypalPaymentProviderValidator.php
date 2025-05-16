@@ -16,18 +16,9 @@ class PaypalPaymentProviderValidator extends PaymentProviderValidator {
 	 * @return void
 	 */
 	public function validateOneTimeCreatePaymentInput( array $params ): void {
-		$defaultRequiredFields = [
-			'amount',
-			'currency',
-			'country',
-			'order_id'
-		];
+		parent::validateOneTimeCreatePaymentInput( $params );
 
-		$required = array_merge(
-			$defaultRequiredFields,
-			$this->addCountrySpecificRequiredFields( $params )
-		);
-
+		$required = $this->addCountrySpecificRequiredFields( $params );
 		$this->validateFields( $required, $params );
 	}
 }
