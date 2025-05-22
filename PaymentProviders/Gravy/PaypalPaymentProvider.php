@@ -2,23 +2,29 @@
 
 namespace SmashPig\PaymentProviders\Gravy;
 
-use SmashPig\PaymentProviders\Gravy\Mapper\PaypalPaymentProviderRequestMapper;
 use SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
 use SmashPig\PaymentProviders\Gravy\Validators\PaymentProviderValidator;
-use SmashPig\PaymentProviders\Gravy\Validators\PaypalPaymentProviderValidator;
 use SmashPig\PaymentProviders\IPaymentProvider;
 
 class PaypalPaymentProvider extends PaymentProvider implements IPaymentProvider {
-	protected function getValidator(): PaymentProviderValidator {
-		return new PaypalPaymentProviderValidator();
+
+	public function __construct( $params ) {
+		parent::__construct();
+		$this->requestMapper = $this->providerConfiguration->object( $params['request-mapper'] );
+		$this->responseMapper = $this->providerConfiguration->object( $params['response-mapper'] );
+		$this->validator = $this->providerConfiguration->object( $params['validator'] );
 	}
 
 	protected function getRequestMapper(): RequestMapper {
-		return new PaypalPaymentProviderRequestMapper();
+		return $this->requestMapper;
 	}
 
 	protected function getResponseMapper(): RedirectPaymentProviderResponseMapper {
-		return new RedirectPaymentProviderResponseMapper();
+		return $this->responseMapper;
+	}
+
+	protected function getValidator(): PaymentProviderValidator {
+		return $this->validator;
 	}
 }

@@ -2,8 +2,8 @@
 
 namespace SmashPig\PaymentProviders\Gravy;
 
-use SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
+use SmashPig\PaymentProviders\Gravy\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Validators\PaymentProviderValidator;
 
 class RedirectPaymentProvider extends PaymentProvider {
@@ -19,7 +19,7 @@ class RedirectPaymentProvider extends PaymentProvider {
 		return $this->requestMapper;
 	}
 
-	protected function getResponseMapper(): RedirectPaymentProviderResponseMapper {
+	protected function getResponseMapper(): ResponseMapper {
 		return $this->responseMapper;
 	}
 

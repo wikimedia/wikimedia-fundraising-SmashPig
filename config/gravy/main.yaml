@@ -66,6 +66,11 @@ payment-provider:
         validator: "validators/redirect"
   paypal:
     class: SmashPig\PaymentProviders\Gravy\PaypalPaymentProvider
+    constructor-parameters:
+      -
+        request-mapper: "mappers/paypal-request"
+        response-mapper: "mappers/paypal-response"
+        validator: "validators/paypal"
   cash:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
     constructor-parameters:
@@ -101,6 +106,10 @@ mappers:
     class: SmashPig\PaymentProviders\Gravy\Mapper\DirectDepositPaymentProviderRequestMapper
   dd-response:
     class: SmashPig\PaymentProviders\Gravy\Mapper\DirectDepositPaymentProviderResponseMapper
+  paypal-request:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\PaypalPaymentProviderRequestMapper
+  paypal-response:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderResponseMapper
 
 validators:
   cc:
@@ -113,6 +122,8 @@ validators:
     class: SmashPig\PaymentProviders\Gravy\Validators\GooglePayPaymentProviderValidator
   dd:
     class: SmashPig\PaymentProviders\Gravy\Validators\DirectDepositPaymentProviderValidator
+  paypal:
+    class: SmashPig\PaymentProviders\Gravy\Validators\PaypalPaymentProviderValidator
 
 fraud-filters:
   # Authorization notifications include AVS and CVV result codes.
