@@ -1,22 +1,30 @@
 <?php
+
 namespace SmashPig\PaymentProviders\Gravy;
 
-use SmashPig\PaymentProviders\Gravy\Mapper\GooglePayPaymentProviderRequestMapper;
-use SmashPig\PaymentProviders\Gravy\Mapper\GooglePayPaymentProviderResponseMapper;
-use SmashPig\PaymentProviders\Gravy\Validators\GooglePayPaymentProviderValidator;
+use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
+use SmashPig\PaymentProviders\Gravy\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Validators\PaymentProviderValidator;
 
 class GooglePayPaymentProvider extends PaymentProvider {
+
+	public function __construct( $params ) {
+		parent::__construct();
+		$this->requestMapper = $this->providerConfiguration->object( $params['request-mapper'] );
+		$this->responseMapper = $this->providerConfiguration->object( $params['response-mapper'] );
+		$this->validator = $this->providerConfiguration->object( $params['validator'] );
+	}
+
+	protected function getRequestMapper(): RequestMapper {
+		return $this->requestMapper;
+	}
+
+	protected function getResponseMapper(): ResponseMapper {
+		return $this->responseMapper;
+	}
+
 	protected function getValidator(): PaymentProviderValidator {
-		return new GooglePayPaymentProviderValidator();
-	}
-
-	protected function getRequestMapper(): GooglePayPaymentProviderRequestMapper {
-		return new GooglePayPaymentProviderRequestMapper();
-	}
-
-	protected function getResponseMapper(): GooglePayPaymentProviderResponseMapper {
-		return new GooglePayPaymentProviderResponseMapper();
+		return $this->validator;
 	}
 
 }
