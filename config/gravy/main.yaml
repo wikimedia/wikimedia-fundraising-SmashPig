@@ -30,6 +30,11 @@ accounts:
 payment-provider:
   cc:
     class: SmashPig\PaymentProviders\Gravy\CardPaymentProvider
+    constructor-parameters:
+      -
+        request-mapper: "mappers/cc-request"
+        response-mapper: "mappers/cc-response"
+        validator: "validators/cc"
   google:
     class: SmashPig\PaymentProviders\Gravy\GooglePayPaymentProvider
   apple:
@@ -51,6 +56,16 @@ capture-from-ipn-listener: false
 proxy:
   proxy_host: ~ # example.proxy.url
   proxy_port: -1 # 80
+
+mappers:
+  cc-request:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\CardPaymentProviderRequestMapper
+  cc-response:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\CardPaymentProviderResponseMapper
+
+validators:
+  cc:
+    class: SmashPig\PaymentProviders\Gravy\Validators\CardPaymentProviderValidator
 
 fraud-filters:
   # Authorization notifications include AVS and CVV result codes.

@@ -10,11 +10,9 @@ use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyGetLatestPaymentStatusResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyRefundResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyReportResponseFactory;
-use SmashPig\PaymentProviders\Gravy\Mapper\CardPaymentProviderRequestMapper;
 use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
 use SmashPig\PaymentProviders\Gravy\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Responses\ReportResponse;
-use SmashPig\PaymentProviders\Gravy\Validators\CardPaymentProviderValidator;
 use SmashPig\PaymentProviders\Gravy\Validators\PaymentProviderValidator;
 use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\IDeleteRecurringPaymentTokenProvider;
@@ -38,6 +36,9 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	 * @var \SmashPig\Core\ProviderConfiguration
 	 */
 	protected $providerConfiguration;
+	protected PaymentProviderValidator $validator;
+	protected RequestMapper $requestMapper;
+	protected ResponseMapper $responseMapper;
 
 	public function __construct() {
 		$this->providerConfiguration = Context::get()->getProviderConfiguration();
@@ -238,15 +239,15 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 		return $approvePaymentResponse;
 	}
 
-	protected function getResponseMapper(): ResponseMapper {
-		return new ResponseMapper();
+	protected function getRequestMapper(): RequestMapper {
+		return $this->requestMapper;
 	}
 
-	protected function getRequestMapper(): RequestMapper {
-		return new CardPaymentProviderRequestMapper();
+	protected function getResponseMapper(): ResponseMapper {
+		return $this->responseMapper;
 	}
 
 	protected function getValidator(): PaymentProviderValidator {
-		return new CardPaymentProviderValidator();
+		return $this->validator;
 	}
 }
