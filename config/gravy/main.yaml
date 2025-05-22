@@ -37,8 +37,7 @@ payment-provider:
   google:
     class: SmashPig\PaymentProviders\Gravy\GooglePayPaymentProvider
     constructor-parameters:
-      -
-        request-mapper: "mappers/google-request"
+      - request-mapper: "mappers/google-request"
         response-mapper: "mappers/google-response"
         validator: "validators/google"
   apple:
@@ -49,6 +48,10 @@ payment-provider:
         validator: "validators/apple"
   dd:
     class: SmashPig\PaymentProviders\Gravy\DirectDepositPaymentProvider
+    constructor-parameters:
+      - request-mapper: "mappers/dd-request"
+        response-mapper: "mappers/dd-response"
+        validator: "validators/dd"
   bt:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
     constructor-parameters:
@@ -94,6 +97,10 @@ mappers:
     class: SmashPig\PaymentProviders\Gravy\Mapper\GooglePayPaymentProviderRequestMapper
   google-response:
     class: SmashPig\PaymentProviders\Gravy\Mapper\GooglePayPaymentProviderResponseMapper
+  dd-request:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\DirectDepositPaymentProviderRequestMapper
+  dd-response:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\DirectDepositPaymentProviderResponseMapper
 
 validators:
   cc:
@@ -104,6 +111,8 @@ validators:
     class: SmashPig\PaymentProviders\Gravy\Validators\ApplePayPaymentProviderValidator
   google:
     class: SmashPig\PaymentProviders\Gravy\Validators\GooglePayPaymentProviderValidator
+  dd:
+    class: SmashPig\PaymentProviders\Gravy\Validators\DirectDepositPaymentProviderValidator
 
 fraud-filters:
   # Authorization notifications include AVS and CVV result codes.
