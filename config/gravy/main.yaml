@@ -31,8 +31,7 @@ payment-provider:
   cc:
     class: SmashPig\PaymentProviders\Gravy\CardPaymentProvider
     constructor-parameters:
-      -
-        request-mapper: "mappers/cc-request"
+      - request-mapper: "mappers/cc-request"
         response-mapper: "mappers/cc-response"
         validator: "validators/cc"
   google:
@@ -43,12 +42,24 @@ payment-provider:
     class: SmashPig\PaymentProviders\Gravy\DirectDepositPaymentProvider
   bt:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
+    constructor-parameters:
+      - request-mapper: "mappers/redirect-request"
+        response-mapper: "mappers/redirect-response"
+        validator: "validators/redirect"
   venmo:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
+    constructor-parameters:
+      - request-mapper: "mappers/redirect-request"
+        response-mapper: "mappers/redirect-response"
+        validator: "validators/redirect"
   paypal:
     class: SmashPig\PaymentProviders\Gravy\PaypalPaymentProvider
   cash:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
+    constructor-parameters:
+      - request-mapper: "mappers/redirect-request"
+        response-mapper: "mappers/redirect-response"
+        validator: "validators/redirect"
 
 # Setting value to false to mirror production configuration
 capture-from-ipn-listener: false
@@ -62,10 +73,16 @@ mappers:
     class: SmashPig\PaymentProviders\Gravy\Mapper\CardPaymentProviderRequestMapper
   cc-response:
     class: SmashPig\PaymentProviders\Gravy\Mapper\CardPaymentProviderResponseMapper
+  redirect-request:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderRequestMapper
+  redirect-response:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderResponseMapper
 
 validators:
   cc:
     class: SmashPig\PaymentProviders\Gravy\Validators\CardPaymentProviderValidator
+  redirect:
+    class: SmashPig\PaymentProviders\Gravy\Validators\RedirectPaymentProviderValidator
 
 fraud-filters:
   # Authorization notifications include AVS and CVV result codes.
