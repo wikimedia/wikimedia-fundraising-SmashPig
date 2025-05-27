@@ -29,7 +29,7 @@ use SmashPig\PaymentProviders\Gravy\ReferenceData;
  *
  * 4. Run script:
  *    ./scripts/smashpig.sh
- *    php maintenance/BuildGravyDonationFromLogs.php <YYYYMMDD> <contribution_tracking_id>
+ *    php Maintenance/BuildGravyDonationFromLogs.php <YYYYMMDD> <contribution_tracking_id>
  *
  * Example:
  *    php Maintenance/BuildGravyDonationFromLogs.php 20250101 1234567890.1
@@ -319,11 +319,21 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 			if ( isset( $data[$gravyField] ) && !isset( $extracted[$queueMessageKey] ) ) {
 				switch ( $gravyField ) {
 					case 'payment_method':
-						if ( is_array( $data[$gravyField] ) && isset( $data[$gravyField]['method'] ) ) {
-							$methodData = ReferenceData::decodePaymentMethod( $data[$gravyField]['method'],
-								$data[$gravyField]['scheme'] );
-							$extracted['payment_method'] = $methodData[0];
-							$extracted['payment_submethod'] = $methodData[1];
+						if ( is_array( $data[$gravyField] ) ) {
+							// Set payment method and submethod from the method data
+							if ( isset( $data[$gravyField]['method'] ) ) {
+								$methodData = ReferenceData::decodePaymentMethod(
+									$data[$gravyField]['method'],
+									$data[$gravyField]['scheme'] ?? ''
+								);
+								$extracted['payment_method'] = $methodData[0];
+								$extracted['payment_submethod'] = $methodData[1];
+							}
+							// When this is set, it contains the recurring payment token
+							if ( isset( $data[$gravyField]['id'] ) ) {
+								$extracted['recurring_payment_token'] = $data[$gravyField]['id'];
+							}
+
 						} else {
 							$extracted[$queueMessageKey] = $data[$gravyField];
 						}
@@ -396,6 +406,7 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 			'payment_method' => $extractedFields['payment_method'] ?? '',
 			'payment_submethod' => $extractedFields['payment_submethod'] ?? '',
 			'recurring' => $extractedFields['recurring'] ?? '',
+			'recurring_payment_token' => $extractedFields['recurring_payment_token'] ?? '',
 
 			// Donor information
 			'first_name' => $extractedFields['first_name'] ?? '',
@@ -431,6 +442,11 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 			if ( empty( $message[$requiredField] ) ) {
 				return $requiredField;
 			}
+		}
+		// Add recurring token check for recurring messages
+		if ( isset( $message['recurring'] ) && $message['recurring'] === '1'
+			&& empty( $message['recurring_payment_token'] ) ) {
+			return 'recurring_payment_token';
 		}
 		return true;
 	}
