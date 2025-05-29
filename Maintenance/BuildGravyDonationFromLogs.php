@@ -294,7 +294,7 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 		foreach ( $decodedJsonLogData as $filePath => $logEntries ) {
 			foreach ( $logEntries as $jsonEntry ) {
 				foreach ( $jsonEntry as $donationData ) {
-					$this->extractDonationQueueMessageFieldsRecursive( $donationData, $extractedFields );
+					$this->extractDonationQueueMessageFieldsRecursive( $donationData, $filePath, $extractedFields );
 				}
 			}
 		}
@@ -306,9 +306,10 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 	 * and any special-case logic (e.g. 'accept_language' => 'language').
 	 *
 	 * @param mixed $data
+	 * @param string $filePath
 	 * @param array &$extracted
 	 */
-	protected function extractDonationQueueMessageFieldsRecursive( mixed $data, array &$extracted ): void {
+	protected function extractDonationQueueMessageFieldsRecursive( mixed $data, string $filePath, array &$extracted ): void {
 		if ( !is_array( $data ) ) {
 			// Not an array, no further descending
 			return;
@@ -318,6 +319,13 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 		foreach ( self::GRAVY_FIELD_TO_QUEUE_MESSAGE_MAP as $gravyField => $queueMessageKey ) {
 			if ( isset( $data[$gravyField] ) && !isset( $extracted[$queueMessageKey] ) ) {
 				switch ( $gravyField ) {
+					case 'id':
+						// Skip looking for transaction IDs in the fraud logs as maxmind data contains conflicting keys
+						$isNotFraudLogFile = !str_contains( strtolower( $filePath ), 'fraud' );
+						if ( $isNotFraudLogFile ) {
+							$extracted[$queueMessageKey] = $data[$gravyField];
+						}
+						break;
 					case 'payment_method':
 						if ( is_array( $data[$gravyField] ) ) {
 							// Set payment method and submethod from the method data
@@ -375,7 +383,7 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 
 		// Descend further if needed
 		foreach ( $data as $subValue ) {
-			$this->extractDonationQueueMessageFieldsRecursive( $subValue, $extracted );
+			$this->extractDonationQueueMessageFieldsRecursive( $subValue, $filePath, $extracted );
 		}
 	}
 
