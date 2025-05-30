@@ -328,7 +328,8 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 						break;
 					case 'payment_method':
 						if ( is_array( $data[$gravyField] ) ) {
-							// Set payment method and submethod from the method data
+							// Note: we only process this when $data[payment_method] is an array.
+							// Set payment method and submethod from the payment_method data
 							if ( isset( $data[$gravyField]['method'] ) ) {
 								$methodData = ReferenceData::decodePaymentMethod(
 									$data[$gravyField]['method'],
@@ -341,9 +342,6 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 							if ( isset( $data[$gravyField]['id'] ) ) {
 								$extracted['recurring_payment_token'] = $data[$gravyField]['id'];
 							}
-
-						} else {
-							$extracted[$queueMessageKey] = $data[$gravyField];
 						}
 						break;
 					case 'payment_service':
