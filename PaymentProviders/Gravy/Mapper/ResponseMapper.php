@@ -172,7 +172,7 @@ class ResponseMapper {
 	 * @param array $response
 	 * @return void
 	 */
-	private function mapPaymentResponseDonorDetails( array &$result, array $response ): void {
+	protected function mapPaymentResponseDonorDetails( array &$result, array $response ): void {
 		$gravyPaymentMethod = $response['payment_method']['method'] ?? '';
 		if ( !empty( $response['buyer'] ) && !empty( $response['buyer']['billing_details'] ) ) {
 			$donorDetails = $response['buyer']['billing_details'];
@@ -194,7 +194,8 @@ class ResponseMapper {
 				$result['donor_details']['address'] = [
 					'address_line1' => $donorAddress['line1'] ?? '',
 					'postal_code' => $donorAddress['postal_code'] ?? '',
-					'state' => $donorAddress['state'] ?? '',
+					// if state not set but state_code is set, use state_code
+					'state' => $donorAddress['state'] ?? str_replace( $donorAddress['country'] . '-', '', $donorAddress['state_code'] ) ?? '',
 					'city' => $donorAddress['city'] ?? '',
 					'country' => $donorAddress['country'] ?? '',
 				];
@@ -373,7 +374,7 @@ class ResponseMapper {
 			// contains error code
 			|| isset( $response['error_code'] )
 			// failure
-			|| $response['intent_outcome'] === 'failed'
+			|| ( isset( $response['intent_outcome'] ) && $response['intent_outcome'] === 'failed' )
 			// 3d secure errors
 			|| ( isset( $response['three_d_secure'] ) && $response['three_d_secure']['status'] === 'error' );
 	}
