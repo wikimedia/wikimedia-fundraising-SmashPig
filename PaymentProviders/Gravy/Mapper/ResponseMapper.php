@@ -195,10 +195,14 @@ class ResponseMapper {
 					'address_line1' => $donorAddress['line1'] ?? '',
 					'postal_code' => $donorAddress['postal_code'] ?? '',
 					// if state not set but state_code is set, use state_code
-					'state' => $donorAddress['state'] ?? str_replace( $donorAddress['country'] . '-', '', $donorAddress['state_code'] ) ?? '',
+					'state' => $donorAddress['state'] ?? '',
 					'city' => $donorAddress['city'] ?? '',
 					'country' => $donorAddress['country'] ?? '',
 				];
+
+				if ( empty( $donorAddress['state'] ) && !empty( $donorAddress['state_code'] ) ) {
+					$result['donor_details']['address']['state'] = str_replace( $donorAddress['country'] . '-', '', $donorAddress['state_code'] );
+				}
 			}
 		}
 	}
