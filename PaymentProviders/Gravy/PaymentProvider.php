@@ -97,7 +97,7 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 			$normalizedResponse = $this->getResponseMapper()->mapFromDeletePaymentTokenResponse( $rawGravyDeletePaymentTokenResponse );
 
 			if ( !$normalizedResponse['is_successful'] ) {
-				Logger::error( 'Processor failed to delete recurring token with response:' . $normalizedResponse['code'] . ', ' . $normalizedResponse['description'] );
+				Logger::warning( 'Processor failed to delete recurring token with response:' . $normalizedResponse['code'] . ', ' . $normalizedResponse['description'] );
 				return $response;
 			}
 			$response = true;
