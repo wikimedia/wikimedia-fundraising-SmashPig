@@ -3,6 +3,8 @@
 # To override, create a file in:
 #   /etc/smashpig/gravy/main.yaml
 #   $HOME/.smashpig/gravy/main.yaml
+logging:
+  root-context: SmashPig-Gravy
 
 api:
   class: SmashPig\PaymentProviders\Gravy\Api
