@@ -4,9 +4,6 @@ namespace SmashPig\PaymentProviders\Gravy;
 
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentSessionResponseFactory;
-use SmashPig\PaymentProviders\Gravy\Mapper\CardPaymentProviderResponseMapper;
-use SmashPig\PaymentProviders\Gravy\Mapper\RequestMapper;
-use SmashPig\PaymentProviders\Gravy\Validators\PaymentProviderValidator;
 use SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse;
 
 class CardPaymentProvider extends PaymentProvider {
@@ -28,15 +25,4 @@ class CardPaymentProvider extends PaymentProvider {
 		return $createPaymentSessionResponse;
 	}
 
-	protected function getRequestMapper(): RequestMapper {
-		return $this->requestMapper;
-	}
-
-	protected function getResponseMapper(): CardPaymentProviderResponseMapper {
-		return $this->responseMapper;
-	}
-
-	protected function getValidator(): PaymentProviderValidator {
-		return $this->validator;
-	}
 }
