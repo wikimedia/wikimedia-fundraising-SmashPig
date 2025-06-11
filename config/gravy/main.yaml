@@ -31,37 +31,43 @@ payment-provider:
   cc:
     class: SmashPig\PaymentProviders\Gravy\CardPaymentProvider
     constructor-parameters:
-      - request-mapper: "mappers/cc-request"
+      -
+        request-mapper: "mappers/cc-request"
         response-mapper: "mappers/cc-response"
         validator: "validators/cc"
   google:
     class: SmashPig\PaymentProviders\Gravy\GooglePayPaymentProvider
     constructor-parameters:
-      - request-mapper: "mappers/google-request"
+      -
+        request-mapper: "mappers/google-request"
         response-mapper: "mappers/google-response"
         validator: "validators/google"
   apple:
     class: SmashPig\PaymentProviders\Gravy\ApplePayPaymentProvider
     constructor-parameters:
-      - request-mapper: "mappers/apple-request"
+      -
+        request-mapper: "mappers/apple-request"
         response-mapper: "mappers/apple-response"
         validator: "validators/apple"
   dd:
     class: SmashPig\PaymentProviders\Gravy\DirectDepositPaymentProvider
     constructor-parameters:
-      - request-mapper: "mappers/dd-request"
+      -
+        request-mapper: "mappers/dd-request"
         response-mapper: "mappers/dd-response"
         validator: "validators/dd"
   bt:
     class: SmashPig\PaymentProviders\Gravy\BankPaymentProvider
     constructor-parameters:
-      - request-mapper: "mappers/bt-request"
+      -
+        request-mapper: "mappers/bt-request"
         response-mapper: "mappers/bt-response"
         validator: "validators/redirect"
   venmo:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
     constructor-parameters:
-      - request-mapper: "mappers/redirect-request"
+      -
+        request-mapper: "mappers/redirect-request"
         response-mapper: "mappers/redirect-response"
         validator: "validators/redirect"
   paypal:
@@ -74,7 +80,8 @@ payment-provider:
   cash:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
     constructor-parameters:
-      - request-mapper: "mappers/redirect-request"
+      -
+        request-mapper: "mappers/redirect-request"
         response-mapper: "mappers/redirect-response"
         validator: "validators/redirect"
 
