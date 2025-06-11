@@ -53,10 +53,10 @@ payment-provider:
         response-mapper: "mappers/dd-response"
         validator: "validators/dd"
   bt:
-    class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
+    class: SmashPig\PaymentProviders\Gravy\BankPaymentProvider
     constructor-parameters:
-      - request-mapper: "mappers/redirect-request"
-        response-mapper: "mappers/redirect-response"
+      - request-mapper: "mappers/bt-request"
+        response-mapper: "mappers/bt-response"
         validator: "validators/redirect"
   venmo:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
@@ -110,6 +110,10 @@ mappers:
     class: SmashPig\PaymentProviders\Gravy\Mapper\PaypalPaymentProviderRequestMapper
   paypal-response:
     class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderResponseMapper
+  bt-request:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\BankPaymentProviderRequestMapper
+  bt-response:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\BankPaymentProviderResponseMapper
 
 validators:
   cc:
