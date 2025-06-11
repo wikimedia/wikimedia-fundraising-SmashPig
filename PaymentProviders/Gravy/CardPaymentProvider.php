@@ -11,13 +11,6 @@ use SmashPig\PaymentProviders\Responses\CreatePaymentSessionResponse;
 
 class CardPaymentProvider extends PaymentProvider {
 
-	public function __construct( $params ) {
-		parent::__construct();
-		$this->requestMapper = $this->providerConfiguration->object( $params['request-mapper'] );
-		$this->responseMapper = $this->providerConfiguration->object( $params['response-mapper'] );
-		$this->validator = $this->providerConfiguration->object( $params['validator'] );
-	}
-
 	public function createPaymentSession(): CreatePaymentSessionResponse {
 		$createPaymentSessionResponse = new CreatePaymentSessionResponse();
 		try {

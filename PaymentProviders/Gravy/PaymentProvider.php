@@ -40,9 +40,15 @@ abstract class PaymentProvider implements IPaymentProvider, IDeleteRecurringPaym
 	protected RequestMapper $requestMapper;
 	protected ResponseMapper $responseMapper;
 
-	public function __construct() {
+	public function __construct( array $params = [] ) {
 		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 		$this->api = $this->providerConfiguration->object( 'api' );
+
+		if ( !empty( $params ) ) {
+			$this->requestMapper = $this->providerConfiguration->object( $params['request-mapper'] );
+			$this->responseMapper = $this->providerConfiguration->object( $params['response-mapper'] );
+			$this->validator = $this->providerConfiguration->object( $params['validator'] );
+		}
 	}
 
 	/**
