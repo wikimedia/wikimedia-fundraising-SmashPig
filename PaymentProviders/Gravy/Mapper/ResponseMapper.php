@@ -119,6 +119,8 @@ class ResponseMapper {
 			'is_successful' => true,
 			'report_execution_id' => $response['id'],
 			'report_id' => $report['id'],
+			'report_name' => $report['name'],
+			'report_created_by' => $report['creator_display_name'],
 			'raw_response' => $response,
 			'status' => $this->normalizeStatus( $response['status'] ),
 			'raw_status' => $response['status']
