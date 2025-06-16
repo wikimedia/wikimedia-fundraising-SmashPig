@@ -154,8 +154,9 @@ class ResponseMapper {
 	 */
 	private function mapPaymentResponsePaymentMethodDetails( array &$result, array $response ): void {
 		if ( !empty( $response['payment_method'] ) ) {
-			$result['recurring_payment_token'] = $response['payment_method']['id'];
-
+			if ( isset( $response['payment_method']['id'] ) ) {
+				$result['recurring_payment_token'] = $response['payment_method']['id'];
+			}
 			$gravyPaymentMethod = $response['payment_method']['method'] ?? '';
 			$gravyPaymentSubmethod = $response['payment_method']['scheme'] ?? '';
 			[ $normalizedPaymentMethod, $normalizedPaymentSubmethod ] = ReferenceData::decodePaymentMethod( $gravyPaymentMethod, $gravyPaymentSubmethod );
