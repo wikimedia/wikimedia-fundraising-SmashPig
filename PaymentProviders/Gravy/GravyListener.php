@@ -81,7 +81,8 @@ class GravyListener implements IHttpActionHandler {
 				'created_at' => $message['created_at'],
 				'id' => $message['target']['id'],
 				'message_type' => $this->normalizeMessageType( $type ),
-				'raw_response' => $message
+				'raw_response' => $message,
+				'target' => $message['target'],
 			];
 
 			if ( $this->isRefundMessage( $type ) ) {
