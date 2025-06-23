@@ -82,9 +82,7 @@ abstract class PaymentProviderValidator {
 			'currency',
 			'country',
 			'order_id',
-			'email',
-			'first_name',
-			'last_name'
+			'email'
 		];
 
 		$required = array_merge(
