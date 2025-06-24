@@ -50,6 +50,7 @@ class ReferenceData {
 		'givingblock' => '',
 		'gocardless' => '',
 		'googlepay' => PaymentMethod::GOOGLE,
+		'googlepay_pan_only' => PaymentMethod::GOOGLE,
 		'gopay' => '',
 		'grabpay' => '',
 		'hipercard' => PaymentMethod::CC,
