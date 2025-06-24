@@ -154,8 +154,9 @@ class ResponseMapper {
 	 */
 	private function mapPaymentResponsePaymentMethodDetails( array &$result, array $response ): void {
 		if ( !empty( $response['payment_method'] ) ) {
-			$result['recurring_payment_token'] = $response['payment_method']['id'];
-
+			if ( isset( $response['payment_method']['id'] ) ) {
+				$result['recurring_payment_token'] = $response['payment_method']['id'];
+			}
 			$gravyPaymentMethod = $response['payment_method']['method'] ?? '';
 			$gravyPaymentSubmethod = $response['payment_method']['scheme'] ?? '';
 			[ $normalizedPaymentMethod, $normalizedPaymentSubmethod ] = ReferenceData::decodePaymentMethod( $gravyPaymentMethod, $gravyPaymentSubmethod );
@@ -320,7 +321,9 @@ class ResponseMapper {
 			$errorParameters['code'] = $error['status'] ?? '';
 			$errorParameters['message'] = $error['code'] ?? '';
 			$errorParameters['description'] = $error['message'] ?? '';
-		} elseif ( $error['intent_outcome'] == 'failed' ) {
+		} elseif ( ( isset( $error['intent_outcome'] ) && $error['intent_outcome'] == 'failed' )
+		// Ensure error details are mapped for failed transaction details coming in through listener
+		|| ( isset( $error['status'] ) && $this->normalizeStatus( $error['status'] ) === FinalStatus::FAILED ) ) {
 			$errorParameters['code'] = $error['error_code'] ?? '';
 			$errorParameters['message'] = $error['status'] ?? '';
 
@@ -382,7 +385,9 @@ class ResponseMapper {
 			// failure
 			|| ( isset( $response['intent_outcome'] ) && $response['intent_outcome'] === 'failed' )
 			// 3d secure errors
-			|| ( isset( $response['three_d_secure'] ) && $response['three_d_secure']['status'] === 'error' );
+			|| ( isset( $response['three_d_secure'] ) && $response['three_d_secure']['status'] === 'error' )
+			// Payment errors from the listener
+			|| ( isset( $response['status'] ) && $this->normalizeStatus( $response['status'] ) === FinalStatus::FAILED );
 	}
 
 	/**
@@ -407,6 +412,14 @@ class ResponseMapper {
 	 * @return bool
 	 */
 	protected function requiresChargebackIfFailed( array $response ): bool {
-		return $this->getBackendProcessor( $response ) === 'trustly';
+		if ( $this->getBackendProcessor( $response ) === 'trustly' ) {
+			return true;
+		}
+		[ $normalizedPaymentMethod, $normalizedPaymentSubmethod ] = ReferenceData::decodePaymentMethod(
+			$response['payment_method']['method'] ?? '',
+			''
+		);
+
+		return $normalizedPaymentMethod === 'dd' && $normalizedPaymentSubmethod === 'ach';
 	}
 }
