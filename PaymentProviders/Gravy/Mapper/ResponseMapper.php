@@ -245,9 +245,8 @@ class ResponseMapper {
 		}
 
 		$this->mapPaymentResponsePaymentMethodDetails( $result, $response );
-		if ( isset( $response['buyer'] ) ) {
-			$this->mapPaymentResponseDonorDetails( $result, $response );
-		}
+		$this->mapPaymentResponseDonorDetails( $result, $response );
+
 		$this->mapPaymentResponsePaymentService( $result, $response );
 
 		return $result;
