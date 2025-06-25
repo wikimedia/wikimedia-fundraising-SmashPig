@@ -471,51 +471,6 @@ abstract class PaymentProvider implements
 	}
 
 	/**
-	 * Maps gateway transaction ID and errors from $rawResponse to $response. The replies we get back from the
-	 * Adyen API have a section with 'pspReference' and 'refusalReason' properties. Exactly where this section
-	 * is depends on the API call, but we map them all the same way.
-	 *
-	 * @param PaymentProviderResponse $response An instance of a PaymentProviderResponse subclass to be populated
-	 * @param object $rawResponse The bit of the API response that has pspReference and refusalReason
-	 * @param bool $checkForRetry Whether to test the refusalReason against a list of retryable reasons.
-	 */
-	protected function mapTxnIdAndErrors(
-		PaymentProviderResponse $response,
-		$rawResponse,
-		$checkForRetry = true
-	) {
-		// map trxn id
-		if ( !empty( $rawResponse->pspReference ) ) {
-			$response->setGatewayTxnId( $rawResponse->pspReference );
-		} else {
-			$message = 'Unable to map Adyen Gateway Transaction ID';
-			$response->addErrors( new PaymentError(
-				ErrorCode::MISSING_TRANSACTION_ID,
-				$message,
-				LogLevel::ERROR
-			) );
-			Logger::debug( $message, $rawResponse );
-		}
-		// map errors
-		if ( !empty( $rawResponse->refusalReason ) ) {
-			if ( $checkForRetry ) {
-				if ( $this->canRetryRefusalReason( $rawResponse->refusalReason ) ) {
-					$errorCode = ErrorCode::DECLINED;
-				} else {
-					$errorCode = ErrorCode::DECLINED_DO_NOT_RETRY;
-				}
-			} else {
-				$errorCode = ErrorCode::UNEXPECTED_VALUE;
-			}
-			$response->addErrors( new PaymentError(
-				$errorCode,
-				$rawResponse->refusalReason,
-				LogLevel::INFO
-			) );
-		}
-	}
-
-	/**
 	 * Normalize the raw status or add appropriate errors to our response object. We have a group of classes
 	 * whose function is normalizing raw status codes for specific API calls. We expect SOME status code back
 	 * from any API call, so when that is missing we always add a MISSING_REQUIRED_DATA error. Otherwise we
