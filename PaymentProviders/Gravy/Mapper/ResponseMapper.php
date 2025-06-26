@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\Gravy\Mapper;
 
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Gravy\GravyHelper;
+use SmashPig\PaymentProviders\Gravy\PaymentMethod;
 use SmashPig\PaymentProviders\Gravy\ReferenceData;
 use SmashPig\PaymentProviders\RiskScorer;
 
@@ -413,7 +414,7 @@ class ResponseMapper {
 	 * @return bool
 	 */
 	protected function requiresChargebackIfFailed( array $response ): bool {
-		if ( $this->getBackendProcessor( $response ) === 'trustly' ) {
+		if ( $this->getBackendProcessor( $response ) === PaymentMethod::ACH->toGravyValue() ) {
 			return true;
 		}
 		[ $normalizedPaymentMethod, $normalizedPaymentSubmethod ] = ReferenceData::decodePaymentMethod(
