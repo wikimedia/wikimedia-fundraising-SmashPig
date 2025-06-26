@@ -24,62 +24,6 @@ class ResponseMapper {
 		return $this->mapSuccessfulPaymentResponse( $response );
 	}
 
-	public function mapDonorResponse( array $response ): array {
-		$buyer = $response;
-		$donorDetails = $buyer['billing_details'] ?? [];
-		$params = [
-			'status' => FinalStatus::COMPLETE,
-			'is_successful' => true,
-			'donor_details' => [
-				'processor_contact_id' => $buyer['id'] ?? '',
-			],
-			'raw_response' => $response
-		];
-
-		if ( !empty( $donorDetails ) ) {
-			$params['donor_details'] = array_merge( $params['donor_details'], [
-				'first_name' => $donorDetails['first_name'] ?? '',
-				'last_name' => $donorDetails['last_name'] ?? '',
-				'phone_number' => $donorDetails['phone_number'] ?? '',
-				'email_address' => $donorDetails['email_address'] ?? '',
-				] );
-			if ( !empty( $donorDetails['address'] ) ) {
-				$donorAddress = $donorDetails['address'];
-				$params['donor_details']['address'] = [
-					'address_line1' => $donorAddress['line1'] ?? '',
-					'postal_code' => $donorAddress['postal_code'] ?? '',
-					'state' => $donorAddress['state'] ?? '',
-					'city' => $donorAddress['city'] ?? '',
-					'country' => $donorAddress['country'] ?? '',
-				];
-			}
-		} else {
-			$params['is_successful'] = false;
-		}
-
-		return $params;
-	}
-
-	public function mapFromCreateDonorResponse( array $response ): array {
-		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
-			return $this->mapErrorFromResponse( $response );
-		}
-		return $this->mapDonorResponse( $response );
-	}
-
-	public function mapFromGetDonorResponse( array $response ): array {
-		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
-			return $this->mapErrorFromResponse( $response );
-		}
-
-		$donorResponse = [];
-		if ( !empty( $response['items'] ) ) {
-			$donorResponse = $response['items'][0];
-		}
-
-		return $this->mapDonorResponse( $donorResponse );
-	}
-
 	public function getRiskScores( ?string $avs_response, ?string $cvv_response ): array {
 		return ( new RiskScorer() )->getRiskScores(
 			$avs_response,
