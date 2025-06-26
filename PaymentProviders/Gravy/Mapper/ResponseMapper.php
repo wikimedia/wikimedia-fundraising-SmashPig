@@ -10,7 +10,7 @@ use SmashPig\PaymentProviders\RiskScorer;
 
 class ResponseMapper {
 	// List of methods with username as identifiers
-	const METHODS_WITH_USERNAME = [ 'venmo' ];
+	public const METHODS_WITH_USERNAME = [ 'venmo' ];
 
 	/**
 	 * @return array
