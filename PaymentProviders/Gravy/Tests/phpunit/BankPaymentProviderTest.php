@@ -129,6 +129,7 @@ class BankPaymentProviderTest extends BaseGravyTestCase {
 		$params['order_id'] = "$ct_id.1";
 		$params['payment_method'] = "bt";
 		$params['payment_submethod'] = "netbanking";
+		$params['description'] = "Wikimedia Foundation";
 
 		$donorParams = $this->getCreateDonorParams();
 		$params = array_merge( $params, $donorParams );
