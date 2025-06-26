@@ -28,5 +28,8 @@
       "tax_id": { "value": "8480052240", "kind": "pe.ruc" }
     }
   },
-  "intent": "capture"
+  "intent": "capture",
+  "statement_descriptor": {
+		"description": "Wikimedia Foundation"
+  }
 }
