@@ -170,6 +170,7 @@ class ReferenceData {
 		'netbanking' => 'netbanking',
 		'webpay' => 'webpay',
 		'stitch' => 'stitch',
+		'bancomer' => 'bancomer'
 	];
 
 	protected static $cashSubmethods = [

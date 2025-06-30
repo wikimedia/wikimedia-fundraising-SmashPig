@@ -25,7 +25,8 @@ class RequestMapper {
 		'rapipago',
 		'abitab',
 		'boleto',
-		'stitch'
+		'stitch',
+		'bancomer'
 	];
 
 	/**
