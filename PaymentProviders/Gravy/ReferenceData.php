@@ -18,6 +18,7 @@ class ReferenceData {
 		'amex' => PaymentMethod::CC,
 		'applepay' => PaymentMethod::APPLE,
 		'bacs' => PaymentMethod::DD,
+		'bancomer' => PaymentMethod::BT,
 		'bancontact' => PaymentMethod::CC,
 		'banked' => PaymentMethod::BT,
 		'bcp' => PaymentMethod::BT,
