@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Gravy\Mapper;
 
 use SmashPig\PaymentData\FinalStatus;
+use SmashPig\PaymentProviders\Gravy\Errors\ErrorChecker;
 use SmashPig\PaymentProviders\Gravy\GravyHelper;
 use SmashPig\PaymentProviders\Gravy\PaymentMethod;
 use SmashPig\PaymentProviders\Gravy\PaymentStatusNormalizer;
@@ -14,11 +15,20 @@ class ResponseMapper {
 	public const METHODS_WITH_USERNAME = [ 'venmo' ];
 
 	/**
+	 * @var ErrorChecker
+	 */
+	private $responseErrorChecker;
+
+	public function __construct() {
+		$this->responseErrorChecker = new ErrorChecker;
+	}
+
+	/**
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/new-transaction
 	 */
 	public function mapFromPaymentResponse( array $response ): array {
-		if ( $this->paymentResponseContainsError( $response ) ) {
+		if ( $this->responseErrorChecker->responseHasErrors( $response ) ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 
@@ -33,7 +43,7 @@ class ResponseMapper {
 	}
 
 	public function mapFromDeletePaymentTokenResponse( array $response ): array {
-		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+		if ( $this->responseErrorChecker->responseHasErrors( $response ) ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 		return [
@@ -46,7 +56,7 @@ class ResponseMapper {
 	 * @return array
 	 */
 	public function mapFromRefundPaymentResponse( array $response ): array {
-		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+		if ( $this->responseErrorChecker->responseHasErrors( $response ) ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 		return $this->mapSuccessfulRefundMessage( $response );
@@ -57,7 +67,7 @@ class ResponseMapper {
 	 * @return array
 	 */
 	public function mapFromReportExecutionResponse( array $response ): array {
-		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+		if ( $this->responseErrorChecker->responseHasErrors( $response ) ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 		$report = $response['report'];
@@ -78,7 +88,7 @@ class ResponseMapper {
 	 * @return array
 	 */
 	public function mapFromGenerateReportUrlResponse( array $response ): array {
-		if ( ( isset( $response['type'] ) && $response['type'] == 'error' ) || isset( $response['error_code'] ) ) {
+		if ( $this->responseErrorChecker->responseHasErrors( $response ) ) {
 			return $this->mapErrorFromResponse( $response );
 		}
 
@@ -292,24 +302,6 @@ class ResponseMapper {
 		];
 
 		return $error;
-	}
-
-	/**
-	 * @param array $response
-	 * @return bool
-	 */
-	protected function paymentResponseContainsError( array $response ): bool {
-		return (
-			// response type = error
-			isset( $response['type'] ) && $response['type'] === 'error' )
-			// contains error code
-			|| isset( $response['error_code'] )
-			// failure
-			|| ( isset( $response['intent_outcome'] ) && $response['intent_outcome'] === 'failed' )
-			// 3d secure errors
-			|| ( isset( $response['three_d_secure'] ) && $response['three_d_secure']['status'] === 'error' )
-			// Payment errors from the listener
-			|| ( isset( $response['status'] ) && $this->normalizeStatus( $response['status'] ) === FinalStatus::FAILED );
 	}
 
 	/**
