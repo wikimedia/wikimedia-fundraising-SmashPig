@@ -3,7 +3,7 @@
 namespace SmashPig\PaymentProviders\Gravy\Tests\phpunit;
 
 use SmashPig\PaymentProviders\Gravy\CardPaymentProvider;
-use SmashPig\PaymentProviders\Gravy\Mapper\ErrorMapper;
+use SmashPig\PaymentProviders\Gravy\Errors\ErrorMapper;
 use SmashPig\PaymentProviders\Gravy\Tests\BaseGravyTestCase;
 
 /**

@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\Gravy\Mapper;
 
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Gravy\Errors\ErrorChecker;
+use SmashPig\PaymentProviders\Gravy\Errors\ErrorMapper;
 use SmashPig\PaymentProviders\Gravy\GravyHelper;
 use SmashPig\PaymentProviders\Gravy\PaymentMethod;
 use SmashPig\PaymentProviders\Gravy\PaymentStatusNormalizer;
