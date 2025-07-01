@@ -22,15 +22,18 @@ class RedirectPaymentProviderValidator extends PaymentProviderValidator {
 	 * @return void
 	 */
 	public function validateOneTimeCreatePaymentInput( array $params ): void {
-		$required = [
-			'amount',
-			'currency',
-			'country',
-			'order_id',
+		parent::validateOneTimeCreatePaymentInput( $params );
+
+		$defaultRequiredFields = [
 			'email',
 			'first_name',
 			'last_name',
 		];
+
+		$required = array_merge(
+			$defaultRequiredFields,
+			$this->addCountrySpecificRequiredFields( $params )
+		);
 
 		$this->validateFields( $required, $params );
 	}

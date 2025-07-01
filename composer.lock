@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3837e4a41b6d5becc407d81620fb0911",
+    "content-hash": "8f99fbee896154ce4edd1efcc9f3aed4",
     "packages": [
         {
             "name": "amzn/login-and-pay-with-amazon-sdk-php",
@@ -215,16 +215,16 @@
         },
         {
             "name": "gr4vy/gr4vy-php",
-            "version": "v0.26.0",
+            "version": "v0.27.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/gr4vy/gr4vy-php.git",
-                "reference": "2c85b6d8b44e1afb4a21b16f5f414fe659e1dcb8"
+                "reference": "e0e3da9b4d20e0dac1cc8448fb60fce858bc0fa7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gr4vy/gr4vy-php/zipball/2c85b6d8b44e1afb4a21b16f5f414fe659e1dcb8",
-                "reference": "2c85b6d8b44e1afb4a21b16f5f414fe659e1dcb8",
+                "url": "https://api.github.com/repos/gr4vy/gr4vy-php/zipball/e0e3da9b4d20e0dac1cc8448fb60fce858bc0fa7",
+                "reference": "e0e3da9b4d20e0dac1cc8448fb60fce858bc0fa7",
                 "shasum": ""
             },
             "require": {
@@ -267,9 +267,9 @@
                 "sdk"
             ],
             "support": {
-                "source": "https://github.com/gr4vy/gr4vy-php/tree/v0.26.0"
+                "source": "https://github.com/gr4vy/gr4vy-php/tree/v0.27.0"
             },
-            "time": "2025-04-23T18:25:53+00:00"
+            "time": "2025-06-25T16:51:46+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1079,6 +1079,59 @@
                 "source": "https://github.com/php-fig/clock/tree/1.0.0"
             },
             "time": "2022-11-25T14:36:26+00:00"
+        },
+        {
+            "name": "psr/container",
+            "version": "2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/container.git",
+                "reference": "c71ecc56dfe541dbd90c5360474fbc405f8d5963"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/container/zipball/c71ecc56dfe541dbd90c5360474fbc405f8d5963",
+                "reference": "c71ecc56dfe541dbd90c5360474fbc405f8d5963",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Container\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common Container Interface (PHP FIG PSR-11)",
+            "homepage": "https://github.com/php-fig/container",
+            "keywords": [
+                "PSR-11",
+                "container",
+                "container-interface",
+                "container-interop",
+                "psr"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/container/issues",
+                "source": "https://github.com/php-fig/container/tree/2.0.2"
+            },
+            "time": "2021-11-05T16:47:00+00:00"
         },
         {
             "name": "psr/http-client",
