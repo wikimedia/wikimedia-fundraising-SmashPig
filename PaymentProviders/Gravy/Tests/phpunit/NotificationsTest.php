@@ -146,20 +146,18 @@ class NotificationsTest extends BaseGravyTestCase {
 		$this->assertNull( $jobsMessage, 'No message shoud be queued to jobs queue' );
 	}
 
-	public function testPaymentMethodDeletedMessageCurrentlyIgnored(): void {
+	public function testPaymentMethodDeletedMessageIsQueued(): void {
 		[ $request, $response ] = $this->getValidRequestResponseObjects();
 		$responseBody = file_get_contents( __DIR__ . '/../Data/payment-method-deleted-paypal.json' );
 		$request->method( 'getRawRequest' )->willReturn( $responseBody );
 		$result = $this->gravyListener->execute( $request, $response );
 
-		// we're currently ignoring these, so the result is true
+		// The listener should return true (successful processing).
 		$this->assertTrue( $result );
 
-		// we're not creating any refund or job messages when processing these messages
-		$nullRefundMessage = $this->refundQueue->pop();
-		$nullJobsMessage = $this->jobsGravyQueue->pop();
-		$this->assertNull( $nullRefundMessage );
-		$this->assertNull( $nullJobsMessage );
+		// A new job message should be created for the deletion event.
+		$jobsMessage = $this->jobsGravyQueue->pop();
+		$this->assertNotNull( $jobsMessage, 'Deletion event should be queued to jobs queue' );
 	}
 
 	public function testTrustlyPaymentMFailedMessageIsSentToRefund(): void {
