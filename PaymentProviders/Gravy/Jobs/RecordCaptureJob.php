@@ -37,7 +37,7 @@ class RecordCaptureJob implements Runnable {
 		$transactionDetails = GravyGetLatestPaymentStatusResponseFactory::fromNormalizedResponse( $this->payload );
 		$logger = Logger::getTaggedLogger( "corr_id-gravy-{$transactionDetails->getOrderId()}" );
 		$logger->info(
-			'Recording successful capture of Gravy transaction with authorization reference ' .
+			'Processing captured Gravy payment with authorization reference ' .
 				"'{$transactionDetails->getGatewayTxnId()}' and order ID '{$transactionDetails->getOrderId()}'."
 		);
 
