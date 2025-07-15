@@ -26,9 +26,8 @@ class RecordCaptureJob implements Runnable {
 		return [
 			'class' => self::class,
 			'payload' => array_merge(
-				[
-					'eventDate' => $message->getMessageDate()
-				], $transactionDetails->getNormalizedResponse()
+				[ 'eventDate' => $message->getMessageDate() ],
+				$transactionDetails->getNormalizedResponse()
 			)
 		];
 	}
