@@ -27,8 +27,8 @@ class TransactionAction extends GravyAction {
 				);
 
 				// temp logging to debug T399577
-				$tl->info( 'Transaction message (T399577): ' . json_encode( $msg ) );
-				$tl->info( 'Transaction details (T399577): ' . json_encode( $transactionDetails ) );
+				$tl->info( 'Transaction message (T399577): ' . print_r( $msg, true ) );
+				$tl->info( 'Transaction details (T399577): ' . print_r( $transactionDetails, true ) );
 
 				$recordCaptureJob = RecordCaptureJob::factory( $msg, $transactionDetails );
 				QueueWrapper::push( $msg->getDestinationQueue(), $recordCaptureJob );
