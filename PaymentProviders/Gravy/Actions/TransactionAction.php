@@ -26,10 +26,6 @@ class TransactionAction extends GravyAction {
 					"Adding successful capture job for {$transactionDetails->getCurrency()} {$transactionDetails->getAmount()} with psp reference {$transactionDetails->getGatewayTxnId()}."
 				);
 
-				// temp logging to debug T399577
-				$tl->info( 'Transaction message (T399577): ' . print_r( $msg, true ) );
-				$tl->info( 'Transaction details (T399577): ' . print_r( $transactionDetails, true ) );
-
 				$recordCaptureJob = RecordCaptureJob::factory( $msg, $transactionDetails );
 				QueueWrapper::push( $msg->getDestinationQueue(), $recordCaptureJob );
 			} elseif ( $transactionDetails->getStatus() == FinalStatus::PENDING_POKE ) {
