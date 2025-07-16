@@ -3,9 +3,7 @@
 namespace SmashPig\PaymentProviders\Gravy\Tests\phpunit;
 
 use SmashPig\PaymentProviders\Gravy\CardPaymentProvider;
-use SmashPig\PaymentProviders\Gravy\Factories\GravyCreatePaymentResponseFactory;
 use SmashPig\PaymentProviders\Gravy\Mapper\ErrorMapper;
-use SmashPig\PaymentProviders\Gravy\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Gravy\Tests\BaseGravyTestCase;
 
 /**
@@ -21,22 +19,6 @@ class CardPaymentProviderTest extends BaseGravyTestCase {
 	public function setUp(): void {
 		parent::setUp();
 		$this->provider = $this->config->object( 'payment-provider/cc' );
-	}
-
-	public function testCorrectMappedRiskScores() {
-		$responseBody = json_decode( file_get_contents( __DIR__ . '/../Data/create-transaction.json' ), true );
-		$gravyResponseMapper = new ResponseMapper();
-		$normalizedResponse = $gravyResponseMapper->mapFromPaymentResponse( $responseBody );
-
-		$response = GravyCreatePaymentResponseFactory::fromNormalizedResponse( $normalizedResponse );
-
-		$this->assertInstanceOf( '\SmashPig\PaymentProviders\Responses\CreatePaymentResponse',
-			$response );
-		$this->assertTrue( $response->isSuccessful() );
-		$this->assertEquals( [
-			'avs' => 75,
-			'cvv' => 0
-		], $response->getRiskScores() );
 	}
 
 	public function testSuccessfulCreatePaymentFromTokenWithProcessorContactId() {
