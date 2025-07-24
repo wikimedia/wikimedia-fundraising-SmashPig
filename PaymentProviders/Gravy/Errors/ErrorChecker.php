@@ -51,6 +51,6 @@ class ErrorChecker {
 	}
 
 	protected function hasFailedPaymentStatus( array $response ): bool {
-		return isset( $response['status'] ) && ( new PaymentStatusNormalizer )->normalizeStatus( $response['status'] ) === FinalStatus::FAILED;
+		return isset( $response['status'] ) && ( new PaymentStatusNormalizer() )->normalizeStatus( $response['status'] ) === FinalStatus::FAILED;
 	}
 }

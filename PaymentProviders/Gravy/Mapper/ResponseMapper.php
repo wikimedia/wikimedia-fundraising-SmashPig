@@ -20,7 +20,7 @@ class ResponseMapper {
 	private $responseErrorChecker;
 
 	public function __construct() {
-		$this->responseErrorChecker = new ErrorChecker;
+		$this->responseErrorChecker = new ErrorChecker();
 	}
 
 	/**
@@ -236,7 +236,7 @@ class ResponseMapper {
 	 * @link https://docs.gr4vy.com/guides/api/resources/transactions/statuses
 	 */
 	protected function normalizeStatus( string $paymentProcessorStatus ): string {
-		return ( new PaymentStatusNormalizer )->normalizeStatus( $paymentProcessorStatus );
+		return ( new PaymentStatusNormalizer() )->normalizeStatus( $paymentProcessorStatus );
 	}
 
 	/**
