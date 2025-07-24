@@ -90,6 +90,7 @@ class TransactionAction extends GravyAction {
 	 */
 	public function pushFailedAuthAsChargebackToRefundQueue( string $ipnMessageDate, PaymentProviderExtendedResponse $transaction ) {
 		$refundMessage = $this->buildRefundQueueMessage( $ipnMessageDate, $transaction->getNormalizedResponse() );
+		$refundMessage['backend_processor'] = 'trustly';
 		$refundMessage['status'] = FinalStatus::COMPLETE;
 		QueueWrapper::push( 'refund', $refundMessage );
 	}
