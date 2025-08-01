@@ -157,6 +157,36 @@ class RequestMapper {
 	}
 
 	/**
+	 * Maps the smashpig parameters to Gravy requirements for payment service definition
+	 * Currently, only ideal for payment methods with a unique payment service definition
+	 * For example - PayPal and Venmo
+	 *
+	 * This method is the same for all payment methods on Gravy.
+	 *
+	 * @param string $method
+	 * @return array{ method: string }
+	 */
+	public function mapToPaymentServiceDefinitionRequest( string $method ): array {
+		$paymentServiceMethod = '';
+		switch ( $method ) {
+			case 'paypal':
+				$paymentServiceMethod = 'paypal-paypal';
+				break;
+			case 'venmo':
+				$paymentServiceMethod = 'braintree-venmo';
+				break;
+			case 'trustly':
+				$paymentServiceMethod = 'trustly-trustly';
+				break;
+			default:
+				throw new \UnexpectedValueException( "Unsupported payment method {$method}" );
+		}
+		return [
+			'method' => $paymentServiceMethod
+		];
+	}
+
+	/**
 	 * Populates the create payment request with Gravy's requirements for create payment
 	 *
 	 * This method is the same for all payment methods on Gravy.
