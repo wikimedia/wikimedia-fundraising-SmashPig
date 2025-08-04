@@ -8,7 +8,7 @@ use SmashPig\Core\Logging\TaggedLogger;
 
 class Api {
 
-	private $gravyApiClient;
+	private Gr4vyConfig $gravyApiClient;
 
 	public function __construct() {
 		$c = Context::get()->getProviderConfiguration();
