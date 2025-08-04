@@ -27,7 +27,7 @@ class Api {
 	public function createPaymentSession( $params = [], $method = 'card' ) {
 		$response = null;
 		$tl = new TaggedLogger( 'RawData' );
-		if ( $method == 'apple' ) {
+		if ( $method === PaymentMethod::APPLE_PAY ) {
 			$response = $this->gravyApiClient->newApplePaySession( $params );
 			$tl->info( 'New Apple Pay Session response ' . json_encode( $response ) );
 		} else {
