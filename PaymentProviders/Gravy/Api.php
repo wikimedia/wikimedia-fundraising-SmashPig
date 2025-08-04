@@ -8,8 +8,6 @@ use SmashPig\Core\Logging\TaggedLogger;
 
 class Api {
 
-	private $merchantAccountId;
-
 	private $gravyApiClient;
 
 	public function __construct() {
@@ -18,9 +16,9 @@ class Api {
 		$privateKeyLocation = $c->val( 'privateKeyLocation' );
 		$gravyId = $c->val( 'gravy-id' );
 		$apiPrefix = $c->val( 'api-prefix' );
+		$merchantAccountId = $c->val( 'merchantAccountId' );
 
-		$this->merchantAccountId = $c->val( 'merchantAccountId' );
-		$this->gravyApiClient = new Gr4vyConfig( $gravyId, $privateKeyLocation, true, $apiPrefix, $this->merchantAccountId );
+		$this->gravyApiClient = new Gr4vyConfig( $gravyId, $privateKeyLocation, true, $apiPrefix, $merchantAccountId );
 	}
 
 	/**
