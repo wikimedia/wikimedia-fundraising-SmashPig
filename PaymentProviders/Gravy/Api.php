@@ -38,40 +38,6 @@ class Api {
 	}
 
 	/**
-	 * Get donor record to map transactions to on Gr4vy
-	 *
-	 *
-	 * @param array $params
-	 *
-	 * @return array
-	 * @link https://docs.gr4vy.com/reference/buyers/list-buyers Gr4vy Documentation to get an existing buyer
-	 */
-	public function getDonor( array $params ): array {
-		$response = $this->gravyApiClient->listBuyers( $params );
-		$tl = new TaggedLogger( 'RawData' );
-		$response_string = json_encode( $response );
-		$tl->info( "Get donor response $response_string" );
-		return $response;
-	}
-
-	/**
-	 * Create donor record to map transactions to on Gr4vy
-	 *
-	 *
-	 * @param array $params
-	 *
-	 * @return array
-	 * @link https://docs.gr4vy.com/reference/buyers/new-buyer Gr4vy Documentation to create a new buyer
-	 */
-	public function createDonor( array $params ): array {
-		$response = $this->gravyApiClient->addBuyer( $params );
-		$tl = new TaggedLogger( 'RawData' );
-		$response_string = json_encode( $response );
-		$tl->info( "Create donor response $response_string" );
-		return $response;
-	}
-
-	/**
 	 * Initializes the two step payment process
 	 *
 	 *
