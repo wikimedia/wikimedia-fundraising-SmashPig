@@ -79,11 +79,17 @@ class DlocalAudit implements AuditParser {
 
 		switch ( $row['Type'] ) {
 			case 'Payment':
+				if ( $this->isFromOrchestrator( $row['Invoice'] ) ) {
+					return;
+				}
 				$this->parseDonation( $row, $msg );
 				break;
 			case 'Refund':
 			case 'Chargeback':
 			case 'Chargebacks': // started seeing these with the 's'
+				if ( $this->isFromOrchestrator( $row['Transaction Invoice'] ) ) {
+					return;
+				}
 				$this->parseRefund( $row, $msg );
 				break;
 			case 'Credit Note':
@@ -142,5 +148,10 @@ class DlocalAudit implements AuditParser {
 	protected function getContributionTrackingId( $invoice ) {
 		$parts = explode( '.', $invoice );
 		return $parts[0];
+	}
+
+	protected function isFromOrchestrator( $invoice ) {
+		// ignore gravy transactions, they have no period and contain letters
+		return ( !strpos( $invoice, '.' ) && !is_numeric( $invoice ) );
 	}
 }
