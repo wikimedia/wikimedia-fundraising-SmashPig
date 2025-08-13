@@ -35,24 +35,24 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		$msg['gross'] = $row['Gross Credit (GC)'];
 		// fee is given in settlement currency
 		// but queue consumer expects it in original
-		$exchange = $row['Exchange Rate'];
-		$fee = floatval( $row['Commission (NC)'] ) +
-			floatval( $row['Markup (NC)'] ) +
-			floatval( $row['Scheme Fees (NC)'] ) +
-			floatval( $row['Interchange (NC)'] );
-		$msg['fee'] = round( $fee / $exchange, 2 );
+		$msg['settled_fee'] = $this->getFee( $row );
+		$msg['fee'] = round( $msg['settled_fee'] / $msg['exchange_rate'], 2 );
 
 		// shouldn't this be settled_net or settled_amount?
 		$msg['settled_gross'] = $row['Net Credit (NC)'];
 		$msg['settled_currency'] = $row['Net Currency'];
-		$msg['settled_fee'] = $fee;
-
+		// Settled amount is like settled gross but is negative where negative.
+		$msg['settled_amount'] = $row['Net Credit (NC)'];
 		return $msg;
 	}
 
 	protected function parseRefund( array $row, array $msg ): array {
 		$msg['gross'] = $row['Gross Debit (GC)']; // Actually paid to donor
 		$msg['gross_currency'] = $row['Gross Currency'];
+		$msg['settled_currency'] = $row['Net Currency'];
+		$msg['settled_amount'] = -( $row['Net Debit (NC)'] );
+		$msg['settled_fee'] = $this->getFee( $row ) > 0 ? -( $this->getFee( $row ) ) : 0;
+		$msg['fee'] = $msg['settled_fee'] ? round( $msg['settled_fee'] / $msg['exchange_rate'], 2 ) : 0;
 		// 'Net Debit (NC)' is the amount we paid including fees
 		// 'Net Currency' is the currency we paid in
 		// Deal with these when queue consumer can understand them
@@ -66,5 +66,12 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		}
 
 		return $msg;
+	}
+
+	private function getFee( array $row ): float {
+		return floatval( $row['Commission (NC)'] ) +
+			floatval( $row['Markup (NC)'] ) +
+			floatval( $row['Scheme Fees (NC)'] ) +
+			floatval( $row['Interchange (NC)'] );
 	}
 }
