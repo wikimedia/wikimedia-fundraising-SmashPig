@@ -106,6 +106,15 @@ payment-provider:
         validator: "validators/redirect"
         <<: *CACHE
 
+  rtbt:
+    class: SmashPig\PaymentProviders\Gravy\BankPaymentProvider
+    constructor-parameters:
+      -
+        request-mapper: "mappers/bt-request"
+        response-mapper: "mappers/bt-response"
+        validator: "validators/redirect"
+        <<: *CACHE
+
 
 # Setting value to false to mirror production configuration
 capture-from-ipn-listener: false
