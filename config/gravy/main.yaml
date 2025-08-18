@@ -83,8 +83,8 @@ payment-provider:
     class: SmashPig\PaymentProviders\Gravy\RedirectPaymentProvider
     constructor-parameters:
       -
-        request-mapper: "mappers/redirect-request"
-        response-mapper: "mappers/redirect-response"
+        request-mapper: "mappers/venmo-request"
+        response-mapper: "mappers/venmo-response"
         validator: "validators/venmo"
         <<: *CACHE
 
@@ -146,6 +146,10 @@ mappers:
   cash-request:
     class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderRequestMapper
   cash-response:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderResponseMapper
+  venmo-request:
+    class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderRequestMapper
+  venmo-response:
     class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderResponseMapper
 
 validators:
