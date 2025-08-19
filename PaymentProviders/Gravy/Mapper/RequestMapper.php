@@ -14,19 +14,19 @@ class RequestMapper {
 	 * List for payment methods that do not have the 2 step auth/capture
 	 */
 	public const CAPTURE_ONLY_PAYMENT_METHOD = [
-		'netbanking',
-		'pix',
-		'oxxo',
-		'pse',
-		'bcp',
-		'webpay',
-		'pagoefectivo',
-		'redpagos',
-		'rapipago',
 		'abitab',
+		'bancomer',
+		'bcp',
 		'boleto',
+		'netbanking',
+		'oxxo',
+		'pagoefectivo',
+		'pix',
+		'pse',
+		'rapipago',
+		'redpagos',
 		'stitch',
-		'bancomer'
+		'webpay',
 	];
 
 	/**
@@ -58,7 +58,7 @@ class RequestMapper {
 		if ( !empty( $params['processor_contact_id'] ) ) {
 			$request['buyer_id'] = $params['processor_contact_id'];
 		} else {
-			$buyerEmail = $params['email'] ? strtolower( $params['email'] ) : null;
+			$buyerEmail = isset( $params['email'] ) ? strtolower( $params['email'] ) : null;
 			$request['buyer'] = [
 				'external_identifier' => $buyerEmail,
 				'billing_details' => [

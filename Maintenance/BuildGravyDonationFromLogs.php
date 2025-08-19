@@ -335,8 +335,12 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 									$data[$gravyField]['method'],
 									$data[$gravyField]['scheme'] ?? ''
 								);
-								$extracted['payment_method'] = $methodData[0];
-								$extracted['payment_submethod'] = $methodData[1];
+								if ( !empty( $methodData[0] ) ) {
+									$extracted['payment_method'] = $methodData[0];
+								}
+								if ( !empty( $methodData[1] ) ) {
+									$extracted['payment_submethod'] = $methodData[1];
+								}
 							}
 							// When this is set, it contains the recurring payment token
 							if ( isset( $data[$gravyField]['id'] ) ) {
