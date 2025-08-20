@@ -1,5 +1,7 @@
 <?php namespace SmashPig\PaymentProviders\Adyen\Audit;
 
+use SmashPig\Core\UtcDate;
+
 class AdyenSettlementDetailReport extends AdyenAudit {
 
 	public function __construct() {
@@ -18,6 +20,8 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 			'Markup (NC)',
 			'Scheme Fees (NC)',
 			'Interchange (NC)',
+			'Booking Date',
+			'Booking Date TimeZone',
 		];
 
 		$this->type = 'Type';
@@ -43,6 +47,7 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		$msg['settled_currency'] = $row['Net Currency'];
 		// Settled amount is like settled gross but is negative where negative.
 		$msg['settled_amount'] = $row['Net Credit (NC)'];
+		$msg['settled_date'] = empty( $row['Booking Date'] ) ? null : UtcDate::getUtcTimestamp( $row['Booking Date'], $row['Booking Date TimeZone'] );
 		return $msg;
 	}
 
@@ -51,6 +56,7 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		$msg['gross_currency'] = $row['Gross Currency'];
 		$msg['settled_currency'] = $row['Net Currency'];
 		$msg['settled_amount'] = -( $row['Net Debit (NC)'] );
+		$msg['settled_date'] = empty( $row['Booking Date'] ) ? null : UtcDate::getUtcTimestamp( $row['Booking Date'], $row['Booking Date TimeZone'] );
 		$msg['settled_fee'] = $this->getFee( $row ) > 0 ? -( $this->getFee( $row ) ) : 0;
 		$msg['fee'] = $msg['settled_fee'] ? round( $msg['settled_fee'] / $msg['exchange_rate'], 2 ) : 0;
 		// 'Net Debit (NC)' is the amount we paid including fees

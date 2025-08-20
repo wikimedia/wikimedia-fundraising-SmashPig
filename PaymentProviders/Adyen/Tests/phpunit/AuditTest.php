@@ -39,6 +39,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settlement_batch_number' => '2',
 			'exchange_rate' => '1',
 			'settled_amount' => '0.76',
+			'settled_date' => null,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
@@ -70,6 +71,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settlement_batch_number' => '2',
 			'exchange_rate' => '1',
 			'settled_amount' => '0.76',
+			'settled_date' => null,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
@@ -101,6 +103,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settlement_batch_number' => 630,
 			'exchange_rate' => 1.0656568,
 			'settled_amount' => 5.43,
+			'settled_date' => null,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
@@ -132,6 +135,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settlement_batch_number' => 1061,
 			'exchange_rate' => 1,
 			'settled_amount' => 0.78,
+			'settled_date' => null,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
@@ -164,6 +168,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settled_currency' => 'USD',
 			'settled_fee' => 0,
 			'fee' => 0,
+			'settled_date' => null,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
@@ -196,6 +201,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settled_amount' => -3.0,
 			'settled_fee' => -2.0,
 			'fee' => -2.0,
+			'settled_date' => null,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse chargeback correctly' );
 	}
