@@ -32,14 +32,19 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'payment_method' => 'cc',
 			'payment_submethod' => 'visa-debit',
 			'date' => 1455840651,
-			'settled_currency' => 'USD',
 			'fee' => '0.24',
 			'settled_gross' => '0.76',
-			'settled_fee' => '0.24',
 			'settlement_batch_reference' => '2',
 			'exchange_rate' => '1',
-			'settled_amount' => '0.76',
 			'settled_date' => null,
+			'settled_currency' => 'USD',
+			'original_currency' => 'USD',
+			'original_total_amount' => 1.0,
+			'original_fee_amount' => 0.24,
+			'original_net_amount' => 0.76,
+			'settled_fee_amount' => 0.24,
+			'settled_net_amount' => 0.76,
+			'settled_total_amount' => 1.0,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
@@ -67,11 +72,17 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settled_currency' => 'USD',
 			'fee' => '0.24',
 			'settled_gross' => '0.76',
-			'settled_fee' => '0.24',
 			'settlement_batch_reference' => '2',
 			'exchange_rate' => '1',
-			'settled_amount' => '0.76',
 			'settled_date' => null,
+			'settled_currency' => 'USD',
+			'original_currency' => 'USD',
+			'original_total_amount' => 1.0,
+			'original_fee_amount' => 0.24,
+			'original_net_amount' => 0.76,
+			'settled_fee_amount' => 0.24,
+			'settled_net_amount' => 0.76,
+			'settled_total_amount' => 1.0,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
@@ -97,13 +108,19 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'payment_submethod' => 'rtbt_ideal',
 			'date' => 1582488844,
 			'settled_currency' => 'USD',
-			'fee' => '0.25',
+			'fee' => 0.25,
 			'settled_gross' => '5.43',
-			'settled_fee' => '0.27',
 			'settlement_batch_reference' => '630',
 			'exchange_rate' => 1.0656568,
-			'settled_amount' => 5.43,
 			'settled_date' => null,
+			'settled_currency' => 'USD',
+			'original_currency' => 'EUR',
+			'original_total_amount' => 5.35,
+			'original_fee_amount' => 0.25,
+			'original_net_amount' => 5.1,
+			'settled_fee_amount' => 0.27,
+			'settled_net_amount' => 5.43,
+			'settled_total_amount' => 5.7,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
@@ -131,11 +148,17 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settled_currency' => 'USD',
 			'fee' => '0.22',
 			'settled_gross' => '0.78',
-			'settled_fee' => '0.22',
 			'settlement_batch_reference' => 1061,
 			'exchange_rate' => 1,
-			'settled_amount' => 0.78,
 			'settled_date' => null,
+			'settled_currency' => 'USD',
+			'original_currency' => 'USD',
+			'original_total_amount' => 1,
+			'original_fee_amount' => 0.22,
+			'original_net_amount' => 0.78,
+			'settled_fee_amount' => 0.22,
+			'settled_net_amount' => 0.78,
+			'settled_total_amount' => 1,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
@@ -164,11 +187,16 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'payment_submethod' => 'visa',
 			'settlement_batch_reference' => 3,
 			'exchange_rate' => 1,
-			'settled_amount' => -1.0,
-			'settled_currency' => 'USD',
-			'settled_fee' => 0,
 			'fee' => 0,
 			'settled_date' => null,
+			'settled_currency' => 'USD',
+			'original_currency' => 'USD',
+			'original_total_amount' => -1.0,
+			'original_fee_amount' => 0,
+			'original_net_amount' => -1.0,
+			'settled_fee_amount' => 0,
+			'settled_net_amount' => -1.0,
+			'settled_total_amount' => -1.0,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse refund correctly' );
 	}
@@ -197,11 +225,16 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'payment_submethod' => 'visa',
 			'settlement_batch_reference' => '3',
 			'exchange_rate' => 1,
-			'settled_currency' => 'USD',
-			'settled_amount' => -3.0,
-			'settled_fee' => -2.0,
 			'fee' => -2.0,
 			'settled_date' => null,
+			'settled_currency' => 'USD',
+			'original_currency' => 'USD',
+			'original_fee_amount' => -2.0,
+			'original_net_amount' => -1.0,
+			'original_total_amount' => -3.0,
+			'settled_fee_amount' => -2.0,
+			'settled_net_amount' => -1.0,
+			'settled_total_amount' => -3.0,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse chargeback correctly' );
 	}
@@ -226,9 +259,12 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settled_currency' => 'USD',
 			'fee' => '0.38',
 			'settled_gross' => '10.02',
-			'settled_fee' => 0.38,
 			'settlement_batch_reference' => null,
 			'exchange_rate' => 1,
+			'original_currency' => 'USD',
+			'original_fee_amount' => 0.38,
+			'settled_total_amount' => 10.02,
+			'settled_fee_amount' => 0.38,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
@@ -254,6 +290,8 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gateway_txn_id' => 'DASD76ASD7ASD4AS',
 			'settlement_batch_reference' => null,
 			'exchange_rate' => 1,
+			'original_currency' => 'USD',
+			'original_total_amount' => 13.43,
 		];
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
