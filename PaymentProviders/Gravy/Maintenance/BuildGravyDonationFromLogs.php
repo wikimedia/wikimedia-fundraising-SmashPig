@@ -1,11 +1,12 @@
 <?php
 
-namespace SmashPig\Maintenance;
+namespace SmashPig\PaymentProviders\Gravy\Maintenance;
 
-require 'MaintenanceBase.php';
+require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
 use SmashPig\Core\DataStores\QueueWrapper;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Gravy\GravyHelper;
 use SmashPig\PaymentProviders\Gravy\ReferenceData;
 
