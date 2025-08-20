@@ -43,7 +43,6 @@ class Api {
 	 *
 	 * @param array $params
 	 * amount, currency, payment_method
-	 * @throws \SmashPig\Core\ApiException
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/new-transaction Gr4vy Documentation to create a new transaction
 	 */
@@ -71,7 +70,6 @@ class Api {
 	 * @param string $trxn_id
 	 * @param array $params
 	 * gateway_txn_id, amount
-	 * @throws \SmashPig\Core\ApiException
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/capture-transaction Documentation to approve payment
 	 */
@@ -88,7 +86,6 @@ class Api {
 	 * Uses the rest API to delete a stored payment token on Gravy
 	 *
 	 * @param array $params
-	 * @throws \SmashPig\Core\ApiException
 	 * @return array
 	 * @link https://docs.gr4vy.com/guides/api/resources/payment-methods/delete#delete-a-payment-method Documentation to delete payment token
 	 */
@@ -105,7 +102,6 @@ class Api {
 	 * Uses the rest API to get the transaction details from Gravy
 	 *
 	 * @param array $params
-	 * @throws \SmashPig\Core\ApiException
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/list-transaction-events Documentation to delete payment token
 	 */
@@ -122,7 +118,6 @@ class Api {
 	 * Uses the rest API to cancel an authorized transaction on Gravy
 	 * @param string $gatewayTxnId
 	 * @return array
-	 * @throws \SmashPig\Core\ApiException
 	 * @link https://docs.gr4vy.com/reference/transactions/void-transaction
 	 */
 	public function cancelTransaction( string $gatewayTxnId ): array {
@@ -136,7 +131,6 @@ class Api {
 	/**
 	 * Uses the rest API to get a refund
 	 * @param array $params
-	 * @throws \SmashPig\Core\ApiException
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/list-transaction-events Documentation to delete payment token
 	 */
@@ -153,7 +147,6 @@ class Api {
 	 * Uses the rest API to refund a transaction on Gravy
 	 * @param array $params
 	 * @return array
-	 * @throws \SmashPig\Core\ApiException
 	 * @link https://docs.gr4vy.com/reference/transactions/refund-transaction
 	 */
 	public function refundTransaction( array $params ): array {
@@ -170,7 +163,6 @@ class Api {
 	/**
 	 * Uses the rest API to get a report execution id
 	 * @param array $params
-	 * @throws \SmashPig\Core\ApiException
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/reports/get-report-execution Documentation to get report execution details
 	 */
@@ -186,7 +178,6 @@ class Api {
 	/**
 	 * Uses the rest API to generate a report from url
 	 * @param array $params
-	 * @throws \SmashPig\Core\ApiException
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/reports/get-report-execution Documentation to get report execution details
 	 */

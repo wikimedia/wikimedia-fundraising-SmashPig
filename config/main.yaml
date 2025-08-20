@@ -93,7 +93,6 @@ data-store:
         <<: *REDIS
         queue: recurring-modify
 
-
   jobs-paypal:
     class: PHPQueue\Backend\Predis
     constructor-parameters:
