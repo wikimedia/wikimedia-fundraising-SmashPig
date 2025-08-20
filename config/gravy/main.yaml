@@ -148,7 +148,7 @@ mappers:
   cash-response:
     class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderResponseMapper
   venmo-request:
-    class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderRequestMapper
+    class: SmashPig\PaymentProviders\Gravy\Mapper\VenmoPaymentProviderRequestMapper
   venmo-response:
     class: SmashPig\PaymentProviders\Gravy\Mapper\RedirectPaymentProviderResponseMapper
 
