@@ -375,6 +375,11 @@ class BuildGravyDonationFromLogs extends MaintenanceBase {
 						$primaryLanguage = explode( '-', $languageCode )[0];
 						$extracted[$queueMessageKey] = $primaryLanguage;
 						break;
+					case 'amount':
+						if ( is_numeric( $data[$gravyField] ) ) {
+							$extracted[$queueMessageKey] = $data[$gravyField];
+						}
+						break;
 
 					default:
 						$extracted[$queueMessageKey] = $data[$gravyField];
