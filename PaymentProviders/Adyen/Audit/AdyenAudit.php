@@ -18,7 +18,6 @@ use SmashPig\PaymentProviders\Adyen\ReferenceData;
 abstract class AdyenAudit implements AuditParser {
 
 	protected static $ignoredTypes = [
-		'fee',
 		'misccosts',
 		'merchantpayout',
 		'chargebackreversed', // oh hey, we could try to handle these
@@ -108,6 +107,9 @@ abstract class AdyenAudit implements AuditParser {
 	protected function parseLine( $line ) {
 		$row = array_combine( $this->columnHeaders, $line );
 		$type = strtolower( $row[$this->type] );
+		if ( $type === 'fee' ) {
+			return $this->getFeeTransaction( $row );
+		}
 		if ( in_array( $type, self::$ignoredTypes ) ) {
 			return;
 		}
@@ -182,4 +184,7 @@ abstract class AdyenAudit implements AuditParser {
 		return ( !strpos( $merchantReference, '.' ) && !is_numeric( $merchantReference ) );
 	}
 
+	protected function getFeeTransaction( array $row ): ?array {
+		return null;
+	}
 }

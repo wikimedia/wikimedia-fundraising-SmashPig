@@ -101,4 +101,16 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 			floatval( $row['Scheme Fees (NC)'] ) +
 			floatval( $row['Interchange (NC)'] );
 	}
+
+	protected function getFeeTransaction( array $row ): ?array {
+		return [
+			'settled_date' => UtcDate::getUtcTimestamp( $row[$this->date], $row['TimeZone'] ),
+			'gateway' => 'adyen',
+			'type' => 'fee',
+			'gateway_account' => $row['Merchant Account'],
+			'invoice_id' => $row['Merchant Reference'],
+			'settlement_batch_reference' => $row['Batch Number'] ?? null,
+			'settled_fee_amount' => $this->getFee( $row ) > 0 ? -( $this->getFee( $row ) ) : 0,
+		];
+	}
 }
