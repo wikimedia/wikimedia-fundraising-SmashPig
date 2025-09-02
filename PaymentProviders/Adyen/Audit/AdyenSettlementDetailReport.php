@@ -79,9 +79,13 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		// 'Net Debit (NC)' is the amount we paid including fees
 		// 'Net Currency' is the currency we paid in
 		// Deal with these when queue consumer can understand them
-
-		$msg['gateway_parent_id'] = $row['Psp Reference'];
-		$msg['gateway_refund_id'] = $row['Modification Reference'];
+		if ( $this->isOrchestratorMerchantReference( $row ) ) {
+			$msg['backend_processor_parent_id'] = $row['Psp Reference'];
+			$msg['backend_processor_refund_id'] = $row['Modification Reference'];
+		} else {
+			$msg['gateway_parent_id'] = $row['Psp Reference'];
+			$msg['gateway_refund_id'] = $row['Modification Reference'];
+		}
 		if ( in_array( strtolower( $row['Type'] ), [ 'chargeback', 'secondchargeback' ] ) ) {
 			$msg['type'] = 'chargeback';
 		} else {

@@ -22,6 +22,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
 			'gateway_account' => 'WikimediaCOM',
 			'gross' => '1.00',
 			'contribution_tracking_id' => '33992337',
@@ -59,6 +60,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
 			'gateway_account' => 'WikimediaCOM',
 			'gross' => '1.00',
 			'contribution_tracking_id' => '33992337',
@@ -97,6 +99,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
 			'gateway_account' => 'WikimediaCOM',
 			'gross' => '5.35',
 			'contribution_tracking_id' => '80188432',
@@ -135,6 +138,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
 			'gateway_account' => 'WikimediaCOM',
 			'gross' => '1.00',
 			'contribution_tracking_id' => '206543313',
@@ -173,6 +177,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
 			'gateway_account' => 'WikimediaCOM',
 			'contribution_tracking_id' => '92598312',
 			'date' => 1455128736,
@@ -211,6 +216,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
 			'gateway_account' => 'WikimediaCOM',
 			'contribution_tracking_id' => '92598318',
 			'date' => 1455128736,
@@ -246,6 +252,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
 			'gateway_account' => 'WikimediaDonations',
 			'gross' => '10.40',
 			'contribution_tracking_id' => '191638898',
@@ -276,6 +283,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$actual = $output[0];
 		$expected = [
 			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
 			'gateway_account' => 'WikimediaDonations',
 			'gross' => 13.43,
 			'contribution_tracking_id' => '189748459',
@@ -296,9 +304,11 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $expected, $actual, 'Did not parse donation correctly' );
 	}
 
-	public function testIgnoreMerchantReference() {
+	public function testPresentMerchantReference() {
 		$processor = new AdyenSettlementDetailReport();
 		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_detail_report_ignore.csv' );
-		$this->assertCount( 0, $output );
+		$this->assertCount( 1, $output );
+		$this->assertEquals( 'adyen', $output[0]['audit_file_gateway'] );
+		$this->assertEquals( 'gravy', $output[0]['gateway'] );
 	}
 }

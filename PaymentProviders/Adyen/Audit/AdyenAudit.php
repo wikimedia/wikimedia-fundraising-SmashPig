@@ -112,11 +112,15 @@ abstract class AdyenAudit implements AuditParser {
 			return;
 		}
 		$merchantReference = $row[$this->merchantReference];
-		if ( $this->isIgnoredMerchantReference( $merchantReference ) ) {
-			return;
-		}
 
 		$msg = $this->setCommonValues( $row );
+		if ( $this->isOrchestratorMerchantReference( $row ) ) {
+			$msg['backend_processor_txn_id'] = $msg['gateway_txn_id'];
+			$msg['backend_processor'] = 'adyen';
+			$msg['gateway_txn_id'] = null;
+			$msg['payment_orchestrator_reconciliation_id'] = $merchantReference;
+			$msg['contribution_tracking_id'] = null;
+		}
 
 		switch ( $type ) {
 			// Amex has externally in the type name
@@ -143,7 +147,8 @@ abstract class AdyenAudit implements AuditParser {
 	 */
 	protected function setCommonValues( array $row ) {
 		$msg = [
-			'gateway' => 'adyen',
+			'gateway' => $this->isOrchestratorMerchantReference( $row ) ? 'gravy' : 'adyen',
+			'audit_file_gateway' => 'adyen',
 			'gateway_account' => $row['Merchant Account'],
 			'invoice_id' => $row['Merchant Reference'],
 			'gateway_txn_id' => $row['Psp Reference'],
@@ -171,7 +176,8 @@ abstract class AdyenAudit implements AuditParser {
 	 * eg Gravy transactions coming in on the adyen audit
 	 *
 	 */
-	protected function isIgnoredMerchantReference( $merchantReference ): bool {
+	protected function isOrchestratorMerchantReference( array $row ): bool {
+		$merchantReference = $row[$this->merchantReference];
 		// ignore gravy transactions, they have no period and contain letters
 		return ( !strpos( $merchantReference, '.' ) && !is_numeric( $merchantReference ) );
 	}
