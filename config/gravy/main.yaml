@@ -145,6 +145,9 @@ error-tracker:
       key_expiry_period: 2400
       # Alert suppression period in seconds to prevent duplicate alerts (default: 120 = 2 minutes)
       alert_suppression_period: 120
+      # List of error codes to ignore from tracking and alerting
+      ignore_list:
+        - 'incomplete_buyer_approval'
 
 
 mappers:
