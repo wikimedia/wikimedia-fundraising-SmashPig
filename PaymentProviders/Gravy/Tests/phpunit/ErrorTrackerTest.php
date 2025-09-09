@@ -253,6 +253,39 @@ class ErrorTrackerTest extends BaseGravyTestCase {
 		$this->assertTrue( $result );
 	}
 
+	public function testInvalidRedisKeyCharactersAreCleanedUp(): void {
+		$invalidErrorCode = 'test error@$%';
+
+		$response = [
+			'id' => 'txn_123',
+			'external_identifier' => 'donation_456',
+			'amount' => 1000,
+			'currency' => 'USD',
+			'payment_method' => [ 'method' => 'card' ],
+			'error_code' => $invalidErrorCode,
+			'status' => 'authorization_failed'
+		];
+
+		$error = ErrorHelper::buildTrackableErrorFromResponse( $invalidErrorCode, 'code', $response );
+
+		// Expect the Redis key to be sanitised - all non-alphanumeric characters should become underscores
+		$expectedSanitizedKey = 'test_error___';
+
+		$this->mockRedisClient->expects( $this->exactly( 2 ) )
+			->method( '__call' )
+			->withConsecutive(
+				[ 'incr', $this->callback( static function ( $args ) use ( $expectedSanitizedKey ) {
+					// Check that the key starts with the prefix and sanitized error code
+					return (bool)preg_match( "/^gravy_error_threshold_{$expectedSanitizedKey}:\d+$/", $args[0] );
+				} ) ],
+				[ 'expire', $this->anything() ]
+			)
+			->willReturnOnConsecutiveCalls( 1, true );
+
+		$result = $this->errorTracker->trackErrorAndCheckThreshold( $error );
+		$this->assertTrue( $result, "Should successfully track error with sanitised key" );
+	}
+
 	/**
 	 * Test that nothing happens when enabled is false
 	 */

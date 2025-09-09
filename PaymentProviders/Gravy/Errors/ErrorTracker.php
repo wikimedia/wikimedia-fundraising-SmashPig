@@ -60,8 +60,7 @@ class ErrorTracker {
 		$count = $this->trackError( $error );
 		if ( $count > 0 ) {
 			if ( $this->isThresholdExceeded( $count ) ) {
-				$errorCode = $error['error_code'] ?? self::UNKNOWN_ERROR_CODE;
-				ErrorHelper::raiseAlert( $errorCode, $count, $this->threshold, $this->timeWindow, $error );
+				ErrorHelper::raiseAlert( $error['error_code'], $count, $this->threshold, $this->timeWindow, $error );
 			}
 			return true;
 		}
@@ -75,7 +74,7 @@ class ErrorTracker {
 				$this->connection = $this->createRedisClient();
 			}
 
-			$cacheKey = $this->generateRedisErrorKey( $error['error_code'] ?? self::UNKNOWN_ERROR_CODE );
+			$cacheKey = $this->generateRedisErrorKey( $error['error_code'] );
 			$currentCount = $this->connection->incr( $cacheKey );
 
 			if ( $currentCount === 1 ) {
@@ -85,7 +84,7 @@ class ErrorTracker {
 			return $currentCount;
 		} catch ( \Exception $ex ) {
 			Logger::warning( 'Failed to track error in Redis', [
-				'error_code' => $error['error_code'] ?? self::UNKNOWN_ERROR_CODE,
+				'error_code' => $error['error_code'],
 				'exception' => $ex->getMessage()
 			] );
 			return 0;
@@ -107,10 +106,24 @@ class ErrorTracker {
 		return new Client( $servers, $options );
 	}
 
+	/**
+	 * Generates a Redis key to track error occurrences based on the error code and the current time window.
+	 * For example, with a 30-minute time window (1800 seconds):
+	 * If the current timestamp is 1623456789, then 1623456789/1800 = 901920.43
+	 * floor() gives us 901920, so all errors within this 30-minute window
+	 * will have the same time slot number in the Redis key
+	 *
+	 * These keys expire automatically so we don't need to clean them up
+	 *
+	 * @param string $errorCode The specific error code to include in the Redis key.
+	 *
+	 * @return string The generated Redis key, which includes the key prefix, error code, and the current time slot.
+	 */
 	protected function generateRedisErrorKey( string $errorCode ): string {
+		// Sanitise error code: remove special characters and spaces, keep only alphanumeric and underscore
+		$sanitizedErrorCode = preg_replace( '/\W/', '_', $errorCode );
 		$currentTimeSlotInSeconds = floor( time() / $this->timeWindow );
-		$redisErrorTrackingKey = "{$this->keyPrefix}{$errorCode}:{$currentTimeSlotInSeconds}";
-		return $redisErrorTrackingKey;
+		return "{$this->keyPrefix}{$sanitizedErrorCode}:{$currentTimeSlotInSeconds}";
 	}
 
 	protected function isThresholdExceeded( int $count ): bool {
