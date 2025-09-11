@@ -17,6 +17,7 @@ class ErrorMapper {
 		'missing_redirect_url' => ErrorCode::ACCOUNT_MISCONFIGURATION, // The service is configured in an unexpected state.
 		'flow_decline' => ErrorCode::UNKNOWN, // An unknown error occurred.
 		'all_attempts_skipped	' => ErrorCode::UNKNOWN, // The resource could not be found by the service.
+		'cancelled_buyer_approval' => ErrorCode::CANCELLED_BY_DONOR
 	];
 
 	/**

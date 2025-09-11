@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Gravy\Mapper;
 
 use SmashPig\Core\Context;
+use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\Gravy\Errors\ErrorChecker;
 use SmashPig\PaymentProviders\Gravy\Errors\ErrorHelper;
@@ -299,7 +300,7 @@ class ResponseMapper {
 
 		$errorResponse = [
 			'is_successful' => false,
-			'status' => FinalStatus::FAILED,
+			'status' => $errorCode == ErrorCode::CANCELLED_BY_DONOR ? FinalStatus::CANCELLED : FinalStatus::FAILED,
 			'code' => $errorCode,
 			'message' => $errorParameters['message'],
 			'description' => $errorParameters['description'],

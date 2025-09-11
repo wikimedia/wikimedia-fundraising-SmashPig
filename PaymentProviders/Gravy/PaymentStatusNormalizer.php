@@ -36,6 +36,8 @@ class PaymentStatusNormalizer implements StatusNormalizer {
 				break;
 			case 'failed':
 				return FinalStatus::FAILED;
+			case 'cancelled':
+				return FinalStatus::FAILED;
 			default:
 				throw new \UnexpectedValueException( "Unknown status $status" );
 		}

@@ -84,7 +84,7 @@ abstract class GravyPaymentResponseFactory {
 	 * @return bool
 	 */
 	protected static function isFailedTransaction( string $status ): bool {
-		return $status === FinalStatus::FAILED;
+		return $status === FinalStatus::FAILED || $status === FinalStatus::CANCELLED;
 	}
 
 	/**
