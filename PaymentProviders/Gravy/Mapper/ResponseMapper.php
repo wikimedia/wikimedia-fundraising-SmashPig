@@ -303,7 +303,8 @@ class ResponseMapper {
 			'code' => $errorCode,
 			'message' => $errorParameters['message'],
 			'description' => $errorParameters['description'],
-			'raw_response' => $error
+			'raw_response' => $error,
+			'is_suspected_fraud' => ErrorMapper::isSuspectedFraud( $errorParameters['code'] ),
 		];
 		if ( !isset( $errorParameters['normalized_response'] ) ) {
 			return $errorResponse;

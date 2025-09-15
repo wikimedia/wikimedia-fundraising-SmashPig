@@ -93,6 +93,17 @@ class ErrorMapper {
 		'504' => ErrorCode::SERVER_TIMEOUT, // Gateway timeout
 	];
 
+	/**
+	 * @var array
+	 * Codes that indicate suspected fraud;
+	 * Source: https://docs.gr4vy.com/guides/api/resources/transactions/error-codes#connector-declines
+	 */
+	public static $suspectedFraudCodes = [
+		'canceled_payment_method', // The payment method reported lost, stolen, or otherwise canceled..
+		'refused_transaction', // The transaction was refused due to legal reasons (e.g. watch list, embargo, sanctions).
+		'suspected_fraud', // The service flagged the transaction as suspected fraud.
+	];
+
 	public static function getError( string $code ) {
 		if ( isset( self::$errorCodes[$code] ) ) {
 			return self::$errorCodes[$code];
@@ -103,5 +114,9 @@ class ErrorMapper {
 		}
 
 		return ErrorCode::UNKNOWN;
+	}
+
+	public static function isSuspectedFraud( string $code ) {
+		return in_array( $code, self::$suspectedFraudCodes );
 	}
 }
