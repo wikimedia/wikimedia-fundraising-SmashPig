@@ -165,6 +165,11 @@ error-tracker:
         # See: https://docs.gr4vy.com/guides/api/error-codes
         - 'refused_transaction'
 
+notifications:
+  fraud-alerts:
+    to:
+      - 'fr-tech@wikimedia.org'
+
 mappers:
   cc-request:
     class: SmashPig\PaymentProviders\Gravy\Mapper\CardPaymentProviderRequestMapper
