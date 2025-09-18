@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\Gravy\Maintenance;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Gravy\Errors\ErrorHelper;
@@ -45,7 +46,7 @@ class TestFraudTransactionEmail extends MaintenanceBase {
 		return [
 			[
 				'id' => '12345678-1234-5678-9abc-def012345678',
-				'info' => ' - 1299 USD, via Adyen'
+				'info' => ' - ' . CurrencyRoundingHelper::getAmountInMajorUnits( 1299, 'USD' ) . ' USD, via Adyen'
 			],
 			[
 				'id' => 'abcdef12-3456-7890-1234-567890abcdef',

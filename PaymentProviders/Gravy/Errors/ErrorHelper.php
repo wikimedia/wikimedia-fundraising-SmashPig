@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Gravy\Errors;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\MailHandler;
 use SmashPig\PaymentProviders\Gravy\GravyHelper;
@@ -88,7 +89,8 @@ class ErrorHelper {
 
 		// Amount and currency
 		if ( isset( $response['amount'] ) && isset( $response['currency'] ) ) {
-			$parts[] = "{$response['amount']} {$response['currency']}";
+			$formattedAmount = CurrencyRoundingHelper::round( $response['amount'], $response['currency'] );
+			$parts[] = "{$formattedAmount} {$response['currency']}";
 		}
 
 		// Payment method
