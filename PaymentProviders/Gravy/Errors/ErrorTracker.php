@@ -86,14 +86,17 @@ class ErrorTracker {
 
 		if ( $count > 0 ) {
 			if ( $this->isThresholdExceeded( $count ) && !$this->alertRecentlySent( $error['error_code'] ) ) {
-				ErrorHelper::raiseAlert( $error['error_code'], $count, $this->threshold, $this->timeWindow, $error );
-				$this->markAlertAsSent( $error['error_code'] );
-
-				// Check to see if we also need to send a fraud transaction list to donor relations
+				// Check to see if we need to send a fraud transaction list to donor relations
 				if ( $this->isFraudAlert( $error['error_code'] ) ) {
 					$fraudTransactionsData = $this->getFraudTransactionDataForTimeSlot( $this->getCurrentTimeSlot() );
 					ErrorHelper::sendFraudTransactionsEmail( $fraudTransactionsData );
+				} else {
+					// Just send the standard failmail warning of a repeated error
+					ErrorHelper::raiseAlert(
+						$error['error_code'], $count, $this->threshold, $this->timeWindow, $error
+					);
 				}
+				$this->markAlertAsSent( $error['error_code'] );
 			}
 			return true;
 		}

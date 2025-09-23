@@ -131,11 +131,11 @@ class ErrorHelper {
 	/**
 	 * Send basic fraud email with transaction IDs
 	 *
-	 * @param array $fraudTransactionIds Array of transaction ID strings
+	 * @param array $fraudTransactions Array of transactions with ids and summaries
 	 * @return bool Success/failure of email sending
 	 */
-	public static function sendFraudTransactionsEmail( array $fraudTransactionIds ): bool {
-		if ( empty( $fraudTransactionIds ) ) {
+	public static function sendFraudTransactionsEmail( array $fraudTransactions ): bool {
+		if ( empty( $fraudTransactions ) ) {
 			return false;
 		}
 
@@ -143,8 +143,8 @@ class ErrorHelper {
 		$to = $config->val( 'notifications/fraud-alerts/to' );
 		$from = $config->val( 'email/from-address' );
 		$subject = 'ALERT: Gravy Suspected Fraud Transactions List - ' . date( 'Y-m-d H:i' );
-		$body = "Suspected fraud transactions (" . count( $fraudTransactionIds ) . ")" . PHP_EOL . PHP_EOL;
-		foreach ( $fraudTransactionIds as $trxn ) {
+		$body = "Suspected fraud transactions (" . count( $fraudTransactions ) . ")" . PHP_EOL . PHP_EOL;
+		foreach ( $fraudTransactions as $trxn ) {
 			$body .= " - https://wikimedia.gr4vy.app/merchants/default/transactions/{$trxn['id']}/overview" . $trxn['summary'] . PHP_EOL;
 		}
 
