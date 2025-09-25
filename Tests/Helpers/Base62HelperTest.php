@@ -3,7 +3,6 @@
 namespace SmashPig\Tests\Helpers;
 
 use SmashPig\Core\Helpers\Base62Helper;
-use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
 /**
@@ -12,24 +11,6 @@ use SmashPig\Tests\BaseSmashPigUnitTestCase;
  * @group Helpers
  */
 class Base62HelperTest extends BaseSmashPigUnitTestCase {
-
-	public function testRoundFractionalCurrencyAmount() {
-		$currencyCode = 'USD';
-		$amountToRound = (float)'47.23332';
-
-		$rounded = CurrencyRoundingHelper::round( $amountToRound, $currencyCode );
-
-		$this->assertSame( '47.23', $rounded );
-	}
-
-	public function testRoundNonFractionalCurrencyAmount() {
-		$currencyCode = 'JPY';
-		$amountToRound = (float)'1000.05';
-
-		$rounded = CurrencyRoundingHelper::round( $amountToRound, $currencyCode );
-
-		$this->assertSame( '1000', $rounded );
-	}
 
 	/**
 	 * @dataProvider base62examples
