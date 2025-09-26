@@ -30,8 +30,6 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'email' => 'test@example.com',
 			'first_name' => 'Jimmy',
 			'last_name' => 'Wales',
-			'settled_gross' => 10,
-			'settled_currency' => 'USD',
 			'gross_currency' => 'USD',
 			'contribution_tracking_id' => '42',
 			'backend_processor' => 'adyen'
@@ -68,8 +66,6 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'email' => 'test@example.com',
 			'first_name' => 'Jimmy',
 			'last_name' => 'Wales',
-			'settled_gross' => 10,
-			'settled_currency' => 'USD',
 			'gross_currency' => 'USD',
 			'contribution_tracking_id' => '42',
 			'backend_processor' => 'adyen'
@@ -89,8 +85,6 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'email' => 'test@example.com',
 			'first_name' => 'Jimmy',
 			'last_name' => 'Wales',
-			'settled_gross' => 10,
-			'settled_currency' => 'USD',
 			'gross_currency' => 'USD',
 			'contribution_tracking_id' => '42',
 			'backend_processor' => 'adyen',

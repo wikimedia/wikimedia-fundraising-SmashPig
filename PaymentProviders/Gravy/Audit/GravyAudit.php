@@ -24,8 +24,6 @@ class GravyAudit implements AuditParser {
 			'email' => 'billing_details_email_address',
 			'first_name' => 'billing_details_first_name',
 			'last_name' => 'billing_details_last_name',
-			'settled_gross' => 'captured_amount',
-			'settled_currency' => 'currency',
 			'gross_currency' => 'currency',
 			'payment_service_definition_id' => 'payment_service_definition_id',
 	];
