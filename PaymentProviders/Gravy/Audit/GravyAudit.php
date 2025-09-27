@@ -8,6 +8,7 @@ use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\Gravy\GravyHelper;
+use SmashPig\PaymentProviders\Gravy\ReferenceData;
 
 class GravyAudit implements AuditParser {
 
@@ -21,7 +22,6 @@ class GravyAudit implements AuditParser {
 			'gateway_txn_id' => 'id',
 			'gross' => 'captured_amount',
 			'invoice_id' => 'external_identifier',
-			'payment_method' => 'scheme',
 			'email' => 'billing_details_email_address',
 			'first_name' => 'billing_details_first_name',
 			'last_name' => 'billing_details_last_name',
@@ -61,7 +61,10 @@ class GravyAudit implements AuditParser {
 		foreach ( $this->fieldMappings as $localFieldName => $gravyFieldName ) {
 			$normalizedLineData[$localFieldName] = $csv->currentCol( $gravyFieldName );
 		}
-
+		[ $normalizedLineData['payment_method'], $normalizedLineData['payment_submethod'] ] = ReferenceData::decodePaymentMethod(
+			$csv->currentCol( 'method' ),
+			$csv->currentCol( 'scheme' )
+		);
 		// Extract ct_id from order_id
 		$normalizedLineData['contribution_tracking_id'] = $this->getContributionTrackingId( $normalizedLineData );
 

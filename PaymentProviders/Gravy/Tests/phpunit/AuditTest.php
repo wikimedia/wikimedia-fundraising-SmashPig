@@ -26,11 +26,12 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gateway_txn_id' => '8177b746-e22c-48cb-a058-11bcae1dcee3',
 			'gross' => '10.00',
 			'invoice_id' => '42.19',
-			'payment_method' => 'visa',
 			'email' => 'test@example.com',
 			'first_name' => 'Jimmy',
 			'last_name' => 'Wales',
 			'gross_currency' => 'USD',
+			'payment_method' => 'cc',
+			'payment_submethod' => 'visa',
 			'contribution_tracking_id' => '42',
 			'backend_processor' => 'adyen'
 		];
@@ -46,11 +47,12 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gateway_txn_id' => '9999b746-e22c-48cb-a058-11bcae1dcee3',
 			'gross' => '5000',
 			'invoice_id' => '1234.1',
-			'payment_method' => 'jcb',
 			'email' => 'test@example.com',
 			'first_name' => 'Jimmy',
 			'last_name' => 'Wales',
 			'gross_currency' => 'JPY',
+			'payment_method' => 'cc',
+			'payment_submethod' => 'jcb',
 			'contribution_tracking_id' => '1234',
 			'backend_processor' => 'adyen'
 		];
@@ -82,11 +84,12 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gateway_txn_id' => '8177b746-e22c-48cb-a058-11bcae1dcee3',
 			'gross' => '10.00',
 			'invoice_id' => '42.19',
-			'payment_method' => 'visa',
 			'email' => 'test@example.com',
 			'first_name' => 'Jimmy',
 			'last_name' => 'Wales',
 			'gross_currency' => 'USD',
+			'payment_method' => 'cc',
+			'payment_submethod' => 'visa',
 			'contribution_tracking_id' => '42',
 			'backend_processor' => 'adyen'
 		];
@@ -101,11 +104,12 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gateway_txn_id' => '8177b746-e22c-48cb-a058-11bcae1dcee3',
 			'gross' => '10.00',
 			'invoice_id' => '42.19',
-			'payment_method' => 'visa',
 			'email' => 'test@example.com',
 			'first_name' => 'Jimmy',
 			'last_name' => 'Wales',
 			'gross_currency' => 'USD',
+			'payment_method' => 'cc',
+			'payment_submethod' => 'visa',
 			'contribution_tracking_id' => '42',
 			'backend_processor' => 'adyen',
 			'type' => 'refund'
