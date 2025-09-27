@@ -13,7 +13,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 
 	public function testDonationsProcessed(): void {
 		$processor = new GravyAudit();
-		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_report.csv' );
+		$output = $processor->parseFile( __DIR__ . '/../Data/all_transactions_report.csv' );
 		// 3 rows in the sample report but only 1 with status 'capture_succeeded'
 		$this->assertCount( 1, $output );
 
@@ -40,14 +40,14 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 
 	public function testEmptyReportNoDonationsProcessed(): void {
 		$processor = new GravyAudit();
-		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_repor_no_captured_trnxs.csv' );
+		$output = $processor->parseFile( __DIR__ . '/../Data/all_transactions_report_no_captured_trnxs.csv' );
 		// 2 rows in the sample report but non with expected capture_succeeded status.
 		$this->assertCount( 0, $output );
 	}
 
 	public function testRefundsProcessed(): void {
 		$processor = new GravyAudit();
-		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_report_refund.csv' );
+		$output = $processor->parseFile( __DIR__ . '/../Data/all_transactions_report_refund.csv' );
 
 		// A refund should generate two rows. One for the payment and one for the refund.
 		// Gravy combine these two events, so we split them out when parsing the file.
