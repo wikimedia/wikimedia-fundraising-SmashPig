@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\Gravy\Audit;
 
 use SmashPig\Core\DataFiles\AuditParser;
 use SmashPig\Core\DataFiles\HeadedCsvReader;
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\UtcDate;
 use SmashPig\PaymentProviders\Gravy\GravyHelper;
@@ -133,7 +134,7 @@ class GravyAudit implements AuditParser {
 		$amountFields = [ 'settled_gross', 'gross' ];
 		foreach ( $amountFields as $field ) {
 			if ( isset( $data[$field] ) ) {
-				$data[$field] /= 100;
+				$data[$field] = CurrencyRoundingHelper::getAmountInMajorUnits( $data[$field], $data['currency'] );
 			}
 		}
 		return $data;
@@ -151,7 +152,7 @@ class GravyAudit implements AuditParser {
 	protected function addRefundFieldsIfRefundAmountSet( HeadedCsvReader $csv, array $data ): array {
 		$refundedAmount = $csv->currentCol( 'refunded_amount' );
 		if ( $refundedAmount !== null && $refundedAmount > 0 ) {
-			$data['refunded_amount'] = $refundedAmount / 100;
+			$data['refunded_amount'] = CurrencyRoundingHelper::getAmountInMajorUnits( $refundedAmount, $data['currency'] );
 			$data['refund_date'] = UtcDate::getUtcTimestamp( $csv->currentCol( 'updated_at' ) );
 			$data['type'] = self::TRANSACTION_TYPE_REFUND;
 		}
