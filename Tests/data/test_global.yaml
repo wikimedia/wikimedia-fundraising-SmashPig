@@ -37,6 +37,9 @@ data-store:
   refund:
     <<: *QUEUE
 
+  settle:
+    <<: *QUEUE
+
   unsubscribe:
     <<: *QUEUE
 

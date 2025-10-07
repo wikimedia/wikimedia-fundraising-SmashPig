@@ -64,6 +64,13 @@ data-store:
         <<: *REDIS
         queue: refund
 
+  settle:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: settle
+
   unsubscribe:
     class: PHPQueue\Backend\Predis
     constructor-parameters:
