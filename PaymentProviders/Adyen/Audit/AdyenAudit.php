@@ -143,6 +143,23 @@ abstract class AdyenAudit implements AuditParser {
 		$this->fileData[] = $msg;
 	}
 
+	protected function parseCommonRefundValues( array $row, array $msg, string $messageType, string $modificationReference ): array {
+		if ( in_array( strtolower( $messageType ), [ 'chargeback', 'secondchargeback' ] ) ) {
+			$msg['type'] = 'chargeback';
+		} else {
+			$msg['type'] = 'refund';
+		}
+
+		if ( $this->isOrchestratorMerchantReference( $row ) ) {
+			$msg['backend_processor_parent_id'] = $row['Psp Reference'];
+			$msg['backend_processor_refund_id'] = $modificationReference;
+		} else {
+			$msg['gateway_parent_id'] = $row['Psp Reference'];
+			$msg['gateway_refund_id'] = $modificationReference;
+		}
+		return $msg;
+	}
+
 	public function getGravyGatewayTransactionId( array $row ): ?string {
 		$reference = $row['Merchant Reference'];
 		if ( str_contains( $reference, '.' ) ) {

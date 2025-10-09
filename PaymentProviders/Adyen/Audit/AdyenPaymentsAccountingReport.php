@@ -68,13 +68,7 @@ class AdyenPaymentsAccountingReport extends AdyenAudit {
 		}
 		$msg['original_currency'] = $msg['gross_currency'];
 		$msg['original_total_amount'] = (float)$msg['gross'];
-		$msg['gateway_parent_id'] = $row['Psp Reference'];
-		$msg['gateway_refund_id'] = $row['Modification Psp Reference'];
-		if ( in_array( strtolower( $row['Record Type'] ), [ 'chargeback', 'secondchargeback' ] ) ) {
-			$msg['type'] = 'chargeback';
-		} else {
-			$msg['type'] = 'refund';
-		}
+		$msg = $this->parseCommonRefundValues( $row, $msg, $row['Record Type'], $row['Modification Psp Reference'] );
 
 		return $msg;
 	}
