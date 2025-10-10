@@ -219,6 +219,10 @@ abstract class AdyenAudit implements AuditParser {
 			$row['Payment Method'],
 			$row['Payment Method Variant']
 		);
+		if ( $this->getEmail( $row ) ) {
+			$msg['email'] = $this->getEmail( $row );
+		}
+
 		$msg['payment_method'] = $method;
 		$msg['payment_submethod'] = $submethod;
 		// Both reports have the Creation Date in PDT, the payments accounting report does not
@@ -240,6 +244,16 @@ abstract class AdyenAudit implements AuditParser {
 	}
 
 	protected function getFeeTransaction( array $row ): ?array {
+		return null;
+	}
+
+	protected function getEmail( array $row ): ?string {
+		if ( $this->isOrchestratorMerchantReference( $row ) ) {
+			$metadata = $this->getOrchestratorMetadata( $row );
+			if ( isset( $metadata['gr4vy_buy_ref'] ) ) {
+				return $metadata['gr4vy_buy_ref'] ?: null;
+			}
+		}
 		return null;
 	}
 }
