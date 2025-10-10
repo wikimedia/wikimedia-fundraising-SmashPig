@@ -120,7 +120,6 @@ abstract class AdyenAudit implements AuditParser {
 			$msg['backend_processor_txn_id'] = $row['Psp Reference'];
 			$msg['backend_processor'] = 'adyen';
 			$msg['payment_orchestrator_reconciliation_id'] = $merchantReference;
-			$msg['contribution_tracking_id'] = null;
 		}
 
 		switch ( $type ) {
@@ -141,6 +140,10 @@ abstract class AdyenAudit implements AuditParser {
 		}
 
 		$this->fileData[] = $msg;
+	}
+
+	public function getOrchestratorMetadata( $row ): array {
+		return json_decode( $row['Metadata'] ?? '{}', true );
 	}
 
 	protected function parseCommonRefundValues( array $row, array $msg, string $messageType, string $modificationReference ): array {
@@ -177,6 +180,25 @@ abstract class AdyenAudit implements AuditParser {
 		}
 	}
 
+	protected function getInvoiceId( array $row ): string {
+		if ( $this->isOrchestratorMerchantReference( $row ) ) {
+			$metadata = $this->getOrchestratorMetadata( $row );
+			if ( isset( $metadata['gr4vy_tx_ref'] ) ) {
+				return $metadata['gr4vy_tx_ref'];
+			}
+		}
+		return $row['Merchant Reference'];
+	}
+
+	protected function getContributionTrackingId( array $row ): ?int {
+		$invoiceId = $this->getInvoiceId( $row );
+		if ( ( !strpos( $invoiceId, '.' ) && !is_numeric( $invoiceId ) ) ) {
+			return null;
+		}
+		$parts = explode( '.', $invoiceId );
+		return $parts[ 0 ];
+	}
+
 	/**
 	 * these column names are shared between SettlementDetail and PaymentsAccounting reports
 	 */
@@ -185,13 +207,13 @@ abstract class AdyenAudit implements AuditParser {
 			'gateway' => $this->isOrchestratorMerchantReference( $row ) ? 'gravy' : 'adyen',
 			'audit_file_gateway' => 'adyen',
 			'gateway_account' => $row['Merchant Account'],
-			'invoice_id' => $row['Merchant Reference'],
+			'invoice_id' => $this->getInvoiceId( $row ),
 			'gateway_txn_id' => $this->getGatewayTransactionId( $row ),
 			'settlement_batch_reference' => $row['Batch Number'] ?? null,
 			'exchange_rate' => $row['Exchange Rate']
 		];
-		$parts = explode( '.', $row['Merchant Reference'] );
-		$msg['contribution_tracking_id'] = $parts[0];
+
+		$msg['contribution_tracking_id'] = $this->getContributionTrackingId( $row );
 
 		[ $method, $submethod ] = ReferenceData::decodePaymentMethod(
 			$row['Payment Method'],
