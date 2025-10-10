@@ -78,6 +78,7 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 			'date' => UtcDate::getUtcTimestamp( $row[$this->date], $row['TimeZone'] ),
 			'gateway' => 'adyen',
 			'type' => 'fee',
+			'gateway_txn_id' => $row['Modification Reference'],
 			'gateway_account' => $row['Merchant Account'],
 			'invoice_id' => $row['Merchant Reference'],
 			'settlement_batch_reference' => $row['Batch Number'] ?? null,
@@ -90,4 +91,20 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 			'settled_currency' => $row['Net Currency'],
 		];
 	}
+
+	protected function getPayoutTransaction( array $row ): ?array {
+		return [
+			'settled_date' => UtcDate::getUtcTimestamp( $row[$this->date], $row['TimeZone'] ),
+			'date' => UtcDate::getUtcTimestamp( $row[$this->date], $row['TimeZone'] ),
+			'gateway' => 'adyen',
+			'type' => 'payout',
+			'gateway_txn_id' => $row['Modification Reference'],
+			'gateway_account' => $row['Merchant Account'],
+			'invoice_id' => $row['Merchant Reference'],
+			'settlement_batch_reference' => $row['Batch Number'] ?? null,
+			'settled_total_amount' => $row['Net Debit (NC)'],
+			'settled_currency' => $row['Net Currency'],
+		];
+	}
+
 }

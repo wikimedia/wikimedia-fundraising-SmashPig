@@ -112,6 +112,10 @@ abstract class AdyenAudit implements AuditParser {
 			$this->fileData[] = $this->getFeeTransaction( $row );
 			return;
 		}
+		if ( $type === 'merchantpayout' ) {
+			$this->fileData[] = $this->getPayoutTransaction( $row );
+			return;
+		}
 		if ( in_array( $type, self::$ignoredTypes ) ) {
 			return;
 		}
