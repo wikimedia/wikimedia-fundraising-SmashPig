@@ -5,6 +5,7 @@ use SmashPig\Core\DataFiles\AuditParser;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UtcDate;
+use SmashPig\PaymentProviders\Adyen\AdyenCurrencyRoundingHelper;
 use SmashPig\PaymentProviders\Adyen\ReferenceData;
 
 /**
@@ -108,7 +109,8 @@ abstract class AdyenAudit implements AuditParser {
 		$row = array_combine( $this->columnHeaders, $line );
 		$type = strtolower( $row[$this->type] );
 		if ( $type === 'fee' ) {
-			return $this->getFeeTransaction( $row );
+			$this->fileData[] = $this->getFeeTransaction( $row );
+			return;
 		}
 		if ( in_array( $type, self::$ignoredTypes ) ) {
 			return;
@@ -160,6 +162,22 @@ abstract class AdyenAudit implements AuditParser {
 			$msg['gateway_parent_id'] = $row['Psp Reference'];
 			$msg['gateway_refund_id'] = $modificationReference;
 		}
+
+		// This is REALLY confusing - but in the Adyen Settlement csv
+		// we can find (e.g) a USD row like
+		// Net Debit (NC)   = 15.65 (settled_total_amount)
+		// Markup (NC)      = 10.65 (settled_fee_amount)
+		// Gross Debit (GC) = 5     (settled_net_amount)
+		// In this case we hit a chargeback where $5 USD was returned to the donor
+		// We were charged $10.65 as a charge back penantly and
+		// $15.65 is charged to us in total. If it were not USD Gross Debit (GC) would be
+		// in the original currency.
+		$msg['settled_fee_amount'] = AdyenCurrencyRoundingHelper::round( $this->getFee( $row ) > 0 ? -( $this->getFee( $row ) ) : 0, $msg['settled_currency'] );
+		$msg['settled_net_amount'] = AdyenCurrencyRoundingHelper::round( $msg['settled_total_amount'] - $msg['settled_fee_amount'], $msg['settled_currency'] );
+		$msg['fee'] = $msg['settled_fee_amount'] ? AdyenCurrencyRoundingHelper::round( $msg['settled_fee_amount'] / $msg['exchange_rate'], $msg['settled_currency'] ) : 0;
+		$msg['original_net_amount'] = AdyenCurrencyRoundingHelper::round( $msg['gross'] > 0 ? -( (float)$msg['gross'] ) : (float)( $msg['gross'] ), $msg['original_currency'] );
+		$msg['original_fee_amount'] = AdyenCurrencyRoundingHelper::round( $msg['fee'] > 0 ? -( (float)$msg['fee'] ) : (float)( $msg['fee'] ), $msg['original_currency'] );
+		$msg['original_total_amount'] = AdyenCurrencyRoundingHelper::round( $msg['original_net_amount'] + $msg['original_fee_amount'], $msg['original_currency'] );
 		return $msg;
 	}
 
@@ -209,9 +227,11 @@ abstract class AdyenAudit implements AuditParser {
 			'gateway_account' => $row['Merchant Account'],
 			'invoice_id' => $this->getInvoiceId( $row ),
 			'gateway_txn_id' => $this->getGatewayTransactionId( $row ),
-			'settlement_batch_reference' => $row['Batch Number'] ?? null,
+			'settlement_batch_reference' => $row['Batch Number'] ?? $row['Payable Batch'] ?? null,
 			'exchange_rate' => $row['Exchange Rate']
 		];
+
+		$msg['settled_date'] = empty( $row['Booking Date'] ) ? null : UtcDate::getUtcTimestamp( $row['Booking Date'], $row['Booking Date TimeZone'] ?? $row['TimeZone'] );
 
 		$msg['contribution_tracking_id'] = $this->getContributionTrackingId( $row );
 
