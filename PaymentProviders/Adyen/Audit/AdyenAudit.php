@@ -21,7 +21,6 @@ abstract class AdyenAudit implements AuditParser {
 	protected static $ignoredTypes = [
 		'misccosts',
 		'merchantpayout',
-		'chargebackreversed', // oh hey, we could try to handle these
 		'refundedreversed',
 		'depositcorrection',
 		'invoicededuction',
@@ -119,18 +118,16 @@ abstract class AdyenAudit implements AuditParser {
 		if ( in_array( $type, self::$ignoredTypes ) ) {
 			return;
 		}
-		$merchantReference = $row[$this->merchantReference];
 
 		$msg = $this->setCommonValues( $row );
-		if ( $this->isOrchestratorMerchantReference( $row ) ) {
-			$msg['backend_processor_txn_id'] = $row['Psp Reference'];
-			$msg['backend_processor'] = 'adyen';
-			$msg['payment_orchestrator_reconciliation_id'] = $merchantReference;
-		}
 
 		switch ( $type ) {
-			// Amex has externally in the type name
+			case 'chargebackreversed':
+				// Set the type and then treat as normal donation.
+				$msg['type'] = 'chargeback_reversed';
+				// fall through
 			case 'settled':
+				// Amex has externally in the type name
 			case 'settledexternally':
 				$msg = $this->parseDonation( $row, $msg );
 				break;
@@ -252,6 +249,12 @@ abstract class AdyenAudit implements AuditParser {
 		// Both reports have the Creation Date in PDT, the payments accounting report does not
 		// send the timezone as a separate column
 		$msg['date'] = UtcDate::getUtcTimestamp( $row[$this->date], $row['TimeZone'] );
+
+		if ( $this->isOrchestratorMerchantReference( $row ) ) {
+			$msg['backend_processor_txn_id'] = $row['Psp Reference'];
+			$msg['backend_processor'] = 'adyen';
+			$msg['payment_orchestrator_reconciliation_id'] = $row[$this->merchantReference];
+		}
 
 		return $msg;
 	}

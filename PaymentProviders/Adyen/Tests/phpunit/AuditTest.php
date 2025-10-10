@@ -245,6 +245,44 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertEquals( $expected, $actual, 'Did not parse chargeback correctly' );
 	}
 
+	/**
+	 * And a chargeback
+	 */
+	public function testProcessSettlementDetailChargebackReversal() {
+		$processor = new AdyenSettlementDetailReport();
+		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_detail_report_chargeback_reversed.csv' );
+		$actual = $output[0];
+		$expected = [
+			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
+			'gateway_account' => 'WikimediaCOM',
+			'contribution_tracking_id' => 92598312,
+			'date' => 1455128736,
+			'gross' => '52',
+			'invoice_id' => '92598312.0',
+			'type' => 'chargeback_reversed',
+			'gateway_txn_id' => '4522268860022701',
+			'payment_method' => 'cc',
+			'payment_submethod' => 'visa',
+			'settlement_batch_reference' => '3',
+			'exchange_rate' => 1,
+			'fee' => 0.11,
+			'settled_date' => null,
+			'settled_currency' => 'USD',
+			'original_currency' => 'USD',
+			'currency' => 'USD',
+			'original_fee_amount' => 0.11,
+			'original_net_amount' => 51.89,
+			'settled_gross' => '51.89',
+			'original_total_amount' => 52,
+			'settled_fee_amount' => 0.11,
+			'settled_net_amount' => 51.89,
+			'settled_total_amount' => 52,
+			'modification_reference' => '4522268869855336',
+		];
+		$this->assertEquals( $expected, $actual, 'Did not parse chargeback correctly' );
+	}
+
 	public function testProcessPaymentsAccountingNyce() {
 		$processor = new AdyenPaymentsAccountingReport();
 		$output = $processor->parseFile( __DIR__ . '/../Data/payments_accounting_report_nyce.csv' );
