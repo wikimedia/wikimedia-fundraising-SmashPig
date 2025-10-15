@@ -41,16 +41,16 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		$msg['original_total_amount'] = (float)$msg['gross'];
 		// fee is given in settlement currency
 		// but queue consumer expects it in original
-		$msg['settled_fee_amount'] = AdyenCurrencyRoundingHelper::round( $this->getFee( $row ), $msg['settled_currency'] );
-		$msg['fee'] = AdyenCurrencyRoundingHelper::round( $msg['settled_fee_amount'] / $msg['exchange_rate'], $msg['original_currency'] );
-		$msg['original_fee_amount'] = $msg['fee'];
-		$msg['original_net_amount'] = $msg['original_total_amount'] - $msg['original_fee_amount'];
+		$msg['settled_fee_amount'] = AdyenCurrencyRoundingHelper::round( -$this->getFee( $row ), $msg['settled_currency'] );
+		$msg['fee'] = AdyenCurrencyRoundingHelper::round( $this->getFee( $row ) / $msg['exchange_rate'], $msg['original_currency'] );
+		$msg['original_fee_amount'] = -$msg['fee'];
+		$msg['original_net_amount'] = AdyenCurrencyRoundingHelper::round( $msg['original_total_amount'] + $msg['original_fee_amount'], $msg['original_currency'] );
 
 		// shouldn't this be settled_net or settled_amount?
 		$msg['settled_gross'] = $row['Net Credit (NC)'];
 		// Settled amount is like settled gross but is negative where negative.
 		$msg['settled_net_amount'] = $row['Net Credit (NC)'];
-		$msg['settled_total_amount'] = AdyenCurrencyRoundingHelper::round( $msg['settled_net_amount'] + $msg['settled_fee_amount'], $msg['settled_currency'] );
+		$msg['settled_total_amount'] = AdyenCurrencyRoundingHelper::round( $msg['settled_net_amount'] - $msg['settled_fee_amount'], $msg['settled_currency'] );
 		return $msg;
 	}
 
@@ -60,7 +60,7 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		$msg['settled_currency'] = $row['Net Currency'];
 		// 'Net Debit (NC)' is the amount we paid including fees
 		// 'Net Currency' is the currency we paid in
-		$msg['settled_total_amount'] = -( $row['Net Debit (NC)'] );
+		$msg['settled_net_amount'] = -( $row['Net Debit (NC)'] );
 		$msg = $this->parseCommonRefundValues( $row, $msg, $row['Type'], $row['Modification Reference'] );
 		return $msg;
 	}
@@ -85,7 +85,7 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 			// In this context the total amount is what is paid by the donor - ie nothing.
 			// The net_amount is what is paid to us - ie a negative value equal to the fee_amount.
 			'settled_total_amount' => 0,
-			'settled_fee_amount' => $row['Net Debit (NC)'],
+			'settled_fee_amount' => '-' . $row['Net Debit (NC)'],
 			'settled_net_amount' => '-' . $row['Net Debit (NC)'],
 			'audit_file_gateway' => 'adyen',
 			'settled_currency' => $row['Net Currency'],

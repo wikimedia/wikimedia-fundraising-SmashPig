@@ -66,7 +66,7 @@ class AdyenPaymentsAccountingReport extends AdyenAudit {
 				(float)$row['Main Amount'] - $this->getFee( $row ), 3
 			);
 		}
-		$msg['settled_total_amount'] = -( $row['Main Amount'] );
+		$msg['settled_net_amount'] = -( $row['Main Amount'] );
 		$msg['settled_currency'] = $row['Settlement Currency'];
 		$msg = $this->parseCommonRefundValues( $row, $msg, $row['Record Type'], $row['Modification Psp Reference'] );
 		// This has not been historically set & is a bit ambiguous. Phase it out rather than add it.
