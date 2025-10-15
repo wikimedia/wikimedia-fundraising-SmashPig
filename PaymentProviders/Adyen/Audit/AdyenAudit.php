@@ -173,7 +173,7 @@ abstract class AdyenAudit implements AuditParser {
 		// We were charged $10.65 as a charge back penantly and
 		// $15.65 is charged to us in total. If it were not USD Gross Debit (GC) would be
 		// in the original currency.
-		$msg['settled_fee_amount'] = AdyenCurrencyRoundingHelper::round( $this->getFee( $row ) > 0 ? -( $this->getFee( $row ) ) : 0, $msg['settled_currency'] );
+		$msg['settled_fee_amount'] = AdyenCurrencyRoundingHelper::round( -( $this->getFee( $row ) ), $msg['settled_currency'] );
 		$msg['settled_net_amount'] = AdyenCurrencyRoundingHelper::round( $msg['settled_total_amount'] - $msg['settled_fee_amount'], $msg['settled_currency'] );
 		$msg['fee'] = $msg['settled_fee_amount'] ? AdyenCurrencyRoundingHelper::round( $msg['settled_fee_amount'] / $msg['exchange_rate'], $msg['settled_currency'] ) : 0;
 		$msg['original_net_amount'] = AdyenCurrencyRoundingHelper::round( $msg['gross'] > 0 ? -( (float)$msg['gross'] ) : (float)( $msg['gross'] ), $msg['original_currency'] );
