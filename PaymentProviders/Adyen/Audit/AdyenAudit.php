@@ -146,7 +146,7 @@ abstract class AdyenAudit implements AuditParser {
 	}
 
 	public function getOrchestratorMetadata( $row ): array {
-		return json_decode( $row['Metadata'] ?? '{}', true );
+		return json_decode( $row['Metadata'] ?? '{}', true ) ?? [];
 	}
 
 	protected function parseCommonRefundValues( array $row, array $msg, string $messageType, string $modificationReference ): array {
