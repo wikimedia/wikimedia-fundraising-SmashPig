@@ -47,7 +47,8 @@ abstract class AdyenAudit implements AuditParser {
 		'sentforrefund',
 		'expired',
 		'error',
-		'capturefailed'
+		'capturefailed',
+		'refundfailed'
 	];
 
 	protected $fileData;
