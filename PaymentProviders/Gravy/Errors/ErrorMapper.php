@@ -53,7 +53,7 @@ class ErrorMapper {
 			'invalid_service_configuration' => ErrorCode::INVALID_REQUEST, // The service is incorrectly configured.
 			'invalid_service_credentials' => ErrorCode::INVALID_REQUEST, // The service credentials are not valid.
 			'invalid_service_response' => ErrorCode::INVALID_REQUEST, // The service response could not be parsed.
-			'invalid_tax_identifier' => ErrorCode::INVALID_REQUEST, // The tax identifier is invalid (e.g. GB VAT number is in an invalid format, or is of the wrong kind).
+			'invalid_tax_identifier' => ErrorCode::VALIDATION, // The tax identifier is invalid (e.g. GB VAT number is in an invalid format, or is of the wrong kind).
 			'missing_billing_address' => ErrorCode::VALIDATION, // The billing address is required.
 			'missing_cvv' => ErrorCode::VALIDATION, // The CVV is required.
 			'missing_shipping_address' => ErrorCode::VALIDATION, // The shipping address is required.
@@ -105,6 +105,14 @@ class ErrorMapper {
 		'suspected_fraud', // The service flagged the transaction as suspected fraud.
 	];
 
+	public static $validationErrorFieldMap = [
+		'incorrect_cvv' => 'cvv',
+		'incorrect_expiry_date' => 'expiry_date',
+		'invalid_tax_identifier' => 'fiscal_number',
+		'missing_cvv' => 'cvv',
+		'missing_tax_identifier' => 'fiscal_number',
+	];
+
 	public static function getError( string $code ) {
 		if ( isset( self::$errorCodes[$code] ) ) {
 			return self::$errorCodes[$code];
@@ -119,5 +127,9 @@ class ErrorMapper {
 
 	public static function isSuspectedFraud( string $code ): bool {
 		return in_array( $code, self::$suspectedFraudCodes );
+	}
+
+	public static function getValidationErrorField( ?string $errorCode ): ?string {
+		return self::$validationErrorFieldMap[$errorCode] ?? null;
 	}
 }
