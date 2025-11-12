@@ -286,7 +286,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * When fees are more than the donation amount
 	 */
-	public function testProcessSettlementDetailNegativeTransaction() {
+	public function testProcessSettlementDetailNegativeTransaction(): void {
 		$processor = new AdyenSettlementDetailReport();
 		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_detail_report_emptynetcredit.csv' );
 		$actual = $output[0];
@@ -320,6 +320,33 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'backend_processor_txn_id' => 'FVD6HH297FKD7K69',
 			'backend_processor' => 'adyen',
 			'payment_orchestrator_reconciliation_id' => '4RpfKjZxqXWKsUOeHaVteD'
+		];
+		$this->assertEquals( $expected, $actual, 'Fees do not match' );
+	}
+
+	/**
+	 * When an invoice deduction is recorded it is treated like a fee.
+	 *
+	 * These are both rare & trivial (e.g 6 cents)
+	 */
+	public function testProcessSettlementDetailInvoiceDeduction(): void {
+		$processor = new AdyenSettlementDetailReport();
+		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_detail_report_invoice_deduction.csv' );
+		$actual = $output[0];
+		$expected = [
+			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
+			'gateway_account' => 'WikimediaCOM',
+			'date' => 1761908739,
+			'invoice_id' => '',
+			'gateway_txn_id' => 'Invoice US202510000533 Discounts and additional costs (1/1)',
+			'settlement_batch_reference' => '1136',
+			'settled_date' => 1761908739,
+			'settled_currency' => 'USD',
+			'settled_fee_amount' => '-0.06',
+			'settled_net_amount' => '-0.06',
+			'settled_total_amount' => '0.00',
+			'type' => 'fee',
 		];
 		$this->assertEquals( $expected, $actual, 'Fees do not match' );
 	}
