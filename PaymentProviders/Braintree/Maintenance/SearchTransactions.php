@@ -16,7 +16,7 @@ class SearchTransactions extends MaintenanceBase {
 		parent::__construct();
 		$this->addOption( 'hours', 'search transactions from how many hours till now', '24', 'r' );
 		$this->addOption( 'type', 'search what type of transactions (donation, refund, chargeback)', 'all', 't' );
-		$this->addOption( 'path', 'location to store the reports', './drupal/sites/default/files/wmf_audit/braintree/incoming', 'p' );
+		$this->addOption( 'path', 'location to store the reports', './private/wmf_audit/braintree/incoming', 'p' );
 		$this->desiredOptions['config-node']['default'] = 'braintree';
 	}
 
@@ -58,7 +58,7 @@ class SearchTransactions extends MaintenanceBase {
 				fclose( $disputes );
 			}
 		} else {
-			echo "drupal incoming dir is not exist\n";
+			echo "incoming dir is not exist\n";
 		}
 	}
 
