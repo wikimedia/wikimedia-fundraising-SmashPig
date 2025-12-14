@@ -37,6 +37,15 @@ query searchTransactions($input: TransactionSearchInput!, $after: String){
 					createdAt
 				  }
 				}
+				disbursementDetails {
+				  date
+				  amount {
+				    value
+				    currencyCode
+				  }
+				  exchangeRate
+				  fundsHeld
+				}
 				paymentMethodSnapshot {
 				  ... on VenmoAccountDetails {
 					username
