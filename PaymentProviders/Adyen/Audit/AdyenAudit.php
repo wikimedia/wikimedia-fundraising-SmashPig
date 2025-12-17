@@ -21,7 +21,6 @@ abstract class AdyenAudit implements AuditParser {
 	protected static $ignoredTypes = [
 		'misccosts',
 		'merchantpayout',
-		'refundedreversed',
 		'depositcorrection',
 		'matchedstatement',
 		'manualcorrected',
@@ -123,8 +122,9 @@ abstract class AdyenAudit implements AuditParser {
 
 		switch ( $type ) {
 			case 'chargebackreversed':
+			case 'refundedreversed':
 				// Set the type and then treat as normal donation.
-				$msg['type'] = 'chargeback_reversed';
+				$msg['type'] = str_replace( 'reversed', '_reversed', $type );
 				// fall through
 			case 'settled':
 				// Amex has externally in the type name
