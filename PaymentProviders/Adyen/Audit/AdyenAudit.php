@@ -124,7 +124,12 @@ abstract class AdyenAudit implements AuditParser {
 			case 'chargebackreversed':
 			case 'refundedreversed':
 				// Set the type and then treat as normal donation.
-				$msg['type'] = str_replace( 'reversed', '_reversed', $type );
+				if ( $type === 'chargebackreversed' ) {
+					$msg['type'] = 'chargeback_reversed';
+				}
+				if ( $type === 'refundedreversed' ) {
+					$msg['type'] = 'refund_reversed';
+				}
 				// fall through
 			case 'settled':
 				// Amex has externally in the type name
