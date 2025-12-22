@@ -6,6 +6,9 @@ use PHPUnit\Framework\TestCase;
 use SmashPig\Core\Logging\ApiTimings;
 use SmashPig\Core\Logging\TaggedLogger;
 
+/**
+ * @group Timings
+ */
 class ApiTimingsTest extends TestCase {
 
 	public function testBuildTagLowerCaseAndFormatSegments(): void {
