@@ -17,6 +17,7 @@ class SearchTransactions extends MaintenanceBase {
 		$this->addOption( 'hours', 'search transactions from how many hours till now', '24', 'r' );
 		$this->addOption( 'type', 'search what type of transactions (donation, refund, chargeback)', 'all', 't' );
 		$this->addOption( 'path', 'location to store the reports', './private/wmf_audit/braintree/incoming', 'p' );
+		$this->addOption( 'date-type', 'Type of date to query on - settled|created|disbursement|received', 'created', 'd' );
 		$this->addFlag( 'raw', 'log raw data', 'v' );
 		$this->addFlag( 'output-raw', 'output raw data', 'o' );
 		$this->desiredOptions['config-node']['default'] = 'braintree';
@@ -39,7 +40,8 @@ class SearchTransactions extends MaintenanceBase {
 		Logger::info( "Get $type report from $greaterThanDate to $todayDate\n" );
 		if ( is_dir( $path ) ) {
 			$provider = PaymentProviderFactory::getProviderForMethod( 'search' );
-			$input = [ "createdAt" => [ "greaterThanOrEqualTo" => $greaterThan, "lessThanOrEqualTo" => $now ], "status" => [ "is" => "SETTLED" ] ];
+
+			$input = [ $this->getDateField() => [ "greaterThanOrEqualTo" => $greaterThan, "lessThanOrEqualTo" => $now ], "status" => [ "is" => "SETTLED" ] ];
 			$after = null;
 			if ( $type !== 'chargeback' && $type !== 'refund' ) {
 				$response = $this->normalizeTransactions( $provider->searchTransactions( $input, $after ), 'donation' );
@@ -55,6 +57,8 @@ class SearchTransactions extends MaintenanceBase {
 				fclose( $refunds );
 			}
 			if ( $type !== 'donation' && $type !== 'refund' ) {
+				// @todo - this would be disputes. The input date field is not respected because it's unclear we call this &
+				// if we do which date field to use.
 				$disputeInput = [ "receivedDate" => [ "greaterThanOrEqualTo" => $greaterThanDate, "lessThanOrEqualTo" => $todayDate ] ];
 				$disputeResponse = $this->normalizeTransactions( $provider->searchDisputes( $disputeInput, $after ), 'chargeback' );
 				$disputes = fopen( $path . "/settlement_batch_report_dispute_" . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
@@ -175,6 +179,24 @@ class SearchTransactions extends MaintenanceBase {
 		return json_encode( $this->fileData );
 	}
 
+	/**
+	 * Get the date field to search by.
+	 *
+	 * @return string
+	 */
+	public function getDateField(): string {
+		$dateField = $this->getOption( 'date-type' );
+		if ( $dateField === 'created' ) {
+			return 'createdAt';
+		}
+		if ( $dateField === 'settled' ) {
+			return 'settledAt';
+		}
+		if ( $dateField === 'disbursement' ) {
+			return 'disbursementDate';
+		}
+		return 'receivedDate';
+	}
 }
 
 $maintClass = SearchTransactions::class;
