@@ -18,6 +18,7 @@ class SearchTransactions extends MaintenanceBase {
 		$this->addOption( 'type', 'search what type of transactions (donation, refund, chargeback)', 'all', 't' );
 		$this->addOption( 'path', 'location to store the reports', './private/wmf_audit/braintree/incoming', 'p' );
 		$this->addFlag( 'raw', 'log raw data', 'v' );
+		$this->addFlag( 'output-raw', 'output raw data', 'o' );
 		$this->desiredOptions['config-node']['default'] = 'braintree';
 	}
 
@@ -29,7 +30,7 @@ class SearchTransactions extends MaintenanceBase {
 		$hrs = $this->getOption( 'hours' );
 		$type = $this->getOption( 'type' );
 		$path = $this->getOption( 'path' );
-		$logRaw = $this->getOption( 'raw' );
+		$outputRaw = $this->getOption( 'output-raw' );
 		$now = date( 'c' );
 		$greaterThan = date( 'c', strtotime( "-$hrs hours" ) );
 		$greaterThanDate = substr( $greaterThan, 0, 10 );
@@ -42,7 +43,8 @@ class SearchTransactions extends MaintenanceBase {
 			$after = null;
 			if ( $type !== 'chargeback' && $type !== 'refund' ) {
 				$response = $this->normalizeTransactions( $provider->searchTransactions( $input, $after ), 'donation' );
-				$transactions = fopen( $path . "/settlement_batch_report_" . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
+				$pathPrefix = $outputRaw ? '/raw_batch_report_' : "/settlement_batch_report_";
+				$transactions = fopen( $path . $pathPrefix . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
 				fwrite( $transactions, $response );
 				fclose( $transactions );
 			}
@@ -111,10 +113,15 @@ class SearchTransactions extends MaintenanceBase {
 	private function normalizeTransactions( array $data, string $type ): string {
 		$this->fileData = [];
 		$logRaw = $this->getOption( 'raw' );
+		$outputRaw = $this->getOption( 'output-raw' );
 		if ( $type === 'donation' || $type === 'refund' ) {
 			foreach ( $data as $d ) {
 				if ( $logRaw ) {
 					Logger::info( "logging raw transaction " . json_encode( $d ) );
+				}
+				if ( $outputRaw ) {
+					$this->fileData[] = $d['node'];
+					continue;
 				}
 				$row = $d['node'];
 				$msg                             = [];
@@ -142,6 +149,10 @@ class SearchTransactions extends MaintenanceBase {
 			foreach ( $data as $d ) {
 				if ( $logRaw ) {
 					Logger::info( "logging raw transaction " . json_encode( $d ) );
+				}
+				if ( $outputRaw ) {
+					$this->fileData[] = $d['node'];
+					continue;
 				}
 				$row = $d['node'];
 				$msg = [];
