@@ -15,6 +15,8 @@ class SearchTransactions extends MaintenanceBase {
 	public function __construct() {
 		parent::__construct();
 		$this->addOption( 'hours', 'search transactions from how many hours till now', '24', 'r' );
+		$this->addOption( 'start-date', 'search transactions starting from (alternative to hours)', '', 's' );
+		$this->addOption( 'end-date', 'search transactions ending at (alternative to hours)', '', 'e' );
 		$this->addOption( 'type', 'search what type of transactions (donation, refund, chargeback)', 'all', 't' );
 		$this->addOption( 'path', 'location to store the reports', './private/wmf_audit/braintree/incoming', 'p' );
 		$this->addOption( 'date-type', 'Type of date to query on - settled|created|disbursement|received', 'created', 'd' );
@@ -27,17 +29,27 @@ class SearchTransactions extends MaintenanceBase {
 	 * Do the actual work of the script.
 	 * @return void
 	 */
-	public function execute() {
+	public function execute(): void {
 		$hrs = $this->getOption( 'hours' );
+		$startDate = $this->getOption( 'start-date' );
+		$endDate = $this->getOption( 'end-date' );
 		$type = $this->getOption( 'type' );
 		$path = $this->getOption( 'path' );
 		$outputRaw = $this->getOption( 'output-raw' );
 		$now = date( 'c' );
-		$greaterThan = date( 'c', strtotime( "-$hrs hours" ) );
+		if ( $startDate ) {
+			$greaterThan = date( 'c', strtotime( $startDate ) );
+		} else {
+			$greaterThan = date( 'c', strtotime( "-$hrs hours" ) );
+		}
 		$greaterThanDate = substr( $greaterThan, 0, 10 );
-		$todayDate = substr( $now, 0, 10 );
+		if ( $endDate ) {
+			$endDate = date( 'c', strtotime( $endDate ) );
+		} else {
+			$endDate = substr( $now, 0, 10 );
+		}
 		// get yesterday's or how many hrs from now's transaction, refunds and disputes
-		Logger::info( "Get $type report from $greaterThanDate to $todayDate\n" );
+		Logger::info( "Get $type report from $greaterThanDate to $endDate\n" );
 		if ( is_dir( $path ) ) {
 			$provider = PaymentProviderFactory::getProviderForMethod( 'search' );
 
@@ -59,7 +71,7 @@ class SearchTransactions extends MaintenanceBase {
 			if ( $type !== 'donation' && $type !== 'refund' ) {
 				// @todo - this would be disputes. The input date field is not respected because it's unclear we call this &
 				// if we do which date field to use.
-				$disputeInput = [ "receivedDate" => [ "greaterThanOrEqualTo" => $greaterThanDate, "lessThanOrEqualTo" => $todayDate ] ];
+				$disputeInput = [ "receivedDate" => [ "greaterThanOrEqualTo" => $greaterThanDate, "lessThanOrEqualTo" => $endDate ] ];
 				$disputeResponse = $this->normalizeTransactions( $provider->searchDisputes( $disputeInput, $after ), 'chargeback' );
 				$disputes = fopen( $path . "/settlement_batch_report_dispute_" . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
 				fwrite( $disputes, $disputeResponse );
