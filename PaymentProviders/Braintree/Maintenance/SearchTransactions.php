@@ -55,16 +55,16 @@ class SearchTransactions extends MaintenanceBase {
 
 			$input = [ $this->getDateField() => [ "greaterThanOrEqualTo" => $greaterThan, "lessThanOrEqualTo" => $now ], "status" => [ "is" => "SETTLED" ] ];
 			$after = null;
+			$pathPrefix = $outputRaw ? '/raw_batch_report_' : "/settlement_batch_report_";
 			if ( $type !== 'chargeback' && $type !== 'refund' ) {
 				$response = $this->normalizeTransactions( $provider->searchTransactions( $input, $after ), 'donation' );
-				$pathPrefix = $outputRaw ? '/raw_batch_report_' : "/settlement_batch_report_";
 				$transactions = fopen( $path . $pathPrefix . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
 				fwrite( $transactions, $response );
 				fclose( $transactions );
 			}
 			if ( $type !== 'donation' && $type !== 'chargeback' ) {
 				$refundResponse = $this->normalizeTransactions( $provider->searchRefunds( $input, $after ), 'refund' );
-				$refunds = fopen( $path . "/settlement_batch_report_refund_" . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
+				$refunds = fopen( $path . $pathPrefix . "refund_" . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
 				fwrite( $refunds, $refundResponse );
 				fclose( $refunds );
 			}
@@ -73,7 +73,7 @@ class SearchTransactions extends MaintenanceBase {
 				// if we do which date field to use.
 				$disputeInput = [ "receivedDate" => [ "greaterThanOrEqualTo" => $greaterThanDate, "lessThanOrEqualTo" => $endDate ] ];
 				$disputeResponse = $this->normalizeTransactions( $provider->searchDisputes( $disputeInput, $after ), 'chargeback' );
-				$disputes = fopen( $path . "/settlement_batch_report_dispute_" . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
+				$disputes = fopen( $path . $pathPrefix . "dispute_" . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
 				fwrite( $disputes, $disputeResponse );
 				fclose( $disputes );
 			}
