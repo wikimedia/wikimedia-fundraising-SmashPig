@@ -188,7 +188,7 @@ class SearchTransactions extends MaintenanceBase {
 				$this->fileData[] = $msg;
 			}
 		}
-		return json_encode( $this->fileData );
+		return json_encode( $this->fileData ) . "\n";
 	}
 
 	/**
