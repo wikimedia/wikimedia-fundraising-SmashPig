@@ -53,22 +53,22 @@ class SearchTransactions extends MaintenanceBase {
 		if ( is_dir( $path ) ) {
 			$provider = PaymentProviderFactory::getProviderForMethod( 'search' );
 
-			$input = [ $this->getDateField() => [ "greaterThanOrEqualTo" => $greaterThan, "lessThanOrEqualTo" => $now ], "status" => [ "is" => "SETTLED" ] ];
+			$input = $this->getInput( $greaterThan, $now );
 			$after = null;
 			$pathPrefix = $outputRaw ? '/raw_batch_report_' : "/settlement_batch_report_";
-			if ( $type !== 'chargeback' && $type !== 'refund' ) {
+			if ( $this->isRunDonationSettlementReport() ) {
 				$response = $this->normalizeTransactions( $provider->searchTransactions( $input, $after ), 'donation' );
 				$transactions = fopen( $path . $pathPrefix . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
 				fwrite( $transactions, $response );
 				fclose( $transactions );
 			}
-			if ( $type !== 'donation' && $type !== 'chargeback' ) {
+			if ( $this->isRunRefundReport() ) {
 				$refundResponse = $this->normalizeTransactions( $provider->searchRefunds( $input, $after ), 'refund' );
 				$refunds = fopen( $path . $pathPrefix . "refund_" . $greaterThanDate . ".json", "w" ) or die( "Unable to open file!" );
 				fwrite( $refunds, $refundResponse );
 				fclose( $refunds );
 			}
-			if ( $type !== 'donation' && $type !== 'refund' ) {
+			if ( $this->isRunChargebackReport() ) {
 				// @todo - this would be disputes. The input date field is not respected because it's unclear we call this &
 				// if we do which date field to use.
 				$disputeInput = [ "receivedDate" => [ "greaterThanOrEqualTo" => $greaterThanDate, "lessThanOrEqualTo" => $endDate ] ];
@@ -201,13 +201,68 @@ class SearchTransactions extends MaintenanceBase {
 		if ( $dateField === 'created' ) {
 			return 'createdAt';
 		}
-		if ( $dateField === 'settled' ) {
-			return 'settledAt';
-		}
 		if ( $dateField === 'disbursement' ) {
 			return 'disbursementDate';
 		}
 		return 'receivedDate';
+	}
+
+	/**
+	 * @param string $greaterThan
+	 * @param string $now
+	 * @return array[]
+	 */
+	public function getInput( string $greaterThan, string $now ): array {
+		$dateField = $this->getOption( 'date-type' );
+		if ( $dateField === 'disbursement' ) {
+			// The sum of disbursements adds up to the batch sum...
+			$startDate = $this->getOption( 'start-date' );
+			$endDate = $this->getOption( 'end-date' ) ?: $startDate;
+			return [
+				'disbursementDate' => [
+					'greaterThanOrEqualTo' => date( 'Y-m-d', strtotime( $startDate ) ),
+					'lessThanOrEqualTo' => date( 'Y-m-d', strtotime( $endDate ) ),
+				]
+			];
+		}
+		if ( $dateField === 'settled' ) {
+			// This seems to work less well.
+			return [
+				'statusTransition' => [
+					'settledAt' => [
+						'greaterThanOrEqualTo' => $greaterThan,
+						'lessThan' => $now
+					],
+				]
+			];
+		}
+
+		$input = [ $this->getDateField() => [ "greaterThanOrEqualTo" => $greaterThan, "lessThanOrEqualTo" => $now ] ];
+		return $input;
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function isRunDonationSettlementReport(): bool {
+		$type = $this->getOption( 'type' );
+		return !$type || $type === 'all' || $type === 'donation';
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function isRunRefundReport(): bool {
+		$type = $this->getOption( 'type' );
+		return !$type || $type === 'all' || $type === 'refund';
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function isRunChargebackReport(): bool {
+		$type = $this->getOption( 'type' );
+		return !$type || $type === 'all' || $type === 'chargeback';
 	}
 }
 
