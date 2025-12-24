@@ -14,7 +14,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * Normal donation
 	 */
-	public function testProcessDonation() {
+	public function testProcessDonation(): void {
 		$processor = new BraintreeAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_batch_report_2022-06-27.json' );
 		$this->assertCount( 2, $output, 'Should have found two donations' );
@@ -52,6 +52,38 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'payment_method' => 'venmo',
 		];
 		$this->assertEquals( $expectedVenmo, $actualVenmo, 'Did not parse venmo donation correctly' );
+	}
+
+	public function testProcessRawDonation(): void {
+		$processor = new BraintreeAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/raw_settlement_batch_report.json' );
+		$this->assertCount( 3, $output, 'Should have found two donations' );
+		$expected = [
+			'gateway' => 'braintree',
+			'audit_file_gateway' => 'braintree',
+			'date' => strtotime( '2025-12-21T22:58:37.000000Z' ),
+			'gross' => '3.10',
+			'original_total_amount' => '3.10',
+			'settled_net_amount' => '3.10',
+			'settled_total_amount' => '3.10',
+			'settled_fee_amount' => '0',
+			'contribution_tracking_id' => '24315',
+			'original_currency' => 'USD',
+			'settled_currency' => 'USD',
+			'exchange_rate' => 1,
+			'currency' => 'USD',
+			'settlement_batch_reference' => '20251222',
+			'settled_date' => strtotime( '2025-12-22 UTC' ),
+			'invoice_id' => '24315.1',
+			'phone' => null,
+			'email' => null,
+			'first_name' => null,
+			'last_name' => null,
+			'payment_method' => 'venmo',
+			'external_identifier' => 'xyz',
+			'gateway_txn_id' => 'abcde',
+		];
+		$this->assertEquals( $expected, $output[0], 'Did not parse paypal donation correctly' );
 	}
 
 	/**
