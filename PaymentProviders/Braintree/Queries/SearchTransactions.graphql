@@ -17,6 +17,13 @@ query searchTransactions($input: TransactionSearchInput!, $after: String){
 					currencyCode
 				  }
 				}
+				statusHistory {
+					... on SettledEvent {
+				        timestamp
+				        amount { value currencyCode }
+				        settlementBatchId
+					}
+				}
 				disputes {
 				  amountDisputed {
 					value

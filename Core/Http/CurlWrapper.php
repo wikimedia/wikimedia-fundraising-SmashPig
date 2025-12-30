@@ -66,7 +66,6 @@ class CurlWrapper {
 			Logger::info(
 				"Preparing to send {$method} request to {$url}"
 			);
-
 			// Execute the cURL operation
 			$response = curl_exec( $ch );
 
@@ -187,7 +186,8 @@ class CurlWrapper {
 		return [
 			'body' => $body,
 			'headers' => $responseHeaders,
-			'status' => (int)$curlInfo['http_code']
+			'status' => (int)$curlInfo['http_code'],
+			'elapsed' => $curlInfo['total_time'],
 		];
 	}
 }
