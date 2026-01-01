@@ -14,7 +14,6 @@ query searchTransactions($input: TransactionSearchInput!, $after: String){
 				  amount {
 					value
 					currencyCode
-					currencyCode
 				  }
 				}
 				statusHistory {
@@ -37,7 +36,7 @@ query searchTransactions($input: TransactionSearchInput!, $after: String){
 					currencyCode
 				  }
 				  createdAt
-				  referenceNumber,
+				  referenceNumber
 				  transaction {
 					id
 					orderId
