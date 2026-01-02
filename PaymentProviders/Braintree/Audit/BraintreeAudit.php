@@ -19,10 +19,26 @@ class BraintreeAudit implements AuditParser {
 	public function parseFile( string $path ): array {
 		$this->fileData = [];
 		$file = json_decode( file_get_contents( $path, 'r' ), true );
+		if ( $file ) {
+			// File is in the old format where the json is valid for the whole file.
+			// This format is harder to grep and has a higher risk of invalid json if it crashes
+			// while writing.
+			// @todo eliminate after transition period.
+			foreach ( $file as $line ) {
+				try {
+					$this->parseLine( $line );
+				} catch ( NormalizationException $ex ) {
+					Logger::error( $ex->getMessage() );
+				}
+			}
+			return $this->fileData;
 
-		foreach ( $file as $line ) {
+		}
+		foreach ( file( $path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES ) as $line ) {
+			// File is in new NDJSON format - each line is a valid json object.
+			$item = json_decode( $line, true );
 			try {
-				$this->parseLine( $line );
+				$this->parseLine( $item );
 			} catch ( NormalizationException $ex ) {
 				Logger::error( $ex->getMessage() );
 			}
