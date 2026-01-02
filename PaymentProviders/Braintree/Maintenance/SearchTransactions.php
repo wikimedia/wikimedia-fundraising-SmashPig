@@ -221,7 +221,7 @@ class SearchTransactions extends MaintenanceBase {
 			return [
 				'disbursementDate' => [
 					'greaterThanOrEqualTo' => date( 'Y-m-d', strtotime( $startDate ) ),
-					'lessThanOrEqualTo' => date( 'Y-m-d', strtotime( $endDate ) ),
+					'lessThan' => date( 'Y-m-d', strtotime( $endDate ) ),
 				]
 			];
 		}

@@ -117,7 +117,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * Now try a refund
 	 */
-	public function testProcessRefund() {
+	public function testProcessRefund(): void {
 		$processor = new BraintreeAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_batch_report_refund_2022-06-27.json' );
 		$this->assertCount( 2, $output, 'Should have found two refund donations' );
@@ -159,6 +159,43 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'type' => 'refund',
 		];
 		$this->assertEquals( $expectedVenmo, $actualVenmo, 'Did not parse venmo refund correctly' );
+	}
+
+	/**
+	 * Process raw refund
+	 */
+	public function testProcessRawRefund(): void {
+		$processor = new BraintreeAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/raw_batch_report_refund.json' );
+		$this->assertCount( 2, $output, 'Should have found two refunds' );
+		$expected = [
+			'gateway' => 'braintree',
+			'audit_file_gateway' => 'braintree',
+			'date' => strtotime( '2025-12-19T19:26:35.000000Z UTC' ),
+			'gross' => '52.00',
+			'original_total_amount' => -52.0,
+			'settled_net_amount' => -52.0,
+			'settled_total_amount' => -52.0,
+			'contribution_tracking_id' => '2402',
+			'currency' => 'USD',
+			'email' => null,
+			'gateway_parent_id' => 'dHJh',
+			'gateway_refund_id' => 'cmVmd',
+			'invoice_id' => '2402.2',
+			'phone' => null,
+			'first_name' => null,
+			'last_name' => null,
+			'payment_method' => 'venmo',
+			'type' => 'refund',
+			'original_currency' => 'USD',
+			'external_identifier' => 'J',
+			'settlement_date' => strtotime( '2025-12-22 UTC' ),
+			'settlement_batch_reference' => '20251222',
+			'settled_fee_amount' => 0,
+			'exchange_rate' => '1',
+			'settled_currency' => 'USD',
+		];
+		$this->assertEquals( $expected, $output[0], 'Did not parse refund correctly' );
 	}
 
 	/**
