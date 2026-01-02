@@ -11,6 +11,10 @@ class BraintreeAudit implements AuditParser {
 	protected $fileData;
 
 	protected array $totals = [];
+	/**
+	 * @var array
+	 */
+	private array $ignoredDisputeStatuses;
 
 	public function parseFile( string $path ): array {
 		$this->fileData = [];
@@ -125,15 +129,6 @@ class BraintreeAudit implements AuditParser {
 			$this->totals[$msg['settled_date']] = Money::zero( $msg['currency'] );
 		}
 		$this->totals[$msg['settled_date']] = $this->totals[$msg['settled_date']]->plus( $msg['settled_net_amount'] );
-
-		if ( isset( $row['type'] ) ) {
-			$msg['type'] = $row['type'];
-			if ( $row['type'] === 'refund' ) {
-				$this->parseRefund( $row, $msg );
-			} else {
-				$this->parseDispute( $row, $msg );
-			}
-		}
 		return $msg;
 	}
 
@@ -211,7 +206,7 @@ class BraintreeAudit implements AuditParser {
 		$msg['first_name'] = $this->getPayerInfo( $row, 'first_name' );
 		$msg['last_name'] = $this->getPayerInfo( $row, 'last_name' );
 		$msg['external_identifier'] = $this->getPayerInfo( $row, 'username' );
-		$msg['settlement_date'] = UtcDate::getUtcTimestamp( $row['disbursementDetails']['date'] );
+		$msg['settled_date'] = UtcDate::getUtcTimestamp( $row['disbursementDetails']['date'] );
 		$msg['settlement_batch_reference'] = str_replace( '-', '', $row['disbursementDetails']['date'] );
 		$msg['original_total_amount'] = -$row['amount']['value'];
 		$msg['settled_total_amount'] = $msg['settled_net_amount'] = $row['disbursementDetails']['amount']['value'];
@@ -219,10 +214,10 @@ class BraintreeAudit implements AuditParser {
 		$msg['exchange_rate'] = $row['disbursementDetails']['exchangeRate'];
 		$msg['settled_currency'] = $row['disbursementDetails']['amount']['currencyCode'];
 
-		if ( !isset( $this->totals[$msg['settlement_date']] ) ) {
-			$this->totals[$msg['settlement_date']] = Money::zero( $msg['currency'] );
+		if ( !isset( $this->totals[$msg['settled_date']] ) ) {
+			$this->totals[$msg['settled_date']] = Money::zero( $msg['currency'] );
 		}
-		$this->totals[$msg['settlement_date']] = $this->totals[$msg['settlement_date']]->plus( $msg['settled_net_amount'] );
+		$this->totals[$msg['settled_date']] = $this->totals[$msg['settled_date']]->plus( $msg['settled_net_amount'] );
 		return $msg;
 	}
 

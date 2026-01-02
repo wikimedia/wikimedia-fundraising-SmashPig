@@ -189,7 +189,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'type' => 'refund',
 			'original_currency' => 'USD',
 			'external_identifier' => 'J',
-			'settlement_date' => strtotime( '2025-12-22 UTC' ),
+			'settled_date' => strtotime( '2025-12-22 UTC' ),
 			'settlement_batch_reference' => '20251222',
 			'settled_fee_amount' => 0,
 			'exchange_rate' => '1',
@@ -201,7 +201,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	/**
 	 * And a dispute
 	 */
-	public function testProcessDispute() {
+	public function testProcessDispute(): void {
 		$processor = new BraintreeAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_batch_report_dispute_2022-06-27.json' );
 		$this->assertCount( 2, $output, 'Should have found two dispute donations' );
@@ -241,5 +241,43 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 				'type' => 'chargeback',
 			];
 		$this->assertEquals( $expectedVenmo, $actualVenmo, 'Did not parse dispute venmo correctly' );
+	}
+
+	/**
+	 * And a dispute
+	 */
+	public function testProcessRawDispute(): void {
+		$processor = new BraintreeAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/raw_batch_report_dispute.json' );
+		$this->assertCount( 2, $output, 'Should have found two disputes that are resolved, others ignored' );
+		$actualPaypal = $output[0];
+		$expectedPaypal = [
+			'gateway' => 'braintree',
+			'audit_file_gateway' => 'braintree',
+			'date' => strtotime( '2025-12-21 UTC' ),
+			'gross' => '5.35',
+			'original_total_amount' => '-5.35',
+			'settled_net_amount' => '-5.35',
+			'settled_total_amount' => '-5.35',
+			'contribution_tracking_id' => '2387',
+			'currency' => 'USD',
+			'email' => null,
+			'gateway_refund_id' => 'ZGlzcH',
+			'invoice_id' => '2387.3',
+			'phone' => null,
+			'first_name' => null,
+			'last_name' => null,
+			'payment_method' => 'venmo',
+			'type' => 'chargeback',
+			'gateway_parent_id' => 'dHJhb',
+			'original_currency' => 'USD',
+			'external_identifier' => 'D',
+			'settled_date' => strtotime( '2025-12-21 UTC' ),
+			'settlement_batch_reference' => '20251221',
+			'settled_fee_amount' => 0,
+			'exchange_rate' => 1,
+			'settled_currency' => 'USD',
+		];
+		$this->assertEquals( $expectedPaypal, $actualPaypal, 'Did not parse dispute correctly' );
 	}
 }
