@@ -94,7 +94,11 @@ class PayPalAudit implements AuditParser {
 	 * @throws NormalizationException
 	 */
 	protected function parseLine( $row ): void {
-		$parser = new TRRFileParser( $row );
+		if ( !empty( $row['Subscription ID'] ) ) {
+			$parser = new SARFileParser( $row );
+		} else {
+			$parser = new TRRFileParser( $row );
+		}
 		try {
 			$this->fileData[] = $this->getParser( $row )->getMessage();
 		} catch ( UnhandledException $e ) {
