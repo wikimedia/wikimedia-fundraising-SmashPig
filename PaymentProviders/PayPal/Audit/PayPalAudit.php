@@ -1,0 +1,117 @@
+<?php
+declare( strict_types=1 );
+
+namespace SmashPig\PaymentProviders\PayPal\Audit;
+
+use SmashPig\Core\DataFiles\AuditParser;
+use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\NormalizationException;
+use SmashPig\Core\UnhandledException;
+
+/**
+ * Class PayPalAudit
+ * @package SmashPig\PaymentProviders\PayPal\Audit
+ * Processes PayPal's Audit Reports.
+ * Sends donations, chargebacks, and refunds to queue.
+ * https://developer.paypal.com/docs/reports/sftp-reports/
+ */
+class PayPalAudit implements AuditParser {
+
+	protected array $fileData = [];
+
+	/**
+	 * Line types to parse.
+	 *
+	 * CH (column headers) are always parsed and generally so are 'SB' Section Body.
+	 * However, other header and footer rows are mostly not, with the STL report
+	 * being the exception.
+	 *
+	 * @var array|string[]
+	 */
+	protected array $lineTypesToParse = [ 'SB' ];
+	private string $parserClass;
+
+	public function parseFile( string $path ): array {
+		$file = fopen( $path, 'r' );
+		$filePrefix = strtoupper( substr( basename( $path ), 0, 3 ) );
+		$possibleClass = __NAMESPACE__ . "\\" . $filePrefix . 'FileParser';
+		if ( class_exists( $possibleClass ) ) {
+			$this->parserClass = $possibleClass;
+		}
+
+		$columnHeaders = null;
+
+		while ( ( $line = fgetcsv( $file, 0 ) ) !== false ) {
+			// skip empty lines
+			if ( $line === [ null ] ) {
+				continue;
+			}
+
+			$recordType = $line[0] ?? '';
+
+			// Capture the real column headers
+			if ( $recordType === 'CH' ) {
+				$columnHeaders = $line;
+				continue;
+			}
+
+			// Ignore everything until we have headers
+			if ( $columnHeaders === null ) {
+				continue;
+			}
+
+			// Only process settlement body rows
+			if ( !in_array( $recordType, $this->lineTypesToParse, true ) ) {
+				continue;
+			}
+
+			// Defensively handle mismatched column counts
+			if ( count( $line ) !== count( $columnHeaders ) ) {
+				Logger::warning(
+					'Skipping TRR line: column count mismatch. ' .
+					'Expected ' . count( $columnHeaders ) . ' got ' . count( $line )
+				);
+				continue;
+			}
+
+			$row = array_combine( $columnHeaders, $line );
+			if ( $row === false ) {
+				Logger::warning( 'Skipping TRR line: array_combine failed' );
+				continue;
+			}
+
+			try {
+				$this->parseLine( $row );
+			} catch ( NormalizationException $ex ) {
+				Logger::error( $ex->getMessage() );
+			}
+		}
+		fclose( $file );
+		return $this->fileData;
+	}
+
+	/**
+	 * @throws NormalizationException
+	 */
+	protected function parseLine( $row ): void {
+		$parser = new TRRFileParser( $row );
+		try {
+			$this->fileData[] = $this->getParser( $row )->getMessage();
+		} catch ( UnhandledException $e ) {
+			// This might be too noisy but nice to see what is skipped for now.
+			Logger::error( $e->getMessage() );
+		}
+	}
+
+	/**
+	 * @param array $row
+	 * @return BaseParser|TRRFileParser
+	 */
+	private function getParser( array $row ): BaseParser {
+		if ( isset( $this->parserClass ) ) {
+			return new $this->parserClass( $row );
+		}
+		return new TRRFileParser( $row );
+	}
+
+}
