@@ -38,6 +38,9 @@ class BraintreeAudit implements AuditParser {
 			// File is in new NDJSON format - each line is a valid json object.
 			$item = json_decode( $line, true );
 			try {
+				if ( !is_array( $item ) ) {
+					throw new NormalizationException( 'Invalid Item ' . $line );
+				}
 				$this->parseLine( $item );
 			} catch ( NormalizationException $ex ) {
 				Logger::error( $ex->getMessage() );
