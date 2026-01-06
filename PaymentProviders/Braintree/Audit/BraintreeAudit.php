@@ -19,7 +19,7 @@ class BraintreeAudit implements AuditParser {
 	public function parseFile( string $path ): array {
 		$this->fileData = [];
 		$file = json_decode( file_get_contents( $path, 'r' ), true );
-		if ( $file ) {
+		if ( $file && !isset( $file['id'] ) ) {
 			// File is in the old format where the json is valid for the whole file.
 			// This format is harder to grep and has a higher risk of invalid json if it crashes
 			// while writing.
