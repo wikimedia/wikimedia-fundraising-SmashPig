@@ -135,6 +135,7 @@ class BraintreeAudit implements AuditParser {
 		$msg['phone'] = $this->getPayerInfo( $row, 'phone' );
 		$msg['first_name'] = $this->getPayerInfo( $row, 'first_name' );
 		$msg['last_name'] = $this->getPayerInfo( $row, 'last_name' );
+		$msg['full_name'] = $this->getPayerInfo( $row, 'fullname' );
 		$msg['external_identifier'] = $this->getPayerInfo( $row, 'username' );
 		$msg['gateway_txn_id'] = $row['id'];
 		$msg['settled_date'] = UtcDate::getUtcTimestamp( $row['disbursementDetails']['date'] );
@@ -247,6 +248,10 @@ class BraintreeAudit implements AuditParser {
 	 * @return string|null
 	 */
 	private function getPayerInfo( array $row, string $fieldName, bool $isChargeBack = false ): ?string {
+		$customFieldValue = $this->getCustomFieldValue( $row, $fieldName );
+		if ( $customFieldValue ) {
+			return $customFieldValue;
+		}
 		if ( !$isChargeBack && $row['paymentMethodSnapshot'] ) {
 			$payerBlock = $row['paymentMethodSnapshot'];
 		} elseif ( $isChargeBack && $row['transaction']['paymentMethodSnapshot'] ) {
@@ -259,6 +264,18 @@ class BraintreeAudit implements AuditParser {
 		}
 		if ( isset( $payerBlock[$fieldName] ) ) {
 			return $payerBlock[$fieldName];
+		}
+		return null;
+	}
+
+	protected function getCustomFieldValue( array $row, string $fieldName ): ?string {
+		if ( !isset( $row['customFields'] ) ) {
+			return null;
+		}
+		foreach ( $row['customFields'] as $customField ) {
+			if ( $customField['name'] === $fieldName ) {
+				return $customField['value'];
+			}
 		}
 		return null;
 	}

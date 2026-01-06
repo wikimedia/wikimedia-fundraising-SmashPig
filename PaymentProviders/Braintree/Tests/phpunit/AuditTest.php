@@ -82,6 +82,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'payment_method' => 'venmo',
 			'external_identifier' => 'xyz',
 			'gateway_txn_id' => 'abcde',
+			'full_name' => 'Donald Duck',
 		];
 		$this->assertEquals( $expected, $output[0], 'Did not parse paypal donation correctly' );
 	}
