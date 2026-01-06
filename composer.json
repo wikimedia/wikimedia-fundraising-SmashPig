@@ -2,7 +2,7 @@
     "name": "wikimedia/smash-pig",
     "description": "The open source PHP flexible payments library and frontend/backend mediator.",
     "keywords": ["payments", "donations"],
-    "homepage": "http://smashpig.org",
+    "homepage": "https://www.mediawiki.org/wiki/Fundraising_Tech/SmashPig",
     "license": "GPL-2.0-or-later",
     "authors": [
         {
