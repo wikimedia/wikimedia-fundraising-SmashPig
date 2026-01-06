@@ -136,6 +136,10 @@ class SearchTransactions extends MaintenanceBase {
 				if ( $logRaw ) {
 					Logger::info( "logging raw transaction " . json_encode( $d ) );
 				}
+				if ( !isset( $d['node'] ) ) {
+					Logger::info( "no results found of type " . $type );
+					continue;
+				}
 				if ( $outputRaw ) {
 					$this->fileData[$context][] = $d['node'];
 					continue;
