@@ -18,6 +18,7 @@ use SmashPig\PaymentProviders\RiskScorer;
 class ResponseMapper {
 	// List of methods with username as identifiers
 	public const METHODS_WITH_USERNAME = [ 'venmo' ];
+	public const METHODS_WITH_PAYERID = [ 'paypal' ];
 
 	protected ErrorChecker $errorChecker;
 	protected ErrorTracker $errorTracker;
@@ -167,7 +168,9 @@ class ResponseMapper {
 			if ( in_array( $gravyPaymentMethod, self::METHODS_WITH_USERNAME ) ) {
 				$result['donor_details']['username'] = $response['payment_method']['label'];
 			}
-
+			if ( in_array( $gravyPaymentMethod, self::METHODS_WITH_PAYERID ) ) {
+				$result['donor_details']['processor_contact_id'] = $response['additional_identifiers']['payer_id'];
+			}
 			if ( !empty( $donorDetails['address'] ) ) {
 				$donorAddress = $donorDetails['address'];
 				$result['donor_details']['address'] = [
