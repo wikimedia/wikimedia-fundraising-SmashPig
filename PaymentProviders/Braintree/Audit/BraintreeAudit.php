@@ -2,6 +2,7 @@
 
 use Brick\Money\Money;
 use SmashPig\Core\DataFiles\AuditParser;
+use SmashPig\Core\Helpers\Base62Helper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UtcDate;
@@ -211,6 +212,9 @@ class BraintreeAudit implements AuditParser {
 			$msg['backend_processor'] = 'braintree';
 			$msg['backend_processor_parent_id'] = $parentTransaction['id'];
 			$msg['backend_processor_refund_id'] = $row['id'];
+			$msg['gateway_parent_id'] = Base62Helper::toUuid( $row['orderId'] );
+			// We don't get the gravy refund ID at the moment and we have to have something so use the braintree one.
+			$msg['gateway_refund_id'] = $row['id'];
 			$msg['gateway'] = 'gravy';
 		} else {
 			$orderParts = explode( '.', $msg['invoice_id'] );

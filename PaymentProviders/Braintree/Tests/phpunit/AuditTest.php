@@ -200,6 +200,45 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 	}
 
 	/**
+	 * Process raw refund
+	 */
+	public function testProcessRawGravyRefund(): void {
+		$processor = new BraintreeAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/raw_batch_report_gravy_refund.json' );
+		$this->assertCount( 1, $output, 'Should have found two refunds' );
+		$expected = [
+			'gateway' => 'gravy',
+			'backend_processor' => 'braintree',
+			'audit_file_gateway' => 'braintree',
+			'date' => strtotime( '2025-12-23T20:11:52.000000Z' ),
+			'gross' => '1.03',
+			'original_total_amount' => -1.03,
+			'settled_net_amount' => -1.03,
+			'settled_total_amount' => -1.03,
+			'currency' => 'USD',
+			'email' => null,
+			'gateway_parent_id' => 'f8ee36ec-8e6a-490e-a9e8-6398e3e5e760',
+			'gateway_refund_id' => 'cmVmdW5kX2g3OWY5Yzdo',
+			'backend_processor_parent_id' => 'dHJhbnNhY3Rpb25fMHRjYzJ5cmo',
+			'backend_processor_refund_id' => 'cmVmdW5kX2g3OWY5Yzdo',
+			'invoice_id' => '7ZixbnFwSdg8h4IjcDPdTs',
+			'phone' => null,
+			'first_name' => null,
+			'last_name' => null,
+			'payment_method' => 'venmo',
+			'type' => 'refund',
+			'original_currency' => 'USD',
+			'external_identifier' => 'Christine-Train',
+			'settled_date' => strtotime( '2025-12-24 UTC' ),
+			'settlement_batch_reference' => '20251224',
+			'settled_fee_amount' => 0,
+			'exchange_rate' => '1',
+			'settled_currency' => 'USD',
+		];
+		$this->assertEquals( $expected, $output[0], 'Did not parse refund correctly' );
+	}
+
+	/**
 	 * And a dispute
 	 */
 	public function testProcessDispute(): void {
