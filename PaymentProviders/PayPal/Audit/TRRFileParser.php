@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace SmashPig\PaymentProviders\PayPal\Audit;
 
+use SmashPig\Core\Helpers\Base62Helper;
 use SmashPig\Core\UnhandledException;
 
 class TRRFileParser extends BaseParser {
@@ -14,9 +15,6 @@ class TRRFileParser extends BaseParser {
 		if ( $this->row['Transactional Status'] !== 'S' ) {
 			// Skip transaction, not settled.
 			throw new UnhandledException( 'Transaction status skipped: ' . $this->row['Transactional Status'] );
-		}
-		if ( $this->isGravy() ) {
-			throw new UnhandledException( 'Gravy transaction skipped' );
 		}
 		if ( $this->isBraintreePayment() ) {
 			throw new UnhandledException( 'Braintree transaction skipped' );
@@ -31,20 +29,21 @@ class TRRFileParser extends BaseParser {
 		}
 		// Note that the python script sets no thank you to 'Audit configured not to send messages'
 		// I have not retained that as it does not seem like a decision for this low in the stack.
+		$isGravy = $this->isGravy();
 		$msg = [
-			'gateway_txn_id' => $this->row['Transaction ID'],
-			'gateway' => $this->getGateway(),
-			'audit_file_gateway' => $this->getGateway(),
+			'gateway_txn_id' => $isGravy ? Base62Helper::toUuid( $this->row['Custom Field'] ) : $this->row['Transaction ID'],
+			'gateway' => $isGravy ? 'gravy' : $this->getGateway(),
+			'audit_file_gateway' => 'paypal',
 			'date' => strtotime( $this->row['Transaction Initiation Date'] ),
 			'settled_date' => strtotime( $this->row['Transaction Completion Date'] ),
 			'settlement_batch_reference' => str_replace( '/', '', substr( $this->row['Transaction Completion Date'], 0, 10 ) ),
 			'settled_total_amount' => ( (float)$this->row['Gross Transaction Amount'] ) / 100,
-			'settled_fee_amount' => $this->getOriginalFeeAmount(),
+			'settled_fee_amount' => -$this->getOriginalFeeAmount(),
 			'exchange_rate' => 1,
 			'settled_currency' => $this->row['Gross Transaction Currency'],
 			'gross' => ( (float)$this->row['Gross Transaction Amount'] ) / 100,
 			'currency' => $this->row['Gross Transaction Currency'],
-			'original_fee_amount' => $this->getOriginalFeeAmount(),
+			'original_fee_amount' => -$this->getOriginalFeeAmount(),
 			'fee' => $this->getOriginalFeeAmount(),
 			'gateway_status' => $this->row['Transactional Status'],
 			'note' => $this->row['Transaction Note'],
@@ -62,6 +61,11 @@ class TRRFileParser extends BaseParser {
 			'order_id' => $this->getOrderID(),
 			'contribution_tracking_id' => $this->getContributionTrackingId(),
 		];
+		if ( $isGravy ) {
+			$msg['backend_processor_txn_id'] = $this->row['Transaction ID'];
+			$msg['backend_processor'] = $this->getGateway();
+			$msg['payment_orchestrator_reconciliation_id'] = $this->row['Custom Field'];
+		}
 
 		if ( $this->isRecurringPayment() ) {
 			$msg['txn_type'] = 'subscr_payment';
