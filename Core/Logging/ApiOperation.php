@@ -85,6 +85,11 @@ enum ApiOperation: string {
 	case DELETE_DATA = 'deleteData';
 
 	/**
+	 * Verify the provided UPI ID
+	 */
+	case VERIFY_UPI_ID = 'verifyUpiId';
+
+	/**
 	 * Maps processor-specific method names to canonical operations.
 	 *
 	 * @param string $processor The payment processor name (e.g., 'adyen', 'gravy')
@@ -124,6 +129,21 @@ enum ApiOperation: string {
 			[ 'gravy', 'getReportExecutionDetails' ] => self::GET_REPORT_EXECUTION,
 			[ 'gravy', 'generateReportDownloadUrl' ] => self::GET_REPORT_DOWNLOAD_URL,
 			[ 'gravy', 'getPaymentServiceDefinition' ] => self::GET_PAYMENT_SERVICE_DEFINITION,
+
+			// dLocal mappings
+			[ 'dlocal', 'getPaymentMethods' ] => self::GET_PAYMENT_METHODS,
+			[ 'dlocal', 'cardAuthorizePayment' ] => self::AUTHORIZE,
+			[ 'dlocal', 'verifyUpiId' ] => self::VERIFY_UPI_ID,
+			[ 'dlocal', 'collectDirectBankTransfer' ] => self::AUTHORIZE,
+			[ 'dlocal', 'redirectPayment' ] => self::AUTHORIZE,
+			[ 'dlocal', 'redirectHostedPayment' ] => self::AUTHORIZE,
+			[ 'dlocal', 'createPaymentFromToken' ] => self::AUTHORIZE,
+			[ 'dlocal', 'getPaymentDetail' ] => self::GET_PAYMENT_DETAILS,
+			[ 'dlocal', 'capturePayment' ] => self::CAPTURE,
+			[ 'dlocal', 'makeRecurringCardPayment' ] => self::AUTHORIZE,
+			[ 'dlocal', 'getPaymentStatus' ] => self::GET_PAYMENT_STATUS,
+			[ 'dlocal', 'cancelPayment' ] => self::CANCEL,
+			[ 'dlocal', 'refundPayment' ] => self::REFUND,
 
 			default => throw new \UnexpectedValueException(
 				"Unknown payment operation for processor '$processor' and method '$method'"

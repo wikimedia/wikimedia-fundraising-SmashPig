@@ -26,6 +26,7 @@ class ApiOperationTest extends TestCase {
 		$this->assertSame( 'getReportDownloadUrl', ApiOperation::GET_REPORT_DOWNLOAD_URL->value );
 		$this->assertSame( 'getPaymentServiceDefinition', ApiOperation::GET_PAYMENT_SERVICE_DEFINITION->value );
 		$this->assertSame( 'deleteData', ApiOperation::DELETE_DATA->value );
+		$this->assertSame( 'verifyUpiId', ApiOperation::VERIFY_UPI_ID->value );
 	}
 
 	public function testFromProcessorMethodMapsAdyenMethods(): void {
@@ -91,6 +92,61 @@ class ApiOperationTest extends TestCase {
 		$this->assertSame(
 			ApiOperation::DELETE_TOKEN,
 			ApiOperation::fromProcessorMethod( 'gravy', 'deletePaymentToken' )
+		);
+	}
+
+	public function testFromProcessorMethodMapsDlocalMethods(): void {
+		$this->assertSame(
+			ApiOperation::GET_PAYMENT_METHODS,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'getPaymentMethods' )
+		);
+		$this->assertSame(
+			ApiOperation::AUTHORIZE,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'cardAuthorizePayment' )
+		);
+		$this->assertSame(
+			ApiOperation::VERIFY_UPI_ID,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'verifyUpiId' )
+		);
+		$this->assertSame(
+			ApiOperation::AUTHORIZE,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'collectDirectBankTransfer' )
+		);
+		$this->assertSame(
+			ApiOperation::AUTHORIZE,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'redirectPayment' )
+		);
+		$this->assertSame(
+			ApiOperation::AUTHORIZE,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'redirectHostedPayment' )
+		);
+		$this->assertSame(
+			ApiOperation::AUTHORIZE,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'createPaymentFromToken' )
+		);
+		$this->assertSame(
+			ApiOperation::GET_PAYMENT_DETAILS,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'getPaymentDetail' )
+		);
+		$this->assertSame(
+			ApiOperation::CAPTURE,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'capturePayment' )
+		);
+		$this->assertSame(
+			ApiOperation::AUTHORIZE,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'makeRecurringCardPayment' )
+		);
+		$this->assertSame(
+			ApiOperation::GET_PAYMENT_STATUS,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'getPaymentStatus' )
+		);
+		$this->assertSame(
+			ApiOperation::CANCEL,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'cancelPayment' )
+		);
+		$this->assertSame(
+			ApiOperation::REFUND,
+			ApiOperation::fromProcessorMethod( 'dlocal', 'refundPayment' )
 		);
 	}
 
