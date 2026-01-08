@@ -42,6 +42,11 @@ class TRRAuditTest extends AuditTest {
 			'street_address' => '321 Notta Boulevard',
 			'contribution_tracking_id' => '46239229',
 			'order_id' => '46239229.1',
+			'settlement_batch_reference' => '20170302',
+			'settled_total_amount' => 150.0,
+			'settled_fee_amount' => 43.0,
+			'exchange_rate' => 1,
+			'settled_currency' => 'JPY',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -74,8 +79,13 @@ class TRRAuditTest extends AuditTest {
 			'settled_date' => 1488477595,
 			'email' => 'donor@generous.net',
 			'street_address' => '321 Notta Boulevard',
-			'contribution_tracking_id' => '46239229',
+			'contribution_tracking_id' => 46239229,
 			'order_id' => '46239229.1',
+			'settled_total_amount' => 150.0,
+			'settled_fee_amount' => 43.0,
+			'exchange_rate' => 1,
+			'settled_currency' => 'JPY',
+			'settlement_batch_reference' => '20170302',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -117,8 +127,13 @@ class TRRAuditTest extends AuditTest {
 			'settled_date' => 1488634565,
 			'email' => 'donor@generous.net',
 			'street_address' => '',
-			'contribution_tracking_id' => '45931681',
+			'contribution_tracking_id' => 45931681,
 			'order_id' => '45931681.1',
+			'settled_total_amount' => 150.0,
+			'settled_fee_amount' => 43.0,
+			'exchange_rate' => 1,
+			'settled_currency' => 'JPY',
+			'settlement_batch_reference' => '20170304',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -156,8 +171,13 @@ class TRRAuditTest extends AuditTest {
 			'type' => 'refund',
 			'email' => 'donor@generous.net',
 			'street_address' => '321 Notta Boulevard',
-			'contribution_tracking_id' => '46239229',
+			'contribution_tracking_id' => 46239229,
 			'order_id' => '46239229.1',
+			'settled_total_amount' => 150.0,
+			'settled_fee_amount' => 43.0,
+			'exchange_rate' => 1,
+			'settled_currency' => 'JPY',
+			'settlement_batch_reference' => '20170322',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -195,8 +215,13 @@ class TRRAuditTest extends AuditTest {
 			'type' => 'refund',
 			'email' => 'donor@generous.net',
 			'street_address' => '',
-			'contribution_tracking_id' => '45931681',
+			'contribution_tracking_id' => 45931681,
 			'order_id' => '45931681.1',
+			'settled_total_amount' => 150.0,
+			'settled_fee_amount' => 43.0,
+			'exchange_rate' => 1,
+			'settled_currency' => 'JPY',
+			'settlement_batch_reference' => '20170322',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -231,6 +256,11 @@ class TRRAuditTest extends AuditTest {
 			'street_address' => '321 Notta Boulevard',
 			'order_id' => '',
 			'contribution_tracking_id' => null,
+			'settled_total_amount' => 150.0,
+			'settled_fee_amount' => 43.0,
+			'exchange_rate' => 1,
+			'settled_currency' => 'JPY',
+			'settlement_batch_reference' => '20170302',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -273,6 +303,11 @@ class TRRAuditTest extends AuditTest {
 			'country' => 'US',
 			'last_name' => 'Who',
 			'first_name' => 'Cindy Lou',
+			'settled_total_amount' => 150.0,
+			'settled_fee_amount' => 43.0,
+			'exchange_rate' => 1,
+			'settled_currency' => 'JPY',
+			'settlement_batch_reference' => '20170302',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
