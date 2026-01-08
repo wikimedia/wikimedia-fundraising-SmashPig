@@ -46,14 +46,16 @@ class TRRFileParser extends BaseParser {
 			'date' => strtotime( $this->row['Transaction Initiation Date'] ),
 			'settled_date' => strtotime( $this->row['Transaction Completion Date'] ),
 			'settlement_batch_reference' => str_replace( '/', '', substr( $this->row['Transaction Completion Date'], 0, 10 ) ),
-			'settled_total_amount' => ( (float)$this->row['Gross Transaction Amount'] ) / 100,
-			'settled_fee_amount' => -$this->getOriginalFeeAmount(),
-			'exchange_rate' => 1,
-			'settled_currency' => $this->row['Gross Transaction Currency'],
+			'settled_total_amount' => $this->getSettledTotalAmount(),
+			'settled_net_amount' => $this->getSettledNetAmount(),
+			'settled_fee_amount' => $this->getSettledFeeAmount(),
+			'exchange_rate' => $this->getExchangeRate(),
+			'settled_currency' => $this->getSettledCurrency(),
 			'gross' => ( (float)$this->row['Gross Transaction Amount'] ) / 100,
 			'currency' => $this->row['Gross Transaction Currency'],
-			'original_fee_amount' => -$this->getOriginalFeeAmount(),
-			'fee' => $this->getOriginalFeeAmount(),
+			'original_net_amount' => $this->getOriginalNetAmount(),
+			'original_fee_amount' => $this->getOriginalFeeAmount(),
+			'fee' => $this->getFeeAmount(),
 			'gateway_status' => $this->row['Transactional Status'],
 			'note' => $this->row['Transaction Note'],
 			'email' => $this->row["Payer's Account ID"],
@@ -70,29 +72,8 @@ class TRRFileParser extends BaseParser {
 			'order_id' => $this->getOrderID(),
 			'contribution_tracking_id' => $this->getContributionTrackingId(),
 		];
-		if ( $isGravy ) {
-			$msg['backend_processor_txn_id'] = $this->row['Transaction ID'];
-			$msg['backend_processor'] = $this->getGateway();
-			$msg['payment_orchestrator_reconciliation_id'] = $this->row['Custom Field'];
-		}
 
-		if ( $this->isRecurringPayment() ) {
-			$msg['txn_type'] = 'subscr_payment';
-			$msg['subscr_id'] = $this->row['PayPal Reference ID'];
-		}
-		if ( $this->isReversalType() ) {
-			$msg['type'] = $this->getTransactionType();
-			$msg['gateway_refund_id'] = $this->row['Transaction ID'];
-			$msg['gross_currency'] = $this->row['Gross Transaction Currency'];
-
-			if ( ( $this->row['PayPal Reference ID Type'] ?? '' ) === 'TXN' ) {
-				$msg['gateway_parent_id'] = $this->row['PayPal Reference ID'];
-			}
-		} elseif ( $this->isReversalPrefix() ) {
-			// Prefix says refund/chargeback, but code isn't one we handle -> skip (Python: "-Unknown (Refundish type)")
-			throw new UnhandledException( 'Unhandled refundish transaction code: ' . $this->getTransactionCode() );
-		}
-		return $msg;
+		return $msg + $this->getGravyFields() + $this->getRecurringFields() + $this->getReversalFields();
 	}
 
 }

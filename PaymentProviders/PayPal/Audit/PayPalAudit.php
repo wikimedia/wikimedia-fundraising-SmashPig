@@ -30,10 +30,16 @@ class PayPalAudit implements AuditParser {
 	 */
 	protected array $lineTypesToParse = [ 'SB' ];
 	private string $parserClass;
+	private array $headers = [];
+	private array $rows = [];
+	private array $conversionRows = [];
 
 	public function parseFile( string $path ): array {
 		$file = fopen( $path, 'r' );
 		$filePrefix = strtoupper( substr( basename( $path ), 0, 3 ) );
+		if ( $filePrefix === 'STL' ) {
+			$this->lineTypesToParse[] = 'RF';
+		}
 		$possibleClass = __NAMESPACE__ . "\\" . $filePrefix . 'FileParser';
 		if ( class_exists( $possibleClass ) ) {
 			$this->parserClass = $possibleClass;
@@ -48,10 +54,21 @@ class PayPalAudit implements AuditParser {
 			}
 
 			$recordType = $line[0] ?? '';
+			// Remove UTF-8 BOM if present
+			$recordType = preg_replace( '/^\xEF\xBB\xBF/', '', $recordType );
+			$line[0] = $recordType;
 
 			// Capture the real column headers
 			if ( $recordType === 'CH' ) {
 				$columnHeaders = $line;
+				continue;
+			}
+
+			// Only process settlement body rows
+			if ( !in_array( $recordType, $this->lineTypesToParse, true ) ) {
+				if ( str_ends_with( $recordType, 'H' ) ) {
+					$this->headers[] = $line;
+				}
 				continue;
 			}
 
@@ -60,26 +77,35 @@ class PayPalAudit implements AuditParser {
 				continue;
 			}
 
-			// Only process settlement body rows
-			if ( !in_array( $recordType, $this->lineTypesToParse, true ) ) {
-				continue;
-			}
-
 			// Defensively handle mismatched column counts
-			if ( count( $line ) !== count( $columnHeaders ) ) {
-				Logger::warning(
-					'Skipping TRR line: column count mismatch. ' .
-					'Expected ' . count( $columnHeaders ) . ' got ' . count( $line )
-				);
-				continue;
+			if ( $recordType === 'SB' ) {
+				if ( count( $line ) !== count( $columnHeaders ) ) {
+					Logger::warning(
+						'Skipping TRR line: column count mismatch. ' .
+						'Expected ' . count( $columnHeaders ) . ' got ' . count( $line )
+					);
+					continue;
+				}
+
+				$row = array_combine( $columnHeaders, $line );
+			} else {
+				$row = $line;
 			}
 
-			$row = array_combine( $columnHeaders, $line );
 			if ( $row === false ) {
 				Logger::warning( 'Skipping TRR line: array_combine failed' );
 				continue;
 			}
+			// We need to split out all the currency conversion rows before parsing the transactions.
+			if ( ( $row['Transaction Event Code'] ?? '' ) === 'T0200' ) {
+				$this->conversionRows[ $row['Invoice ID'] ][] = $row;
+			} else {
+				$this->rows[] = $row;
+			}
 
+		}
+
+		foreach ( $this->rows as $row ) {
 			try {
 				$this->parseLine( $row );
 			} catch ( NormalizationException $ex ) {
@@ -91,14 +117,8 @@ class PayPalAudit implements AuditParser {
 	}
 
 	/**
-	 * @throws NormalizationException
 	 */
 	protected function parseLine( $row ): void {
-		if ( !empty( $row['Subscription ID'] ) ) {
-			$parser = new SARFileParser( $row );
-		} else {
-			$parser = new TRRFileParser( $row );
-		}
 		try {
 			$this->fileData[] = $this->getParser( $row )->getMessage();
 		} catch ( UnhandledException $e ) {
@@ -113,9 +133,9 @@ class PayPalAudit implements AuditParser {
 	 */
 	private function getParser( array $row ): BaseParser {
 		if ( isset( $this->parserClass ) ) {
-			return new $this->parserClass( $row );
+			return new $this->parserClass( $row, $this->headers, $this->conversionRows );
 		}
-		return new TRRFileParser( $row );
+		return new TRRFileParser( $row, $this->headers, $this->conversionRows );
 	}
 
 }

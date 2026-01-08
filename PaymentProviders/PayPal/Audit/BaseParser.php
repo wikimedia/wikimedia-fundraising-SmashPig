@@ -3,12 +3,26 @@ declare( strict_types=1 );
 
 namespace SmashPig\PaymentProviders\PayPal\Audit;
 
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
+use SmashPig\Core\UnhandledException;
+
 class BaseParser {
 
 	protected array $row;
+	protected array $headers;
+	protected array $conversionRows;
 
-	public function __construct( $row ) {
+	public function __construct( array $row, array $headers, array $conversionRows ) {
 		$this->row = $row;
+		$this->headers = $headers;
+		$this->conversionRows = $conversionRows;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function hasConversion(): bool {
+		return isset( $this->conversionRows[$this->row['Invoice ID']] );
 	}
 
 	/**
@@ -90,7 +104,7 @@ class BaseParser {
 	}
 
 	protected function getGateway(): string {
-		if ( $this->row['Payment Source'] === 'Express Checkout' ) {
+		if ( ( $this->row['Payment Source'] ?? '' ) === 'Express Checkout' ) {
 			return 'paypal_ec';
 		}
 		# Skating further onto thin ice, we identify recurring version by
@@ -125,12 +139,130 @@ class BaseParser {
 		return $parts[0] ? (int)$parts[0] : null;
 	}
 
-	protected function getOriginalFeeAmount(): float {
+	protected function getFeeAmount(): float {
 		$fee = $this->row['Fee Amount'] ?? 0;
 		if ( $fee ) {
 			return $fee / 100;
 		}
 		return 0.0;
+	}
+
+	protected function getOriginalFeeAmount(): float {
+		$fee = $this->getFeeAmount();
+		if ( $this->row['Fee Debit or Credit'] === 'DR' ) {
+			return -$fee;
+		}
+		return $fee;
+	}
+
+	/**
+	 * @return float
+	 */
+	protected function getOriginalNetAmount(): string {
+		return (string)( $this->getOriginalTotalAmount() + $this->getOriginalFeeAmount() );
+	}
+
+	/**
+	 * @return float
+	 */
+	protected function getOriginalTotalAmount(): string {
+		$totalAmount = (float)( $this->row['Gross Transaction Amount'] ) / 100;
+		if ( $this->row['Transaction Debit or Credit'] === 'DR' ) {
+			$totalAmount = -$totalAmount;
+		}
+		return (string)$totalAmount;
+	}
+
+	/**
+	 * @return float|int
+	 */
+	protected function getExchangeRate(): int|float {
+		$exchangeRate = 1;
+		if ( $this->hasConversion() ) {
+			$conversion = $this->conversionRows[$this->row['Invoice ID']];
+			$originalCurrency = $conversion[0];
+			$convertedCurrency = $conversion[1];
+			$exchangeRate = $convertedCurrency['Gross Transaction Amount'] / $originalCurrency['Gross Transaction Amount'];
+		}
+		return $exchangeRate;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	protected function getSettledCurrency(): mixed {
+		if ( $this->hasConversion() ) {
+			return $this->conversionRows[$this->row['Invoice ID']][1]['Gross Transaction Currency'];
+		}
+		return $this->row['Gross Transaction Currency'];
+	}
+
+	protected function getSettledTotalAmount(): string {
+		if ( !$this->hasConversion() ) {
+			return (string)$this->getOriginalTotalAmount();
+		}
+		return CurrencyRoundingHelper::round( $this->getOriginalTotalAmount() * $this->getExchangeRate(), $this->getSettledCurrency() );
+	}
+
+	protected function getSettledNetAmount(): string {
+		if ( !$this->hasConversion() ) {
+			return (string)( (float)$this->getSettledTotalAmount() + (float)$this->getSettledFeeAmount() );
+		}
+		return (string)( $this->conversionRows[$this->row['Invoice ID']][1]['Gross Transaction Amount'] / 100 );
+	}
+
+	protected function getSettledFeeAmount(): string {
+		if ( !$this->hasConversion() ) {
+			return (string)$this->getOriginalFeeAmount();
+		}
+		// Rely on the conversion being done in getTotalAmount for rounding consistency.
+		return (string)( $this->getSettledNetAmount() - $this->getSettledTotalAmount() );
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getGravyFields(): array {
+		$gravyFields = [];
+		if ( $this->isGravy() ) {
+			$gravyFields['backend_processor_txn_id'] = $this->row['Transaction ID'];
+			$gravyFields['backend_processor'] = $this->getGateway();
+			$gravyFields['payment_orchestrator_reconciliation_id'] = $this->row['Custom Field'];
+		}
+		return $gravyFields;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getRecurringFields(): array {
+		$recurringFields = [];
+		if ( $this->isRecurringPayment() ) {
+			$recurringFields['txn_type'] = 'subscr_payment';
+			$recurringFields['subscr_id'] = $this->row['PayPal Reference ID'];
+		}
+		return $recurringFields;
+	}
+
+	/**
+	 * @return array
+	 * @throws \SmashPig\Core\UnhandledException
+	 */
+	protected function getReversalFields(): array {
+		$reversalFields = [];
+		if ( $this->isReversalType() ) {
+			$reversalFields['type'] = $this->getTransactionType();
+			$reversalFields['gateway_refund_id'] = $this->row['Transaction ID'];
+			$reversalFields['gross_currency'] = $this->row['Gross Transaction Currency'];
+
+			if ( ( $this->row['PayPal Reference ID Type'] ?? '' ) === 'TXN' ) {
+				$reversalFields['gateway_parent_id'] = $this->row['PayPal Reference ID'];
+			}
+		} elseif ( $this->isReversalPrefix() ) {
+			// Prefix says refund/chargeback, but code isn't one we handle -> skip (Python: "-Unknown (Refundish type)")
+			throw new UnhandledException( 'Unhandled refundish transaction code: ' . $this->getTransactionCode() );
+		}
+		return $reversalFields;
 	}
 
 }
