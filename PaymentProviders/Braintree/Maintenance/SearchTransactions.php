@@ -313,6 +313,10 @@ class SearchTransactions extends MaintenanceBase {
 		$endDate = $this->getOption( 'end-date' );
 		if ( $endDate ) {
 			$endDate = gmdate( 'Y-m-d', strtotime( $endDate ) );
+		} elseif ( $this->getOption( 'date-type' ) === 'disbursement' ) {
+			// When disbursements are requested and only a single day is provided
+			// then we treat this as a single day request.
+			$endDate = $this->getOption( 'start-date' );
 		} else {
 			$endDate = substr( $this->now, 0, 10 );
 		}
