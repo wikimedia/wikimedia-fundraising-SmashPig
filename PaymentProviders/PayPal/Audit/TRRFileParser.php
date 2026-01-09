@@ -6,6 +6,15 @@ namespace SmashPig\PaymentProviders\PayPal\Audit;
 use SmashPig\Core\Helpers\Base62Helper;
 use SmashPig\Core\UnhandledException;
 
+/**
+ * Parser for TRR files.
+ *
+ * Handles Transaction Detail Report. (TRR) from PayPal.
+ *
+ * Rows provide details on transactions.
+ *
+ * @see https://developer.paypal.com/docs/reports/sftp-reports/transaction-detail
+ */
 class TRRFileParser extends BaseParser {
 
 	/**

@@ -11,6 +11,10 @@ class BaseParser {
 		$this->row = $row;
 	}
 
+	/**
+	 * @see https://developer.paypal.com/docs/reports/reference/tcodes
+	 * @return string[]
+	 */
 	private function getTransactionCodes(): array {
 		return [
 			'T0002' => 'recurring_payment',

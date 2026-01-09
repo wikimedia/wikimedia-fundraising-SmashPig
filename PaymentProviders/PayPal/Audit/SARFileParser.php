@@ -6,6 +6,15 @@ namespace SmashPig\PaymentProviders\PayPal\Audit;
 use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UnhandledException;
 
+/**
+ * Parser for SAR files.
+ *
+ * Handles Subscription Agreement Report. (SAR) from PayPal.
+ *
+ * Rows provide detail on subscription life cycle.
+ *
+ * @see https://www.paypalobjects.com/webstatic/en_US/developer/docs/pdf/PP_LRD_SubscribeAgmntRprt.pdf
+ */
 class SARFileParser extends BaseParser {
 
 	// Action types from the SAR report
