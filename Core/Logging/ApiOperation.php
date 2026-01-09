@@ -145,6 +145,14 @@ enum ApiOperation: string {
 			[ 'dlocal', 'cancelPayment' ] => self::CANCEL,
 			[ 'dlocal', 'refundPayment' ] => self::REFUND,
 
+			// PayPal mappings
+			[ 'paypal', 'createPaymentSession' ] => self::CREATE_SESSION,
+			[ 'paypal', 'doExpressCheckoutPayment' ] => self::AUTHORIZE,
+			[ 'paypal', 'createRecurringPaymentsProfile' ] => self::AUTHORIZE,
+			[ 'paypal', 'getExpressCheckoutDetails' ] => self::GET_PAYMENT_DETAILS,
+			[ 'paypal', 'manageRecurringPaymentsProfileStatusCancel' ] => self::CANCEL,
+			[ 'paypal', 'refundPayment' ] => self::REFUND,
+
 			default => throw new \UnexpectedValueException(
 				"Unknown payment operation for processor '$processor' and method '$method'"
 			),

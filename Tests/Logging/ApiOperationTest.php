@@ -150,6 +150,33 @@ class ApiOperationTest extends TestCase {
 		);
 	}
 
+	public function testFromProcessorMethodMapsPaypalMethods(): void {
+		$this->assertSame(
+			ApiOperation::CREATE_SESSION,
+			ApiOperation::fromProcessorMethod( 'paypal', 'createPaymentSession' )
+		);
+		$this->assertSame(
+			ApiOperation::AUTHORIZE,
+			ApiOperation::fromProcessorMethod( 'paypal', 'doExpressCheckoutPayment' )
+		);
+		$this->assertSame(
+			ApiOperation::AUTHORIZE,
+			ApiOperation::fromProcessorMethod( 'paypal', 'createRecurringPaymentsProfile' )
+		);
+		$this->assertSame(
+			ApiOperation::GET_PAYMENT_DETAILS,
+			ApiOperation::fromProcessorMethod( 'paypal', 'getExpressCheckoutDetails' )
+		);
+		$this->assertSame(
+			ApiOperation::CANCEL,
+			ApiOperation::fromProcessorMethod( 'paypal', 'manageRecurringPaymentsProfileStatusCancel' )
+		);
+		$this->assertSame(
+			ApiOperation::REFUND,
+			ApiOperation::fromProcessorMethod( 'paypal', 'refundPayment' )
+		);
+	}
+
 	public function testFromProcessorMethodIsCaseInsensitiveForProcessor(): void {
 		$this->assertSame(
 			ApiOperation::AUTHORIZE,
