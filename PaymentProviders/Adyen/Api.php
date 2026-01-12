@@ -3,6 +3,8 @@
 use SmashPig\Core\Context;
 use SmashPig\Core\Helpers\UniqueId;
 use SmashPig\Core\Http\OutboundRequest;
+use SmashPig\Core\Logging\ApiOperation;
+use SmashPig\Core\Logging\ApiOperationAttribute;
 use SmashPig\Core\Logging\ApiTimingTrait;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
@@ -98,6 +100,7 @@ class Api {
 	 * amount, currency, encrypted_payment_details (blob from front-end)
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createPaymentFromEncryptedDetails( $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			// TODO: use txn template / mapping a la Ingenico?
@@ -199,6 +202,7 @@ class Api {
 	 * amount, currency, payment_method, recurring_payment_token, processor_contact_id
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createPaymentFromToken( array $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
@@ -246,6 +250,7 @@ class Api {
 	 * amount, currency, value, issuer_id (for CZ), return_url
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createBankTransferPaymentFromCheckout( $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$typesByCountry = [
@@ -290,6 +295,7 @@ class Api {
 	 * amount, currency, order_id, iban, full_name
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createSEPABankTransferPayment( $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
@@ -315,6 +321,7 @@ class Api {
 		} );
 	}
 
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createACHDirectDebitPayment( $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
@@ -345,6 +352,7 @@ class Api {
 		} );
 	}
 
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createGooglePayPayment( $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
@@ -371,6 +379,7 @@ class Api {
 		} );
 	}
 
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createApplePayPayment( $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
@@ -404,6 +413,7 @@ class Api {
 	 * handled for you in Adyen's code.
 	 * https://developer.apple.com/documentation/apple_pay_on_the_web/apple_pay_js_api/requesting_an_apple_pay_payment_session
 	 */
+	#[ApiOperationAttribute( ApiOperation::CREATE_SESSION )]
 	public function createApplePaySession( array $params ): array {
 		return $this->timedCall( __FUNCTION__, static function () use ( $params ) {
 			$request = new OutboundRequest( $params['validation_url'], 'POST' );
@@ -432,6 +442,7 @@ class Api {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::REFUND )]
 	public function refundPayment( array $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
@@ -453,6 +464,7 @@ class Api {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_PAYMENT_DETAILS )]
 	public function getPaymentDetails( $redirectResult ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $redirectResult ) {
 			$restParams = [
@@ -468,6 +480,7 @@ class Api {
 	/**
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_PAYMENT_METHODS )]
 	public function getPaymentMethods( $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
@@ -505,6 +518,7 @@ class Api {
 	 * @return array A list of saved payment methods with tokens and other details.
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_SAVED_PAYMENT_DETAILS )]
 	public function getSavedPaymentDetails( string $shopperReference ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $shopperReference ) {
 			$restParams = [
@@ -529,6 +543,7 @@ class Api {
 	 * @return array usually just [ 'result' => 'SUCCESS' ]
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::DELETE_DATA )]
 	public function deleteDataForPayment( string $gatewayTransactionId ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $gatewayTransactionId ) {
 			$restParams = [
@@ -579,6 +594,7 @@ class Api {
 	 * @param array $params Needs keys 'gateway_txn_id', 'currency', and 'amount' set
 	 * @return bool|array
 	 */
+	#[ApiOperationAttribute( ApiOperation::CAPTURE )]
 	public function approvePayment( array $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
@@ -613,6 +629,7 @@ class Api {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::CANCEL )]
 	public function cancel( string $pspReference ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $pspReference ) {
 			$restParams = [
@@ -634,6 +651,7 @@ class Api {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::CANCEL )]
 	public function cancelAutoRescue( string $rescueReference ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $rescueReference ) {
 			$restParams = [

@@ -4,6 +4,8 @@ namespace SmashPig\PaymentProviders\Gravy;
 
 use Gr4vy\Gr4vyConfig;
 use SmashPig\Core\Context;
+use SmashPig\Core\Logging\ApiOperation;
+use SmashPig\Core\Logging\ApiOperationAttribute;
 use SmashPig\Core\Logging\ApiTimingTrait;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\PaymentData\PaymentMethod;
@@ -34,6 +36,7 @@ class Api {
 	 * @link https://docs.gr4vy.com/reference/checkout-sessions/new-checkout-session#create-checkout-session Gr4vy Documentation to create a new checkout session
 	 * @link https://docs.gr4vy.com/reference/digital-wallets/get-apple-pay-session Gr4vy Documentation to create a new apple pay session
 	 */
+	#[ApiOperationAttribute( ApiOperation::CREATE_SESSION )]
 	public function createPaymentSession( array $params = [], string $method = 'card' ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $params, $method ) {
 			$tl = new TaggedLogger( 'RawData' );
@@ -58,6 +61,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/new-transaction Gr4vy Documentation to create a new transaction
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createPayment( array $params ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$tl = new TaggedLogger( 'RawData' );
@@ -85,6 +89,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/capture-transaction Documentation to approve payment
 	 */
+	#[ApiOperationAttribute( ApiOperation::CAPTURE )]
 	public function approvePayment( string $trxn_id, array $requestBody ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $trxn_id, $requestBody ) {
 			$tl = new TaggedLogger( 'RawData' );
@@ -102,6 +107,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/guides/api/resources/payment-methods/delete#delete-a-payment-method Documentation to delete payment token
 	 */
+	#[ApiOperationAttribute( ApiOperation::DELETE_TOKEN )]
 	public function deletePaymentToken( array $params ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$payment_method_id = $params['payment_method_id'];
@@ -118,6 +124,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/list-transaction-events Documentation to delete payment token
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_PAYMENT_STATUS )]
 	public function getTransaction( array $params ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$txn_id = $params['gateway_txn_id'];
@@ -133,6 +140,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/void-transaction
 	 */
+	#[ApiOperationAttribute( ApiOperation::CANCEL )]
 	public function cancelTransaction( string $gatewayTxnId ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $gatewayTxnId ) {
 			$response = $this->gravyApiClient->voidTransaction( $gatewayTxnId, [] );
@@ -147,6 +155,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/list-transaction-events Documentation to delete payment token
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_REFUND )]
 	public function getRefund( array $params ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$refund_id = $params['gateway_refund_id'];
@@ -162,6 +171,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/transactions/refund-transaction
 	 */
+	#[ApiOperationAttribute( ApiOperation::REFUND )]
 	public function refundTransaction( array $params ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$gatewayTxnId = $params['gateway_txn_id'];
@@ -179,6 +189,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/reports/get-report-execution Documentation to get report execution details
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_REPORT_EXECUTION )]
 	public function getReportExecutionDetails( array $params ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$report_execution_id = $params['report_execution_id'];
@@ -194,6 +205,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/reports/get-report-execution Documentation to get report execution details
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_REPORT_DOWNLOAD_URL )]
 	public function generateReportDownloadUrl( array $params ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$report_id = $params['report_id'];
@@ -210,6 +222,7 @@ class Api {
 	 * @return array
 	 * @link https://docs.gr4vy.com/reference/payment-service-definitions/get-payment-service-definition#parameter-payment-service-definition-id
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_PAYMENT_SERVICE_DEFINITION )]
 	public function getPaymentServiceDefinition( string $method = '' ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $method ) {
 			$response = $this->gravyApiClient->getPaymentServiceDefinition( $method );
