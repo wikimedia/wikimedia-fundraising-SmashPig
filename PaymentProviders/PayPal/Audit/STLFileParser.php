@@ -15,7 +15,7 @@ use SmashPig\Core\UtcDate;
  *
  * Rows provide details on transactions that have settled, including the total settled.
  *
- * @see https://developer.paypal.com/docs/reports/sftp-reports/settlement-reports/
+ * @see https://developer.paypal.com/docs/reports/sftp-reports/settlement-report/
  */
 class STLFileParser extends BaseParser {
 
