@@ -11,11 +11,13 @@ class BaseParser {
 	protected array $row;
 	protected array $headers;
 	protected array $conversionRows;
+	protected array $payouts;
 
-	public function __construct( array $row, array $headers, array $conversionRows ) {
+	public function __construct( array $row, array $headers, array $conversionRows, array $payouts ) {
 		$this->row = $row;
 		$this->headers = $headers;
 		$this->conversionRows = $conversionRows;
+		$this->payouts = $payouts;
 	}
 
 	/**

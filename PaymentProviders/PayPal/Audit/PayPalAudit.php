@@ -33,6 +33,7 @@ class PayPalAudit implements AuditParser {
 	private array $headers = [];
 	private array $rows = [];
 	private array $conversionRows = [];
+	private array $payouts = [];
 
 	public function parseFile( string $path ): array {
 		$file = fopen( $path, 'r' );
@@ -98,7 +99,10 @@ class PayPalAudit implements AuditParser {
 			}
 			// We need to split out all the currency conversion rows before parsing the transactions.
 			if ( ( $row['Transaction Event Code'] ?? '' ) === 'T0200' ) {
-				$this->conversionRows[ $row['Invoice ID'] ][] = $row;
+				$this->conversionRows[$row['Invoice ID']][] = $row;
+			} elseif ( ( $row['Transaction Event Code'] ?? '' ) === 'T0400' ) {
+				// This is a payout row. It should be added onto the aggregate row.
+				$this->payouts[ $row['Gross Transaction Currency'] ][] = $row['Gross Transaction Amount'];
 			} else {
 				$this->rows[] = $row;
 			}
@@ -133,9 +137,9 @@ class PayPalAudit implements AuditParser {
 	 */
 	private function getParser( array $row ): BaseParser {
 		if ( isset( $this->parserClass ) ) {
-			return new $this->parserClass( $row, $this->headers, $this->conversionRows );
+			return new $this->parserClass( $row, $this->headers, $this->conversionRows, $this->payouts );
 		}
-		return new TRRFileParser( $row, $this->headers, $this->conversionRows );
+		return new TRRFileParser( $row, $this->headers, $this->conversionRows, $this->payouts );
 	}
 
 }

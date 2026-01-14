@@ -71,7 +71,7 @@ class STLAuditTest extends AuditTest {
 
 		$this->assertEquals( [
 			'settled_currency' => 'GBP',
-			'settled_total_amount' => 7.40,
+			'settled_total_amount' => 8.40,
 			'gateway' => 'paypal',
 			'type' => 'payout',
 			'gateway_txn_id' => '',

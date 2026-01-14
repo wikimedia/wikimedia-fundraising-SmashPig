@@ -72,9 +72,13 @@ class STLFileParser extends BaseParser {
 				$timezoneOffset = substr( $header[1], -5 );
 			}
 		}
+		$payouts = 0;
+		if ( array_key_exists( $this->row[1], $this->payouts ) ) {
+			$payouts = array_sum( $this->payouts[ $this->row[1] ] );
+		}
 		return [
 			'settled_currency' => $this->row[1],
-			'settled_total_amount' => ( $this->row[2] - $this->row[3] + $this->row[4] - $this->row[5] ) / 100,
+			'settled_total_amount' => ( $this->row[2] - $this->row[3] + $this->row[4] - $this->row[5] + $payouts ) / 100,
 			'gateway' => 'paypal',
 			'type' => 'payout',
 			'gateway_txn_id' => str_replace( $settlementDate, '/', '' ),
