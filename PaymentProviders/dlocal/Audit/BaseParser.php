@@ -13,14 +13,27 @@ class BaseParser {
 		$this->headers = $headers;
 	}
 
-	protected function getContributionTrackingId( string $invoice ): string {
-		$parts = explode( '.', $invoice );
+	protected function getContributionTrackingId(): string {
+		$parts = explode( '.', $this->getOrderId() );
 		return $parts[0];
 	}
 
 	protected function isFromOrchestrator( $invoice ): bool {
 		// ignore gravy transactions, they have no period and contain letters
 		return ( !strpos( $invoice, '.' ) && !is_numeric( $invoice ) );
+	}
+
+	protected function getOrderId(): string {
+		foreach ( [ 'TRANSACTION_ID', 'DESCRIPTION', 'Transaction Invoice', 'Invoice' ] as $field ) {
+			$value = trim( (string)( $this->row[$field] ?? '' ) );
+			if ( $value === '' ) {
+				continue;
+			}
+			if ( preg_match( '/^[0-9]+(\.[0-9]+)?$/', $value ) === 1 ) {
+				return $value;
+			}
+		}
+		return '';
 	}
 
 }

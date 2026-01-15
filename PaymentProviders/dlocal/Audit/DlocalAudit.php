@@ -1,11 +1,17 @@
 <?php namespace SmashPig\PaymentProviders\dlocal\Audit;
 
 use SmashPig\Core\DataFiles\AuditParser;
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\NormalizationException;
 
 class DlocalAudit implements AuditParser {
 
+	/**
+	 * This is overwritten for more recent types of report which get the columns from the csv.
+	 *
+	 * @var array|string[]
+	 */
 	protected array $columnHeaders = [
 		'Type', // 'Payment' or 'Refund'
 		'Creation date', // YYYY-MM-dd HH:mm:ss
@@ -28,27 +34,29 @@ class DlocalAudit implements AuditParser {
 		// The IOF is included in Dlocal's fee, but broken out by request
 	];
 
-	protected array $ignoredStatuses = [
-		'Cancelled', // User pressed cancel or async payment expired
-		'In process', // Chargeback is... charging back? 'Settled' means done
-		'Reimbursed', // Chargeback settled in our favor - not refunding
-		'Waiting Details', // Refund is in limbo; we'll wait for 'Completed'
-	];
-
 	protected $fileData;
 
 	private array $headerRow = [];
+
+	private $netTotal = 0;
 
 	public function parseFile( string $path ): array {
 		$this->fileData = [];
 		$file = fopen( $path, 'r' );
 
-		$ignoreLines = 1;
-		for ( $i = 0; $i < $ignoreLines; $i++ ) {
-			fgets( $file );
-		}
+		$firstLine = fgets( $file );
+		$delimiter = $this->getDelimiter( $firstLine );
 
-		while ( $line = fgetcsv( $file, 0, ';', '"', '\\' ) ) {
+		while ( $line = fgetcsv( $file, 0, $delimiter, '"', '\\' ) ) {
+			if ( $line[0] === 'HEADER' ) {
+				$headerColumns = explode( $delimiter, $firstLine );
+				$this->headerRow = array_combine( $headerColumns, $line );
+				continue;
+			}
+			if ( $line[0] === 'ROW_TYPE' ) {
+				$this->columnHeaders = array_values( $line );
+				continue;
+			}
 			try {
 				$this->parseLine( $line );
 			} catch ( NormalizationException $ex ) {
@@ -58,23 +66,64 @@ class DlocalAudit implements AuditParser {
 		}
 		fclose( $file );
 
+		// The settlement files provide an amount that reflects the amount settled to the bank.
+		// However, it is the sum of the amounts at 6 decimal places. Because we need to round each
+		// amount to (for USD) 2 places the sum of these can differ so we record an extra 'fee'
+		// to get to an exact match.
+		$expectedNetTotal = $this->headerRow['NET_TOTAL_AMOUNT'] ?? 0;
+		if ( $expectedNetTotal ) {
+			$difference = CurrencyRoundingHelper::round( $expectedNetTotal - $this->netTotal, $this->headerRow['SETTLEMENT_CURRENCY'] );
+			if ( $difference !== '0.00' ) {
+				$values = [
+					'ROW_TYPE' => 'ADJUSTMENT',
+					'DLOCAL_TRANSACTION_ID' => $this->headerRow['TRANSFER_ID'] . '-rounding',
+					'NET_AMOUNT' => $difference,
+				];
+				$line = [];
+				foreach ( $this->columnHeaders as $index => $columnHeader ) {
+					$line[$index] = $values[$columnHeader] ?? null;
+				}
+				$this->parseLine( $line );
+			}
+		}
 		return $this->fileData;
 	}
 
 	protected function parseLine( array $line ): void {
 		$row = array_combine( $this->columnHeaders, $line );
 
-		// Ignore certain statuses
-		if ( in_array( $row['Status'], $this->ignoredStatuses ) ) {
-			return;
-		}
-
 		$parser = $this->getParser( $row );
 
 		$line = $parser->parse();
 		if ( $line ) {
 			$this->fileData[] = $line;
+			$this->netTotal += ( $line['settled_net_amount'] ?? 0 );
 		}
+	}
+
+	/**
+	 * @param string $firstLine
+	 *
+	 * @return string|null
+	 */
+	private function getDelimiter( string $firstLine ): ?string {
+		// Possible delimiters to test
+		$delimiters = [ ',', ';' ];
+
+		$bestDelimiter = null;
+		$maxFields = 0;
+
+		foreach ( $delimiters as $delimiter ) {
+			// str_getcsv correctly handles quoted values
+			$fields = str_getcsv( $firstLine, $delimiter );
+
+			if ( count( $fields ) > $maxFields ) {
+				$maxFields = count( $fields );
+				$bestDelimiter = $delimiter;
+			}
+		}
+
+		return $bestDelimiter;
 	}
 
 	/**
@@ -82,8 +131,12 @@ class DlocalAudit implements AuditParser {
 	 *
 	 * @return \SmashPig\PaymentProviders\dlocal\Audit\ReportFileParser|\SmashPig\PaymentProviders\dlocal\Audit\SettlementFileParser
 	 */
-	public function getParser( array $row ): BaseParser|ReportFileParser {
-		$parser = new ReportFileParser( $row, $this->headerRow );
+	public function getParser( array $row ): SettlementFileParser|ReportFileParser {
+		if ( empty( $this->headerRow ) ) {
+			$parser = new ReportFileParser( $row, $this->headerRow );
+		} else {
+			$parser = new SettlementFileParser( $row, $this->headerRow );
+		}
 		return $parser;
 	}
 

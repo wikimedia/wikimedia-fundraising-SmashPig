@@ -14,7 +14,18 @@ use SmashPig\PaymentProviders\dlocal\ReferenceData;
  */
 class ReportFileParser extends BaseParser {
 
+	protected array $ignoredStatuses = [
+		'Cancelled', // User pressed cancel or async payment expired
+		'In process', // Chargeback is... charging back? 'Settled' means done
+		'Reimbursed', // Chargeback settled in our favor - not refunding
+		'Waiting Details', // Refund is in limbo; we'll wait for 'Completed'
+	];
+
 	public function parse(): ?array {
+		// Ignore certain statuses
+		if ( in_array( $this->row['Status'], $this->ignoredStatuses ) ) {
+			return null;
+		}
 		$msg = [];
 		// Common to all types
 		$msg['date'] = UtcDate::getUtcTimestamp( $this->row['Creation date'] );
@@ -54,7 +65,7 @@ class ReportFileParser extends BaseParser {
 	}
 
 	protected function parseRefund( array &$msg ): void {
-		$msg['contribution_tracking_id'] = $this->getContributionTrackingId( $this->row['Transaction Invoice'] );
+		$msg['contribution_tracking_id'] = $this->getContributionTrackingId();
 		$msg['gateway_parent_id'] = $this->row['Transaction Reference'];
 		$msg['gateway_refund_id'] = $this->row['Reference'];
 		$msg['gross_currency'] = $this->row['currency'];
