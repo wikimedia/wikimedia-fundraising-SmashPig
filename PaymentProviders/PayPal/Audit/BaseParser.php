@@ -12,12 +12,14 @@ class BaseParser {
 	protected array $headers;
 	protected array $conversionRows;
 	protected array $payouts;
+	protected array $feeRows;
 
-	public function __construct( array $row, array $headers, array $conversionRows, array $payouts ) {
+	public function __construct( array $row, array $headers, array $conversionRows, array $payouts, array $feeRows ) {
 		$this->row = $row;
 		$this->headers = $headers;
 		$this->conversionRows = $conversionRows;
 		$this->payouts = $payouts;
+		$this->feeRows = $feeRows;
 	}
 
 	/**
@@ -31,7 +33,7 @@ class BaseParser {
 	 * @see https://developer.paypal.com/docs/reports/reference/tcodes
 	 * @return string[]
 	 */
-	private function getTransactionCodes(): array {
+	public static function getTransactionCodes(): array {
 		return [
 			'T0002' => 'recurring_payment',
 			// In our case preapproved payment is braintree.
@@ -40,6 +42,17 @@ class BaseParser {
 			// This is in our tests but not really documented - it seems to be blocked
 			'T0013' => 'risky_payment',
 			'T0200' => 'currency_conversion',
+			'T0100' => 'fee',
+			// chargeback fee - can be tied to a reversal transaction.
+			'T0106' => 'reversal_fee',
+			// reversal fee - can be tied to a reversal transaction.
+			'T1108' => 'reversal_fee',
+			// refund fee - can be tied to a reversal transaction.
+			'T1109' => 'reversal_fee',
+			// payment request fee.
+			'T0104' => 'fee',
+			// partner fee
+			'T0113' => 'fee',
 			'T1106' => 'reversal',
 			'T0400' => 'withdrawal',
 			'T1107' => 'refund',
@@ -48,7 +61,7 @@ class BaseParser {
 	}
 
 	protected function getTransactionType(): string {
-		return $this->getTransactionCodes()[$this->getTransactionCode()] ?? '';
+		return self::getTransactionCodes()[$this->getTransactionCode()] ?? '';
 	}
 
 	protected function getTransactionCode(): string {
@@ -143,6 +156,9 @@ class BaseParser {
 
 	protected function getFeeAmount(): float {
 		$fee = $this->row['Fee Amount'] ?? 0;
+		if ( !$fee && isset( $this->feeRows[$this->row['Transaction ID']] ) ) {
+			$fee = $this->feeRows[$this->row['Transaction ID']]['Gross Transaction Amount'];
+		}
 		if ( $fee ) {
 			return $fee / 100;
 		}
@@ -151,7 +167,7 @@ class BaseParser {
 
 	protected function getOriginalFeeAmount(): float {
 		$fee = $this->getFeeAmount();
-		if ( $this->row['Fee Debit or Credit'] === 'DR' ) {
+		if ( $this->row['Fee Debit or Credit'] === 'DR' || ( $this->feeRows[$this->row['Transaction ID']]['Transaction Debit or Credit'] ?? '' ) === 'DR' ) {
 			return -$fee;
 		}
 		return $fee;

@@ -34,6 +34,7 @@ class PayPalAudit implements AuditParser {
 	private array $rows = [];
 	private array $conversionRows = [];
 	private array $payouts = [];
+	private array $feeRows = [];
 
 	public function parseFile( string $path ): array {
 		$file = fopen( $path, 'r' );
@@ -98,11 +99,14 @@ class PayPalAudit implements AuditParser {
 				continue;
 			}
 			// We need to split out all the currency conversion rows before parsing the transactions.
-			if ( ( $row['Transaction Event Code'] ?? '' ) === 'T0200' ) {
+			$transactionType = BaseParser::getTransactionCodes()[$row['Transaction Event Code'] ?? ''] ?? null;
+			if ( $transactionType === 'currency_conversion' ) {
 				$this->conversionRows[$row['Invoice ID']][] = $row;
-			} elseif ( ( $row['Transaction Event Code'] ?? '' ) === 'T0400' ) {
+			} elseif ( $transactionType === 'withdrawal' ) {
 				// This is a payout row. It should be added onto the aggregate row.
-				$this->payouts[ $row['Gross Transaction Currency'] ][] = $row['Gross Transaction Amount'];
+				$this->payouts[$row['Gross Transaction Currency']][] = $row['Gross Transaction Amount'];
+			} elseif ( $transactionType === 'reversal_fee' ) {
+				$this->feeRows[$row['PayPal Reference ID']] = $row;
 			} else {
 				$this->rows[] = $row;
 			}
@@ -137,9 +141,9 @@ class PayPalAudit implements AuditParser {
 	 */
 	private function getParser( array $row ): BaseParser {
 		if ( isset( $this->parserClass ) ) {
-			return new $this->parserClass( $row, $this->headers, $this->conversionRows, $this->payouts );
+			return new $this->parserClass( $row, $this->headers, $this->conversionRows, $this->payouts, $this->feeRows );
 		}
-		return new TRRFileParser( $row, $this->headers, $this->conversionRows, $this->payouts );
+		return new TRRFileParser( $row, $this->headers, $this->conversionRows, $this->payouts, $this->feeRows );
 	}
 
 }

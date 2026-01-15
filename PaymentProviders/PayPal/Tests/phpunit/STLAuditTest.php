@@ -126,4 +126,36 @@ class STLAuditTest extends AuditTest {
 
 		], $output[0] );
 	}
+
+	public function testProcessChargebackWithFee(): void {
+		$output = $this->processFile( 'stl_chargeback_with_fee.csv' );
+		$this->assertCount( 1, $output, 'Should have found one row' );
+		$this->assertEquals( [
+			'payment_method' => 'paypal',
+			'currency' => 'USD',
+			'exchange_rate' => 1,
+			'settled_currency' => 'USD',
+			'original_currency' => 'USD',
+			'settled_date' => strtotime( '2026/01/14 12:38:07 -0800' ),
+			'date' => strtotime( '2026/01/14 12:38:07 -0800' ),
+			'gateway' => 'paypal',
+			'audit_file_gateway' => 'paypal',
+			'settled_total_amount' => -3,
+			'settled_fee_amount' => -20,
+			'settled_net_amount' => -23,
+			'settlement_batch_reference' => '20260114',
+			'original_total_amount' => -3,
+			'original_net_amount' => -23,
+			'original_fee_amount' => -20,
+			'gross' => 3,
+			'fee' => 20,
+			'gateway_txn_id' => '5K823',
+			'contribution_tracking_id' => null,
+			'order_id' => '',
+			'type' => 'chargeback',
+			'gateway_refund_id' => '5K823',
+			'gross_currency' => 'USD',
+			'gateway_parent_id' => '59M83',
+		], $output[0] );
+	}
 }
