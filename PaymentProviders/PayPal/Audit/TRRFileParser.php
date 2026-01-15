@@ -57,7 +57,6 @@ class TRRFileParser extends BaseParser {
 			'original_fee_amount' => $this->getOriginalFeeAmount(),
 			'fee' => $this->getFeeAmount(),
 			'gateway_status' => $this->row['Transactional Status'],
-			'note' => $this->row['Transaction Note'],
 			'email' => $this->row["Payer's Account ID"],
 			'payment_method' => 'paypal',
 			'street_address' => $this->row[$addr_prefix . 'Line1'],
