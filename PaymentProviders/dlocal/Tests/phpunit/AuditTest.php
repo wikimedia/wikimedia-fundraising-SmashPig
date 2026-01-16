@@ -37,7 +37,6 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settled_fee_amount' => '-0.03',
 			'settled_net_amount' => 1.47,
 			'settled_total_amount' => 1.50,
-			'original_amount' => '5.00',
 			'original_total_amount' => '5.00',
 			'exchange_rate' => '.3',
 			'settled_gross' => '1.50',

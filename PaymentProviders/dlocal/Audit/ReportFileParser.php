@@ -89,8 +89,7 @@ class ReportFileParser extends BaseParser {
 		$msg['gateway_txn_id'] = $this->row['Reference'];
 		$msg['invoice_id'] = $this->row['Invoice'];
 		$msg['original_total_amount'] = $this->row['Net Amount (local)'];
-		$msg['original_amount'] = $this->row['Net Amount (local)'];
-		$msg['exchange_rate'] = $msg['settled_total_amount'] / $msg['original_amount'];
+		$msg['exchange_rate'] = $msg['settled_total_amount'] / $msg['original_total_amount'];
 
 		[ $method, $submethod ] = ReferenceData::decodePaymentMethod(
 			$this->row['Payment Method Type'],
