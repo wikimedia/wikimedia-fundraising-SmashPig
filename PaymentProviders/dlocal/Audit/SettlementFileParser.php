@@ -43,7 +43,7 @@ class SettlementFileParser extends BaseParser {
 			'email' => $this->row['USER_EMAIL'],
 			'contribution_tracking_id' => $this->getContributionTrackingId(),
 		];
-		return $message + $this->getGravyFields();
+		return $message + $this->getGravyFields() + $this->getReversalFields();
 	}
 
 	/**
