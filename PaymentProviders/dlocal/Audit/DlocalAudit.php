@@ -49,7 +49,7 @@ class DlocalAudit implements AuditParser {
 
 		while ( $line = fgetcsv( $file, 0, $delimiter, '"', '\\' ) ) {
 			if ( $line[0] === 'HEADER' ) {
-				$headerColumns = explode( $delimiter, $firstLine );
+				$headerColumns = explode( $delimiter, trim( $firstLine ) );
 				$this->headerRow = array_combine( $headerColumns, $line );
 				continue;
 			}
