@@ -67,9 +67,16 @@ class SearchTransactions extends MaintenanceBase {
 				$this->normalizeTransactions( $provider->searchRefunds( $input, $after ), 'refund' );
 			}
 			if ( $this->isRunChargebackReport() ) {
-				// @todo - this would be disputes. The input date field is not respected because it's unclear we call this &
-				// if we do which date field to use.
-				$disputeInput = [ "receivedDate" => [ "greaterThanOrEqualTo" => $greaterThanDate, "lessThanOrEqualTo" => gmdate( 'Y-m-d', strtotime( $endDate ) ) ] ];
+				// For disputes we can use effectiveDate and receiveDate - the receiveDate is the date the
+				// dispute started and the effectiveDate is the change of status - so we are looking for
+				// things that changed status to lost. This is generally a day before the settlement date
+				// so we look at the day before the main query date.
+				$greaterThanDate = substr( $this->getDayBeforeStartDate(), 0, 10 );
+				$lessThanDate = gmdate( 'Y-m-d', strtotime( $this->getDayBeforeEndDate() ) );
+				$disputeInput = [
+					"effectiveDate" => [ "greaterThanOrEqualTo" => $greaterThanDate, "lessThanOrEqualTo" => $lessThanDate ],
+					"status" => [ "is" => "LOST" ],
+				];
 				$this->normalizeTransactions( $provider->searchDisputes( $disputeInput, $after ), 'chargeback' );
 			}
 
@@ -306,6 +313,10 @@ class SearchTransactions extends MaintenanceBase {
 		return $greaterThan;
 	}
 
+	private function getDayBeforeStartDate(): string {
+		return date( 'c', strtotime( '-1 day', strtotime( $this->getStartDate() ) ) );
+	}
+
 	/**
 	 * @return string
 	 */
@@ -321,6 +332,10 @@ class SearchTransactions extends MaintenanceBase {
 			$endDate = substr( $this->now, 0, 10 );
 		}
 		return $endDate;
+	}
+
+	private function getDayBeforeEndDate(): string {
+		return date( 'c', strtotime( '-1 day', strtotime( $this->getEndDate() ) ) );
 	}
 
 	/**
