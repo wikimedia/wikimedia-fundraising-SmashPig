@@ -245,13 +245,17 @@ class SearchTransactions extends MaintenanceBase {
 				'statusTransition' => [
 					'settledAt' => [
 						'greaterThanOrEqualTo' => $greaterThan,
-						'lessThan' => $this->now
+						'lessThan' => $this->now,
 					],
-				]
+				],
 			];
 		}
 
 		return [ $this->getDateField() => [ "greaterThanOrEqualTo" => $greaterThan, "lessThanOrEqualTo" => $this->now ] ];
+	}
+
+	private function isDisbursementReport(): bool {
+		return $this->getOption( 'report-type' ) === 'disbursement';
 	}
 
 	/**
@@ -287,13 +291,16 @@ class SearchTransactions extends MaintenanceBase {
 			$context = 'consolidated';
 		}
 		if ( !isset( $this->files[$context] ) ) {
-			$pathPrefix = $this->getOption( 'output-raw' ) ? '/raw_batch_report_' : "/settlement_batch_report_";
+			// Put disbursement in the title if the disbursement option is used because
+			// we will calculate totals if it is present.
+			$type = $this->isDisbursementReport() ? 'disbursement' : 'batch';
+			$pathPrefix = $this->getOption( 'output-raw' ) ? '/raw_' . $type . '_report_' : "/settlement_' . $type . '_report_";
 			$path = $this->getOption( 'path' );
 			if ( $context ) {
 				$pathPrefix .= $context . '_';
 			}
 			// Start and end but end first for recency sorting.
-			$mainFile = $path . $pathPrefix . gmdate( 'Y-m-d', strtotime( $this->getStartDate() ) ) . '_' . $this->getEndDate() . ".json";
+			$mainFile = $path . $pathPrefix . gmdate( 'Y-m-d', strtotime( $this->getStartDate() ) ) . '_' . gmdate( 'Y-m-d', strtotime( $this->getEndDate() ) ) . ".json";
 			$this->files[$context] = fopen( $mainFile, "w" ) or die( "Unable to open file!" );
 		}
 		return $this->files[$context];
