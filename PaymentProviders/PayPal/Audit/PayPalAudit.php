@@ -105,8 +105,10 @@ class PayPalAudit implements AuditParser {
 			} elseif ( $transactionType === 'withdrawal' ) {
 				// This is a payout row. It should be added onto the aggregate row.
 				$this->payouts[$row['Gross Transaction Currency']][] = $row['Gross Transaction Amount'];
-			} elseif ( $transactionType === 'reversal_fee' ) {
+			} elseif ( $transactionType === 'chargeback_fee' ) {
 				$this->feeRows[$row['PayPal Reference ID']] = $row;
+			} elseif ( $transactionType === 'fee_reversal' ) {
+				$this->feeRows[$row['Invoice ID']] = $row;
 			} else {
 				$this->rows[] = $row;
 			}

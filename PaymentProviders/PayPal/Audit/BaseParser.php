@@ -43,12 +43,21 @@ class BaseParser {
 			'T0013' => 'risky_payment',
 			'T0200' => 'currency_conversion',
 			'T0100' => 'fee',
-			// chargeback fee - can be tied to a reversal transaction.
-			'T0106' => 'reversal_fee',
-			// reversal fee - can be tied to a reversal transaction.
-			'T1108' => 'reversal_fee',
-			// refund fee - can be tied to a reversal transaction.
-			'T1109' => 'reversal_fee',
+			// chargeback fee - this is a fee charged when a chargeback takes place
+			// it is generally on the next row. It's parent id is the id of
+			// the id of the chargeback transaction. It should be incorporated
+			// into the chargeback.
+			'T0106' => 'chargeback_fee',
+			// chargeback reversal fee - this is ?sometimes? always? the reversal of a fee
+			// which we have been charged - ie if there is a chargeback reversal
+			// than the next row is the reversal of the fee on that charge back.
+			// The chargeback is unlikely to be in the same file and the parent id
+			// in the report is the id of the original fee - which might have been months
+			// earlier so the Invoice ID is the preferred way to merge these into the ChargebackReversal
+			// transaction.
+			'T1108' => 'fee_reversal',
+			// refund reversal fee
+			'T1109' => 'fee_reversal',
 			// payment request fee.
 			'T0104' => 'fee',
 			// partner fee
@@ -57,6 +66,7 @@ class BaseParser {
 			'T0400' => 'withdrawal',
 			'T1107' => 'refund',
 			'T1201' => 'chargeback',
+			'T1202' => 'chargeback_reversed',
 		];
 	}
 
@@ -91,6 +101,13 @@ class BaseParser {
 	 */
 	protected function isReversalType(): bool {
 		return in_array( $this->getTransactionType(), [ 'reversal', 'refund', 'chargeback' ], true );
+	}
+
+	/**
+	 * Is this a case of a reversal being reversed.
+	 */
+	protected function isReversalReversalType(): bool {
+		return in_array( $this->getTransactionType(), [ 'chargeback_reversed' ], true );
 	}
 
 	protected function isReversalPrefix(): bool {
@@ -158,6 +175,9 @@ class BaseParser {
 		$fee = $this->row['Fee Amount'] ?? 0;
 		if ( !$fee && isset( $this->feeRows[$this->row['Transaction ID']] ) ) {
 			$fee = $this->feeRows[$this->row['Transaction ID']]['Gross Transaction Amount'];
+		}
+		if ( !$fee && isset( $this->feeRows[$this->row['Invoice ID']] ) ) {
+			$fee = $this->feeRows[$this->row['Invoice ID']]['Gross Transaction Amount'];
 		}
 		if ( $fee ) {
 			return $fee / 100;
@@ -276,6 +296,10 @@ class BaseParser {
 			if ( ( $this->row['PayPal Reference ID Type'] ?? '' ) === 'TXN' ) {
 				$reversalFields['gateway_parent_id'] = $this->row['PayPal Reference ID'];
 			}
+		} elseif ( $this->isReversalReversalType() ) {
+			$reversalFields['type'] = $this->getTransactionType();
+			$reversalFields['gateway_parent_id'] = $this->row['PayPal Reference ID'];
+
 		} elseif ( $this->isReversalPrefix() ) {
 			// Prefix says refund/chargeback, but code isn't one we handle -> skip (Python: "-Unknown (Refundish type)")
 			throw new UnhandledException( 'Unhandled refundish transaction code: ' . $this->getTransactionCode() );
