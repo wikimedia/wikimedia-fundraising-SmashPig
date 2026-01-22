@@ -224,6 +224,22 @@ class Api {
 	}
 
 	/**
+	 * Doc link: https://developer.paypal.com/api/nvp-soap/get-transaction-details-nvp/
+	 *
+	 * @param string $transactionId
+	 * @return array
+	 */
+	public function getTransactionDetails( string $transactionId ): array {
+		return $this->timedCall( __FUNCTION__, function () use ( $transactionId ) {
+			$requestParams = [
+				'METHOD' => 'GetTransactionDetails',
+				'TRANSACTIONID' => $transactionId,
+			];
+			return $this->makeApiCall( $requestParams );
+		} );
+	}
+
+	/**
 	 * Paypal expects auth and version params to be sent within the request body.
 	 * https://developer.paypal.com/api/nvp-soap/gs-PayPalAPIs/#link-callpayload
 	 *

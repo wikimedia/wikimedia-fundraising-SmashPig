@@ -152,6 +152,7 @@ enum ApiOperation: string {
 			[ 'paypal', 'getExpressCheckoutDetails' ] => self::GET_PAYMENT_DETAILS,
 			[ 'paypal', 'manageRecurringPaymentsProfileStatusCancel' ] => self::CANCEL,
 			[ 'paypal', 'refundPayment' ] => self::REFUND,
+			[ 'paypal', 'getTransactionDetails' ] => self::GET_PAYMENT_DETAILS,
 
 			default => throw new \UnexpectedValueException(
 				"Unknown payment operation for processor '$processor' and method '$method'"
