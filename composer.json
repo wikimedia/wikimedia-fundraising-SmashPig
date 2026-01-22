@@ -36,6 +36,18 @@
         {
             "name": "Andrew Russell Green",
             "email": "agreen@wikimedia.org"
+        },
+        {
+            "name": "Wenjun Fan",
+            "email": "wfan@wikimedia.org"
+        },
+        {
+            "name": "Damilare Adedoyin",
+            "email": "dadedoyin@wikimedia.org"
+        },
+        {
+            "name": "Eileen McNaughton",
+            "email": "emcnaughton@wikimedia.org"
         }
     ],
     "require": {
