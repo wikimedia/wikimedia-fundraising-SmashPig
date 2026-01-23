@@ -851,7 +851,7 @@ class SFTPDownload extends MaintenanceBase {
 		if ( $pinnedB64 !== $serverB64 ) {
 			Logger::error( "Pinned host key: $pinned" );
 			Logger::error( "Server host key: $serverStr" );
-			$this->error( "Host key mismatch for $host. Refusing to connect." );
+			$this->error( "Host key mismatch for $host. Refusing to connect.", true );
 		}
 
 		Logger::info( "Host key verified for $host" );
