@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace SmashPig\PaymentProviders\PayPal\Audit;
 
 use SmashPig\Core\Helpers\Base62Helper;
+use SmashPig\Core\IgnoredException;
 use SmashPig\Core\UnhandledException;
 
 /**
@@ -18,15 +19,15 @@ use SmashPig\Core\UnhandledException;
 class TRRFileParser extends BaseParser {
 
 	/**
-	 * @throws UnhandledException
+	 * @throws UnhandledException|\SmashPig\Core\IgnoredException
 	 */
 	public function getMessage(): array {
 		if ( $this->row['Transactional Status'] !== 'S' ) {
 			// Skip transaction, not settled.
-			throw new UnhandledException( 'Transaction status skipped: ' . $this->row['Transactional Status'] );
+			throw new IgnoredException( 'Transaction status skipped: ' . $this->row['Transactional Status'] );
 		}
 		if ( $this->isBraintreePayment() ) {
-			throw new UnhandledException( 'Braintree transaction skipped' );
+			throw new IgnoredException( 'Braintree transaction skipped' );
 		}
 		if ( $this->isDebitPaymentToSomeoneElse() ) {
 			throw new UnhandledException( 'Debit payment skipped' );
