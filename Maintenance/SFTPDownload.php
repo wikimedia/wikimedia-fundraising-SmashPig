@@ -845,14 +845,25 @@ class SFTPDownload extends MaintenanceBase {
 			$this->error( "Could not read server host key from $host" );
 		}
 
-		if ( $serverStr !== $pinned ) {
-			// Very helpful for ops when host keys rotate or algorithms change.
+		$pinnedB64 = $this->normalizeHostKey( $pinned );
+		$serverB64 = $this->normalizeHostKey( $serverStr );
+
+		if ( $pinnedB64 !== $serverB64 ) {
 			Logger::error( "Pinned host key: $pinned" );
 			Logger::error( "Server host key: $serverStr" );
 			$this->error( "Host key mismatch for $host. Refusing to connect." );
 		}
 
 		Logger::info( "Host key verified for $host" );
+	}
+
+	private function normalizeHostKey( string $s ): string {
+		$s = trim( $s );
+		$parts = preg_split( '/\s+/', $s );
+		if ( count( $parts ) < 2 ) {
+			throw new \RuntimeException( "Invalid host key format: $s" );
+		}
+		return $parts[1]; // [algo, base64]
 	}
 
 	/**
