@@ -7,6 +7,7 @@ use SmashPig\Core\ApiException;
 use SmashPig\Core\Context;
 use SmashPig\Core\Helpers\UniqueId;
 use SmashPig\Core\Http\OutboundRequest;
+use SmashPig\Core\Logging\ApiTimingTrait;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentProviders\dlocal\ApiMappers\CapturePaymentApiRequestMapper;
 use SmashPig\PaymentProviders\dlocal\ApiMappers\DirectBankTransferPaymentApiRequestMapper;
@@ -19,6 +20,7 @@ use SmashPig\PaymentProviders\dlocal\ApiMappers\RedirectPaymentApiRequestMapper;
 use Symfony\Component\HttpFoundation\Response;
 
 class Api {
+	use ApiTimingTrait;
 
 	/**
 	 * @var string
@@ -118,11 +120,13 @@ class Api {
 	}
 
 	public function getPaymentMethods( string $country ): array {
-		$params = [
-			'country' => $country,
-		];
+		return $this->timedCall( __FUNCTION__, function () use ( $country ) {
+			$params = [
+				'country' => $country,
+			];
 
-		return $this->makeApiCall( 'GET', 'payments-methods', $params );
+			return $this->makeApiCall( 'GET', 'payments-methods', $params );
+		} );
 	}
 
 	/**
@@ -142,7 +146,9 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function cardAuthorizePayment( array $params ): array {
-		return $this->makePaymentApiCall( $params, new DirectCardAuthorizePaymentApiRequestMapper() );
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
+			return $this->makePaymentApiCall( $params, new DirectCardAuthorizePaymentApiRequestMapper() );
+		} );
 	}
 
 	/**
@@ -151,7 +157,9 @@ class Api {
 	 * @throws \SmashPig\Core\ApiException
 	 */
 	public function verifyUpiId( $params ) {
-		return $this->makePaymentApiCall( $params, new DirectBankTransferValidationApiRequestMapper() );
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
+			return $this->makePaymentApiCall( $params, new DirectBankTransferValidationApiRequestMapper() );
+		} );
 	}
 
 	/**
@@ -160,7 +168,9 @@ class Api {
 	 * @throws \SmashPig\Core\ApiException
 	 */
 	public function collectDirectBankTransfer( array $params ): array {
-		return $this->makePaymentApiCall( $params, new DirectBankTransferPaymentApiRequestMapper() );
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
+			return $this->makePaymentApiCall( $params, new DirectBankTransferPaymentApiRequestMapper() );
+		} );
 	}
 
 	/**
@@ -169,7 +179,9 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function redirectPayment( array $params ): array {
-		return $this->makePaymentApiCall( $params, new RedirectPaymentApiRequestMapper() );
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
+			return $this->makePaymentApiCall( $params, new RedirectPaymentApiRequestMapper() );
+		} );
 	}
 
 	/**
@@ -178,7 +190,9 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function redirectHostedPayment( array $params ): array {
-		return $this->makePaymentApiCall( $params, new HostedPaymentApiRequestMapper() );
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
+			return $this->makePaymentApiCall( $params, new HostedPaymentApiRequestMapper() );
+		} );
 	}
 
 	/**
@@ -193,8 +207,10 @@ class Api {
 	 * @throws \SmashPig\Core\ApiException
 	 */
 	public function createPaymentFromToken( array $params ): array {
-		// todo: needs to send the prenotice 48 hrs ahead, and able to try another time if not success with PRENOTIFY false
-		return $this->makePaymentApiCall( $params, new RecurringChargeHostedPaymentApiRequestMapper() );
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
+			// todo: needs to send the prenotice 48 hrs ahead, and able to try another time if not success with PRENOTIFY false
+			return $this->makePaymentApiCall( $params, new RecurringChargeHostedPaymentApiRequestMapper() );
+		} );
 	}
 
 	/**
@@ -204,8 +220,10 @@ class Api {
 	 * @throws \SmashPig\Core\ApiException
 	 */
 	public function getPaymentDetail( string $gatewayTxnId ): array {
-		$route = 'payments/' . $gatewayTxnId;
-		return $this->makeApiCall( 'GET', $route );
+		return $this->timedCall( __FUNCTION__, function () use ( $gatewayTxnId ) {
+			$route = 'payments/' . $gatewayTxnId;
+			return $this->makeApiCall( 'GET', $route );
+		} );
 	}
 
 	/**
@@ -218,7 +236,9 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function capturePayment( array $params ): array {
-		return $this->makePaymentApiCall( $params, new CapturePaymentApiRequestMapper() );
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
+			return $this->makePaymentApiCall( $params, new CapturePaymentApiRequestMapper() );
+		} );
 	}
 
 	/**
@@ -227,7 +247,9 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function makeRecurringCardPayment( array $params ): array {
-		return $this->makePaymentApiCall( $params, new RecurringChargeCardPaymentApiRequestMapper() );
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
+			return $this->makePaymentApiCall( $params, new RecurringChargeCardPaymentApiRequestMapper() );
+		} );
 	}
 
 	/**
@@ -240,8 +262,10 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function getPaymentStatus( string $gatewayTxnId ): array {
-		$route = 'payments/' . $gatewayTxnId . '/status';
-		return $this->makeApiCall( 'GET', $route );
+		return $this->timedCall( __FUNCTION__, function () use ( $gatewayTxnId ) {
+			$route = 'payments/' . $gatewayTxnId . '/status';
+			return $this->makeApiCall( 'GET', $route );
+		} );
 	}
 
 	/**
@@ -251,8 +275,10 @@ class Api {
 	 * @throws \SmashPig\Core\ApiException
 	 */
 	public function cancelPayment( string $gatewayTxnId ): array {
-		$route = 'payments/' . $gatewayTxnId . '/cancel';
-		return $this->makeApiCall( 'POST', $route );
+		return $this->timedCall( __FUNCTION__, function () use ( $gatewayTxnId ) {
+			$route = 'payments/' . $gatewayTxnId . '/cancel';
+			return $this->makeApiCall( 'POST', $route );
+		} );
 	}
 
 	/**
@@ -265,8 +291,10 @@ class Api {
 	 * @throws ApiException
 	 */
 	public function refundPayment( array $params ): array {
-		$route = 'refunds';
-		return $this->makeApiCall( 'POST', $route, $params );
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
+			$route = 'refunds';
+			return $this->makeApiCall( 'POST', $route, $params );
+		} );
 	}
 
 	/**

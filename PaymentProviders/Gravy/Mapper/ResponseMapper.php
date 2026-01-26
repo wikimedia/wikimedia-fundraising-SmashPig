@@ -342,7 +342,8 @@ class ResponseMapper {
 
 	/**
 	 * Some payment method requires a chargeback message when it fails
-	 * because they are set to complete status before getting a successful response
+	 * because they are set to complete status before getting a successful response.
+	 *
 	 * @param array $response
 	 * @return bool
 	 */
@@ -356,7 +357,13 @@ class ResponseMapper {
 			$response['payment_method']['label'] ?? ''
 		);
 
-		return $normalizedPaymentMethod === 'dd' && $normalizedPaymentSubmethod === 'ach';
+		$isChargebackMethod = $normalizedPaymentMethod === 'dd' && $normalizedPaymentSubmethod === 'ach';
+
+		// Gravy trustly declines typically happen only on failed capture after successful authorization.
+		// Checking the status ensures we don't send unnecessary chargebacks to the queue.
+		$isValidStatus = $response['status'] == "authorization_declined";
+
+		return $isChargebackMethod && $isValidStatus;
 	}
 
 	/**
