@@ -141,4 +141,23 @@ class ApiOperationTest extends TestCase {
 			[ 'refundPayment', ApiOperation::REFUND ],
 		];
 	}
+
+	/**
+	 * @dataProvider braintreeMethodsProvider
+	 */
+	public function testBraintreeApiMethodsHaveCorrectAttributes( string $method, ApiOperation $expected ): void {
+		$operation = $this->getOperationFromMethod( 'SmashPig\PaymentProviders\Braintree\Api', $method );
+		$this->assertSame( $expected, $operation, "Method $method should have operation {$expected->value}" );
+	}
+
+	public static function braintreeMethodsProvider(): array {
+		return [
+			[ 'authorizePaymentMethod', ApiOperation::AUTHORIZE ],
+			[ 'captureTransaction', ApiOperation::CAPTURE ],
+			[ 'refundPayment', ApiOperation::REFUND ],
+			[ 'createClientToken', ApiOperation::CREATE_SESSION ],
+			[ 'deletePaymentMethodFromVault', ApiOperation::DELETE_TOKEN ],
+			[ 'deleteCustomer', ApiOperation::DELETE_DATA ],
+		];
+	}
 }
