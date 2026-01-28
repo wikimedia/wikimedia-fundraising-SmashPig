@@ -2,6 +2,8 @@
 
 namespace SmashPig\Tests\Logging;
 
+use SmashPig\Core\Logging\ApiOperation;
+use SmashPig\Core\Logging\ApiOperationAttribute;
 use SmashPig\Core\Logging\ApiTimingTrait;
 use SmashPig\Core\Logging\TaggedLogger;
 use SmashPig\Tests\BaseSmashPigUnitTestCase;
@@ -23,12 +25,13 @@ class ApiTimingTraitTest extends BaseSmashPigUnitTestCase {
 				return 'cc';
 			}
 
-			public function callTimedCall( string $apiMethod, callable $fn, array $context = [], ?TaggedLogger $logger = null ) {
-				return $this->timedCall( $apiMethod, $fn, $context, $logger );
+			#[ApiOperationAttribute( ApiOperation::CAPTURE )]
+			public function approvePayment() {
+				return $this->timedCall( __FUNCTION__, static fn () => 123 );
 			}
 		};
 
-		$result = $o->callTimedCall( 'approvePayment', static fn () => 123 );
+		$result = $o->approvePayment();
 
 		$this->assertSame( 123, $result );
 	}
@@ -62,9 +65,10 @@ class ApiTimingTraitTest extends BaseSmashPigUnitTestCase {
 				return 'cc';
 			}
 
+			#[ApiOperationAttribute( ApiOperation::CAPTURE )]
 			public function approvePayment( ?TaggedLogger $logger = null ) {
 				// Pass method name 'approvePayment' which should be mapped to 'capture'
-				$this->timedCall( 'approvePayment', static fn () => 'payment-approved', [], $logger );
+				$this->timedCall( __FUNCTION__, static fn () => 'payment-approved', [], $logger );
 			}
 		};
 
@@ -93,11 +97,36 @@ class ApiTimingTraitTest extends BaseSmashPigUnitTestCase {
 				return 'cc';
 			}
 
+			#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 			public function createPaymentFromEncryptedDetails( ?TaggedLogger $logger = null ) {
-				$this->timedCall( 'createPaymentFromEncryptedDetails', static fn () => 'authorized', [], $logger );
+				$this->timedCall( __FUNCTION__, static fn () => 'authorized', [], $logger );
 			}
 		};
 
 		$testClass->createPaymentFromEncryptedDetails( $mockLogger );
+	}
+
+	public function testTimedCallThrowsWhenApiOperationAttributeMissing(): void {
+		$testClass = new class {
+			use ApiTimingTrait;
+
+			protected function getProcessorNameForTimings(): string {
+				return 'test';
+			}
+
+			protected function getPaymentMethodForTimings(): string {
+				return 'cc';
+			}
+
+			/** Deliberately missing #[ApiOperationAttribute] attribute */
+			public function methodWithoutAttribute() {
+				$this->timedCall( __FUNCTION__, static fn () => 'result' );
+			}
+		};
+
+		$this->expectException( \UnexpectedValueException::class );
+		$this->expectExceptionMessage( 'is missing the #[ApiOperationAttribute] attribute' );
+
+		$testClass->methodWithoutAttribute();
 	}
 }

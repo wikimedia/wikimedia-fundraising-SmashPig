@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace SmashPig\PaymentProviders\PayPal\Audit;
 
 use SmashPig\Core\DataFiles\AuditParser;
+use SmashPig\Core\IgnoredException;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UnhandledException;
@@ -131,6 +132,8 @@ class PayPalAudit implements AuditParser {
 	protected function parseLine( $row ): void {
 		try {
 			$this->fileData[] = $this->getParser( $row )->getMessage();
+		} catch ( IgnoredException $e ) {
+			return;
 		} catch ( UnhandledException $e ) {
 			// This might be too noisy but nice to see what is skipped for now.
 			Logger::error( $e->getMessage() );

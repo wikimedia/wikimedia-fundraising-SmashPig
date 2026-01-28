@@ -3,6 +3,8 @@
 use SmashPig\Core\Context;
 use SmashPig\Core\Helpers\UniqueId;
 use SmashPig\Core\Http\OutboundRequest;
+use SmashPig\Core\Logging\ApiOperation;
+use SmashPig\Core\Logging\ApiOperationAttribute;
 use SmashPig\Core\Logging\ApiTimingTrait;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\Logging\TaggedLogger;
@@ -98,9 +100,9 @@ class Api {
 	 * amount, currency, encrypted_payment_details (blob from front-end)
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createPaymentFromEncryptedDetails( $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			// TODO: use txn template / mapping a la Ingenico?
 			$restParams = [
 				'amount' => $this->getArrayAmount( $params ),
@@ -146,7 +148,7 @@ class Api {
 			if ( $isRecurring ) {
 				$restParams = array_merge( $restParams, $this->addRecurringParams( $params, true ) );
 			}
-			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST', $apiMethod );
+			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 			return $result['body'];
 		} );
 	}
@@ -200,9 +202,9 @@ class Api {
 	 * amount, currency, payment_method, recurring_payment_token, processor_contact_id
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createPaymentFromToken( array $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
 				'amount' => [
 					'currency' => $params['currency'],
@@ -235,7 +237,7 @@ class Api {
 					'maxDaysToRescue' => $this->maxDaysToRescue
 				];
 			}
-			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST', $apiMethod );
+			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 			return $result['body'];
 		} );
 	}
@@ -248,9 +250,9 @@ class Api {
 	 * amount, currency, value, issuer_id (for CZ), return_url
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createBankTransferPaymentFromCheckout( $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$typesByCountry = [
 				'NL' => 'ideal',
 				'CZ' => 'onlineBanking_CZ'
@@ -281,7 +283,7 @@ class Api {
 			}
 			$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
-			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST', $apiMethod );
+			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 			return $result['body'];
 		} );
 	}
@@ -293,9 +295,9 @@ class Api {
 	 * amount, currency, order_id, iban, full_name
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createSEPABankTransferPayment( $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
 				'amount' => $this->getArrayAmount( $params ),
 				'reference' => $params['order_id'],
@@ -313,20 +315,15 @@ class Api {
 			// billing address optional
 			$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
-			$result = $this->makeRestApiCall(
-				$restParams,
-				'payments',
-				'POST',
-				$apiMethod
-			);
+			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 
 			return $result['body'];
 		} );
 	}
 
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createACHDirectDebitPayment( $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
 				'amount' => $this->getArrayAmount( $params ),
 				'reference' => $params['order_id'],
@@ -349,20 +346,15 @@ class Api {
 				// if pass needs to pass country and state, for T360825 no need to pass
 				unset( $restParams['billingAddress'] );
 			}
-			$result = $this->makeRestApiCall(
-				$restParams,
-				'payments',
-				'POST',
-				$apiMethod
-			);
+			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 
 			return $result['body'];
 		} );
 	}
 
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createGooglePayPayment( $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
 				'amount' => $this->getArrayAmount( $params ),
 				'reference' => $params['order_id'],
@@ -381,20 +373,15 @@ class Api {
 			}
 			$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
-			$result = $this->makeRestApiCall(
-				$restParams,
-				'payments',
-				'POST',
-				$apiMethod
-			);
+			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 
 			return $result['body'];
 		} );
 	}
 
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createApplePayPayment( $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
 				'amount' => $this->getArrayAmount( $params ),
 				'reference' => $params['order_id'],
@@ -413,12 +400,7 @@ class Api {
 			}
 			$restParams = array_merge( $restParams, $this->getContactInfo( $params ) );
 
-			$result = $this->makeRestApiCall(
-				$restParams,
-				'payments',
-				'POST',
-				$apiMethod
-			);
+			$result = $this->makeRestApiCall( $restParams, 'payments', 'POST' );
 
 			return $result['body'];
 		} );
@@ -431,9 +413,9 @@ class Api {
 	 * handled for you in Adyen's code.
 	 * https://developer.apple.com/documentation/apple_pay_on_the_web/apple_pay_js_api/requesting_an_apple_pay_payment_session
 	 */
+	#[ApiOperationAttribute( ApiOperation::CREATE_SESSION )]
 	public function createApplePaySession( array $params ): array {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, static function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, static function () use ( $params ) {
 			$request = new OutboundRequest( $params['validation_url'], 'POST' );
 			$request->setBody( json_encode( [
 				// Your Apple Pay merchant ID
@@ -447,8 +429,7 @@ class Api {
 				'initiativeContext' => $params['domain_name']
 			] ) )
 				->setCertPath( $params['certificate_path'] )
-				->setCertPassword( $params['certificate_password'] )
-				->setLogTag( $apiMethod );
+				->setCertPassword( $params['certificate_password'] );
 			$response = $request->execute();
 			return json_decode( $response['body'], true );
 		} );
@@ -461,16 +442,16 @@ class Api {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::REFUND )]
 	public function refundPayment( array $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
 				'amount' => $this->getArrayAmount( $params ),
 				'merchantAccount' => $this->account,
 			];
 			$path = "payments/{$params['gateway_txn_id']}/refunds";
 
-			$result = $this->makeRestApiCall( $restParams, $path, 'POST', $apiMethod );
+			$result = $this->makeRestApiCall( $restParams, $path, 'POST' );
 			return $result['body'];
 		} );
 	}
@@ -483,15 +464,15 @@ class Api {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_PAYMENT_DETAILS )]
 	public function getPaymentDetails( $redirectResult ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $redirectResult, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $redirectResult ) {
 			$restParams = [
 				'details' => [
 					'redirectResult' => $redirectResult
 				]
 			];
-			$result = $this->makeRestApiCall( $restParams, 'payments/details', 'POST', $apiMethod );
+			$result = $this->makeRestApiCall( $restParams, 'payments/details', 'POST' );
 			return $result['body'];
 		} );
 	}
@@ -499,9 +480,9 @@ class Api {
 	/**
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_PAYMENT_METHODS )]
 	public function getPaymentMethods( $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
 				'merchantAccount' => $this->account,
 				'channel' => $params['channel'] ?? 'Web',
@@ -522,7 +503,7 @@ class Api {
 				$restParams['shopperReference'] = $params['processor_contact_id'];
 			}
 
-			$result = $this->makeRestApiCall( $restParams, 'paymentMethods', 'POST', $apiMethod );
+			$result = $this->makeRestApiCall( $restParams, 'paymentMethods', 'POST' );
 			return $result['body'];
 		} );
 	}
@@ -537,9 +518,9 @@ class Api {
 	 * @return array A list of saved payment methods with tokens and other details.
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_SAVED_PAYMENT_DETAILS )]
 	public function getSavedPaymentDetails( string $shopperReference ): array {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $shopperReference, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $shopperReference ) {
 			$restParams = [
 				'merchantAccount' => $this->account,
 				'shopperReference' => $shopperReference,
@@ -549,7 +530,7 @@ class Api {
 			];
 
 			$result = $this->makeRestApiCall(
-				$restParams, 'listRecurringDetails', 'POST', $apiMethod, $this->recurringBaseUrl
+				$restParams, 'listRecurringDetails', 'POST', $this->recurringBaseUrl
 			);
 			return $result['body'];
 		} );
@@ -562,16 +543,16 @@ class Api {
 	 * @return array usually just [ 'result' => 'SUCCESS' ]
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::DELETE_DATA )]
 	public function deleteDataForPayment( string $gatewayTransactionId ): array {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $gatewayTransactionId, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $gatewayTransactionId ) {
 			$restParams = [
 				'merchantAccount' => $this->account,
 				'pspReference' => $gatewayTransactionId,
 				'forceErasure' => true
 			];
 			$result = $this->makeRestApiCall(
-				$restParams, 'requestSubjectErasure', 'POST', $apiMethod, $this->dataProtectionBaseUrl
+				$restParams, 'requestSubjectErasure', 'POST', $this->dataProtectionBaseUrl
 			);
 			return $result['body'];
 		} );
@@ -587,15 +568,14 @@ class Api {
 	 * @throws \SmashPig\Core\ApiException
 	 */
 	protected function makeRestApiCall(
-		array $params, string $path, string $method, string $logTag, ?string $alternateBaseUrl = null
+		array $params, string $path, string $method, ?string $alternateBaseUrl = null
 	): array {
 		$basePath = $alternateBaseUrl ?? $this->restBaseUrl;
 		$url = $basePath . '/' . $path;
 		$request = new OutboundRequest( $url, $method );
 		$request->setBody( json_encode( $params ) )
 			->setHeader( 'x-API-key', $this->apiKey )
-			->setHeader( 'content-type', 'application/json' )
-			->setLogTag( $logTag );
+			->setHeader( 'content-type', 'application/json' );
 		if ( $method === 'POST' ) {
 			// Set the idempotency header in case we retry on timeout
 			// https://docs.adyen.com/development-resources/api-idempotency
@@ -614,9 +594,9 @@ class Api {
 	 * @param array $params Needs keys 'gateway_txn_id', 'currency', and 'amount' set
 	 * @return bool|array
 	 */
+	#[ApiOperationAttribute( ApiOperation::CAPTURE )]
 	public function approvePayment( array $params ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $params, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$restParams = [
 				'amount' => [
 					'currency' => $params['currency'],
@@ -632,7 +612,7 @@ class Api {
 			$tl->info( "Launching REST capture request for {$params['gateway_txn_id']}", $restParams );
 
 			try {
-				$result = $this->makeRestApiCall( $restParams, $path, 'POST', $apiMethod );
+				$result = $this->makeRestApiCall( $restParams, $path, 'POST' );
 			} catch ( \Exception $ex ) {
 				// FIXME shouldn't we let the ApiException bubble up?
 				Logger::error( 'REST capture request threw exception!', $params, $ex );
@@ -649,9 +629,9 @@ class Api {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::CANCEL )]
 	public function cancel( string $pspReference ): array {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $pspReference, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $pspReference ) {
 			$restParams = [
 				'merchantAccount' => $this->account
 			];
@@ -659,7 +639,7 @@ class Api {
 			// but we'll need to change our ICancelablePaymentProvider to
 			// support an array of parameters.
 			$path = "payments/$pspReference/cancels";
-			$result = $this->makeRestApiCall( $restParams, $path, 'POST', $apiMethod );
+			$result = $this->makeRestApiCall( $restParams, $path, 'POST' );
 			return $result['body'];
 		} );
 	}
@@ -671,9 +651,9 @@ class Api {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::CANCEL )]
 	public function cancelAutoRescue( string $rescueReference ) {
-		$apiMethod = __FUNCTION__;
-		return $this->timedCall( $apiMethod, function () use ( $rescueReference, $apiMethod ) {
+		return $this->timedCall( __FUNCTION__, function () use ( $rescueReference ) {
 			$restParams = [
 				'merchantAccount' => $this->account,
 				'originalReference' => $rescueReference,
@@ -683,7 +663,7 @@ class Api {
 			];
 
 			$result = $this->makeRestApiCall(
-				$restParams, 'cancel', 'POST', $apiMethod, $this->paymentBaseUrl
+				$restParams, 'cancel', 'POST', $this->paymentBaseUrl
 			);
 			return $result['body'];
 		} );

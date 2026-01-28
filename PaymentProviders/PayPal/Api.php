@@ -3,6 +3,8 @@
 namespace SmashPig\PaymentProviders\PayPal;
 
 use SmashPig\Core\Http\OutboundRequest;
+use SmashPig\Core\Logging\ApiOperation;
+use SmashPig\Core\Logging\ApiOperationAttribute;
 use SmashPig\Core\Logging\ApiTimingTrait;
 use SmashPig\Core\Logging\Logger;
 
@@ -70,6 +72,7 @@ class Api {
 	 * @param array $params
 	 * @return array
 	 */
+	#[ApiOperationAttribute( ApiOperation::CREATE_SESSION )]
 	public function createPaymentSession( array $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$requestParams = [
@@ -108,6 +111,7 @@ class Api {
 	 * @param array $params
 	 * @return array
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function doExpressCheckoutPayment( array $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$requestParams = [
@@ -136,6 +140,7 @@ class Api {
 	 * @param array $params
 	 * @return array
 	 */
+	#[ApiOperationAttribute( ApiOperation::AUTHORIZE )]
 	public function createRecurringPaymentsProfile( array $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			if ( isset( $params['frequency_unit'] ) && $params['frequency_unit'] === 'year' ) {
@@ -173,6 +178,7 @@ class Api {
 	 * @param string $gatewaySessionId
 	 * @return array
 	 */
+	#[ApiOperationAttribute( ApiOperation::GET_PAYMENT_DETAILS )]
 	public function getExpressCheckoutDetails( string $gatewaySessionId ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $gatewaySessionId ) {
 			$requestParams = [
@@ -187,6 +193,7 @@ class Api {
 	 * @param array $params Associative array with a 'subscr_id' key
 	 * @return array
 	 */
+	#[ApiOperationAttribute( ApiOperation::CANCEL )]
 	public function manageRecurringPaymentsProfileStatusCancel( array $params ) {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$requestParams = [
@@ -208,6 +215,7 @@ class Api {
 	 * @return array
 	 * @throws \SmashPig\Core\ApiException
 	 */
+	#[ApiOperationAttribute( ApiOperation::REFUND )]
 	public function refundPayment( array $params ): array {
 		return $this->timedCall( __FUNCTION__, function () use ( $params ) {
 			$requestParams = [
