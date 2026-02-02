@@ -42,6 +42,10 @@ class BaseParser {
 			// This is in our tests but not really documented - it seems to be blocked
 			'T0013' => 'risky_payment',
 			'T0200' => 'currency_conversion',
+			// 'user initiated' currency conversion is when amounts settled
+			// in currency accounts are converted for payout. It might be
+			// an opportunity to get the actual final exchange rate.
+			'T0201' => 'currency_conversion',
 			'T0100' => 'fee',
 			// chargeback fee - this is a fee charged when a chargeback takes place
 			// it is generally on the next row. It's parent id is the id of
