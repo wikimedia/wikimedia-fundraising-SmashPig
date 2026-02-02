@@ -87,6 +87,8 @@ class SFTPDownload extends MaintenanceBase {
 		$this->addOption( 'config', 'Explicit path to config yaml' );
 
 		// Remote connection
+		$this->addOption( 'host', 'SFTP host (overrides connect-string / config)', null );
+		$this->addOption( 'username', 'SFTP username (overrides connect-string / config)', null );
 		$this->addOption( 'connect-string', 'SFTP connect string (user@host)', null, 's' );
 		$this->addOption( 'password-file', 'File containing SFTP password', null, 'p' );
 		$this->addOption( 'private-key-file', 'Path to private key file (PEM/OpenSSH). Overrides config.' );
@@ -152,17 +154,7 @@ class SFTPDownload extends MaintenanceBase {
 		}
 		$remoteDir = rtrim( $remoteDirOptOrConfig, '/' );
 
-		$connectString = (string)$this->getOption( 'connect-string' );
-		if ( $connectString === '' ) {
-			$host = $this->getFromConfig( 'sftp.host', '' );
-			$username = $this->getFromConfig( 'sftp.username', '' );
-
-			if ( !is_string( $host ) || trim( $host ) === '' || !is_string( $username ) || trim( $username ) === '' ) {
-				$this->error( 'connect-string is required (or set sftp.host and sftp.username in config).' );
-			}
-
-			$connectString = trim( $username ) . '@' . trim( $host );
-		}
+		[ $host, $username ] = $this->getHostAndUsername();
 
 		$dryRun = $this->asBool( $this->getOption( 'dry-run' ) );
 		$verify = $this->asBool( $this->getOption( 'verify' ) );
@@ -223,9 +215,7 @@ class SFTPDownload extends MaintenanceBase {
 		$password = $this->readPasswordFromConfigOrFile();
 		$privateKey = $this->loadPrivateKey();
 
-		[ $host, $username ] = $this->parseConnectString( $connectString );
-
-		Logger::info( "Connecting to $username@$host" );
+		Logger::info( "Connecting to " . $this->getConnectString() );
 
 		$this->sftp = new SFTP(
 			$host,
@@ -238,16 +228,16 @@ class SFTPDownload extends MaintenanceBase {
 
 		// Host key pinning (if configured)
 		$this->verifyPinnedHostKeyOrError( $host );
-
+		$connectString = $this->getConnectString( $username, $host );
 		// Auth precedence: password first, else private key
 		if ( $password !== null ) {
 			if ( !$this->sftp->login( $username, $password ) ) {
-				$this->error( "SFTP login failed for $username@$host (password)" );
+				$this->error( "SFTP login failed for $connectString (password)" );
 			}
 		} elseif ( $privateKey !== null ) {
 			Logger::info( 'Private key loaded (' . get_class( $privateKey ) . ').' );
 			if ( !$this->sftp->login( $username, $privateKey ) ) {
-				$this->error( "SFTP login failed for $username@$host (private key)" );
+				$this->error( "SFTP login failed for $connectString (private key)" );
 			}
 		} else {
 			$this->error( 'No authentication available: provide --password-file, config sftp.password, or config sftp.private_key.' );
@@ -930,7 +920,7 @@ class SFTPDownload extends MaintenanceBase {
 	 */
 	private function parseConnectString( string $connect ): array {
 		if ( !str_contains( $connect, '@' ) ) {
-			$this->error( 'connect string must be user@host' );
+			return [ $connect, '' ];
 		}
 
 		[ $username, $host ] = explode( '@', $connect, 2 );
@@ -1053,6 +1043,48 @@ class SFTPDownload extends MaintenanceBase {
 
 		return true;
 	}
+
+	private function getHostAndUsername(): array {
+		$hostOpt = trim( (string)$this->getOption( 'host' ) );
+		$usernameOpt = trim( (string)$this->getOption( 'username' ) );
+		$connectString = trim( (string)$this->getOption( 'connect-string' ) );
+
+		// 1) Prefer explicit flags: --host + --username
+		if ( $hostOpt !== '' ) {
+			return [ $hostOpt, $usernameOpt ];
+		}
+
+		// 2) Next: --connect-string (must be user@host)
+		if ( $connectString !== '' ) {
+			[ $host, $username ] = $this->parseConnectString( $connectString );
+			return [ $host, $username ];
+		}
+
+		// 3) Finally: config
+		$hostCfg = $this->getFromConfig( 'sftp.host', '' );
+		$usernameCfg = $this->getFromConfig( 'sftp.username', '' );
+
+		$host = is_string( $hostCfg ) ? trim( $hostCfg ) : '';
+		$username = is_string( $usernameCfg ) ? trim( $usernameCfg ) : '';
+
+		if ( $host === '' ) {
+			$this->error( 'Provide --host and --username, or --connect-string, or set sftp.host and sftp.username in config.' );
+		}
+
+		return [ $host, $username ];
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getConnectString(): string {
+		[ $host, $username ] = $this->getHostAndUsername();
+		if ( $host && $username ) {
+			return "$username@$host";
+		}
+		return $host;
+	}
+
 }
 
 $maintClass = SFTPDownload::class;
