@@ -45,7 +45,7 @@ class BaseParser {
 			// 'user initiated' currency conversion is when amounts settled
 			// in currency accounts are converted for payout. It might be
 			// an opportunity to get the actual final exchange rate.
-			'T0201' => 'currency_conversion',
+			'T0201' => 'payout_currency_conversion',
 			'T0100' => 'fee',
 			// chargeback fee - this is a fee charged when a chargeback takes place
 			// it is generally on the next row. It's parent id is the id of
