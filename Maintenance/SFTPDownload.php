@@ -106,6 +106,9 @@ class SFTPDownload extends MaintenanceBase {
 		$this->addOption( 'dry-run', 'Log actions but do not download or delete', false, 'n' );
 		$this->addOption( 'verify', 'Verify download by comparing remote vs local size', true );
 
+		$this->addOption( 'decompress-gz', 'If a downloaded file ends with .gz, decompress it after download', false );
+		$this->addOption( 'keep-gz', 'When --decompress-gz is used, keep the original .gz file', false );
+
 		$this->addOption( 'reject-empty', 'Reject empty files: delete locally and record failure', true );
 		$this->addOption( 'panic-on-empty', 'If any empty files are seen, exit with error', false );
 
@@ -160,6 +163,8 @@ class SFTPDownload extends MaintenanceBase {
 		$verify = $this->asBool( $this->getOption( 'verify' ) );
 		$rejectEmpty = $this->asBool( $this->getOption( 'reject-empty' ) );
 		$panicOnEmpty = $this->asBool( $this->getOption( 'panic-on-empty' ) );
+		$decompressGz = $this->asBool( $this->getOption( 'decompress-gz' ) );
+		$keepGz = $this->asBool( $this->getOption( 'keep-gz' ) );
 
 		$deleteRemote = $this->asBool( $this->getOption( 'delete-remote' ) );
 		$deleteAgeDays = (int)$this->getOption( 'delete-remote-age-days' );
@@ -271,9 +276,19 @@ class SFTPDownload extends MaintenanceBase {
 				continue;
 			}
 
+			// Skip anything already present locally (by exact name)
+			// AND if decompressing .gz, also skip if the decompressed target already exists.
 			if ( isset( $localBasenames[$name] ) ) {
 				$skipped++;
 				continue;
+			}
+
+			if ( $decompressGz && str_ends_with( $name, '.gz' ) ) {
+				$stripped = substr( $name, 0, -3 ); // remove ".gz"
+				if ( $stripped !== '' && $this->isSafeBasename( $stripped ) && isset( $localBasenames[$stripped] ) ) {
+					$skipped++;
+					continue;
+				}
 			}
 
 			$candidates[] = $entry;
@@ -312,6 +327,12 @@ class SFTPDownload extends MaintenanceBase {
 		}
 		if ( $filter !== null ) {
 			$flags[] = "FILTER=$filter";
+		}
+		if ( $decompressGz ) {
+			$flags[] = 'DECOMPRESS .GZ';
+			if ( $keepGz ) {
+				$flags[] = 'KEEP .GZ';
+			}
 		}
 
 		Logger::info( sprintf(
@@ -475,6 +496,53 @@ class SFTPDownload extends MaintenanceBase {
 			}
 
 			$fetched++;
+
+			// Optional: decompress .gz after download
+			if ( $decompressGz && str_ends_with( $file, '.gz' ) ) {
+				$outName = substr( $file, 0, -3 ); // strip ".gz"
+				if ( !$this->isSafeBasename( $outName ) ) {
+					Logger::error( "Refusing to decompress; unsafe output basename derived from: $file" );
+					$failed++;
+				} else {
+					$outPath = $incomingDir . DIRECTORY_SEPARATOR . $outName;
+					$outTmp = $outPath . '.part';
+
+					// Avoid overwriting existing output
+					if ( file_exists( $outPath ) || file_exists( $outTmp ) ) {
+						Logger::warning( "Skipping decompression; output already exists: $outPath" );
+					} else {
+						Logger::info( "Decompressing $localPath -> $outPath" );
+
+						$ok = $this->decompressGzipFile( $localPath, $outTmp );
+						if ( !$ok ) {
+							Logger::error( "Failed to decompress: $localPath" );
+							if ( file_exists( $outTmp ) ) {
+								unlink( $outTmp );
+							}
+							$failed++;
+						} else {
+							clearstatcache( true, $outTmp );
+							$filesize = filesize( $outTmp );
+							if ( $rejectEmpty && $filesize === 0 ) {
+								Logger::warning( "Decompressed output was empty; removing: $outPath" );
+								unlink( $outTmp );
+								$emptyFailures[] = $outName;
+							} elseif ( !rename( $outTmp, $outPath ) ) {
+								Logger::error( "Decompressed but failed to finalize $outTmp -> $outPath" );
+								unlink( $outTmp );
+								$failed++;
+							} else {
+								// Delete original .gz unless told to keep it
+								if ( !$keepGz ) {
+									if ( !unlink( $localPath ) ) {
+										Logger::warning( "Decompressed OK but failed to remove original .gz: $localPath" );
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 
 			// Optional remote delete ONLY after successful finalize + verify, and only if old enough.
 			if ( $deleteRemote ) {
@@ -993,6 +1061,47 @@ class SFTPDownload extends MaintenanceBase {
 
 		$parent = dirname( $incomingDir );
 		return rtrim( $parent, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR . $siblingName;
+	}
+
+	/**
+	 * Decompress a gzip (.gz) file to a destination path.
+	 *
+	 * @param string $srcGzPath Path to the .gz file
+	 * @param string $destinationPath Destination file path to write (usually a .part)
+	 *
+	 * @return bool
+	 */
+	private function decompressGzipFile( string $srcGzPath, string $destinationPath ): bool {
+		$in = gzopen( $srcGzPath, 'rb' );
+		if ( $in === false ) {
+			Logger::error( "gzopen failed for: $srcGzPath" );
+			return false;
+		}
+
+		$out = fopen( $destinationPath, 'wb' );
+		if ( $out === false ) {
+			Logger::error( "fopen failed for output: $destinationPath" );
+			gzclose( $in );
+			return false;
+		}
+
+		try {
+			while ( !gzeof( $in ) ) {
+				$buf = gzread( $in, 1024 * 1024 ); // 1MB chunks
+				if ( $buf === false ) {
+					Logger::error( "gzread failed while decompressing: $srcGzPath" );
+					return false;
+				}
+				if ( $buf !== '' && fwrite( $out, $buf ) === false ) {
+					Logger::error( "fwrite failed while writing decompressed output: $destinationPath" );
+					return false;
+				}
+			}
+			return true;
+		} finally {
+			fclose( $out );
+			gzclose( $in );
+		}
 	}
 
 	/**
