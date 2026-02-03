@@ -71,6 +71,9 @@ class BaseParser {
 			'T1107' => 'refund',
 			'T1201' => 'chargeback',
 			'T1202' => 'chargeback_reversed',
+			'T1302' => 'void_authorisation',
+			// PayPal provides no info - can afford to skip as only in TRR files.
+			'T9900' => 'other',
 		];
 	}
 

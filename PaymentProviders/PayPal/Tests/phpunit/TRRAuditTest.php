@@ -373,4 +373,9 @@ class TRRAuditTest extends AuditTest {
 		$output = $this->processFile( 'trr_grant.csv' );
 		$this->assertEquals( 'Acme Endowment Program', $output[0]['grant_provider'] );
 	}
+
+	public function testProcessSkipVoid(): void {
+		$output = $this->processFile( 'trr_void.csv' );
+		$this->assertCount( 0, $output );
+	}
 }
