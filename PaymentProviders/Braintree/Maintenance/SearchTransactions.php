@@ -29,7 +29,6 @@ class SearchTransactions extends MaintenanceBase {
 		$this->addOption( 'type', 'search what type of transactions (donation, refund, chargeback)', 'all', 't' );
 		$this->addOption( 'path', 'location to store the reports', './private/wmf_audit/braintree/incoming', 'p' );
 		$this->addOption( 'date-type', 'Type of date to query on - settled|created|disbursement|received', 'created', 'd' );
-		$this->addOption( 'report-type', 'Type of report to generate - batch|disbursement', 'batch', 'y' );
 		$this->addFlag( 'raw', 'log raw data', 'v' );
 		$this->addFlag( 'output-raw', 'output raw data', 'o' );
 		$this->addFlag( 'consolidate', 'output to one consolidated file', 'c' );
@@ -256,7 +255,7 @@ class SearchTransactions extends MaintenanceBase {
 	}
 
 	private function isDisbursementReport(): bool {
-		return $this->getOption( 'report-type' ) === 'disbursement';
+		return $this->getOption( 'date-type' ) === 'disbursement';
 	}
 
 	/**
