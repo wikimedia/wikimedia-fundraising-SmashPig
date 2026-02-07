@@ -378,4 +378,19 @@ class TRRAuditTest extends AuditTestBase {
 		$output = $this->processFile( 'trr_void.csv' );
 		$this->assertCount( 0, $output );
 	}
+
+	/**
+	 * This test covers a sample of the debits that are ignored.
+	 *
+	 * The example found has a code of T0000 and represents
+	 * a reimbursement to a staff member in the finance Dept.
+	 *
+	 * It does not seem to otherwise be throwing out totals.
+	 *
+	 * @return void
+	 */
+	public function testProcessOtherPayment(): void {
+		$output = $this->processFile( 'trr_dr_payment.csv' );
+		$this->assertCount( 0, $output );
+	}
 }

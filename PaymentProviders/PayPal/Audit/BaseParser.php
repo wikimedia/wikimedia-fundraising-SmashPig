@@ -128,7 +128,9 @@ class BaseParser {
 	}
 
 	protected function isDebitPaymentToSomeoneElse(): bool {
-		// Only applies to payment-ish events (not refunds/chargebacks)
+		// Only applies to payment-ish events (not refunds/chargebacks).
+		// Covers misc transfers to reimburse that do not seem to impact
+		// anything else.
 		if ( !$this->isPaymentishPrefix() ) {
 			return false;
 		}
