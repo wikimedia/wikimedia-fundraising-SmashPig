@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace SmashPig\PaymentProviders\Trustly\Test;
 
-require_once 'AuditTest.php';
+require_once 'AuditTestBase.php';
 
 /**
  * Verify Trustly audit file normalization functions
@@ -11,7 +11,7 @@ require_once 'AuditTest.php';
  * @group PayPal
  * @group Audit
  */
-class SettlementAuditTest extends AuditTest {
+class SettlementAuditTest extends AuditTestBase {
 
 	public function testProcessRecFile(): void {
 		$output = $this->processFile( 'P11KREC-3618-20260201120000-20260202120000-0001of0001.csv' );

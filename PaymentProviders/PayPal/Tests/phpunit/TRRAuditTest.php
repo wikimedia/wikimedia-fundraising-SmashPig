@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace SmashPig\PaymentProviders\PayPal\Test;
 
-require_once 'AuditTest.php';
+require_once 'AuditTestBase.php';
 
 /**
  * Verify PayPal audit file normalization functions
@@ -11,7 +11,7 @@ require_once 'AuditTest.php';
  * @group PayPal
  * @group Audit
  */
-class TRRAuditTest extends AuditTest {
+class TRRAuditTest extends AuditTestBase {
 
 	public function testProcessExpressCheckoutDonation(): void {
 		$output = $this->processFile( 'trr_express_checkout_donation.csv' );
