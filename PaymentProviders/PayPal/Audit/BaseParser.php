@@ -23,7 +23,7 @@ class BaseParser {
 	}
 
 	/**
-	 * @return int
+	 * @return bool
 	 */
 	public function hasConversion(): bool {
 		return isset( $this->conversionRows[$this->row['Invoice ID']] );
@@ -35,6 +35,7 @@ class BaseParser {
 	 */
 	public static function getTransactionCodes(): array {
 		return [
+			'T0000' => 'general_payment',
 			'T0002' => 'recurring_payment',
 			// In our case preapproved payment is braintree.
 			'T0003' => 'preapproved_payment',
@@ -128,7 +129,9 @@ class BaseParser {
 	}
 
 	protected function isDebitPaymentToSomeoneElse(): bool {
-		// Only applies to payment-ish events (not refunds/chargebacks)
+		// Only applies to payment-ish events (not refunds/chargebacks).
+		// Covers misc transfers to reimburse that do not seem to impact
+		// anything else.
 		if ( !$this->isPaymentishPrefix() ) {
 			return false;
 		}
@@ -225,8 +228,14 @@ class BaseParser {
 		$exchangeRate = 1;
 		if ( $this->hasConversion() ) {
 			$conversion = $this->conversionRows[$this->row['Invoice ID']];
-			$originalCurrency = $conversion[0];
-			$convertedCurrency = $conversion[1];
+			if ( $this->row['Transaction Debit or Credit'] === 'DR' ) {
+				// If we have a debit transaction (refund) then the first conversion row is the converted-to currency.
+				$originalCurrency = $conversion[1];
+				$convertedCurrency = $conversion[0];
+			} else {
+				$originalCurrency = $conversion[0];
+				$convertedCurrency = $conversion[1];
+			}
 			$exchangeRate = $convertedCurrency['Gross Transaction Amount'] / $originalCurrency['Gross Transaction Amount'];
 		}
 		return $exchangeRate;
@@ -237,6 +246,11 @@ class BaseParser {
 	 */
 	protected function getSettledCurrency(): mixed {
 		if ( $this->hasConversion() ) {
+			if ( $this->row['Transaction Debit or Credit'] === 'DR' ) {
+				// If we have a debit transaction (refund) then the first conversion row is the converted-to currency.
+				return $this->conversionRows[$this->row['Invoice ID']][0]['Gross Transaction Currency'];
+			}
+			// T0003/02/06 - row is CR
 			return $this->conversionRows[$this->row['Invoice ID']][1]['Gross Transaction Currency'];
 		}
 		return $this->row['Gross Transaction Currency'];
@@ -252,6 +266,10 @@ class BaseParser {
 	protected function getSettledNetAmount(): string {
 		if ( !$this->hasConversion() ) {
 			return (string)( (float)$this->getSettledTotalAmount() + (float)$this->getSettledFeeAmount() );
+		}
+		if ( $this->row['Transaction Debit or Credit'] === 'DR' ) {
+			// If we have a debit transaction (refund) then the first conversion row is the converted-to currency.
+			return (string)( -$this->conversionRows[$this->row['Invoice ID']][0]['Gross Transaction Amount'] / 100 );
 		}
 		return (string)( $this->conversionRows[$this->row['Invoice ID']][1]['Gross Transaction Amount'] / 100 );
 	}
