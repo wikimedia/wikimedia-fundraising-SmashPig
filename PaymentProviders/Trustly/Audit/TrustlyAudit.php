@@ -160,7 +160,7 @@ class TrustlyAudit implements AuditParser {
 	 */
 	protected function parseLine( $row ): void {
 		try {
-			if ( ( $row['reason'] ?? '' ) === 'AC118' && $row['amount'] ) {
+			if ( in_array( $row['reason'] ?? '', [ 'AC118', 'R10' ], true ) && $row['amount'] ) {
 				if ( !empty( $row['batch_id'] ) && empty( $this->payouts[$row['trace_id']]['settlement_batch_reference'] ) ) {
 					$this->payouts[$row['trace_id']]['settlement_batch_reference'] = $row['batch_id'];
 				}

@@ -43,15 +43,40 @@ class SettlementFileParser extends BaseParser {
 		if ( !empty( $msg['settled_date'] ) ) {
 			$msg['settled_date'] = strtotime( $msg['settled_date'] );
 		}
-		return array_filter( $msg );
+		return array_filter( $msg ) + $this->getReversalFields();
 	}
 
 	protected function getGatewayTxnId(): string {
+		if ( $this->isChargeback() ) {
+			// We don't seem to get a gravy transaction ID for these.
+			return $this->row['transaction_id'];
+		}
 		return $this->isGravy() ? Base62Helper::toUuid( $this->row['original_merchant_reference'] ) : $this->row['transaction_id'];
 	}
 
 	protected function isGravy(): bool {
 		return !empty( $this->row['original_merchant_reference'] );
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getReversalFields(): array {
+		$reversalFields = [];
+		if ( $this->isChargeback() ) {
+			return [
+				'type' => 'chargeback',
+				'parent_gateway_id' => Base62Helper::toUuid( $this->row['original_merchant_reference'] ),
+			];
+		}
+		return $reversalFields;
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function isChargeback(): bool {
+		return $this->row['reason'] === 'R10';
 	}
 
 }
