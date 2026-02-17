@@ -29,6 +29,7 @@ class SettlementFileParser extends BaseParser {
 			'gateway' => $this->isGravy() ? 'gravy' : 'trustly',
 			'audit_file_gateway' => 'trustly',
 			'gateway_txn_id' => $this->getGatewayTxnId(),
+			'backend_processor' => 'trustly',
 			'backend_processor_txn_id' => $this->row['transaction_id'],
 			'date' => strtotime( $this->row['created_at'] ),
 			// Arguably the trace_id makes sense here
