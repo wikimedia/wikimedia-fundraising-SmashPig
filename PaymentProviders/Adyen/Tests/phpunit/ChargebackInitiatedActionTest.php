@@ -85,6 +85,8 @@ class ChargebackInitiatedActionTest extends BaseAdyenTestCase {
 		$chargeback = new Chargeback();
 		$chargeback->success = true;
 		$chargeback->additionalData['metadata.gr4vy_intent'] = 'authorize';
+		$chargeback->gateway = 'gravy';
+
 		$action = new ChargebackInitiatedAction();
 		$action->execute( $chargeback );
 		$refund = $this->refundQueue->pop();
