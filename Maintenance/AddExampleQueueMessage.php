@@ -60,7 +60,7 @@ class AddExampleQueueMessage extends MaintenanceBase {
 			$example['payment_orchestrator_reconciliation_id'] = '12345ABCD';
 			$example['phone'] = '1234567890';
 			$example['sms_opt_in'] = 1;
-			$example['date'] = 1771383184;
+			$example['date'] = time();
 		}
 
 		QueueWrapper::push( $queue, $example );
