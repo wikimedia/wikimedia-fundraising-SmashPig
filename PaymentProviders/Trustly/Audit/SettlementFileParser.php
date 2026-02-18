@@ -67,7 +67,9 @@ class SettlementFileParser extends BaseParser {
 		if ( $this->isChargeback() ) {
 			return [
 				'type' => 'chargeback',
-				'parent_gateway_id' => Base62Helper::toUuid( $this->row['original_merchant_reference'] ),
+				'gateway_parent_id' => Base62Helper::toUuid( $this->row['original_merchant_reference'] ),
+				// Doesn't seem to be anything better than this, but it's not 100% clear whose it is.
+				'gateway_refund_id' => $this->row['payment_provider_transaction_id'],
 			];
 		}
 		return $reversalFields;
