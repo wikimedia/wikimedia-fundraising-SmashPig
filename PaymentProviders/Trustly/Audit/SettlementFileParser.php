@@ -49,7 +49,7 @@ class SettlementFileParser extends BaseParser {
 	}
 
 	protected function getGatewayTxnId(): string {
-		if ( $this->isChargeback() ) {
+		if ( $this->isChargeback() || $this->isRefund() ) {
 			// We don't seem to get a gravy transaction ID for these.
 			return $this->row['transaction_id'];
 		}
@@ -65,15 +65,22 @@ class SettlementFileParser extends BaseParser {
 	 */
 	protected function getReversalFields(): array {
 		$reversalFields = [];
-		if ( $this->isChargeback() ) {
+		if ( $this->isChargeback() || $this->isRefund() ) {
 			return [
-				'type' => 'chargeback',
+				'type' => $this->isChargeback() ? 'chargeback' : 'refund',
 				'gateway_parent_id' => Base62Helper::toUuid( $this->row['original_merchant_reference'] ),
 				// Doesn't seem to be anything better than this, but it's not 100% clear whose it is.
 				'gateway_refund_id' => $this->row['payment_provider_transaction_id'],
 			];
 		}
 		return $reversalFields;
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function isRefund(): bool {
+		return $this->row['amount'] < 0 && $this->row['settlement_batch_transaction_type'] === 'Refund';
 	}
 
 	/**
