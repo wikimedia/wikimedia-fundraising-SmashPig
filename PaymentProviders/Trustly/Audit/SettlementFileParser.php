@@ -27,7 +27,7 @@ class SettlementFileParser extends BaseParser {
 		$msg = [
 			'currency' => (string)$this->row['currency'],
 			'gross' => ( (float)$this->row['amount'] ),
-			'gateway' => $this->isGravy() ? 'gravy' : 'trustly',
+			'gateway' => 'gravy',
 			'audit_file_gateway' => 'trustly',
 			'gateway_txn_id' => $this->getGatewayTxnId(),
 			'backend_processor' => 'trustly',
@@ -35,7 +35,7 @@ class SettlementFileParser extends BaseParser {
 			'date' => strtotime( $this->row['created_at'] ),
 			// Arguably the trace_id makes sense here
 			'settlement_batch_reference' => $this->row['batch_id'] ?? null,
-			'payment_orchestrator_reconciliation_id' => $this->row['original_merchant_reference'] ?? null,
+			'payment_orchestrator_reconciliation_id' => $this->isGravy() ? $this->row['original_merchant_reference'] : null,
 			'settled_date' => $this->row['processed_at'] ?? null,
 			'settled_fee_amount' => ( $this->row['fee'] ?? null ) ? $this->row['fee'] : 0,
 			'settled_net_amount' => ( $this->row['amount'] ?? 0 ) + ( ( $this->row['fee'] ?? null ) ? $this->row['fee'] : 0 ),
@@ -57,7 +57,9 @@ class SettlementFileParser extends BaseParser {
 	}
 
 	protected function isGravy(): bool {
-		return !empty( $this->row['original_merchant_reference'] );
+		// Checking strlen feels a bit blunt - but it all does.
+		// Some refunds seem to bypass gravy. There is precedent for this in the Adyen code.
+		return !empty( $this->row['original_merchant_reference'] && strlen( $this->row['original_merchant_reference'] ) < 64 );
 	}
 
 	/**
@@ -66,12 +68,16 @@ class SettlementFileParser extends BaseParser {
 	protected function getReversalFields(): array {
 		$reversalFields = [];
 		if ( $this->isChargeback() || $this->isRefund() ) {
-			return [
-				'type' => $this->isChargeback() ? 'chargeback' : 'refund',
-				'gateway_parent_id' => Base62Helper::toUuid( $this->row['original_merchant_reference'] ),
+			$reversalFields['type'] = $this->isChargeback() ? 'chargeback' : 'refund';
+			if ( $this->isGravy() ) {
+				$reversalFields['gateway_parent_id'] = Base62Helper::toUuid( $this->row['original_merchant_reference'] );
 				// Doesn't seem to be anything better than this, but it's not 100% clear whose it is.
-				'gateway_refund_id' => $this->row['payment_provider_transaction_id'],
-			];
+				$reversalFields['gateway_refund_id'] = $this->row['payment_provider_transaction_id'];
+			} else {
+				$reversalFields['backend_processor_parent_id'] = $this->row['original_transaction_id'];
+				// Doesn't seem to be anything better than this, but it's not 100% clear whose it is.
+				$reversalFields['backend_processor_refund_id'] = $this->row['payment_provider_transaction_id'];
+			}
 		}
 		return $reversalFields;
 	}
