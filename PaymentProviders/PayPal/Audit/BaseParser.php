@@ -79,6 +79,12 @@ class BaseParser {
 			'T1201' => 'chargeback',
 			'T1202' => 'chargeback_reversed',
 			'T1302' => 'void_authorisation',
+			// These are described as correction adjustment.
+			// In practice we have seen them on rare occasion -ie
+			// https://phabricator.wikimedia.org/T417347 where they charged us a
+			// chargeback without having received the original and then
+			// adjusted it back to us.
+			'T1900' => 'adjustment',
 			// PayPal provides no info - can afford to skip as only in TRR files.
 			'T9900' => 'other',
 		];
@@ -114,14 +120,16 @@ class BaseParser {
 	 * Is refund-ish type: 'refund'|'reversal'|'chargeback' .
 	 */
 	protected function isReversalType(): bool {
-		return in_array( $this->getTransactionType(), [ 'reversal', 'refund', 'chargeback' ], true );
+		return in_array( $this->getTransactionType(), [ 'reversal', 'refund', 'chargeback' ], true )
+			|| ( $this->getTransactionType() === 'adjustment' && $this->row['Transaction Debit or Credit'] === 'DR' );
 	}
 
 	/**
 	 * Is this a case of a reversal being reversed.
 	 */
 	protected function isReversalReversalType(): bool {
-		return in_array( $this->getTransactionType(), [ 'chargeback_reversed', 'reversal_reversed' ], true );
+		return in_array( $this->getTransactionType(), [ 'chargeback_reversed', 'reversal_reversed' ], true )
+			|| ( $this->getTransactionType() === 'adjustment' && $this->row['Transaction Debit or Credit'] === 'CR' );
 	}
 
 	protected function isReversalPrefix(): bool {
@@ -321,6 +329,10 @@ class BaseParser {
 		$reversalFields = [];
 		if ( $this->isReversalType() ) {
 			$reversalFields['type'] = $this->getTransactionType();
+			if ( $reversalFields['type'] === 'adjustment' ) {
+				// Let's just bubble up these are 'reversal' which is already mushy
+				$reversalFields['type'] = 'reversal';
+			}
 			$reversalFields['gateway_refund_id'] = $this->row['Transaction ID'];
 			$reversalFields['gross_currency'] = $this->row['Gross Transaction Currency'];
 
@@ -329,6 +341,10 @@ class BaseParser {
 			}
 		} elseif ( $this->isReversalReversalType() ) {
 			$reversalFields['type'] = $this->getTransactionType();
+			if ( $reversalFields['type'] === 'adjustment' ) {
+				// Let's just bubble up these are 'reversal' which is already mushy
+				$reversalFields['type'] = 'reversal_reversed';
+			}
 			$reversalFields['gateway_parent_id'] = $this->row['PayPal Reference ID'];
 
 		} elseif ( $this->isReversalPrefix() ) {
