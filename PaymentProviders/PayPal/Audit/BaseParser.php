@@ -58,7 +58,7 @@ class BaseParser {
 			// an opportunity to get the actual final exchange rate.
 			'T0201' => 'payout_currency_conversion',
 			'T0400' => 'withdrawal',
-			'T1106' => 'reversal',
+			'T1106' => 'chargeback',
 			'T1107' => 'refund',
 			// chargeback reversal fee - this is ?sometimes? always? the reversal of a fee
 			// which we have been charged - ie if there is a chargeback reversal
