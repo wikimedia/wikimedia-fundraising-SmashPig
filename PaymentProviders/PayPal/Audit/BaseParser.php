@@ -70,6 +70,12 @@ class BaseParser {
 			'T1108' => 'fee_reversal',
 			// refund reversal fee
 			'T1109' => 'fee_reversal',
+			// T1110 & T1111 relate to chargeback holds - these are charged to us
+			// & reversed before the real chargeback, so they need to
+			// have a different 'type' than the actual chargeback as they need
+			// to be created, even if the chargeback has been actioned, for settlement.
+			'T1110' => 'reversal',
+			'T1111' => 'reversal_reversed',
 			'T1201' => 'chargeback',
 			'T1202' => 'chargeback_reversed',
 			'T1302' => 'void_authorisation',
@@ -115,7 +121,7 @@ class BaseParser {
 	 * Is this a case of a reversal being reversed.
 	 */
 	protected function isReversalReversalType(): bool {
-		return in_array( $this->getTransactionType(), [ 'chargeback_reversed' ], true );
+		return in_array( $this->getTransactionType(), [ 'chargeback_reversed', 'reversal_reversed' ], true );
 	}
 
 	protected function isReversalPrefix(): bool {
