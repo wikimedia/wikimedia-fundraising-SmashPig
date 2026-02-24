@@ -42,17 +42,24 @@ class BaseParser {
 			'T0006' => 'subscription_payment',
 			// This is in our tests but not really documented - it seems to be blocked
 			'T0013' => 'risky_payment',
-			'T0200' => 'currency_conversion',
-			// 'user initiated' currency conversion is when amounts settled
-			// in currency accounts are converted for payout. It might be
-			// an opportunity to get the actual final exchange rate.
-			'T0201' => 'payout_currency_conversion',
 			'T0100' => 'fee',
+			// payment request fee.
+			'T0104' => 'fee',
 			// chargeback fee - this is a fee charged when a chargeback takes place
 			// it is generally on the next row. It's parent id is the id of
 			// the id of the chargeback transaction. It should be incorporated
 			// into the chargeback.
 			'T0106' => 'chargeback_fee',
+			// partner fee
+			'T0113' => 'fee',
+			'T0200' => 'currency_conversion',
+			// 'user initiated' currency conversion is when amounts settled
+			// in currency accounts are converted for payout. It might be
+			// an opportunity to get the actual final exchange rate.
+			'T0201' => 'payout_currency_conversion',
+			'T0400' => 'withdrawal',
+			'T1106' => 'reversal',
+			'T1107' => 'refund',
 			// chargeback reversal fee - this is ?sometimes? always? the reversal of a fee
 			// which we have been charged - ie if there is a chargeback reversal
 			// than the next row is the reversal of the fee on that charge back.
@@ -63,13 +70,6 @@ class BaseParser {
 			'T1108' => 'fee_reversal',
 			// refund reversal fee
 			'T1109' => 'fee_reversal',
-			// payment request fee.
-			'T0104' => 'fee',
-			// partner fee
-			'T0113' => 'fee',
-			'T1106' => 'reversal',
-			'T0400' => 'withdrawal',
-			'T1107' => 'refund',
 			'T1201' => 'chargeback',
 			'T1202' => 'chargeback_reversed',
 			'T1302' => 'void_authorisation',
