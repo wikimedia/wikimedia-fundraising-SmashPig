@@ -3,6 +3,7 @@
 namespace SmashPig\PaymentProviders\Adyen\Tests\phpunit;
 
 use SmashPig\Core\Context;
+use SmashPig\Core\Helpers\Base62Helper;
 use SmashPig\Core\Http\Request;
 use SmashPig\PaymentProviders\Adyen\AdyenRestListener;
 use SmashPig\PaymentProviders\Adyen\Tests\BaseAdyenTestCase;
@@ -181,6 +182,34 @@ class NotificationRequestTest extends BaseAdyenTestCase {
 		$this->assertEquals( $chargeback['amount']['currency'], $message['gross_currency'] );
 		$this->assertEquals( $chargeback['amount']['value'] / 100, $message['gross'] );
 		$this->assertEquals( 'adyen', $message['gateway'] );
+		$this->assertEquals( 'chargeback', $message['type'] );
+		$this->assertStringContainsString( "[accepted]", $getContent );
+	}
+
+	public function testGravyChargeBackMessageReceivedAndAcknowledged() {
+		$request = $this->getMockBuilder( Request::class )->disableOriginalConstructor()
+			->getMock();
+		$response = $this->getMockBuilder( Response::class )->disableOriginalConstructor()
+			->getMock();
+		$request->method( 'getRawRequest' )
+			->willReturn( file_get_contents( __DIR__ . '/../Data/ipn_Chargeback_Gravy.json' ) );
+		$obj = json_decode( file_get_contents( __DIR__ . '/../Data/ipn_Chargeback_Gravy.json' ), true );
+		$chargeback = $obj['notificationItems'][0]['NotificationRequestItem'];
+		ob_start();
+		$this->rest_listener->execute( $request, $response );
+		$getContent = ob_get_contents();
+		ob_end_clean();
+		$message = $this->refundQueue->pop();
+		$this->assertEquals(
+			Base62Helper::toUuid( $chargeback['merchantReference'] ),
+			$message['gateway_parent_id']
+		);
+		$this->assertEquals( $chargeback['pspReference'], $message['backend_processor_refund_id'] );
+		$this->assertEquals( $chargeback['originalReference'], $message['backend_processor_parent_id'] );
+		$this->assertEquals( $chargeback['amount']['currency'], $message['gross_currency'] );
+		$this->assertEquals( $chargeback['amount']['value'] / 100, $message['gross'] );
+		$this->assertEquals( 'adyen', $message['backend_processor'] );
+		$this->assertEquals( 'gravy', $message['gateway'] );
 		$this->assertEquals( 'chargeback', $message['type'] );
 		$this->assertStringContainsString( "[accepted]", $getContent );
 	}
