@@ -107,7 +107,11 @@ abstract class AdyenMessage extends ListenerMessage {
 		$this->additionalData = $notification['additionalData'] ?? [];
 		$this->success = ( $notification['success'] === 'true' );
 		$this->reason = $notification['reason'];
-		if ( isset( $this->additionalData['metadata.gr4vy_intent'] ) ) {
+
+		if (
+			isset( $this->additionalData['metadata.gr4vy_intent'] ) ||
+			$this->isOrchestratorMerchantReference( $notification )
+		) {
 			$this->gateway = 'gravy';
 			$this->backendProcessor = 'adyen';
 			$this->backendProcessorTransactionID = $notification['pspReference'];
@@ -145,5 +149,11 @@ abstract class AdyenMessage extends ListenerMessage {
 			return $this->orchestratorTransactionID;
 		}
 		return $this->pspReference;
+	}
+
+	protected function isOrchestratorMerchantReference( array $notification ): bool {
+		return !empty( $notification['merchantReference'] ) &&
+			!strpos( $notification['merchantReference'], '.' ) &&
+			!is_numeric( $notification['merchantReference'] );
 	}
 }
