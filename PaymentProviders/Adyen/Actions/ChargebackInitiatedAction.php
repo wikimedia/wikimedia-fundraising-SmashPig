@@ -12,7 +12,6 @@ use SmashPig\PaymentProviders\Adyen\ExpatriatedMessages\RequestForInformation;
  * be fired.
  */
 class ChargebackInitiatedAction extends BaseRefundAction implements IListenerMessageAction {
-	use DropGravyInitiatedMessageTrait;
 
 	public function execute( ListenerMessage $msg ): bool {
 		$tl = new TaggedLogger( 'ChargebackInitiatedAction' );
@@ -20,7 +19,7 @@ class ChargebackInitiatedAction extends BaseRefundAction implements IListenerMes
 		if ( $msg instanceof Chargeback ) {
 			if ( $msg->success ) {
 				// drop Gr4vy initiated message
-				if ( $this->isGravyInitiatedMessage( $msg, 'chargeback' ) ) {
+				if ( $msg->gateway === 'gravy' ) {
 					return true;
 				}
 				$tl->info(
