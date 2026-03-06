@@ -32,4 +32,11 @@ class ReferenceDataTest extends TestCase {
 		$this->assertEquals( 'apple', $method );
 		$this->assertEquals( 'visa', $submethod );
 	}
+
+	public function testParseVipps() {
+		// Test another suffixed method
+		[ $method, $submethod ] = ReferenceData::decodePaymentMethod( 'mc_vipps', 'mc_vipps' );
+		$this->assertEquals( 'vipps', $method );
+		$this->assertEquals( 'mc', $submethod );
+	}
 }
