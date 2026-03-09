@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace SmashPig\PaymentProviders\PayPal\Audit;
 
 use SmashPig\Core\Helpers\Base62Helper;
+use SmashPig\Core\IgnoredException;
 use SmashPig\Core\NormalizationException;
 use SmashPig\Core\UnhandledException;
 use SmashPig\Core\UtcDate;
@@ -76,9 +77,22 @@ class STLFileParser extends BaseParser {
 		if ( array_key_exists( $this->row[1], $this->payouts ) ) {
 			$payouts = array_sum( $this->payouts[ $this->row[1] ] );
 		}
+		$settledTotalAmount = ( $this->row[2] - $this->row[3] + $this->row[4] - $this->row[5] + $payouts ) / 100;
+		if ( !$settledTotalAmount ) {
+			throw new IgnoredException( 'Payout is $0, ignore' );
+		}
+		$exchangeFields = [];
+		if ( $payouts / 100 === $settledTotalAmount ) {
+			// If we have a currency (e.g. BRL) that is fully converted to another currency in real time
+			// and that currency is (USD) then also include the exchange rate (average) as that has been finalised.
+			$exchangeRateToUSD = $this->getAverageExchangeRateForCurrency( $this->row[1], 'USD' );
+			if ( $exchangeRateToUSD ) {
+				$exchangeFields['exchange_rate'] = $exchangeRateToUSD;
+			}
+		}
 		return [
 			'settled_currency' => $this->row[1],
-			'settled_total_amount' => ( $this->row[2] - $this->row[3] + $this->row[4] - $this->row[5] + $payouts ) / 100,
+			'settled_total_amount' => $settledTotalAmount,
 			'gateway' => 'paypal',
 			'type' => 'payout',
 			'audit_file_gateway' => 'paypal',
@@ -90,7 +104,7 @@ class STLFileParser extends BaseParser {
 			// be easy to see once we try with real data.
 			'settled_date' => UtcDate::getUtcTimestamp( $settlementDate, $timezoneOffset ),
 			'date' => UtcDate::getUtcTimestamp( $settlementDate, $timezoneOffset ),
-		];
+		] + $exchangeFields;
 	}
 
 }
