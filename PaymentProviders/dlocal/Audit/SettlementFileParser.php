@@ -78,7 +78,7 @@ class SettlementFileParser extends BaseParser {
 			'gateway' => 'dlocal',
 			'audit_file_gateway' => 'dlocal',
 			'type' => 'fee',
-			'gateway_txn_id' => $this->row['DLOCAL_TRANSACTION_ID'],
+			'gateway_txn_id' => 'transaction fee ' . $this->row['DLOCAL_TRANSACTION_ID'],
 			'invoice_id' => $this->row['DLOCAL_TRANSACTION_ID'],
 			'settlement_batch_reference' => $this->getBatchReference(),
 			// In this context the total amount is what is paid by the donor - ie nothing.
