@@ -51,7 +51,7 @@ class PayPalAudit implements AuditParser {
 
 		$columnHeaders = null;
 
-		while ( ( $line = fgetcsv( $file, 0 ) ) !== false ) {
+		while ( ( $line = fgetcsv( $file, 0, ',', '"', '\\' ) ) !== false ) {
 			// skip empty lines
 			if ( $line === [ null ] ) {
 				continue;
