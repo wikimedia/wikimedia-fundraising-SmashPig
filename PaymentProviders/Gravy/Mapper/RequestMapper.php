@@ -27,6 +27,7 @@ class RequestMapper {
 		'rapipago',
 		'redpagos',
 		'sepa',
+		'ideal',
 		'stitch',
 		'webpay',
 	];
