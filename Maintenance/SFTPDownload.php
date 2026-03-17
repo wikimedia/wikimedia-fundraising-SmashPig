@@ -277,7 +277,7 @@ class SFTPDownload extends MaintenanceBase {
 			}
 
 			// Skip anything already present locally (by exact name) or name + .gz
-			if ( isset( $localBasenames[$name] ) || isset( $localBasenames[$name . ' .gz'] ) ) {
+			if ( isset( $localBasenames[$name] ) || isset( $localBasenames[$name . '.gz'] ) ) {
 				$skipped++;
 				continue;
 			}
