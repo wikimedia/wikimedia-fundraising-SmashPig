@@ -75,7 +75,7 @@ class SearchTransactions extends MaintenanceBase {
 				$lessThanDate = gmdate( 'Y-m-d', strtotime( $this->getDayBeforeEndDate() ) );
 				$disputeInput = [
 					"effectiveDate" => [ "greaterThanOrEqualTo" => $greaterThanDate, "lessThanOrEqualTo" => $lessThanDate ],
-					"status" => [ "is" => "LOST" ],
+					"status" => [ "in" => [ "WON", "LOST" ] ],
 				];
 				$this->normalizeTransactions( $provider->searchDisputes( $disputeInput, $after ), 'chargeback' );
 			}
