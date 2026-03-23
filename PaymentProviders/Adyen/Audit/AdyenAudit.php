@@ -161,6 +161,9 @@ abstract class AdyenAudit implements AuditParser {
 			$msg['type'] = 'refund';
 		}
 
+		// This is the most important of the transaction identifying IDs and is always the Adyen reference.
+		$msg['backend_processor_reversal_id'] = $modificationReference;
+
 		if ( $this->isOrchestratorMerchantReference( $row ) ) {
 			$msg['backend_processor_parent_id'] = $row['Psp Reference'];
 			$msg['backend_processor_refund_id'] = $modificationReference;
