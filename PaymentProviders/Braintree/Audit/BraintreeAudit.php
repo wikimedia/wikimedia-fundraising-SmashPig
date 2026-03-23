@@ -195,6 +195,7 @@ class BraintreeAudit implements AuditParser {
 
 		$parentTransaction = $row['transaction'];
 		$msg['invoice_id'] = $parentTransaction['orderId'];
+		$msg['backend_processor_reversal_id'] = $row['id'];
 		if ( $this->isOrchestratorMerchantReference( $parentTransaction ) ) {
 			$msg['backend_processor'] = 'braintree';
 			$msg['backend_processor_parent_id'] = $parentTransaction['id'];
