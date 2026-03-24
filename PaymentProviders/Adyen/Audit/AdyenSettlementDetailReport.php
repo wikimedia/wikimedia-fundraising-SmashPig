@@ -33,7 +33,12 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		// T306944
 		// We were saving the Capture ID for 2+ recurrings in civi which for settled payments is in the
 		// Modification reference. Adding this lets us match donations until the data is cleaned up
-		$msg['modification_reference'] = $row['Modification Reference'];
+		if ( $msg['type'] === 'donation' ) {
+			// Not adding to (e.g) chargeback_reversal for now as not really an auth/capture scenario.
+			$msg['modification_reference'] = $row['Modification Reference'];
+			$msg['capture_id'] = $row['Modification Reference'];
+			$msg['auth_id'] = $row['Psp Reference'];
+		}
 
 		$msg['currency'] = $msg['original_currency'] = $row['Gross Currency'];
 		$msg['settled_currency'] = $row['Net Currency'];
