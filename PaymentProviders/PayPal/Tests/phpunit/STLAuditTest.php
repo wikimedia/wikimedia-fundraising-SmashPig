@@ -36,6 +36,8 @@ class STLAuditTest extends AuditTestBase {
 			'contribution_tracking_id' => '2444',
 			'order_id' => '2444.1',
 			'settlement_batch_reference' => '20260106',
+			'backend_processor' => 'paypal',
+			'backend_processor_txn_id' => '4H844',
 			'auth_id' => '4H844',
 			'capture_id' => '5678',
 			'original_total_amount' => '52',
@@ -127,6 +129,7 @@ class STLAuditTest extends AuditTestBase {
 			'backend_processor' => 'paypal',
 			'payment_orchestrator_reconciliation_id' => '5jImyEK1vFvvvmoxlWR7SO',
 			'auth_id' => '2N092',
+			'backend_processor_txn_id' => '2N092',
 			'capture_id' => '1DV3',
 		], $output[0] );
 
@@ -172,9 +175,9 @@ class STLAuditTest extends AuditTestBase {
 			'date' => strtotime( '2025/12/23 08:57:17 -0800' ),
 			'gateway' => 'paypal_ec',
 			'audit_file_gateway' => 'paypal',
-			'settled_total_amount' => -15,
-			'settled_fee_amount' => 3.38,
-			'settled_net_amount' => -11.62,
+			'settled_total_amount' => -15.00,
+			'settled_fee_amount' => '3.38',
+			'settled_net_amount' => '-11.62',
 			'gross' => 15.0,
 			'fee' => 3.38,
 			// Fee of 3.38 BRL refunded to us, we refund 15 BRL to the donor

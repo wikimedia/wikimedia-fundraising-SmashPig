@@ -273,6 +273,8 @@ class BaseParser {
 		return [
 			'auth_id' => $this->row['PayPal Reference ID'],
 			'capture_id' => $this->row['Transaction ID'],
+			'backend_processor_txn_id' => $this->row['PayPal Reference ID'],
+			'backend_processor' => $this->getGateway(),
 		];
 	}
 

@@ -51,6 +51,8 @@ class TRRAuditTest extends AuditTestBase {
 			'grant_provider' => '',
 			'auth_id' => 'ABCD',
 			'capture_id' => '1V551844CE5526421',
+			'backend_processor_txn_id' => 'ABCD',
+			'backend_processor' => 'paypal_ec',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -94,6 +96,8 @@ class TRRAuditTest extends AuditTestBase {
 			'grant_provider' => '',
 			'auth_id' => 'ABCD',
 			'capture_id' => '1V551844CE5526421',
+			'backend_processor_txn_id' => 'ABCD',
+			'backend_processor' => 'paypal_ec',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -146,6 +150,8 @@ class TRRAuditTest extends AuditTestBase {
 			'grant_provider' => '',
 			'auth_id' => 'I-SS5RD7POSD46',
 			'capture_id' => '4JH2438EE9876546W',
+			'backend_processor_txn_id' => 'I-SS5RD7POSD46',
+			'backend_processor' => 'paypal_ec',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -281,6 +287,8 @@ class TRRAuditTest extends AuditTestBase {
 			'grant_provider' => '',
 			'auth_id' => '',
 			'capture_id' => '1V551844CE5526421',
+			'backend_processor_txn_id' => '',
+			'backend_processor' => 'paypal',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -307,15 +315,15 @@ class TRRAuditTest extends AuditTestBase {
 			'audit_file_gateway' => 'paypal',
 			'gross' => 150.0,
 			'fee' => 43.0,
-			'original_fee_amount' => -43.0,
-			'settled_fee_amount' => -43.0,
-			'settled_total_amount' => 150.0,
+			'original_fee_amount' => '-43',
+			'settled_fee_amount' => '-43',
+			'settled_total_amount' => '150',
 			'settled_net_amount' => '107',
 			'original_net_amount' => '107',
 			'gateway_txn_id' => '1V551844CE5526421',
 			'payment_submethod' => '',
 			'settled_date' => 1488477595,
-			'contribution_tracking_id' => '46239229',
+			'contribution_tracking_id' => 46239229,
 			'order_id' => '46239229.1',
 			'email' => 'ppgfuspay@paypalgivingfund.org',
 			'street_address' => '321 Notta Boulevard',
@@ -332,6 +340,8 @@ class TRRAuditTest extends AuditTestBase {
 			'grant_provider' => '',
 			'auth_id' => '',
 			'capture_id' => '1V551844CE5526421',
+			'backend_processor_txn_id' => '',
+			'backend_processor' => 'paypal_ec',
 		];
 
 		$this->assertEquals( $expected, $output[0] );
@@ -360,6 +370,7 @@ class TRRAuditTest extends AuditTestBase {
 			'settled_net_amount' => '28.08',
 			'gateway_txn_id' => '12da3381-d52e-47ec-be26-49a81cb31dfe',
 			'auth_id' => '55V55555RX924960C',
+			'backend_processor_txn_id' => '55V55555RX924960C',
 			'capture_id' => '12345678JN486083U',
 			'backend_processor' => 'paypal',
 			'payment_orchestrator_reconciliation_id' => '2ZZZxx7YYYYqqQysK53Fpm',
