@@ -193,6 +193,7 @@ abstract class AdyenAudit implements AuditParser {
 		$msg['original_total_amount'] = AdyenCurrencyRoundingHelper::round( $originalTotalAmount, $msg['original_currency'] );
 		$msg['original_fee_amount'] = AdyenCurrencyRoundingHelper::round( $originalFeeAmount, $msg['original_currency'] );
 		$msg['original_net_amount'] = AdyenCurrencyRoundingHelper::round( $originalTotalAmount + $originalFeeAmount, $msg['original_currency'] );
+		$msg['settled_net_amount'] = AdyenCurrencyRoundingHelper::round( $msg['settled_net_amount'], $msg['settled_currency'] );
 		return $msg;
 	}
 
