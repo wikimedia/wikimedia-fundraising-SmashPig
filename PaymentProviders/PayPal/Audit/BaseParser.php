@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace SmashPig\PaymentProviders\PayPal\Audit;
 
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\UnhandledException;
 
 class BaseParser {
@@ -262,15 +263,25 @@ class BaseParser {
 	}
 
 	protected function getSettledTotalAmount(): string {
-		return (string)$this->getOriginalTotalAmount();
+		return CurrencyRoundingHelper::round( (float)$this->getOriginalTotalAmount(), $this->getSettledCurrency() );
+	}
+
+	protected function getAuthAndCaptureReferences(): array {
+		if ( !$this->isPaymentishPrefix() ) {
+			return [];
+		}
+		return [
+			'auth_id' => $this->row['PayPal Reference ID'],
+			'capture_id' => $this->row['Transaction ID'],
+		];
 	}
 
 	protected function getSettledNetAmount(): string {
-		return (string)( (float)$this->getSettledTotalAmount() + (float)$this->getSettledFeeAmount() );
+		return CurrencyRoundingHelper::round( ( (float)$this->getSettledTotalAmount() + (float)$this->getSettledFeeAmount() ), $this->getSettledCurrency() );
 	}
 
 	protected function getSettledFeeAmount(): string {
-		return (string)$this->getOriginalFeeAmount();
+		return CurrencyRoundingHelper::round( $this->getOriginalFeeAmount(), $this->getSettledCurrency() );
 	}
 
 	/**
@@ -279,7 +290,6 @@ class BaseParser {
 	protected function getGravyFields(): array {
 		$gravyFields = [];
 		if ( $this->isGravy() ) {
-			$gravyFields['backend_processor_txn_id'] = $this->row['Transaction ID'];
 			$gravyFields['backend_processor'] = $this->getGateway();
 			$gravyFields['payment_orchestrator_reconciliation_id'] = $this->row['Custom Field'];
 		}

@@ -107,6 +107,36 @@ class ResponseMapper {
 	 * @param array $response
 	 * @return array
 	 */
+	public function mapFromGetPaymentServicesResponse( array $response ): array {
+		$errorResponse = $this->handleResponseErrorsIfPresent( $response );
+		if ( $errorResponse ) {
+			return $errorResponse;
+		}
+		$currencies = [];
+		$countries = [];
+
+		foreach ( $response['items'] as $item ) {
+			if ( isset( $item['accepted_currencies'] ) ) {
+				$currencies = array_merge( $currencies, $item['accepted_currencies'] );
+			}
+
+			if ( isset( $item['accepted_countries'] ) ) {
+				$countries = array_merge( $countries, $item['accepted_countries'] );
+			}
+		}
+		return [
+			'is_successful' => true,
+			'supported_countries' => array_unique( $countries ) ?? [],
+			'supported_currencies' => array_unique( $currencies ) ?? [],
+			'status' => FinalStatus::COMPLETE,
+			'raw_response' => $response,
+		];
+	}
+
+	/**
+	 * @param array $response
+	 * @return array
+	 */
 	public function mapFromGenerateReportUrlResponse( array $response ): array {
 		$errorResponse = $this->handleResponseErrorsIfPresent( $response );
 		if ( $errorResponse ) {
@@ -198,7 +228,14 @@ class ResponseMapper {
 	 */
 	private function mapPaymentResponsePaymentService( array &$result, array $response ): void {
 		$result['backend_processor'] = $this->getBackendProcessor( $response );
-		$result['backend_processor_transaction_id'] = $response['payment_service_transaction_id'] ?? null;
+		if (
+			$result['backend_processor'] === 'paypal' &&
+			isset( $response['additional_identifiers']['payment_service_authorization_id'] )
+		) {
+			$result['backend_processor_transaction_id'] = $response['additional_identifiers']['payment_service_authorization_id'];
+		} else {
+			$result['backend_processor_transaction_id'] = $response['payment_service_transaction_id'] ?? null;
+		}
 		$result['payment_orchestrator_reconciliation_id'] = $response['reconciliation_id'] ?? null;
 	}
 
