@@ -14,6 +14,7 @@ use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentProviders\IGetLatestPaymentStatusProvider;
 use SmashPig\PaymentProviders\IPaymentProvider;
 use SmashPig\PaymentProviders\IRecurringPaymentProfileProvider;
+use SmashPig\PaymentProviders\IRefundablePaymentProvider;
 use SmashPig\PaymentProviders\Responses\ApprovePaymentResponse;
 use SmashPig\PaymentProviders\Responses\CancelSubscriptionResponse;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
@@ -23,7 +24,12 @@ use SmashPig\PaymentProviders\Responses\PaymentProviderExtendedResponse;
 use SmashPig\PaymentProviders\Responses\RefundPaymentResponse;
 use UnexpectedValueException;
 
-class PaymentProvider implements IPaymentProvider, IGetLatestPaymentStatusProvider, IRecurringPaymentProfileProvider {
+class PaymentProvider implements
+	IPaymentProvider,
+	IGetLatestPaymentStatusProvider,
+	IRecurringPaymentProfileProvider,
+	IRefundablePaymentProvider
+{
 
 	/**
 	 * @var Api
