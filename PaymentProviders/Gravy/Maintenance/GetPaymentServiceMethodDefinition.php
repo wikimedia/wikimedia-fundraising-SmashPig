@@ -9,10 +9,10 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Maintenance\MaintenanceBase;
 
 /**
- * Fetches the default Payment service definition details
- * for gravy payment method
+ * Fetches the definitions of a method across multiple payment services connectors on Gravy
+ * For example card would return the configurations on adyen, stripe, etc
  */
-class ListPaymentServiceDefinitions extends MaintenanceBase {
+class GetPaymentServiceMethodDefinition extends MaintenanceBase {
 
 	public function __construct() {
 		parent::__construct();
@@ -27,11 +27,11 @@ class ListPaymentServiceDefinitions extends MaintenanceBase {
 		$providerConfiguration = Context::get()->getProviderConfiguration();
 		$api = $providerConfiguration->object( 'api' );
 
-		$result = $api->getPaymentServiceDefinition( $method );
+		$result = $api->getPaymentServicesForMethod( [ 'method' => $method ] );
 		print_r( json_encode( $result ) );
 	}
 }
 
-$maintClass = ListPaymentServiceDefinitions::class;
+$maintClass = GetPaymentServiceMethodDefinition::class;
 
 require RUN_MAINTENANCE_IF_MAIN;
