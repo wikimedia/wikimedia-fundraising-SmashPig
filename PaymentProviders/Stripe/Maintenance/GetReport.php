@@ -142,8 +142,6 @@ class GetReport extends MaintenanceBase {
 
 	public function __construct() {
 		parent::__construct();
-		$this->addOption( 'api-key', 'Stripe secret key. Overrides config / env lookup when set explicitly.', '', 'k' );
-		$this->addOption( 'config', 'Explicit path to config yaml' );
 		$this->addOption( 'payout-id', 'Stripe payout id for a single settlement file', '', 'p' );
 		$this->addFlag( 'list-payouts', 'List payouts in the requested date range and download one settlement file per payout', 'l' );
 		$this->addOption( 'status', 'Optional Stripe payout status filter when using --list-payouts', null );
