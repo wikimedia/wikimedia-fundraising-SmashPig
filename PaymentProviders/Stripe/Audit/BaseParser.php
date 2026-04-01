@@ -2,6 +2,7 @@
 
 namespace SmashPig\PaymentProviders\Stripe\Audit;
 
+use SmashPig\Core\Helpers\Base62Helper;
 use SmashPig\Core\UtcDate;
 
 // Shared parser logic for Stripe settlement and activity files.
@@ -21,6 +22,24 @@ abstract class BaseParser {
 
 	public function __construct( array $row ) {
 		$this->row = $row;
+	}
+
+	/**
+	 * @return mixed|null
+	 */
+	public function getGatewayTrxnId(): mixed {
+		if ( $this->getPaymentOrchestratorReconciliationID() ) {
+			return Base62Helper::toUuid( $this->getPaymentOrchestratorReconciliationID() );
+		}
+		return $this->row['payment_intent_id'] ?: $this->row['balance_transaction_id'] ?: null;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getPaymentOrchestratorReconciliationID(): mixed {
+		$paymentOrchestratorReconciliationID = $this->row['payment_metadata[orchestrator_tx_sid]'] ?: $this->row['payment_metadata[gr4vy_tx_sid]'];
+		return $paymentOrchestratorReconciliationID;
 	}
 
 	abstract protected function getSettledDateFields(): array;
@@ -44,7 +63,7 @@ abstract class BaseParser {
 			'gateway' => 'gravy',
 			'audit_file_gateway' => 'stripe',
 			'backend_processor' => 'stripe',
-			'gateway_txn_id' => $this->row['payment_intent_id'] ?: $this->row['balance_transaction_id'] ?: null,
+			'gateway_txn_id' => $this->getGatewayTrxnId(),
 			'gateway_account' => $this->resolveGatewayAccount(),
 			'type' => $type,
 			'date' => $this->toUtcTimestamp( $this->firstNonEmpty( $this->row['created_utc'] ?? null, $this->row['created'] ?? null ) ),
@@ -53,14 +72,27 @@ abstract class BaseParser {
 			// For fee rows we should bubble up balance_transaction_id to distinguish them.
 			'backend_processor_txn_id' => $this->row['payment_intent_id'] ?: $this->row['balance_transaction_id'] ?: null,
 			'payment_method' => $this->row['payment_method_type'] ?: null,
-		] + $this->getOriginalCurrencyFields() + $this->getSettlementFields();
+		] + $this->getOriginalCurrencyFields() + $this->getSettlementFields() + $this->getGravyFields();
 
 		if ( $type === 'refund' || $type === 'chargeback' ) {
 			$msg['gateway_parent_id'] = $this->row['payment_intent_id'];
 			$msg['gateway_refund_id'] = $this->row['source_id'];
 		}
 
-		return array_filter( $msg, static fn ( $value ) => $value !== null && $value !== '' );
+		if ( empty( $msg['gateway_txn_id'] ) ) {
+			// If we only have a meaningful backend_processor_txn_id
+			// leave this unset.
+			unset( $msg['gateway_txn_id'] );
+		}
+
+		return $msg;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getGravyFields(): array {
+		return [ 'payment_orchestrator_reconciliation_id' => $this->getPaymentOrchestratorReconciliationID() ];
 	}
 
 	/**
@@ -140,7 +172,7 @@ abstract class BaseParser {
 	}
 
 	public function getOrderId(): string {
-		return $this->row['payment_metadata[external_identifier]'];
+		return $this->row['payment_metadata[external_identifier]'] ?: $this->row['payment_metadata[orchestrator_tx_ref]'] ?: $this->row['payment_metadata[gr4vy_tx_ref]'];
 	}
 
 	public function getContributionTrackingId(): int {
