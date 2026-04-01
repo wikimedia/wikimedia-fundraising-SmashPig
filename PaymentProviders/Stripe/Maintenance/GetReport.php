@@ -43,6 +43,10 @@ class GetReport extends MaintenanceBase {
 	private const SETTLEMENT_REPORT_COLUMNS = [
 		'balance_transaction_id',
 		'payment_metadata[external_identifier]',
+		'payment_metadata[orchestrator_tx_ref]',
+		'payment_metadata[orchestrator_tx_sid]',
+		'payment_metadata[gr4vy_tx_ref]',
+		'payment_metadata[gr4vy_tx_sid]',
 		'source_id',
 		'payment_intent_id',
 		'charge_id',
