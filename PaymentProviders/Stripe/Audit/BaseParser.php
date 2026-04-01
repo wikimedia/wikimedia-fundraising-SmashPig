@@ -49,7 +49,8 @@ abstract class BaseParser {
 			'date' => $this->toUtcTimestamp( $this->firstNonEmpty( $this->row['created_utc'] ?? null, $this->row['created'] ?? null ) ),
 			'order_id' => $this->getOrderId(),
 			'contribution_tracking_id' => $this->getContributionTrackingId(),
-			'backend_processor_txn_id' => $this->row['payment_intent_id'] ?: null,
+			// For fee rows we should bubble up balance_transaction_id to distinguish them.
+			'backend_processor_txn_id' => $this->row['payment_intent_id'] ?: $this->row['balance_transaction_id'] ?: null,
 			'payment_method' => $this->row['payment_method_type'] ?: null,
 		] + $this->getOriginalCurrencyFields() + $this->getSettlementFields();
 
@@ -82,18 +83,17 @@ abstract class BaseParser {
 			case 'dispute':
 				return 'chargeback';
 
+			case 'adjustment':
+			case 'fee':
 			case 'stripe_fee':
 			case 'network_cost':
 				return 'fee';
-
-			case 'adjustment':
-				return 'adjustment';
 
 			case 'payout':
 				return 'payout';
 
 			default:
-				return 'adjustment';
+				return 'fee';
 		}
 	}
 
