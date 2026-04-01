@@ -31,15 +31,22 @@ abstract class BaseParser {
 		if ( $this->getPaymentOrchestratorReconciliationID() ) {
 			return Base62Helper::toUuid( $this->getPaymentOrchestratorReconciliationID() );
 		}
-		return $this->row['payment_intent_id'] ?: $this->row['balance_transaction_id'] ?: null;
+		return $this->getBackendProcessorTxnId();
 	}
 
 	/**
 	 * @return mixed
 	 */
 	public function getPaymentOrchestratorReconciliationID(): mixed {
-		$paymentOrchestratorReconciliationID = $this->row['payment_metadata[orchestrator_tx_sid]'] ?: $this->row['payment_metadata[gr4vy_tx_sid]'];
-		return $paymentOrchestratorReconciliationID;
+		return $this->row['payment_metadata[orchestrator_tx_sid]'] ?: $this->row['payment_metadata[gr4vy_tx_sid]'];
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getBackendProcessorTxnId(): string {
+		// For fee rows we should bubble up balance_transaction_id to distinguish them.
+		return $this->row['payment_intent_id'] ?: $this->row['balance_transaction_id'] ?: '';
 	}
 
 	abstract protected function getSettledDateFields(): array;
@@ -60,7 +67,7 @@ abstract class BaseParser {
 		$type = $this->mapType( $reportingCategory );
 
 		$msg = [
-			'gateway' => 'gravy',
+			'gateway' => $this->isFee() ? 'stripe' : 'gravy',
 			'audit_file_gateway' => 'stripe',
 			'backend_processor' => 'stripe',
 			'gateway_txn_id' => $this->getGatewayTrxnId(),
@@ -69,8 +76,7 @@ abstract class BaseParser {
 			'date' => $this->toUtcTimestamp( $this->firstNonEmpty( $this->row['created_utc'] ?? null, $this->row['created'] ?? null ) ),
 			'order_id' => $this->getOrderId(),
 			'contribution_tracking_id' => $this->getContributionTrackingId(),
-			// For fee rows we should bubble up balance_transaction_id to distinguish them.
-			'backend_processor_txn_id' => $this->row['payment_intent_id'] ?: $this->row['balance_transaction_id'] ?: null,
+			'backend_processor_txn_id' => $this->getBackendProcessorTxnId(),
 			'payment_method' => $this->row['payment_method_type'] ?: null,
 		] + $this->getOriginalCurrencyFields() + $this->getSettlementFields() + $this->getGravyFields();
 
@@ -128,6 +134,13 @@ abstract class BaseParser {
 			default:
 				return 'fee';
 		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isFee(): bool {
+		return $this->mapType( $this->row['reporting_category'] ) === 'fee';
 	}
 
 	protected function firstNonEmpty( ?string ...$values ): ?string {

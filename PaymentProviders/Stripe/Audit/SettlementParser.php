@@ -18,7 +18,7 @@ class SettlementParser extends BaseParser {
 	}
 
 	protected function getSettlementFields(): array {
-		$isFee = $this->row['reporting_category'] === 'fee';
+		$isFee = $this->isFee();
 		$totalAmount = $isFee ? '0.0' : $this->firstNonEmpty( $this->row['gross'] ?? null, $this->row['amount'] ?? null );
 		return [
 			'settlement_batch_reference' => $this->row['automatic_payout_id'],
