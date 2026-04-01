@@ -44,6 +44,7 @@ abstract class BaseParser {
 			'gateway' => 'gravy',
 			'audit_file_gateway' => 'stripe',
 			'backend_processor' => 'stripe',
+			'gateway_txn_id' => $this->row['payment_intent_id'] ?: $this->row['balance_transaction_id'] ?: null,
 			'gateway_account' => $this->resolveGatewayAccount(),
 			'type' => $type,
 			'date' => $this->toUtcTimestamp( $this->firstNonEmpty( $this->row['created_utc'] ?? null, $this->row['created'] ?? null ) ),
