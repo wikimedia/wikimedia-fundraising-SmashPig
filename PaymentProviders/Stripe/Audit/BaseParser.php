@@ -31,7 +31,11 @@ abstract class BaseParser {
 		if ( $this->getPaymentOrchestratorReconciliationID() ) {
 			return Base62Helper::toUuid( $this->getPaymentOrchestratorReconciliationID() );
 		}
-		return $this->getBackendProcessorTxnId();
+		$gatewayTxnId = $this->getBackendProcessorTxnId();
+		if ( $this->isFee() ) {
+			return 'transaction-' . $gatewayTxnId;
+		}
+		return $gatewayTxnId;
 	}
 
 	/**
