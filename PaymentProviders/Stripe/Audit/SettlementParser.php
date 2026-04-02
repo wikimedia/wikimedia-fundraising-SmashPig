@@ -23,7 +23,7 @@ class SettlementParser extends BaseParser {
 		return [
 			'settlement_batch_reference' => $this->row['automatic_payout_id'],
 			'settled_total_amount' => $totalAmount,
-			'settled_fee_amount' => $isFee ? $this->row['gross'] : $this->row['fee'],
+			'settled_fee_amount' => $isFee ? $this->row['gross'] : -$this->row['fee'],
 			'settled_net_amount' => $this->firstNonEmpty( $this->row['net'] ?? null, $this->row['amount'] ?? null ),
 			'settled_currency' => $this->normalizeCurrency( $this->row['currency'] ?? null ),
 			'settled_date' => $this->toUtcTimestamp( $this->firstNonEmpty( ...$this->extractFields( $this->getSettledDateFields() ) ) ),
