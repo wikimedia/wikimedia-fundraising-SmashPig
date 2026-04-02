@@ -185,7 +185,7 @@ abstract class BaseParser {
 	}
 
 	public function getOrderId(): string {
-		return $this->row['payment_metadata[external_identifier]'] ?: $this->row['payment_metadata[orchestrator_tx_ref]'] ?: $this->row['payment_metadata[gr4vy_tx_ref]'];
+		return (string)$this->row['payment_metadata[external_identifier]'] ?: $this->row['payment_metadata[orchestrator_tx_ref]'] ?: $this->row['payment_metadata[gr4vy_tx_ref]'];
 	}
 
 	public function getContributionTrackingId(): int {
