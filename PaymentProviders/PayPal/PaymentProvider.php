@@ -159,6 +159,8 @@ class PaymentProvider implements
 				throw new UnexpectedValueException(
 					"Paypal API call successful but incorrect or missing REFUNDTRANSACTIONID in response" );
 			}
+			$response->setStatus( FinalStatus::COMPLETE );
+			$response->setGatewayRefundId( $rawResponse[ 'REFUNDTRANSACTIONID' ] );
 		} else {
 			$response->setSuccessful( false );
 			$response->setStatus( FinalStatus::FAILED );
