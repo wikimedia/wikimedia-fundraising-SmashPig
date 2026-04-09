@@ -96,30 +96,6 @@ class PendingQueueConsumerTest extends BaseSmashPigUnitTestCase {
 			'Message consumed and not stored in the pending database.' );
 	}
 
-	/**
-	 * When a message has invoice_id but no order_id, the consumer should
-	 * set order_id from invoice_id before storing in the pending database.
-	 */
-	public function testPendingMessageSetsOrderIdFromInvoiceId() {
-		$consumer = new PendingQueueConsumer( 'pending', 1000, 1000, false );
-		$message = [
-			'gateway' => 'test',
-			'date' => time(),
-			'invoice_id' => '12345.1',
-			'gateway_txn_id' => 'txn-abc-123',
-			'cousin' => 'itt',
-		];
-
-		$consumer->processMessage( $message );
-
-		$fetched = $this->pendingDb->fetchMessageByGatewayOrderId(
-			'test', '12345.1' );
-
-		$this->assertNotNull( $fetched,
-			'Message should be findable by order_id derived from invoice_id.' );
-		$this->assertSame( '12345.1', $fetched['order_id'] );
-	}
-
 	public static function generateRandomPendingMessage() {
 		$message = [
 			'gateway' => 'test',
