@@ -221,7 +221,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gateway_parent_id' => 'f8ee36ec-8e6a-490e-a9e8-6398e3e5e760',
 			'gateway_refund_id' => 'cmVmdW5kX2g3OWY5Yzdo',
 			'backend_processor_parent_id' => 'dHJhbnNhY3Rpb25fMHRjYzJ5cmo',
-			'backend_processor_refund_id' => 'cmVmdW5kX2g3OWY5Yzdo',
+			'backend_processor_reversal_id' => 'cmVmdW5kX2g3OWY5Yzdo',
 			'invoice_id' => '7ZixbnFwSdg8h4IjcDPdTs',
 			'phone' => null,
 			'first_name' => null,
