@@ -106,7 +106,7 @@ abstract class AdyenAudit implements AuditParser {
 	protected function parseLine( $line ) {
 		$row = array_combine( $this->columnHeaders, $line );
 		$type = strtolower( $row[$this->type] );
-		if ( $type === 'fee' || $type === 'invoicededuction' ) {
+		if ( $type === 'fee' || $type === 'invoicededuction' || $type === 'misccosts' ) {
 			$this->fileData[] = $this->getFeeTransaction( $row );
 			return;
 		}
