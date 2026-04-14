@@ -61,6 +61,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertCount( 3, $output, 'Should have found two donations' );
 		$expected = [
 			'gateway' => 'braintree',
+			'type' => 'donation',
 			'audit_file_gateway' => 'braintree',
 			'date' => strtotime( '2025-12-21T22:58:37.000000Z' ),
 			'gross' => '3.10',

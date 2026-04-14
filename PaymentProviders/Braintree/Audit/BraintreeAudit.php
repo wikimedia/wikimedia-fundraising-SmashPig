@@ -109,7 +109,7 @@ class BraintreeAudit implements AuditParser {
 				$this->fileData[] = $this->getMessageFromRawRefund( $line );
 				return;
 			}
-			$this->fileData[] = $this->getMessageFromRaw( $line );
+			$this->fileData[] = $this->getMessageFromRawDonation( $line );
 			return;
 		}
 		// This is the legacy processing - we are moving towards the raw processing.
@@ -149,9 +149,8 @@ class BraintreeAudit implements AuditParser {
 		$this->fileData[] = $msg;
 	}
 
-	private function getMessageFromRaw( array $row ): array {
-		$msg = [];
-		// Common to all types, since we normalized already from the Maintenance Script SearchTransactions
+	private function getMessageFromRawDonation( array $row ): array {
+		$msg = [ 'type' => 'donation' ];
 		$msg['date'] = UtcDate::getUtcTimestamp( $row['createdAt'] );
 		$msg['gateway'] = $msg['audit_file_gateway'] = 'braintree';
 		$msg['invoice_id'] = $row['orderId'];
