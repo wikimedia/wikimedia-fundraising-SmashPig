@@ -33,6 +33,7 @@ class RequestMapper {
 		'stitch',
 		'vipps',
 		'webpay',
+		'trustly',
 		'yape',
 	];
 
