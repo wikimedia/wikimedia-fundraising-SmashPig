@@ -153,15 +153,17 @@ class BraintreeAudit implements AuditParser {
 		$msg = [ 'type' => 'donation' ];
 		$msg['date'] = UtcDate::getUtcTimestamp( $row['createdAt'] );
 		$msg['gateway'] = $msg['audit_file_gateway'] = 'braintree';
-		$msg['invoice_id'] = $row['orderId'];
+		$msg['backend_processor'] = 'braintree';
+		$msg['backend_processor_txn_id'] = $row['id'];
 		if ( $this->isOrchestratorMerchantReference( $row ) ) {
 			$msg['payment_orchestrator_reconciliation_id'] = $row['orderId'];
-			$msg['backend_processor'] = 'braintree';
-			$msg['backend_processor_txn_id'] = $row['id'];
 			$msg['gateway'] = 'gravy';
+			$msg['gateway_txn_id'] = Base62Helper::toUuid( $row['orderId'] );
 		} else {
+			$msg['invoice_id'] = $row['orderId'];
 			$orderParts = explode( '.', $msg['invoice_id'] );
 			$msg['contribution_tracking_id'] = $orderParts[0];
+			$msg['gateway_txn_id'] = $row['id'];
 		}
 		$msg['payment_method'] = isset( $row['paymentMethodSnapshot']['payer'] ) ? 'paypal' : 'venmo';
 		$msg['gross'] = $msg['original_total_amount'] = $row['amount']['value'];
@@ -172,7 +174,6 @@ class BraintreeAudit implements AuditParser {
 		$msg['last_name'] = $this->getPayerInfo( $row, 'last_name' );
 		$msg['full_name'] = $this->getPayerInfo( $row, 'fullname' );
 		$msg['external_identifier'] = $this->getPayerInfo( $row, 'username' );
-		$msg['gateway_txn_id'] = $row['id'];
 		$msg['settled_date'] = UtcDate::getUtcTimestamp( $row['disbursementDetails']['date'] );
 		$msg['settlement_batch_reference'] = str_replace( '-', '', $row['disbursementDetails']['date'] );
 		$msg['settled_total_amount'] = $msg['settled_net_amount'] = $row['disbursementDetails']['amount']['value'];

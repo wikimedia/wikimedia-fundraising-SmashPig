@@ -63,6 +63,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'gateway' => 'braintree',
 			'type' => 'donation',
 			'audit_file_gateway' => 'braintree',
+			'backend_processor' => 'braintree',
 			'date' => strtotime( '2025-12-21T22:58:37.000000Z' ),
 			'gross' => '3.10',
 			'original_total_amount' => '3.10',
@@ -84,6 +85,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'payment_method' => 'venmo',
 			'external_identifier' => 'xyz',
 			'gateway_txn_id' => 'abcde',
+			'backend_processor_txn_id' => 'abcde',
 			'full_name' => 'Donald Duck',
 		];
 		$this->assertEquals( $expected, $output[0], 'Did not parse paypal donation correctly' );
