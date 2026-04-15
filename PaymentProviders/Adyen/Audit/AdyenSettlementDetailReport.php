@@ -92,7 +92,7 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 			'date' => UtcDate::getUtcTimestamp( $row[$this->date], $row['TimeZone'] ),
 			'gateway' => 'adyen',
 			'type' => 'fee',
-			'gateway_txn_id' => $row['Modification Reference'],
+			'gateway_txn_id' => 'fee-' . str_replace( ' ', '-', $row['Modification Reference'] ?: ( $row['Type'] . '-' . $row['Booking Date'] ) ),
 			'gateway_account' => $row['Merchant Account'],
 			'invoice_id' => $row['Merchant Reference'],
 			'settlement_batch_reference' => $row['Batch Number'] ?? null,

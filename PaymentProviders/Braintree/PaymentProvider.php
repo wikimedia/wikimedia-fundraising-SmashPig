@@ -402,12 +402,16 @@ class PaymentProvider implements
 		if ( !empty( $rawResponse['errors'] ) ) {
 			$this->setResponseFailedWithErrors( $response, $rawResponse['errors'] );
 		} else {
-			$detail = $rawResponse['data']['refundTransaction'][ 'refund' ];
-			$response->setRawStatus( $detail[ 'status' ] );
+			$detail = $rawResponse['data']['refundTransaction']['refund'];
+			$response->setRawStatus( $detail['status'] );
 			$mappedStatus = ( new PaymentStatus() )->normalizeStatus( $detail['status'] );
 			$response->setStatus( $mappedStatus );
 			$response->setSuccessful( $response->getStatus() === FinalStatus::COMPLETE );
-			if ( !$response->isSuccessful() ) {
+			if ( $response->isSuccessful() ) {
+				if ( isset( $detail['id'] ) ) {
+					$response->setGatewayRefundId( $detail['id'] );
+				}
+			} else {
 				// look message from status history and add to error message
 				if ( isset( $detail['statusHistory'] ) && !empty( $detail['statusHistory'][0]['processorResponse']['message'] ) ) {
 					$response->addErrors( $this->mapErrors( [], $detail['statusHistory'][0]['processorResponse']['message'] ) );
