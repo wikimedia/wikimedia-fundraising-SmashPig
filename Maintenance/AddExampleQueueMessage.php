@@ -88,9 +88,9 @@ class AddExampleQueueMessage extends MaintenanceBase {
 			$example['order_id'] = $random . '.1';
 			$example['payment_method'] = 'cc';
 			$example['payment_submethod'] = 'visa';
-			$example['payment_orchestrator_reconciliation_id'] = '12345ABCD';
+			$example['payment_orchestrator_reconciliation_id'] = $random . '12345ABCD';
 			$example['recurring'] = 1;
-			$example['recurring_payment_token'] = '123broken';
+			$example['recurring_payment_token'] = $random . 'broken';
 			$example['date'] = time();
 		}
 
