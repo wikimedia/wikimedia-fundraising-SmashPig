@@ -78,7 +78,7 @@ class AddExampleQueueMessage extends MaintenanceBase {
 			$example['city'] = 'Denver';
 			$example['postal_code'] = '80202';
 			$example['state_province'] = 'CO';
-			$example['street_address'] = '1234 Street St';
+			$example['street_address'] = $random . ' Street St';
 			$example['currency'] = 'USD';
 			$example['email'] = 'newcontact@test' . $random . '.com';
 			$example['first_name'] = 'Failed';
