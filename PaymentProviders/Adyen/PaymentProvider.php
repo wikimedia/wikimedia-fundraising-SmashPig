@@ -661,6 +661,7 @@ abstract class PaymentProvider implements
 		}
 
 		$this->mapGatewayTxnIdAndErrors( $response, $rawResponse );
+		$this->setAuthIDFromPspReference( $response, $rawResponse );
 		return $response;
 	}
 
@@ -678,6 +679,12 @@ abstract class PaymentProvider implements
 			] ) ) {
 				$response->setSuspectedFraud( true );
 			}
+		}
+	}
+
+	protected function setAuthIDFromPspReference( PaymentProviderExtendedResponse $response, array $rawResponse ) {
+		if ( !empty( $rawResponse['pspReference'] ) ) {
+			$response->setAuthID( $rawResponse['pspReference'] );
 		}
 	}
 }
