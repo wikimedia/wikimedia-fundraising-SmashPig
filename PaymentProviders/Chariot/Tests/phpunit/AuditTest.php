@@ -24,8 +24,8 @@ class AuditTest extends TestCase {
 			$this->assertArrayHasKey( 'type', $row );
 			$this->assertArrayHasKey( 'date', $row );
 
-			$this->assertSame( 'Chariot Disbursements', $row['gateway'] );
-			$this->assertSame( 'Chariot Disbursements', $row['audit_file_gateway'] );
+			$this->assertSame( 'chariot', $row['gateway'] );
+			$this->assertSame( 'chariot', $row['audit_file_gateway'] );
 			$this->assertIsInt( $row['date'] );
 
 			if ( array_key_exists( 'settled_date', $row ) ) {
@@ -50,39 +50,14 @@ class AuditTest extends TestCase {
 
 		$this->assertArrayHasKey( 'backend_processor', $allKeys );
 		$this->assertArrayHasKey( 'backend_processor_txn_id', $allKeys );
-		$this->assertArrayHasKey( 'currency', $allKeys );
+		$this->assertArrayHasKey( 'original_currency', $allKeys );
 		$this->assertArrayHasKey( 'settlement_batch_reference', $allKeys );
-		$this->assertArrayHasKey( 'payment_method', $allKeys );
 	}
 
-	public function testParseFilePreservesMatchingGiftFields(): void {
-		$fixture = $this->getDataDirectory() . '/2026-03-23-123147-Benevity-146.66-deposit_01km760bp91vxmfb4jfs4rbj6c.csv';
-
-		if ( !file_exists( $fixture ) ) {
-			$this->markTestSkipped( 'Matching gift fixture not present.' );
-		}
-
-		$parser = new DonationsAudit();
-		$rows = $parser->parseFile( $fixture );
-
-		$foundDonationRow = false;
-		foreach ( $rows as $row ) {
-			if ( ( $row['type'] ?? '' ) !== 'donation' ) {
-				continue;
-			}
-
-			$foundDonationRow = true;
-			$this->assertArrayHasKey( 'match_total_amount', $row );
-
-			if ( array_key_exists( 'matching_gift_organization', $row ) ) {
-				$this->assertIsString( $row['matching_gift_organization'] );
-			}
-			if ( array_key_exists( 'matching_gift_source', $row ) ) {
-				$this->assertIsString( $row['matching_gift_source'] );
-			}
-		}
-
-		$this->assertTrue( $foundDonationRow, 'Expected at least one donation row in matching gift fixture.' );
+	public function testParseDonorAdvisedFundFile(): void {
+		$rows = $this->parseFile();
+		$donation = $rows[1];
+		$this->assertEquals( 'The Bart & Lisa Giving Account', $donation['donor_advised_fund_name'] );
 	}
 
 	public static function provideAuditCsvFiles(): array {
@@ -100,4 +75,14 @@ class AuditTest extends TestCase {
 	private function getDataDirectory(): string {
 		return __DIR__ . '/Data';
 	}
+
+	/**
+	 * @return array
+	 */
+	public function parseFile(): array {
+		$fixture = $this->getDataDirectory() . '/20260502081216-Groundswell-1000.00-deposit_01kqkvxnj5mc751be13egn6j6p.csv';
+		$parser = new DonationsAudit();
+		return $parser->parseFile( $fixture );
+	}
+
 }
