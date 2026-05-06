@@ -22,7 +22,7 @@ class GooglePayPaymentProvider extends PaymentProvider {
 			new ApprovalNeededCreatePaymentStatus(),
 			$rawResponse['resultCode'] ?? null
 		);
-		$this->mapGatewayTxnIdAndErrors( $response, $rawResponse );
+		( new ResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
 		$this->setAuthIDFromPspReference( $response, $rawResponse );
 		// additionalData has the recurring details
 		if ( isset( $rawResponse['additionalData'] ) ) {
