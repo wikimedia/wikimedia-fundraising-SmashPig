@@ -56,7 +56,7 @@
         "ext-pdo": "*",
         "php": ">=8.2",
         "phpmailer/phpmailer": "^6",
-        "predis/predis": "^1.1",
+        "predis/predis": "^1|^2|^3",
         "symfony/http-foundation": "^5|^6",
         "symfony/yaml": "^4|^5|^6|^7",
         "amzn/login-and-pay-with-amazon-sdk-php": "^2.5",
