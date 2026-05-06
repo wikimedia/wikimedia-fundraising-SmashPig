@@ -61,7 +61,7 @@ class CardPaymentProvider extends PaymentProvider {
 		);
 		$response = new CreatePaymentResponse();
 		$response->setRawResponse( $rawResponse );
-		$this->mapGatewayTxnIdAndErrors( $response, $rawResponse );
+		( new ResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
 		$this->setAuthIDFromPspReference( $response, $rawResponse );
 
 		$rawStatus = $rawResponse['resultCode'] ?? null;

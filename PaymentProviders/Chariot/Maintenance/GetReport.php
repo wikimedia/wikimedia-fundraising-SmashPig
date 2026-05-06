@@ -28,30 +28,32 @@ class GetReport extends MaintenanceBase {
 		'gateway',
 		'audit_file_gateway',
 		'backend_processor',
+		'gateway_txn_id',
 		'backend_processor_txn_id',
-		'currency',
-		'original_currency',
-		'settled_currency',
-		'exchange_rate',
-		'settlement_batch_reference',
+		'banking_institution',
+		'is_matching_gift',
+		'is_daf',
+		'is_endowment',
+		'donor_advised_fund_name',
+		'original_total_amount',
 		'original_fee_amount',
 		'original_net_amount',
-		'original_total_amount',
-		'original_matching_gift_total_amount',
-		'original_combined_amount',
+		'original_matching_gift_amount',
+		'original_individual_gift_amount',
+		'settlement_batch_reference',
+		'settled_total_amount',
 		'settled_fee_amount',
 		'settled_net_amount',
-		'settled_total_amount',
-		'settled_matching_gift_total_amount',
-		'settled_combined_amount',
+		'settled_currency',
 		'settled_date',
+		'exchange_rate',
+		'original_currency',
 		'date',
 		'type',
 		'first_name',
 		'last_name',
 		'full_name',
 		'partner_full_name',
-		'donor_advised_fund_organization',
 		'prefix',
 		'email',
 		'phone',
@@ -65,6 +67,9 @@ class GetReport extends MaintenanceBase {
 		'note',
 	];
 
+	/**
+	 * List of known paths in the json, if more are added an 'unknowns' file will be generated.
+	 */
 	private const KNOWN_DEPOSIT_PATHS = [
 		'id',
 		'created_at',
@@ -106,8 +111,9 @@ class GetReport extends MaintenanceBase {
 		'amount_gross',
 		'amount_fee',
 		'amount_net',
-		'gift_amount',
+		'individual_gift_amount',
 		'match_amount',
+		'payment_status',
 		'payment_source_id',
 		'note',
 		'purpose',
@@ -165,6 +171,9 @@ class GetReport extends MaintenanceBase {
 		'properties.Prefix',
 		'properties.Review status',
 		'properties.Journaled in Sage',
+		'properties.Groundswell Company Name',
+		'properties.Marked for export',
+		'properties.Endowment flag?',
 		'settlement',
 		'settlement.deposit_id',
 		'settlement.received_at',
@@ -449,7 +458,8 @@ class GetReport extends MaintenanceBase {
 		$convertedNetMinorSum = 0;
 		foreach ( $rows as $row ) {
 			if ( ( $row['type'] ?? '' ) === 'donation' ) {
-				$convertedNetMinorSum += $this->decimalStringToMinorUnits( (string)( $row['settled_net_amount'] ?? '0.00' ) );
+				$rounded = (int)round( (float)( $row['original_net_amount'] * 100 * $exchangeRate ) );
+				$convertedNetMinorSum += $rounded;
 			}
 		}
 
@@ -503,47 +513,24 @@ class GetReport extends MaintenanceBase {
 		$currency = (string)( $transfer['currency'] ?? '' );
 		$paymentMethod = $ach !== [] ? 'ACH' : ( $check !== [] ? 'CHECK' : '' );
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
-		$amount = $transfer['amount'] ?? 0;
+		$amount = $this->getAmount( $transfer['amount'] );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
 			'backend_processor' => $backendProcessor,
+			'gateway_txn_id' => $deposit['id'],
 			'backend_processor_txn_id' => (string)( $deposit['payment_source_id'] ?? '' ),
-			'currency' => $currency,
-			'original_currency' => $currency,
 			'settled_currency' => $currency,
 			'exchange_rate' => '1.000000',
 			'settlement_batch_reference' => $this->getSettlementBatchReference( $deposit ),
-			'original_fee_amount' => $this->roundMinorAmount( 0, $currency ),
-			'original_net_amount' => $this->roundMinorAmount( $amount, $currency ),
-			'original_total_amount' => $this->roundMinorAmount( $amount, $currency ),
-			'original_matching_gift_total_amount' => $this->roundMinorAmount( 0, $currency ),
-			'original_combined_amount' => $this->roundMinorAmount( $amount, $currency ),
-			'settled_fee_amount' => $this->roundMinorAmount( 0, $currency ),
-			'settled_net_amount' => $this->roundMinorAmount( $amount, $currency ),
-			'settled_total_amount' => $this->roundMinorAmount( $amount, $currency ),
-			'settled_matching_gift_total_amount' => $this->roundMinorAmount( 0, $currency ),
-			'settled_combined_amount' => $this->roundMinorAmount( $amount, $currency ),
+			'settled_fee_amount' => $this->round( 0.0, $currency ),
+			'settled_net_amount' => $this->round( $amount, $currency ),
+			'settled_total_amount' => $this->round( $amount, $currency ),
 			'settled_date' => (string)( $deposit['settled_at'] ?? '' ),
 			'date' => (string)( $deposit['created_at'] ?? '' ),
 			'type' => 'payout',
-			'first_name' => '',
-			'last_name' => '',
-			'full_name' => '',
-			'partner_full_name' => '',
-			'donor_advised_fund_organization' => '',
-			'prefix' => '',
-			'email' => '',
-			'phone' => '',
-			'country' => '',
-			'postal_code' => '',
-			'state_province' => '',
-			'city' => '',
-			'street_address' => '',
-			'supplemental_address_1' => '',
 			'payment_method' => $paymentMethod,
-			'note' => (string)( $transfer['description'] ?? '' ),
 		];
 	}
 
@@ -556,98 +543,57 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function flattenDonationForAuditCsv( array $deposit, array $donation, float $exchangeRate ): array {
-		$platform = is_array( $donation['platform'] ?? null ) ? $donation['platform'] : [];
-		$grant = is_array( $donation['donor_advised_fund_grant'] ?? null ) ? $donation['donor_advised_fund_grant'] : [];
-		$donor = is_array( $donation['attribution']['primary_donor'] ?? null ) ? $donation['attribution']['primary_donor'] : [];
-		$address = is_array( $donor['address'] ?? null ) ? $donor['address'] : [];
-		$metadata = is_array( $platform['metadata'] ?? null ) ? $platform['metadata'] : [];
-		$properties = is_array( $donation['properties'] ?? null ) ? $donation['properties'] : [];
-
-		$fullName = $this->normalizePersonalField( (string)( $donor['full_name'] ?? '' ) );
-		$partnerFullName = $this->normalizePersonalField(
-			(string)( $properties['Partner'] ?? $donation['partner_full_name'] ?? $donation['partner'] ?? '' )
-		);
-		$donorAdvisedFundOrganization = trim( (string)( $grant['organization_name'] ?? '' ) );
-		$prefix = $this->normalizePersonalField(
-			(string)( $donation['prefix'] ?? $properties['Prefix'] ?? '' )
-		);
-		$country = $this->normalizePersonalField(
-			(string)( $address['country'] ?? $properties['Country'] ?? '' )
-		);
-
-		$originalCurrency = (string)( $donation['currency'] ?? '' );
+		$platform = $donation['platform'] ?? [];
+		$daf = $donation['donor_advised_fund_grant'] ?? [];
+		$matchingGift = $donation['corporate_match'] ?? [];
+		$donor = $donation['attribution']['primary_donor'] ?? [];
+		$address = $donor['address'] ?? [];
+		$metadata = $platform['metadata'] ?? [];
+		$properties = $donation['properties'] ?? [];
+		$originalCurrency = $donation['currency'];
 		$settledCurrency = $this->getDepositCurrency( $deposit );
-
-		$totalMinor = is_numeric( $donation['gift_amount'] ?? null ) ? (float)$donation['gift_amount'] : 0.0;
-		$matchingGiftTotalMinor = is_numeric( $donation['match_amount'] ?? null ) ? (float)$donation['match_amount'] : 0.0;
-		$combinedMinor = $totalMinor + $matchingGiftTotalMinor;
-		$feeMinor = is_numeric( $donation['amount_fee'] ?? null ) ? (float)$donation['amount_fee'] : 0.0;
-		$netMinor = is_numeric( $donation['amount_net'] ?? null ) ? (float)$donation['amount_net'] : ( $combinedMinor - $feeMinor );
-
-		$acknowledgement = trim( (string)( $metadata['Acknowledgement'] ?? '' ) );
-		$note = (string)( $donation['note'] ?? '' );
-		if ( $note === '' ) {
-			$note = (string)( $donation['purpose'] ?? '' );
-		}
-		if ( $note === '' ) {
-			$note = (string)( $metadata['Description'] ?? '' );
-		}
-		if ( $acknowledgement !== '' && strcasecmp( $acknowledgement, $fullName ) !== 0 ) {
-			$note = $note !== ''
-				? $note . ' | Acknowledgement: ' . $acknowledgement
-				: 'Acknowledgement: ' . $acknowledgement;
-		}
 
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
-			'backend_processor' => (string)(
-				$platform['name']
-				?? $grant['organization_name']
-				?? ''
-			),
-			'backend_processor_txn_id' => (string)(
-				$platform['platform_grant_id']
-				?? $grant['sponsor_grant_id']
-				?? $donation['payment_source_id']
-				?? ''
-			),
-			'currency' => $originalCurrency,
+			'backend_processor' => (string)( $platform['name'] ?? '' ),
+			'gateway_txn_id' => $donation['id'],
+			'backend_processor_txn_id' => (string)( $platform['platform_grant_id'] ?? '' ),
+			'banking_institution' => trim( (string)( $daf['organization_name'] ?? '' ) ),
+			'donor_advised_fund_name' => $daf['donor_fund_name'] ?? '',
 			'original_currency' => $originalCurrency,
 			'settled_currency' => $settledCurrency,
-			'exchange_rate' => number_format( $exchangeRate, 6, '.', '' ),
 			'settlement_batch_reference' => $this->getSettlementBatchReference( $deposit ),
-			'original_fee_amount' => $this->roundMinorAmount( $feeMinor, $originalCurrency ),
-			'original_net_amount' => $this->roundMinorAmount( $netMinor, $originalCurrency ),
-			'original_total_amount' => $this->roundMinorAmount( $totalMinor, $originalCurrency ),
-			'original_matching_gift_total_amount' => $this->roundMinorAmount( $matchingGiftTotalMinor, $originalCurrency ),
-			'original_combined_amount' => $this->roundMinorAmount( $combinedMinor, $originalCurrency ),
-			'settled_fee_amount' => $this->convertMinorUnitsToDecimalString( $feeMinor, $exchangeRate, $settledCurrency ),
-			'settled_net_amount' => $this->convertMinorUnitsToDecimalString( $netMinor, $exchangeRate, $settledCurrency ),
-			'settled_total_amount' => $this->convertMinorUnitsToDecimalString( $totalMinor, $exchangeRate, $settledCurrency ),
-			'settled_matching_gift_total_amount' => $this->convertMinorUnitsToDecimalString( $matchingGiftTotalMinor, $exchangeRate, $settledCurrency ),
-			'settled_combined_amount' => $this->convertMinorUnitsToDecimalString( $combinedMinor, $exchangeRate, $settledCurrency ),
 			'settled_date' => (string)( $deposit['settled_at'] ?? '' ),
 			'date' => (string)( $donation['created_at'] ?? '' ),
+			'original_fee_amount' => $this->getRoundedAmount( $donation['amount_fee'], $originalCurrency ),
+			'original_net_amount' => $this->getRoundedAmount( $donation['amount_net'], $originalCurrency ),
+			'original_total_amount' => $this->getRoundedAmount( $donation['amount_gross'], $originalCurrency ),
+			'original_individual_gift_amount' => $this->getAmount( $donation['individual_gift_amount'] ?? 0 ),
+			'original_matching_gift_amount' => $this->getAmount( $matchingGift['match_amount'] ?? 0 ),
+			'settled_fee_amount' => $this->getAmount( $donation['amount_fee'] ) * $exchangeRate,
+			'settled_net_amount' => $this->getAmount( $donation['amount_net'] ) * $exchangeRate,
+			'settled_total_amount' => $this->getAmount( $donation['amount_gross'] ) * $exchangeRate,
+			'exchange_rate' => number_format( $exchangeRate, 6, '.', '' ),
 			'type' => 'donation',
-			'first_name' => '',
-			'last_name' => '',
-			'full_name' => $fullName,
-			'partner_full_name' => $partnerFullName,
-			'donor_advised_fund_organization' => $donorAdvisedFundOrganization,
-			'prefix' => $prefix,
-			'email' => $this->normalizePersonalField(
-				(string)( $donation['donor_email'] ?? $donor['email'] ?? '' )
-			),
+			'is_daf' => !empty( $daf['donor_fund_name'] ),
+			'is_matching_gift' => !empty( $matchingGift ),
+			'is_endowment' => !empty( $properties['Endowment flag?'] ) && $properties['Endowment flag?'] === 'Y',
+			'first_name' => $this->normalizePersonalField( (string)( $donor['first_name'] ?? '' ) ),
+			'last_name' => $this->normalizePersonalField( (string)( $donor['last_name'] ?? '' ) ),
+			'full_name' => $this->normalizePersonalField( (string)( $donor['full_name'] ?? '' ) ),
+			'partner_full_name' => $this->normalizePersonalField( (string)( $properties['Partner'] ?? $donation['partner_full_name'] ?? $donation['partner'] ?? '' ) ),
+			'prefix' => $this->normalizePersonalField( (string)( $donation['prefix'] ?? $properties['Prefix'] ?? '' ) ),
+			'email' => $this->normalizePersonalField( (string)( $donation['donor_email'] ?? $donor['email'] ?? '' ) ),
 			'phone' => $this->normalizePersonalField( (string)( $donation['donor_phone'] ?? '' ) ),
-			'country' => $country,
+			'country' => $this->normalizePersonalField( (string)( $address['country'] ?? $properties['Country'] ?? '' ) ),
 			'postal_code' => $this->normalizePersonalField( (string)( $address['postal_code'] ?? '' ) ),
 			'state_province' => $this->normalizePersonalField( trim( (string)( $address['state'] ?? '' ) ) ),
 			'city' => $this->normalizePersonalField( (string)( $address['city'] ?? '' ) ),
 			'street_address' => $this->normalizePersonalField( (string)( $address['line1'] ?? '' ) ),
 			'supplemental_address_1' => $this->normalizePersonalField( (string)( $address['line2'] ?? '' ) ),
-			'payment_method' => 'ACH',
-			'note' => $note,
+			'payment_method' => 'ach',
+			'note' => $this->getNote( $metadata, $donation, $donor ),
 		];
 	}
 
@@ -672,16 +618,14 @@ class GetReport extends MaintenanceBase {
 			'settled_currency' => $depositCurrency,
 			'exchange_rate' => '1.000000',
 			'settlement_batch_reference' => $this->getSettlementBatchReference( $deposit ),
-			'original_fee_amount' => $this->roundMinorAmount( $deltaMinor, $depositCurrency ),
-			'original_net_amount' => $this->roundMinorAmount( $negativeDeltaMinor, $depositCurrency ),
-			'original_total_amount' => $this->roundMinorAmount( 0, $depositCurrency ),
-			'original_matching_gift_total_amount' => $this->roundMinorAmount( 0, $depositCurrency ),
-			'original_combined_amount' => $this->roundMinorAmount( 0, $depositCurrency ),
-			'settled_fee_amount' => $this->roundMinorAmount( $deltaMinor, $depositCurrency ),
-			'settled_net_amount' => $this->roundMinorAmount( $negativeDeltaMinor, $depositCurrency ),
-			'settled_total_amount' => $this->roundMinorAmount( 0, $depositCurrency ),
-			'settled_matching_gift_total_amount' => $this->roundMinorAmount( 0, $depositCurrency ),
-			'settled_combined_amount' => $this->roundMinorAmount( 0, $depositCurrency ),
+			'original_fee_amount' => $this->round( $deltaMinor, $depositCurrency ),
+			'original_net_amount' => $this->round( $negativeDeltaMinor, $depositCurrency ),
+			'original_total_amount' => $this->round( 0, $depositCurrency ),
+			'original_matching_gift_total_amount' => $this->round( 0, $depositCurrency ),
+			'original_combined_amount' => $this->round( 0, $depositCurrency ),
+			'settled_fee_amount' => $this->round( $deltaMinor, $depositCurrency ),
+			'settled_net_amount' => $this->round( $negativeDeltaMinor, $depositCurrency ),
+			'settled_total_amount' => $this->round( 0, $depositCurrency ),
 			'settled_date' => (string)( $deposit['settled_at'] ?? '' ),
 			'date' => (string)( $deposit['created_at'] ?? '' ),
 			'type' => 'fee',
@@ -767,7 +711,7 @@ class GetReport extends MaintenanceBase {
 	private function getDepositTotalForFilename( array $deposit ): string {
 		$amount = $deposit['transfer']['amount'] ?? 0;
 		$currency = $this->getDepositCurrency( $deposit );
-		return $this->roundMinorAmount( $amount, $currency );
+		return $this->round( $amount, $currency );
 	}
 
 	/**
@@ -1134,16 +1078,13 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Round a minor-unit amount into a decimal string for a currency.
 	 *
-	 * @param mixed $amountMinor
+	 * @param mixed $amount
 	 * @param string $currency
+	 *
 	 * @return string
 	 */
-	private function roundMinorAmount( $amountMinor, string $currency ): string {
-		if ( $amountMinor === null || $amountMinor === '' || !is_numeric( $amountMinor ) ) {
-			$amountMinor = 0;
-		}
-
-		return CurrencyRoundingHelper::round( (float)$amountMinor / 100, $currency );
+	private function round( float $amount, string $currency ): string {
+		return CurrencyRoundingHelper::round( (float)$amount, $currency );
 	}
 
 	/**
@@ -1155,23 +1096,13 @@ class GetReport extends MaintenanceBase {
 	 * @param string $currency
 	 * @return string
 	 */
-	private function convertMinorUnitsToDecimalString( $amountMinor, float $exchangeRate, string $currency ): string {
+	private function getConvertedAmount( $amountMinor, float $exchangeRate, string $currency ): string {
 		if ( $amountMinor === null || $amountMinor === '' || !is_numeric( $amountMinor ) ) {
 			return CurrencyRoundingHelper::round( 0, $currency );
 		}
 
 		$convertedMajor = ( (float)$amountMinor * $exchangeRate ) / 100;
 		return CurrencyRoundingHelper::round( $convertedMajor, $currency );
-	}
-
-	/**
-	 * Convert a decimal currency string to minor units for reconciliation.
-	 *
-	 * @param string $amount
-	 * @return int
-	 */
-	private function decimalStringToMinorUnits( string $amount ): int {
-		return (int)round( (float)$amount * 100 );
 	}
 
 	/**
@@ -1245,6 +1176,51 @@ class GetReport extends MaintenanceBase {
 		}
 
 		Logger::info( 'Saved Chariot JSON file to ' . $fullPath );
+	}
+
+	/**
+	 * @param array $metadata
+	 * @param array $donation
+	 * @param array $donor
+	 *
+	 * @return string
+	 */
+	private function getNote( array $metadata, array $donation, array $donor ): string {
+		$acknowledgement = trim( (string)( $metadata['Acknowledgement'] ?? '' ) );
+		$note = (string)( $donation['note'] ?? '' );
+		if ( $note === '' ) {
+			$note = (string)( $donation['purpose'] ?? '' );
+		}
+		if ( $note === '' ) {
+			$note = (string)( $metadata['Description'] ?? '' );
+		}
+		if ( $acknowledgement !== '' && strcasecmp( $acknowledgement, $this->normalizePersonalField( (string)( $donor['full_name'] ?? '' ) ) ) !== 0 ) {
+			$note = $note !== ''
+				? $note . ' | Acknowledgement: ' . $acknowledgement
+				: 'Acknowledgement: ' . $acknowledgement;
+		}
+		return $note;
+	}
+
+	/**
+	 * @param mixed $field
+	 *
+	 * @return float
+	 */
+	public function getAmount( string $field ): float {
+		$totalMinor = (float)( $field ?? 0 );
+		return $totalMinor / 100;
+	}
+
+	/**
+	 * @param mixed $field
+	 * @param string $settledCurrency
+	 *
+	 * @return float
+	 */
+	public function getRoundedAmount( string $field, string $settledCurrency ): float {
+		$feeMinor = $this->getAmount( $field );
+		return $this->round( $feeMinor, $settledCurrency );
 	}
 }
 
