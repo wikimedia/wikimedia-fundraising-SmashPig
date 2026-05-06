@@ -11,7 +11,9 @@ use SmashPig\PaymentProviders\Adyen\ValidationErrorMapper;
 use SmashPig\PaymentProviders\Responses\PaymentProviderExtendedResponse;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
-class ResponseMapper {
+abstract class ResponseMapper {
+
+	abstract protected function mapIDs( PaymentProviderResponse $response, array $rawResponse ): void;
 
 	/**
 	 * Maps a couple of common properties of Adyen Checkout API responses to our
@@ -92,14 +94,6 @@ class ResponseMapper {
 			return false;
 		}
 		return true;
-	}
-
-	protected function mapIDs( PaymentProviderResponse $response, array $rawResponse ): void {
-		// Map trxn id if present. Redirect responses won't have this
-		// yet, so no need to throw an error when this is empty.
-		if ( !empty( $rawResponse['pspReference'] ) ) {
-			$response->setGatewayTxnId( $rawResponse['pspReference'] );
-		}
 	}
 
 	/**

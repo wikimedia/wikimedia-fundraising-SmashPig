@@ -6,6 +6,7 @@ use SmashPig\PaymentProviders\Responses\PaymentProviderExtendedResponse;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
 class ApprovePaymentResponseMapper extends ResponseMapper {
+
 	protected function mapIDs( PaymentProviderResponse $response, array $rawResponse ): void {
 		if ( !( $response instanceof PaymentProviderExtendedResponse ) ) {
 			throw new \InvalidArgumentException(
