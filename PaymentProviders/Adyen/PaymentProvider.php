@@ -16,6 +16,7 @@ use SmashPig\PaymentData\ReferenceData\CurrencyRates;
 use SmashPig\PaymentData\ReferenceData\NationalCurrencies;
 use SmashPig\PaymentData\SavedPaymentDetails;
 use SmashPig\PaymentData\StatusNormalizer;
+use SmashPig\PaymentProviders\Adyen\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\ICancelAutoRescueProvider;
 use SmashPig\PaymentProviders\IDeleteDataProvider;

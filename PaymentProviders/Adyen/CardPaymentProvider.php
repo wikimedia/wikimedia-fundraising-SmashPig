@@ -5,6 +5,7 @@ namespace SmashPig\PaymentProviders\Adyen;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\StatusNormalizer;
+use SmashPig\PaymentProviders\Adyen\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 
 class CardPaymentProvider extends PaymentProvider {

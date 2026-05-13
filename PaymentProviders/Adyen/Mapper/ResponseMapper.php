@@ -1,12 +1,13 @@
 <?php
 
-namespace SmashPig\PaymentProviders\Adyen;
+namespace SmashPig\PaymentProviders\Adyen\Mapper;
 
 use Psr\Log\LogLevel;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\PaymentError;
 use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\ErrorCode;
+use SmashPig\PaymentProviders\Adyen\ValidationErrorMapper;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
 class ResponseMapper {

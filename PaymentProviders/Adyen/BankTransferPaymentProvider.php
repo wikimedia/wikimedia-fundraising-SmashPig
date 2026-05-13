@@ -7,6 +7,7 @@ use SmashPig\Core\PaymentError;
 use SmashPig\PaymentData\ErrorCode;
 use SmashPig\PaymentData\FinalStatus;
 use SmashPig\PaymentData\StatusNormalizer;
+use SmashPig\PaymentProviders\Adyen\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\Responses\CreatePaymentResponse;
 
 class BankTransferPaymentProvider extends PaymentProvider {
