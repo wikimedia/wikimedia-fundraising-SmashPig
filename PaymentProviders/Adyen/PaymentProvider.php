@@ -17,6 +17,7 @@ use SmashPig\PaymentData\ReferenceData\NationalCurrencies;
 use SmashPig\PaymentData\SavedPaymentDetails;
 use SmashPig\PaymentData\StatusNormalizer;
 use SmashPig\PaymentProviders\Adyen\Mapper\ApprovePaymentResponseMapper;
+use SmashPig\PaymentProviders\Adyen\Mapper\RefundPaymentResponseMapper;
 use SmashPig\PaymentProviders\Adyen\Mapper\ResponseMapper;
 use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\ICancelAutoRescueProvider;
@@ -293,10 +294,7 @@ abstract class PaymentProvider implements
 				[ FinalStatus::COMPLETE ]
 			);
 		}
-		( new ResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
-		if ( isset( $rawResponse['pspReference'] ) ) {
-			$response->setGatewayRefundId( $rawResponse['pspReference'] );
-		}
+		( new RefundPaymentResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
 		return $response;
 	}
 
