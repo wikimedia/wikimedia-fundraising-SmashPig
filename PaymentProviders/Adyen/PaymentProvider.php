@@ -16,6 +16,9 @@ use SmashPig\PaymentData\ReferenceData\CurrencyRates;
 use SmashPig\PaymentData\ReferenceData\NationalCurrencies;
 use SmashPig\PaymentData\SavedPaymentDetails;
 use SmashPig\PaymentData\StatusNormalizer;
+use SmashPig\PaymentProviders\Adyen\Mapper\ApprovePaymentResponseMapper;
+use SmashPig\PaymentProviders\Adyen\Mapper\CreatePaymentResponseMapper;
+use SmashPig\PaymentProviders\Adyen\Mapper\RefundPaymentResponseMapper;
 use SmashPig\PaymentProviders\ICancelablePaymentProvider;
 use SmashPig\PaymentProviders\ICancelAutoRescueProvider;
 use SmashPig\PaymentProviders\IDeleteDataProvider;
@@ -160,7 +163,7 @@ abstract class PaymentProvider implements
 		if ( isset( $rawResponse['additionalData'] ) ) {
 			$this->mapAdditionalData( $rawResponse['additionalData'], $response );
 		}
-		( new ResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
+		( new CreatePaymentResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
 		$this->mapSuspectedFraud( $response, $rawResponse );
 		return $response;
 	}
@@ -257,13 +260,7 @@ abstract class PaymentProvider implements
 				[ FinalStatus::COMPLETE ]
 			);
 		}
-		( new ResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
-		if ( !empty( $rawResponse['pspReference'] ) ) {
-			$response->setCaptureID( $rawResponse['pspReference'] );
-		}
-		if ( !empty( $rawResponse['originalReference'] ) ) {
-			$response->setAuthID( $rawResponse['originalReference'] );
-		}
+		( new ApprovePaymentResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
 		return $response;
 	}
 
@@ -297,10 +294,7 @@ abstract class PaymentProvider implements
 				[ FinalStatus::COMPLETE ]
 			);
 		}
-		( new ResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
-		if ( isset( $rawResponse['pspReference'] ) ) {
-			$response->setGatewayRefundId( $rawResponse['pspReference'] );
-		}
+		( new RefundPaymentResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
 		return $response;
 	}
 
@@ -336,7 +330,7 @@ abstract class PaymentProvider implements
 				[ FinalStatus::CANCELLED ]
 			);
 		}
-		( new ResponseMapper() )->mapGatewayTxnIdAndErrors(
+		( new CreatePaymentResponseMapper() )->mapGatewayTxnIdAndErrors(
 			$response,
 			$rawResponse
 		);
@@ -594,8 +588,7 @@ abstract class PaymentProvider implements
 			);
 		}
 
-		( new ResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
-		$this->setAuthIDFromPspReference( $response, $rawResponse );
+		( new CreatePaymentResponseMapper() )->mapGatewayTxnIdAndErrors( $response, $rawResponse );
 		return $response;
 	}
 
@@ -613,12 +606,6 @@ abstract class PaymentProvider implements
 			] ) ) {
 				$response->setSuspectedFraud( true );
 			}
-		}
-	}
-
-	protected function setAuthIDFromPspReference( PaymentProviderExtendedResponse $response, array $rawResponse ) {
-		if ( !empty( $rawResponse['pspReference'] ) ) {
-			$response->setAuthID( $rawResponse['pspReference'] );
 		}
 	}
 }

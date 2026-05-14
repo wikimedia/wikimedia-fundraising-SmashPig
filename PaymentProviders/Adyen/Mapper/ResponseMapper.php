@@ -1,15 +1,19 @@
 <?php
 
-namespace SmashPig\PaymentProviders\Adyen;
+namespace SmashPig\PaymentProviders\Adyen\Mapper;
 
 use Psr\Log\LogLevel;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\PaymentError;
 use SmashPig\Core\ValidationError;
 use SmashPig\PaymentData\ErrorCode;
+use SmashPig\PaymentProviders\Adyen\ValidationErrorMapper;
+use SmashPig\PaymentProviders\Responses\PaymentProviderExtendedResponse;
 use SmashPig\PaymentProviders\Responses\PaymentProviderResponse;
 
-class ResponseMapper {
+abstract class ResponseMapper {
+
+	abstract protected function mapIDs( PaymentProviderResponse $response, array $rawResponse ): void;
 
 	/**
 	 * Maps a couple of common properties of Adyen Checkout API responses to our
@@ -36,11 +40,7 @@ class ResponseMapper {
 			);
 			Logger::debug( $responseError, $rawResponse );
 		} else {
-			// Map trxn id if present. Redirect responses won't have this
-			// yet, so no need to throw an error when this is empty.
-			if ( !empty( $rawResponse['pspReference'] ) ) {
-				$response->setGatewayTxnId( $rawResponse['pspReference'] );
-			}
+			$this->mapIDs( $response, $rawResponse );
 			if ( !empty( $rawResponse['errorCode'] ) ) {
 				$badField = ValidationErrorMapper::getValidationErrorField( $rawResponse['errorCode'] );
 				if ( $badField !== null ) {
@@ -94,5 +94,26 @@ class ResponseMapper {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * 'Modification' requests (e.g. approve, refund) have a paymentPspReference
+	 * that refers to the authorization. The authorization ID is the one that should
+	 * be stored for later references to the payment, so we assign it to the
+	 * gateway txn ID property.
+	 * @param PaymentProviderResponse $response
+	 * @param array $rawResponse
+	 * @return void
+	 */
+	protected function mapPaymentPspReference(
+		PaymentProviderResponse $response, array $rawResponse
+	): void {
+		if ( isset( $rawResponse['paymentPspReference'] ) ) {
+			$response->setGatewayTxnId( $rawResponse['paymentPspReference'] );
+			if ( $response instanceof PaymentProviderExtendedResponse ) {
+				$response->setAuthID( $rawResponse['paymentPspReference'] );
+				$response->setBackendProcessorTransactionId( $rawResponse['paymentPspReference'] );
+			}
+		}
 	}
 }
