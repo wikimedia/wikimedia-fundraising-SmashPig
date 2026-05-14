@@ -60,7 +60,7 @@
         "symfony/http-foundation": "^5|^6",
         "symfony/yaml": "^4|^5|^6|^7",
         "psr/cache": "^3.0",
-        "psr/log": "^3.0",
+        "psr/log": "^1|^2|^3",
         "psr/container": "~1.0 || ~2.0",
         "corneltek/getoptionkit": "^2.5",
         "gr4vy/gr4vy-php": "0.27",
