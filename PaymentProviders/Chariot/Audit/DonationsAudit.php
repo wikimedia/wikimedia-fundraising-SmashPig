@@ -48,6 +48,7 @@ class DonationsAudit implements AuditParser {
 			'backend_processor' => $row['backend_processor'],
 			'backend_processor_txn_id' => $row['backend_processor_txn_id'],
 			'banking_institution' => $row['banking_institution'],
+			'matching_gift_organization' => $row['matching_gift_organization'],
 			'payment_method' => $row['payment_method'],
 			'exchange_rate' => $row['exchange_rate'],
 			'original_total_amount' => $row['original_total_amount'],
