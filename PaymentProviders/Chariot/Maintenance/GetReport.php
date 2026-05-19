@@ -24,6 +24,9 @@ class GetReport extends MaintenanceBase {
 	private const MAX_ROUNDING_ADJUSTMENT_MINOR = 5;
 	private const ROUNDING_FEE_NOTE = 'FX rounding adjustment';
 
+	/**
+	 * These columns appear in the final csv.
+	 */
 	private const AUDIT_CSV_COLUMNS = [
 		'gateway',
 		'audit_file_gateway',
@@ -69,10 +72,13 @@ class GetReport extends MaintenanceBase {
 
 	/**
 	 * List of known paths in the json, if more are added an 'unknowns' file will be generated.
+	 *
+	 * We track these so that if additional columns are added we 'notice'.
 	 */
 	private const KNOWN_DEPOSIT_PATHS = [
 		'id',
 		'created_at',
+		'bank_created_at',
 		'updated_at',
 		'status',
 		'payment_source_id',
@@ -103,6 +109,11 @@ class GetReport extends MaintenanceBase {
 		'transfer.check_deposit.status',
 	];
 
+	/**
+	 * Fields that relate to donations.
+	 *
+	 * We track these so that if additional columns are added we 'notice'.
+	 */
 	private const KNOWN_DONATION_PATHS = [
 		'id',
 		'created_at',
@@ -115,6 +126,7 @@ class GetReport extends MaintenanceBase {
 		'match_amount',
 		'payment_status',
 		'payment_source_id',
+		'external_id',
 		'note',
 		'purpose',
 		'artifacts',
@@ -558,7 +570,7 @@ class GetReport extends MaintenanceBase {
 			'audit_file_gateway' => 'Chariot Disbursements',
 			'backend_processor' => (string)( $platform['name'] ?? '' ),
 			'gateway_txn_id' => $donation['id'],
-			'backend_processor_txn_id' => (string)( $platform['platform_grant_id'] ?? '' ),
+			'backend_processor_txn_id' => (string)$donation['external_id'],
 			'banking_institution' => trim( (string)( $daf['organization_name'] ?? '' ) ),
 			'donor_advised_fund_name' => $daf['donor_fund_name'] ?? '',
 			'original_currency' => $originalCurrency,
@@ -578,6 +590,7 @@ class GetReport extends MaintenanceBase {
 			'type' => 'donation',
 			'is_daf' => !empty( $daf['donor_fund_name'] ),
 			'is_matching_gift' => !empty( $matchingGift ),
+			'matching_gift_organization' => $matchingGift['company_name'],
 			'is_endowment' => !empty( $properties['Endowment flag?'] ) && $properties['Endowment flag?'] === 'Y',
 			'first_name' => $this->normalizePersonalField( (string)( $donor['first_name'] ?? '' ) ),
 			'last_name' => $this->normalizePersonalField( (string)( $donor['last_name'] ?? '' ) ),
