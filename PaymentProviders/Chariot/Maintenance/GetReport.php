@@ -591,7 +591,7 @@ class GetReport extends MaintenanceBase {
 			'type' => 'donation',
 			'is_daf' => !empty( $daf['donor_fund_name'] ),
 			'is_matching_gift' => !empty( $matchingGift ),
-			'matching_gift_organization' => $matchingGift['company_name'],
+			'matching_gift_organization' => $matchingGift['company_name'] ?? '',
 			'is_endowment' => !empty( $properties['Endowment flag?'] ) && $properties['Endowment flag?'] === 'Y',
 			'first_name' => $this->normalizePersonalField( (string)( $donor['first_name'] ?? '' ) ),
 			'last_name' => $this->normalizePersonalField( (string)( $donor['last_name'] ?? '' ) ),
