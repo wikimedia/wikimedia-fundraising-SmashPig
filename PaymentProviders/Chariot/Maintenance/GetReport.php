@@ -102,6 +102,7 @@ class GetReport extends MaintenanceBase {
 		'transfer.inbound_ach_transfer.trace_number',
 		'transfer.inbound_ach_transfer.effective_date',
 		'transfer.inbound_ach_transfer.status',
+		'transfer.inbound_ach_transfer.receiver_id',
 		'transfer.check_deposit',
 		'transfer.check_deposit.auxiliary_on_us',
 		'transfer.check_deposit.routing_number',
