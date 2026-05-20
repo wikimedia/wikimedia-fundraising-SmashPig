@@ -188,6 +188,7 @@ class GetReport extends MaintenanceBase {
 		'properties.Groundswell Company Name',
 		'properties.Marked for export',
 		'properties.Endowment flag?',
+		'properties.CRM status',
 		'settlement',
 		'settlement.deposit_id',
 		'settlement.received_at',
