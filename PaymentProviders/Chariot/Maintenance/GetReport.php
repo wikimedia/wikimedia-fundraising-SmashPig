@@ -38,6 +38,7 @@ class GetReport extends MaintenanceBase {
 		'is_daf',
 		'is_endowment',
 		'donor_advised_fund_name',
+		'matching_gift_organization',
 		'original_total_amount',
 		'original_fee_amount',
 		'original_net_amount',
