@@ -68,6 +68,8 @@ class PaymentProviderValidatorTest extends TestCase {
 			'country' => 'US',
 			'order_id' => 'TEST-123',
 			'email' => 'test@example.org',
+			'first_name' => 'test',
+			'last_name' => 'example',
 		];
 
 		$this->validator->validateRecurringCreatePaymentInput( $params );
@@ -92,6 +94,64 @@ class PaymentProviderValidatorTest extends TestCase {
 		}
 	}
 
+	/**
+	 * @dataProvider provideRecurringNameTestData
+	 */
+	public function testRecurringNameCheckSplitsFullName( array $params, ?string $expectedException, array $expectedResults = [] ): void {
+		if ( $expectedException ) {
+			$this->expectException( $expectedException );
+
+			// If you need to assert specific keys inside the ValidationException data:
+			try {
+				$this->validator->validateRecurringCreatePaymentInput( $params );
+			} catch ( ValidationException $e ) {
+				foreach ( $expectedResults as $key ) {
+					$this->assertArrayHasKey( $key, $e->getData() );
+				}
+				throw $e; // Re-throw so expectException catches it and passes the test
+			}
+		} else {
+			// Test successful split execution
+			$this->validator->validateRecurringCreatePaymentInput( $params );
+			$this->assertEquals( $expectedResults['first_name'], $params['first_name'] );
+			$this->assertEquals( $expectedResults['last_name'], $params['last_name'] );
+		}
+	}
+
+	public function provideRecurringNameTestData(): array {
+		$baseParams = [
+			'recurring_payment_token' => 'token-123',
+			'amount' => '10.00',
+			'currency' => 'USD',
+			'country' => 'US',
+			'order_id' => 'TEST-123',
+			'email' => 'test@example.org',
+		];
+
+		return [
+			'Missing both names throws exception' => [
+				array_merge( $baseParams, [ 'first_name' => '', 'last_name' => '' ] ),
+				ValidationException::class,
+				[ 'first_name', 'last_name' ] // Expected error keys
+			],
+			'Missing last name with single-word first name throws exception' => [
+				array_merge( $baseParams, [ 'first_name' => 'asdf', 'last_name' => '' ] ),
+				ValidationException::class,
+				[ 'last_name' ] // Expected error keys
+			],
+			'Missing last name with multi-word first name successfully splits' => [
+				array_merge( $baseParams, [ 'first_name' => 'asdf ssss', 'last_name' => '' ] ),
+				null, // No exception expected
+				[ 'first_name' => 'asdf', 'last_name' => 'ssss' ] // Expected outcome
+			],
+			'Missing first name with multi-word last name successfully splits' => [
+				array_merge( $baseParams, [ 'first_name' => '', 'last_name' => 'xxx L yyyy' ] ),
+				null, // No exception expected
+				[ 'first_name' => 'xxx', 'last_name' => 'L yyyy' ] // Expected outcome
+			],
+		];
+	}
+
 	public function testValidateCreatePaymentInputRoutesCorrectly(): void {
 		// With token -> recurring (requires email)
 		$recurringParams = [
@@ -99,7 +159,7 @@ class PaymentProviderValidatorTest extends TestCase {
 			'amount' => '10.00',
 			'currency' => 'USD',
 			'country' => 'US',
-			'order_id' => 'TEST-123',
+			'order_id' => 'TEST-123'
 		];
 
 		try {
