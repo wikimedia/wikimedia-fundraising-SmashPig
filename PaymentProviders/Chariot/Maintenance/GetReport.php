@@ -69,6 +69,10 @@ class GetReport extends MaintenanceBase {
 		'supplemental_address_1',
 		'payment_method',
 		'note',
+		'dafpay_frequency',
+		'dafpay_tracking_id',
+		'dafpay_type',
+		'dafpay_url',
 	];
 
 	/**
@@ -521,12 +525,9 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function flattenDepositPayoutRowForAuditCsv( array $deposit, array $donations ): array {
-		$transfer = $deposit['transfer'];
-		$paymentMethod = empty( $transfer['check_deposit'] ) ? 'EFT' : 'Check';
-		if ( !empty( $transfer['inbound_ach_transfer'] ) ) {
-			$paymentMethod = 'ACH';
-		}
+		$paymentMethod = $this->getPaymentMethod( $deposit );
 
+		$transfer = $deposit['transfer'];
 		$currency = (string)( $transfer['currency'] ?? '' );
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 		$amount = $this->getAmount( $transfer['amount'] );
@@ -568,6 +569,7 @@ class GetReport extends MaintenanceBase {
 		$properties = $donation['properties'] ?? [];
 		$originalCurrency = $donation['currency'];
 		$settledCurrency = $this->getDepositCurrency( $deposit );
+		$paymentMethod = $this->getPaymentMethod( $deposit, $donation );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
@@ -609,8 +611,12 @@ class GetReport extends MaintenanceBase {
 			'city' => $this->normalizePersonalField( (string)( $address['city'] ?? '' ) ),
 			'street_address' => $this->normalizePersonalField( (string)( $address['line1'] ?? '' ) ),
 			'supplemental_address_1' => $this->normalizePersonalField( (string)( $address['line2'] ?? '' ) ),
-			'payment_method' => 'ach',
+			'payment_method' => $paymentMethod,
 			'note' => $this->getNote( $metadata, $donation, $donor ),
+			'dafpay_frequency' => $donation['dafpay_frequency'] ?? '',
+			'dafpay_tracking_id' => $donation['dafpay_tracking_id'] ?? '',
+			'dafpay_type' => $donation['dafpay_type'] ?? '',
+			'dafpay_url' => $donation['dafpay_url'] ?? '',
 		];
 	}
 
@@ -1102,6 +1108,18 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function round( float $amount, string $currency ): string {
 		return CurrencyRoundingHelper::round( (float)$amount, $currency );
+	}
+
+	public function getPaymentMethod( array $deposit, array $donation = [] ): string {
+		if ( !empty( $donation['dafpay_url'] ) ) {
+			return 'DAFpay';
+		}
+		$transfer = $deposit['transfer'];
+		$paymentMethod = empty( $transfer['check_deposit'] ) ? 'EFT' : 'Check';
+		if ( !empty( $transfer['inbound_ach_transfer'] ) ) {
+			$paymentMethod = 'ACH';
+		}
+		return $paymentMethod;
 	}
 
 	/**
