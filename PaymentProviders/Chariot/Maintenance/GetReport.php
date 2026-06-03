@@ -457,6 +457,7 @@ class GetReport extends MaintenanceBase {
 	 * @return void
 	 */
 	private function writeDepositAuditCsv( string $path, string $suffix, string $timestamp, array $deposit, array $donations ): void {
+		$rows = $this->buildAuditRows( $deposit, $donations );
 		$filename = $this->buildFilename( '', $suffix, 'csv', $timestamp );
 		$handle = fopen( $path . '/' . $filename, 'w' );
 		if ( !$handle ) {
@@ -464,44 +465,6 @@ class GetReport extends MaintenanceBase {
 		}
 
 		fputcsv( $handle, self::AUDIT_CSV_COLUMNS );
-
-		$exchangeRate = $this->getBatchExchangeRate( $deposit, $donations );
-
-		$rows = [];
-		foreach ( $donations as $donation ) {
-			if ( is_array( $donation ) ) {
-				$rows[] = $this->flattenDonationForAuditCsv( $deposit, $donation, $exchangeRate );
-			}
-		}
-
-		$convertedNetMinorSum = 0;
-		foreach ( $rows as $row ) {
-			if ( ( $row['type'] ?? '' ) === 'donation' ) {
-				$rounded = (int)round( (float)( $row['original_net_amount'] * 100 * $exchangeRate ) );
-				$convertedNetMinorSum += $rounded;
-			}
-		}
-
-		$depositNetMinor = (int)( $deposit['transfer']['amount'] ?? 0 );
-		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
-
-		if ( abs( $deltaMinor ) > self::MAX_ROUNDING_ADJUSTMENT_MINOR ) {
-			fclose( $handle );
-			throw new \RuntimeException(
-				sprintf(
-					'FX rounding adjustment of %d minor units exceeds maximum allowed %d for deposit %s',
-					$deltaMinor,
-					self::MAX_ROUNDING_ADJUSTMENT_MINOR,
-					$this->getDepositId( $deposit )
-				)
-			);
-		}
-
-		if ( $deltaMinor !== 0 ) {
-			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor );
-		}
-
-		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );
 
 		foreach ( $rows as $row ) {
 			fputcsv(
@@ -1120,6 +1083,52 @@ class GetReport extends MaintenanceBase {
 			$paymentMethod = 'ACH';
 		}
 		return $paymentMethod;
+	}
+
+	/**
+	 * @param array $deposit
+	 * @param array $donations
+	 *
+	 * @return array
+	 */
+	private function buildAuditRows( array $deposit, array $donations ): array {
+		$exchangeRate = $this->getBatchExchangeRate( $deposit, $donations );
+
+		$rows = [];
+		foreach ( $donations as $donation ) {
+			if ( is_array( $donation ) ) {
+				$rows[] = $this->flattenDonationForAuditCsv( $deposit, $donation, $exchangeRate );
+			}
+		}
+
+		$convertedNetMinorSum = 0;
+		foreach ( $rows as $row ) {
+			if ( ( $row['type'] ?? '' ) === 'donation' ) {
+				$rounded = (int)round( (float)( $row['original_net_amount'] * 100 * $exchangeRate ) );
+				$convertedNetMinorSum += $rounded;
+			}
+		}
+
+		$depositNetMinor = (int)( $deposit['transfer']['amount'] ?? 0 );
+		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
+
+		if ( abs( $deltaMinor ) > self::MAX_ROUNDING_ADJUSTMENT_MINOR ) {
+			throw new \RuntimeException(
+				sprintf(
+					'FX rounding adjustment of %d minor units exceeds maximum allowed %d for deposit %s',
+					$deltaMinor,
+					self::MAX_ROUNDING_ADJUSTMENT_MINOR,
+					$this->getDepositId( $deposit )
+				)
+			);
+		}
+
+		if ( $deltaMinor !== 0 ) {
+			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor );
+		}
+
+		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );
+		return $rows;
 	}
 
 	/**
