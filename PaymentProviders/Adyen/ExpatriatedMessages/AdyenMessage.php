@@ -116,7 +116,18 @@ abstract class AdyenMessage extends ListenerMessage {
 			$this->backendProcessor = 'adyen';
 			$this->backendProcessorTransactionID = $notification['pspReference'];
 			$this->backendProcessorParentTransactionID = $notification['originalReference'] ?? null;
-			$this->orchestratorTransactionID = Base62Helper::toUuid( $notification['merchantReference'] );
+			// Some Adyen CAPTURE webhooks for Gravy-orchestrated trxns arrive
+			// with a colon-separated merchantReference. The colon is not in the
+			// Base62 alphabet, so toUuid() would fail. Leave orchestratorTransactionID unset in these cases.
+			// CaptureResponseAction::execute:22 drops these messages anyway later on in this check:
+			//
+			//	drop Gr4vy initiated message
+			//			if ( $msg->gateway === 'gravy' ) {
+			//				return true;
+			//			}
+			if ( !str_contains( $notification['merchantReference'], ':' ) ) {
+				$this->orchestratorTransactionID = Base62Helper::toUuid( $notification['merchantReference'] );
+			}
 			if ( isset( $this->additionalData['metadata.gr4vy_tx_ref'] ) ) {
 				$this->merchantReference = $this->additionalData['metadata.gr4vy_tx_ref'];
 			}
