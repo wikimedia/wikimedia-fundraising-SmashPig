@@ -69,6 +69,10 @@ class GetReport extends MaintenanceBase {
 		'supplemental_address_1',
 		'payment_method',
 		'note',
+		'dafpay_frequency',
+		'dafpay_tracking_id',
+		'dafpay_type',
+		'dafpay_url',
 	];
 
 	/**
@@ -453,6 +457,7 @@ class GetReport extends MaintenanceBase {
 	 * @return void
 	 */
 	private function writeDepositAuditCsv( string $path, string $suffix, string $timestamp, array $deposit, array $donations ): void {
+		$rows = $this->buildAuditRows( $deposit, $donations );
 		$filename = $this->buildFilename( '', $suffix, 'csv', $timestamp );
 		$handle = fopen( $path . '/' . $filename, 'w' );
 		if ( !$handle ) {
@@ -460,44 +465,6 @@ class GetReport extends MaintenanceBase {
 		}
 
 		fputcsv( $handle, self::AUDIT_CSV_COLUMNS );
-
-		$exchangeRate = $this->getBatchExchangeRate( $deposit, $donations );
-
-		$rows = [];
-		foreach ( $donations as $donation ) {
-			if ( is_array( $donation ) ) {
-				$rows[] = $this->flattenDonationForAuditCsv( $deposit, $donation, $exchangeRate );
-			}
-		}
-
-		$convertedNetMinorSum = 0;
-		foreach ( $rows as $row ) {
-			if ( ( $row['type'] ?? '' ) === 'donation' ) {
-				$rounded = (int)round( (float)( $row['original_net_amount'] * 100 * $exchangeRate ) );
-				$convertedNetMinorSum += $rounded;
-			}
-		}
-
-		$depositNetMinor = (int)( $deposit['transfer']['amount'] ?? 0 );
-		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
-
-		if ( abs( $deltaMinor ) > self::MAX_ROUNDING_ADJUSTMENT_MINOR ) {
-			fclose( $handle );
-			throw new \RuntimeException(
-				sprintf(
-					'FX rounding adjustment of %d minor units exceeds maximum allowed %d for deposit %s',
-					$deltaMinor,
-					self::MAX_ROUNDING_ADJUSTMENT_MINOR,
-					$this->getDepositId( $deposit )
-				)
-			);
-		}
-
-		if ( $deltaMinor !== 0 ) {
-			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor );
-		}
-
-		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );
 
 		foreach ( $rows as $row ) {
 			fputcsv(
@@ -521,12 +488,9 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function flattenDepositPayoutRowForAuditCsv( array $deposit, array $donations ): array {
-		$transfer = $deposit['transfer'];
-		$paymentMethod = empty( $transfer['check_deposit'] ) ? 'EFT' : 'Check';
-		if ( !empty( $transfer['inbound_ach_transfer'] ) ) {
-			$paymentMethod = 'ACH';
-		}
+		$paymentMethod = $this->getPaymentMethod( $deposit );
 
+		$transfer = $deposit['transfer'];
 		$currency = (string)( $transfer['currency'] ?? '' );
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 		$amount = $this->getAmount( $transfer['amount'] );
@@ -568,6 +532,7 @@ class GetReport extends MaintenanceBase {
 		$properties = $donation['properties'] ?? [];
 		$originalCurrency = $donation['currency'];
 		$settledCurrency = $this->getDepositCurrency( $deposit );
+		$paymentMethod = $this->getPaymentMethod( $deposit, $donation );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
@@ -609,8 +574,12 @@ class GetReport extends MaintenanceBase {
 			'city' => $this->normalizePersonalField( (string)( $address['city'] ?? '' ) ),
 			'street_address' => $this->normalizePersonalField( (string)( $address['line1'] ?? '' ) ),
 			'supplemental_address_1' => $this->normalizePersonalField( (string)( $address['line2'] ?? '' ) ),
-			'payment_method' => 'ach',
+			'payment_method' => $paymentMethod,
 			'note' => $this->getNote( $metadata, $donation, $donor ),
+			'dafpay_frequency' => $donation['dafpay_frequency'] ?? '',
+			'dafpay_tracking_id' => $donation['dafpay_tracking_id'] ?? '',
+			'dafpay_type' => $donation['dafpay_type'] ?? '',
+			'dafpay_url' => $donation['dafpay_url'] ?? '',
 		];
 	}
 
@@ -1102,6 +1071,64 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function round( float $amount, string $currency ): string {
 		return CurrencyRoundingHelper::round( (float)$amount, $currency );
+	}
+
+	public function getPaymentMethod( array $deposit, array $donation = [] ): string {
+		if ( !empty( $donation['dafpay_url'] ) ) {
+			return 'DAFpay';
+		}
+		$transfer = $deposit['transfer'];
+		$paymentMethod = empty( $transfer['check_deposit'] ) ? 'EFT' : 'Check';
+		if ( !empty( $transfer['inbound_ach_transfer'] ) ) {
+			$paymentMethod = 'ACH';
+		}
+		return $paymentMethod;
+	}
+
+	/**
+	 * @param array $deposit
+	 * @param array $donations
+	 *
+	 * @return array
+	 */
+	private function buildAuditRows( array $deposit, array $donations ): array {
+		$exchangeRate = $this->getBatchExchangeRate( $deposit, $donations );
+
+		$rows = [];
+		foreach ( $donations as $donation ) {
+			if ( is_array( $donation ) ) {
+				$rows[] = $this->flattenDonationForAuditCsv( $deposit, $donation, $exchangeRate );
+			}
+		}
+
+		$convertedNetMinorSum = 0;
+		foreach ( $rows as $row ) {
+			if ( ( $row['type'] ?? '' ) === 'donation' ) {
+				$rounded = (int)round( (float)( $row['original_net_amount'] * 100 * $exchangeRate ) );
+				$convertedNetMinorSum += $rounded;
+			}
+		}
+
+		$depositNetMinor = (int)( $deposit['transfer']['amount'] ?? 0 );
+		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
+
+		if ( abs( $deltaMinor ) > self::MAX_ROUNDING_ADJUSTMENT_MINOR ) {
+			throw new \RuntimeException(
+				sprintf(
+					'FX rounding adjustment of %d minor units exceeds maximum allowed %d for deposit %s',
+					$deltaMinor,
+					self::MAX_ROUNDING_ADJUSTMENT_MINOR,
+					$this->getDepositId( $deposit )
+				)
+			);
+		}
+
+		if ( $deltaMinor !== 0 ) {
+			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor );
+		}
+
+		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );
+		return $rows;
 	}
 
 	/**
