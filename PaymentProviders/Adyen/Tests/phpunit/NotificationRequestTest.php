@@ -193,6 +193,35 @@ class NotificationRequestTest extends BaseAdyenTestCase {
 		$this->assertStringContainsString( "[accepted]", $getContent );
 	}
 
+	public function testGravyCaptureFailedMessageAcceptedAndDropped(): void {
+		// Splice a colon-separated merchantReference into the CaptureFailed
+		// fixture to reproduce the message Adyen sends for Gravy-orchestrated
+		// capture failures.
+		$webhook = json_decode( file_get_contents( __DIR__ . '/../Data/ipn_CaptureFailed.json' ), true );
+
+		$webhook['notificationItems'][0]['NotificationRequestItem']['merchantReference'] =
+			'6uZ3kxuUjdKWTQ9GD9sUQF:7bVaCLc5lHvTDfrLKbJtkf';
+
+		$request = $this->getMockBuilder( Request::class )->disableOriginalConstructor()
+			->getMock();
+		$response = $this->getMockBuilder( Response::class )->disableOriginalConstructor()
+			->getMock();
+		$request->method( 'getRawRequest' )
+			->willReturn( json_encode( $webhook ) );
+		// RestListener::execute only calls setStatusCode from its catch blocks,
+		// so this asserts no exception bubbled up from message construction -
+		// i.e. Base62Helper::toUuid was not called on the colon-separated reference.
+		$response->expects( $this->never() )->method( 'setStatusCode' );
+
+		ob_start();
+		$this->rest_listener->execute( $request, $response );
+		$getContent = ob_get_contents();
+		ob_end_clean();
+		$message = $this->jobsAdyenQueue->pop();
+		$this->assertNull( $message );
+		$this->assertStringContainsString( "[accepted]", $getContent );
+	}
+
 	public function testChargeBackMessageReceivedAndAcknowledged() {
 		$request = $this->getMockBuilder( Request::class )->disableOriginalConstructor()
 		->getMock();
