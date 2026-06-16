@@ -569,7 +569,7 @@ class GetReport extends MaintenanceBase {
 			'prefix' => $this->normalizePersonalField( (string)( $donation['prefix'] ?? $properties['Prefix'] ?? '' ) ),
 			'email' => $this->normalizePersonalField( (string)( $donation['donor_email'] ?? $donor['email'] ?? '' ) ),
 			'phone' => $this->normalizePersonalField( (string)( $donation['donor_phone'] ?? '' ) ),
-			'country' => $this->normalizePersonalField( (string)( $address['country'] ?? $properties['Country'] ?? '' ) ),
+			'country' => $this->normalizePersonalField( (string)( $properties['Country'] ?? $address['country'] ?? '' ) ),
 			'postal_code' => $this->normalizePersonalField( (string)( $address['postal_code'] ?? '' ) ),
 			'state_province' => $this->normalizePersonalField( trim( (string)( $address['state'] ?? '' ) ) ),
 			'city' => $this->normalizePersonalField( (string)( $address['city'] ?? '' ) ),
