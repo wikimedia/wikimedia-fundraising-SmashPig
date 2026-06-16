@@ -593,15 +593,15 @@ class GetReport extends MaintenanceBase {
 	 * @param int $deltaMinor
 	 * @return array
 	 */
-	private function buildRoundingFeeRow( array $deposit, int $deltaMinor ): array {
+	private function buildRoundingFeeRow( array $deposit, int $deltaMinor, array $donations ): array {
 		$depositCurrency = $this->getDepositCurrency( $deposit );
 		$negativeDeltaMinor = -1 * $deltaMinor;
-
+		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
-			'backend_processor' => '',
-			'backend_processor_txn_id' => '',
+			'backend_processor' => $backendProcessor,
+			'backend_processor_txn_id' => ( $deposit['id'] ?? '' ) . '_rounding',
 			'currency' => $depositCurrency,
 			'original_currency' => $depositCurrency,
 			'settled_currency' => $depositCurrency,
@@ -1118,7 +1118,7 @@ class GetReport extends MaintenanceBase {
 		}
 
 		if ( $deltaMinor !== 0 ) {
-			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor );
+			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor, $donations );
 		}
 
 		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );
