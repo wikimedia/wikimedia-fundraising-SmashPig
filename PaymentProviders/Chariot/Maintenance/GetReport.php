@@ -8,6 +8,7 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Chariot\Api;
+use SmashPig\PaymentProviders\Chariot\Deposit;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
@@ -1000,11 +1001,7 @@ class GetReport extends MaintenanceBase {
 	 * @return string
 	 */
 	private function getDepositId( array $deposit ): string {
-		$id = trim( (string)( $deposit['id'] ?? '' ) );
-		if ( $id === '' ) {
-			throw new \RuntimeException( 'Deposit payload missing id' );
-		}
-		return $id;
+		return ( new Deposit( $deposit, [] ) )->getId();
 	}
 
 	/**
@@ -1014,9 +1011,7 @@ class GetReport extends MaintenanceBase {
 	 * @return string
 	 */
 	private function getSettlementBatchReference( array $deposit ): string {
-		$depositId = $this->getDepositId( $deposit );
-		$stripped = preg_replace( '/^deposit_/', '', $depositId );
-		return is_string( $stripped ) ? $stripped : $depositId;
+		return ( new Deposit( $deposit ) )->getSettlementBatchReference();
 	}
 
 	/**
@@ -1026,7 +1021,7 @@ class GetReport extends MaintenanceBase {
 	 * @return string
 	 */
 	private function getDepositCurrency( array $deposit ): string {
-		return (string)( $deposit['transfer']['currency'] ?? '' );
+		return ( new Deposit( $deposit ) )->getCurrency();
 	}
 
 	/**
