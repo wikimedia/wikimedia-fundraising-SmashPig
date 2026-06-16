@@ -25,4 +25,14 @@ class Deposit {
 		return (string)( $this->deposit['transfer']['currency'] ?? '' );
 	}
 
+	public function getPaymentMethod(): string {
+		$transfer = $this->deposit['transfer'];
+		$typeMap = [
+			'inbound_ach_transfer' => 'ACH',
+			'check_deposit' => 'Check',
+			'inbound_account_transfer' => 'EFT',
+		];
+		return $typeMap[$transfer['type']];
+	}
+
 }
