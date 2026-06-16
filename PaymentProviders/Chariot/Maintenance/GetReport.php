@@ -54,6 +54,7 @@ class GetReport extends MaintenanceBase {
 		'original_currency',
 		'date',
 		'type',
+		'gift_source',
 		'first_name',
 		'last_name',
 		'full_name',
@@ -569,7 +570,7 @@ class GetReport extends MaintenanceBase {
 			'prefix' => $this->normalizePersonalField( (string)( $donation['prefix'] ?? $properties['Prefix'] ?? '' ) ),
 			'email' => $this->normalizePersonalField( (string)( $donation['donor_email'] ?? $donor['email'] ?? '' ) ),
 			'phone' => $this->normalizePersonalField( (string)( $donation['donor_phone'] ?? '' ) ),
-			'country' => $this->normalizePersonalField( (string)( $address['country'] ?? $properties['Country'] ?? '' ) ),
+			'country' => $this->normalizePersonalField( (string)( $properties['Country'] ?? $address['country'] ?? '' ) ),
 			'postal_code' => $this->normalizePersonalField( (string)( $address['postal_code'] ?? '' ) ),
 			'state_province' => $this->normalizePersonalField( trim( (string)( $address['state'] ?? '' ) ) ),
 			'city' => $this->normalizePersonalField( (string)( $address['city'] ?? '' ) ),
@@ -581,6 +582,7 @@ class GetReport extends MaintenanceBase {
 			'dafpay_tracking_id' => $donation['dafpay_tracking_id'] ?? '',
 			'dafpay_type' => $donation['dafpay_type'] ?? '',
 			'dafpay_url' => $donation['dafpay_url'] ?? '',
+			'gift_source' => $donation['corporate_match']['source'] ?? '',
 		];
 	}
 
@@ -591,15 +593,15 @@ class GetReport extends MaintenanceBase {
 	 * @param int $deltaMinor
 	 * @return array
 	 */
-	private function buildRoundingFeeRow( array $deposit, int $deltaMinor ): array {
+	private function buildRoundingFeeRow( array $deposit, int $deltaMinor, array $donations ): array {
 		$depositCurrency = $this->getDepositCurrency( $deposit );
 		$negativeDeltaMinor = -1 * $deltaMinor;
-
+		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
-			'backend_processor' => '',
-			'backend_processor_txn_id' => '',
+			'backend_processor' => $backendProcessor,
+			'backend_processor_txn_id' => ( $deposit['id'] ?? '' ) . '_rounding',
 			'currency' => $depositCurrency,
 			'original_currency' => $depositCurrency,
 			'settled_currency' => $depositCurrency,
@@ -1116,7 +1118,7 @@ class GetReport extends MaintenanceBase {
 		}
 
 		if ( $deltaMinor !== 0 ) {
-			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor );
+			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor, $donations );
 		}
 
 		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );
