@@ -9,6 +9,7 @@ use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Chariot\Api;
 use SmashPig\PaymentProviders\Chariot\Deposit;
+use SmashPig\PaymentProviders\Chariot\Donation;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
@@ -525,12 +526,10 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function flattenDonationForAuditCsv( array $deposit, array $donation, float $exchangeRate ): array {
-		$platform = $donation['platform'] ?? [];
+		$donationObject = new Donation( $donation );
 		$daf = $donation['donor_advised_fund_grant'] ?? [];
 		$matchingGift = $donation['corporate_match'] ?? [];
-		$donor = $donation['attribution']['primary_donor'] ?? [];
-		$address = $donor['address'] ?? [];
-		$metadata = $platform['metadata'] ?? [];
+		$platform = $donation['platform'] ?? [];
 		$properties = $donation['properties'] ?? [];
 		$originalCurrency = $donation['currency'];
 		$settledCurrency = $this->getDepositCurrency( $deposit );
@@ -563,21 +562,21 @@ class GetReport extends MaintenanceBase {
 			'is_matching_gift' => !empty( $matchingGift ),
 			'matching_gift_organization' => $matchingGift['company_name'] ?? '',
 			'is_endowment' => !empty( $properties['Endowment flag?'] ) && $properties['Endowment flag?'] === 'Y',
-			'first_name' => $this->normalizePersonalField( (string)( $donor['first_name'] ?? '' ) ),
-			'last_name' => $this->normalizePersonalField( (string)( $donor['last_name'] ?? '' ) ),
-			'full_name' => $this->normalizePersonalField( (string)( $donor['full_name'] ?? '' ) ),
-			'partner_full_name' => $this->normalizePersonalField( (string)( $properties['Partner'] ?? $donation['partner_full_name'] ?? $donation['partner'] ?? '' ) ),
-			'prefix' => $this->normalizePersonalField( (string)( $donation['prefix'] ?? $properties['Prefix'] ?? '' ) ),
-			'email' => $this->normalizePersonalField( (string)( $donation['donor_email'] ?? $donor['email'] ?? '' ) ),
-			'phone' => $this->normalizePersonalField( (string)( $donation['donor_phone'] ?? '' ) ),
-			'country' => $this->normalizePersonalField( (string)( $properties['Country'] ?? $address['country'] ?? '' ) ),
-			'postal_code' => $this->normalizePersonalField( (string)( $address['postal_code'] ?? '' ) ),
-			'state_province' => $this->normalizePersonalField( trim( (string)( $address['state'] ?? '' ) ) ),
-			'city' => $this->normalizePersonalField( (string)( $address['city'] ?? '' ) ),
-			'street_address' => $this->normalizePersonalField( (string)( $address['line1'] ?? '' ) ),
-			'supplemental_address_1' => $this->normalizePersonalField( (string)( $address['line2'] ?? '' ) ),
+			'first_name' => $donationObject->getFirstName(),
+			'last_name' => $donationObject->getLastName(),
+			'full_name' => $donationObject->getFullName(),
+			'partner_full_name' => $donationObject->getPartnerName(),
+			'prefix' => $donationObject->getPrefix(),
+			'email' => $donationObject->getEmail(),
+			'phone' => $donationObject->getPhone(),
+			'country' => $donationObject->getCountry(),
+			'postal_code' => $donationObject->getPostalCode(),
+			'state_province' => $donationObject->getStateProvince(),
+			'city' => $donationObject->getCity(),
+			'street_address' => $donationObject->getStreetAddress(),
+			'supplemental_address_1' => $donationObject->getSupplementalAddress(),
 			'payment_method' => $paymentMethod,
-			'note' => $this->getNote( $metadata, $donation, $donor ),
+			'note' => $donationObject->getNote(),
 			'dafpay_frequency' => $donation['dafpay_frequency'] ?? '',
 			'dafpay_tracking_id' => $donation['dafpay_tracking_id'] ?? '',
 			'dafpay_type' => $donation['dafpay_type'] ?? '',
@@ -635,26 +634,6 @@ class GetReport extends MaintenanceBase {
 			'payment_method' => '',
 			'note' => self::ROUNDING_FEE_NOTE,
 		];
-	}
-
-	/**
-	 * Normalize personal fields.
-	 *
-	 * @param string $value
-	 * @return string
-	 */
-	private function normalizePersonalField( string $value ): string {
-		$value = trim( $value );
-		if ( $value === '' ) {
-			return '';
-		}
-
-		$normalized = strtolower( $value );
-		if ( in_array( $normalized, [ 'not shared by donor', 'not shared' ], true ) ) {
-			return '';
-		}
-
-		return $value;
 	}
 
 	/**
@@ -1214,30 +1193,6 @@ class GetReport extends MaintenanceBase {
 		}
 
 		Logger::info( 'Saved Chariot JSON file to ' . $fullPath );
-	}
-
-	/**
-	 * @param array $metadata
-	 * @param array $donation
-	 * @param array $donor
-	 *
-	 * @return string
-	 */
-	private function getNote( array $metadata, array $donation, array $donor ): string {
-		$acknowledgement = trim( (string)( $metadata['Acknowledgement'] ?? '' ) );
-		$note = (string)( $donation['note'] ?? '' );
-		if ( $note === '' ) {
-			$note = (string)( $donation['purpose'] ?? '' );
-		}
-		if ( $note === '' ) {
-			$note = (string)( $metadata['Description'] ?? '' );
-		}
-		if ( $acknowledgement !== '' && strcasecmp( $acknowledgement, $this->normalizePersonalField( (string)( $donor['full_name'] ?? '' ) ) ) !== 0 ) {
-			$note = $note !== ''
-				? $note . ' | Acknowledgement: ' . $acknowledgement
-				: 'Acknowledgement: ' . $acknowledgement;
-		}
-		return $note;
 	}
 
 	/**
