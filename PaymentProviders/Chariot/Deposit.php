@@ -25,4 +25,13 @@ class Deposit {
 		return (string)( $this->deposit['transfer']['currency'] ?? '' );
 	}
 
+	public function getPaymentMethod(): string {
+		$transfer = $this->deposit['transfer'];
+		$paymentMethod = empty( $transfer['check_deposit'] ) ? 'EFT' : 'Check';
+		if ( !empty( $transfer['inbound_ach_transfer'] ) ) {
+			$paymentMethod = 'ACH';
+		}
+		return $paymentMethod;
+	}
+
 }

@@ -1071,12 +1071,7 @@ class GetReport extends MaintenanceBase {
 		if ( !empty( $donation['dafpay_url'] ) ) {
 			return 'DAFpay';
 		}
-		$transfer = $deposit['transfer'];
-		$paymentMethod = empty( $transfer['check_deposit'] ) ? 'EFT' : 'Check';
-		if ( !empty( $transfer['inbound_ach_transfer'] ) ) {
-			$paymentMethod = 'ACH';
-		}
-		return $paymentMethod;
+		return ( new Deposit( $deposit ) )->getPaymentMethod();
 	}
 
 	/**
