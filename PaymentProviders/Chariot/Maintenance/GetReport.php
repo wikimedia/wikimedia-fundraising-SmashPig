@@ -54,6 +54,7 @@ class GetReport extends MaintenanceBase {
 		'original_currency',
 		'date',
 		'type',
+		'gift_source',
 		'first_name',
 		'last_name',
 		'full_name',
@@ -581,6 +582,7 @@ class GetReport extends MaintenanceBase {
 			'dafpay_tracking_id' => $donation['dafpay_tracking_id'] ?? '',
 			'dafpay_type' => $donation['dafpay_type'] ?? '',
 			'dafpay_url' => $donation['dafpay_url'] ?? '',
+			'gift_source' => $donation['corporate_match']['source'] ?? '',
 		];
 	}
 
