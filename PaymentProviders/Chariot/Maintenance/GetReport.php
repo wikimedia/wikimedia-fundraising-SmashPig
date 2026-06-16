@@ -113,6 +113,7 @@ class GetReport extends MaintenanceBase {
 		'transfer.check_deposit.routing_number',
 		'transfer.check_deposit.submitted_at',
 		'transfer.check_deposit.status',
+		'transfer.type',
 	];
 
 	/**
