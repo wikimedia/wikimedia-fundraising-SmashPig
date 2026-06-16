@@ -22,7 +22,6 @@ class GetReport extends MaintenanceBase {
 		self::MODE_DEPOSIT,
 	];
 
-	private const MAX_ROUNDING_ADJUSTMENT_MINOR = 5;
 	private const ROUNDING_FEE_NOTE = 'FX rounding adjustment';
 
 	/**
@@ -1106,13 +1105,15 @@ class GetReport extends MaintenanceBase {
 
 		$depositNetMinor = (int)( $deposit['transfer']['amount'] ?? 0 );
 		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
+		// Adjust by no more than .5 cents per donation - to allow for them all to err the same way.
+		$maximumRoundingAdjustment = count( $donations ) / 2;
 
-		if ( abs( $deltaMinor ) > self::MAX_ROUNDING_ADJUSTMENT_MINOR ) {
+		if ( abs( $deltaMinor ) > $maximumRoundingAdjustment ) {
 			throw new \RuntimeException(
 				sprintf(
 					'FX rounding adjustment of %d minor units exceeds maximum allowed %d for deposit %s',
 					$deltaMinor,
-					self::MAX_ROUNDING_ADJUSTMENT_MINOR,
+					$maximumRoundingAdjustment,
 					$this->getDepositId( $deposit )
 				)
 			);
