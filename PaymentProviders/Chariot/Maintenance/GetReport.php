@@ -8,6 +8,7 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Chariot\Api;
+use SmashPig\PaymentProviders\Chariot\Deposit;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
@@ -21,7 +22,6 @@ class GetReport extends MaintenanceBase {
 		self::MODE_DEPOSIT,
 	];
 
-	private const MAX_ROUNDING_ADJUSTMENT_MINOR = 5;
 	private const ROUNDING_FEE_NOTE = 'FX rounding adjustment';
 
 	/**
@@ -1000,11 +1000,7 @@ class GetReport extends MaintenanceBase {
 	 * @return string
 	 */
 	private function getDepositId( array $deposit ): string {
-		$id = trim( (string)( $deposit['id'] ?? '' ) );
-		if ( $id === '' ) {
-			throw new \RuntimeException( 'Deposit payload missing id' );
-		}
-		return $id;
+		return ( new Deposit( $deposit, [] ) )->getId();
 	}
 
 	/**
@@ -1014,9 +1010,7 @@ class GetReport extends MaintenanceBase {
 	 * @return string
 	 */
 	private function getSettlementBatchReference( array $deposit ): string {
-		$depositId = $this->getDepositId( $deposit );
-		$stripped = preg_replace( '/^deposit_/', '', $depositId );
-		return is_string( $stripped ) ? $stripped : $depositId;
+		return ( new Deposit( $deposit ) )->getSettlementBatchReference();
 	}
 
 	/**
@@ -1026,7 +1020,7 @@ class GetReport extends MaintenanceBase {
 	 * @return string
 	 */
 	private function getDepositCurrency( array $deposit ): string {
-		return (string)( $deposit['transfer']['currency'] ?? '' );
+		return ( new Deposit( $deposit ) )->getCurrency();
 	}
 
 	/**
@@ -1111,13 +1105,15 @@ class GetReport extends MaintenanceBase {
 
 		$depositNetMinor = (int)( $deposit['transfer']['amount'] ?? 0 );
 		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
+		// Adjust by no more than .5 cents per donation - to allow for them all to err the same way.
+		$maximumRoundingAdjustment = count( $donations ) / 2;
 
-		if ( abs( $deltaMinor ) > self::MAX_ROUNDING_ADJUSTMENT_MINOR ) {
+		if ( abs( $deltaMinor ) > $maximumRoundingAdjustment ) {
 			throw new \RuntimeException(
 				sprintf(
 					'FX rounding adjustment of %d minor units exceeds maximum allowed %d for deposit %s',
 					$deltaMinor,
-					self::MAX_ROUNDING_ADJUSTMENT_MINOR,
+					$maximumRoundingAdjustment,
 					$this->getDepositId( $deposit )
 				)
 			);
