@@ -470,7 +470,15 @@ class GetReport extends MaintenanceBase {
 		}
 
 		fputcsv( $handle, self::AUDIT_CSV_COLUMNS );
-
+		foreach ( $rows as $row ) {
+			foreach ( self::AUDIT_CSV_COLUMNS as $column ) {
+				if ( isset( $row[$column] ) && is_array( $row[$column] ) ) {
+					// Early warning against bugs sneaking in - fail hard.
+					// This would generally happen when new code is not correct.
+					throw new \Exception( $column . ' not expected to be an array ' . json_encode( $row[$column] ) );
+				}
+			}
+		}
 		foreach ( $rows as $row ) {
 			fputcsv(
 				$handle,
