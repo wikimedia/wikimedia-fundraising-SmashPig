@@ -42,4 +42,48 @@ class DonationTest extends TestCase {
 		];
 	}
 
+	/**
+	 * @param array $donation
+	 * @param string $expected
+	 *
+	 * @dataProvider giftSourceDataProvider
+	 *
+	 * @return void
+	 */
+	public function testGetGiftSource( array $donation, string $expected ): void {
+		$this->assertEquals( $expected, ( new Donation( $donation ) )->getGiftSource() );
+	}
+
+	public function giftSourceDataProvider(): array {
+		return [
+			'set_in_property' => [
+				'donation' => [
+					'properties' => [ 'Gift Type' => 'Corporate Match' ],
+				],
+				'expected' => 'Corporate Match',
+			],
+			'corporate_match_source' => [
+				'donation' => [
+					'corporate_match' => [
+						'source' => 'Benevity',
+					],
+				],
+				'expected' => 'Benevity',
+			],
+			'property_takes_precedence' => [
+				'donation' => [
+					'properties' => [ 'Gift Type' => 'Payroll Giving' ],
+					'corporate_match' => [
+						'source' => 'Benevity',
+					],
+				],
+				'expected' => 'Payroll Giving',
+			],
+			'missing_source' => [
+				'donation' => [],
+				'expected' => '',
+			],
+		];
+	}
+
 }

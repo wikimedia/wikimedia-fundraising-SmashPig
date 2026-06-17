@@ -81,6 +81,13 @@ class Donation {
 		return $this->normalizePersonalField( (string)( $this->getAddress()['line2'] ?? '' ) );
 	}
 
+	public function getGiftSource(): string {
+		if ( !empty( $this->getProperties()['Gift Type'] ) ) {
+			return (string)( $this->getProperties()['Gift Type'] );
+		}
+		return $this->donation['corporate_match']['source'] ?? '';
+	}
+
 	/**
 	 * @return string
 	 */

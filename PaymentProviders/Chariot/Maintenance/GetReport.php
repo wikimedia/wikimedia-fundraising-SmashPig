@@ -94,6 +94,7 @@ class GetReport extends MaintenanceBase {
 		'properties',
 		'properties.CRM status',
 		'properties.Journaled in Sage',
+		'properties.Gift Type',
 		'transfer',
 		'transfer.amount',
 		'transfer.currency',
@@ -582,7 +583,7 @@ class GetReport extends MaintenanceBase {
 			'dafpay_tracking_id' => $donation['dafpay_tracking_id'] ?? '',
 			'dafpay_type' => $donation['dafpay_type'] ?? '',
 			'dafpay_url' => $donation['dafpay_url'] ?? '',
-			'gift_source' => $donation['corporate_match']['source'] ?? '',
+			'gift_source' => $donationObject->getGiftSource(),
 		];
 	}
 
