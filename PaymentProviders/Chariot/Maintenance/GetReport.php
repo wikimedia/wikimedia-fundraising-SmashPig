@@ -155,6 +155,7 @@ class GetReport extends MaintenanceBase {
 		'attribution.primary_donor.address.country',
 		'attribution.joint_donor',
 		'attribution.joint_donor.email',
+		'attribution.joint_donor.full_name',
 		'donor_advised_fund_grant',
 		'donor_advised_fund_grant.donor_fund_name',
 		'donor_advised_fund_grant.organization_name',

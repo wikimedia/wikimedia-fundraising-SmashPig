@@ -19,7 +19,14 @@ class Donation {
 	}
 
 	public function getPartnerName(): string {
-		return $this->normalizePersonalField( (string)( $this->getProperties()['Partner'] ?? $this->donation['partner_full_name'] ?? $this->donation['partner'] ?? '' ) );
+		if ( !empty( $this->getProperties()['Partner'] ) ) {
+			$partner = $this->getProperties()['Partner'];
+		} elseif ( !empty( $this->donation['attribution']['joint_donor']['full_name'] ) ) {
+			$partner = $this->donation['attribution']['joint_donor']['full_name'];
+		} else {
+			$partner = (string)( $this->donation['partner_full_name'] ?? $this->donation['partner'] ?? '' );
+		}
+		return $this->normalizePersonalField( $partner );
 	}
 
 	public function getFirstName(): string {
