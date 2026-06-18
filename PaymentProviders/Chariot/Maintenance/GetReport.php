@@ -95,6 +95,9 @@ class GetReport extends MaintenanceBase {
 		'properties.CRM status',
 		'properties.Journaled in Sage',
 		'properties.Gift Type',
+		// We see lockbox_id and mail_item_id coming in from Digital Mailbox
+		'lockbox_id',
+		'mail_item_id',
 		'transfer',
 		'transfer.amount',
 		'transfer.currency',
@@ -223,6 +226,9 @@ class GetReport extends MaintenanceBase {
 		'corporate_match.match_amount',
 		'corporate_match.program_name',
 		'corporate_match.source',
+		// We see lockbox_id and mail_item_id coming in from Digital Mailbox
+		'lockbox_id',
+		'mail_item_id',
 	];
 
 	private ProviderConfiguration $config;
