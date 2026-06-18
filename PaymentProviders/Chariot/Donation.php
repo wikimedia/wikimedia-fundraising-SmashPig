@@ -45,6 +45,10 @@ class Donation {
 		return $this->normalizePersonalField( (string)( $this->donation['prefix'] ?? $this->getProperties()['Prefix'] ?? '' ) );
 	}
 
+	public function getSuffix(): string {
+		return $this->normalizePersonalField( (string)( $this->donation['suffix'] ?? $this->getProperties()['Suffix'] ?? '' ) );
+	}
+
 	public function getEmail(): string {
 		return $this->normalizePersonalField( (string)( $this->donation['donor_email'] ?? $this->getDonor()['email'] ?? '' ) );
 	}
