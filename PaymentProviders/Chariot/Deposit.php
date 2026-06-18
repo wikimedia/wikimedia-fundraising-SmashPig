@@ -9,6 +9,10 @@ class Deposit {
 		$this->deposit = $deposit;
 	}
 
+	public function getDeposit(): array {
+		return $this->deposit;
+	}
+
 	public function getId(): string {
 		$id = trim( (string)( $this->deposit['id'] ?? '' ) );
 		if ( $id === '' ) {
@@ -39,12 +43,41 @@ class Deposit {
 		return (string)( $this->deposit['created_at'] ?? '' );
 	}
 
+	public function getUpdatedAt(): string {
+		return (string)( $this->deposit['updated_at'] ?? '' );
+	}
+
 	public function getSettledAt(): string {
 		return (string)( $this->deposit['settled_at'] ?? '' );
 	}
 
 	public function getPaymentSourceId(): string {
 		return (string)( $this->deposit['payment_source_id'] ?? '' );
+	}
+
+	/**
+	 * Get a deposit timestamp for filenames.
+	 *
+	 * @return string
+	 */
+	public function getDepositTimestampForFilename(): string {
+		$candidates = [
+			$this->getSettledAt(),
+			$this->getCreatedAt(),
+			$this->getUpdatedAt(),
+		];
+
+		foreach ( $candidates as $candidate ) {
+			if ( !is_string( $candidate ) || trim( $candidate ) === '' ) {
+				continue;
+			}
+			$timestamp = strtotime( $candidate );
+			if ( $timestamp !== false ) {
+				return gmdate( 'YmdHis', $timestamp );
+			}
+		}
+
+		return gmdate( 'YmdHis' );
 	}
 
 }

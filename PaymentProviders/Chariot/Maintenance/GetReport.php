@@ -240,6 +240,9 @@ class GetReport extends MaintenanceBase {
 	 */
 	private array $unknownPaths = [];
 
+	/**
+	 * @throws \SmashPig\Core\SmashPigException
+	 */
 	public function __construct() {
 		parent::__construct();
 		$this->addOption( 'mode', 'Which Chariot API call to run', self::MODE_DEPOSITS, 'r' );
@@ -282,15 +285,16 @@ class GetReport extends MaintenanceBase {
 	private function runDeposits( Api $api, string $path ): void {
 		$depositId = trim( (string)$this->getOption( 'deposit-id' ) );
 		if ( $depositId !== '' ) {
-			$deposit = $this->fetchDeposit( $api, $depositId );
-			$this->writeDepositArtifacts( $api, $path, $deposit );
+			$depositObject = $this->fetchDeposit( $api, $depositId );
+			$deposit = $depositObject->getDeposit();
+			$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
 
 			if ( $this->getOption( 'stdout' ) ) {
 				$summary = [
 					'mode' => self::MODE_DEPOSITS,
 					'count' => 1,
 					'next_tokens' => [],
-					'deposit_ids' => [ $this->getDepositId( $deposit ) ],
+					'deposit_ids' => [ $depositObject->getId() ],
 				];
 				$json = json_encode( $summary, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 				if ( $json !== false ) {
@@ -312,8 +316,9 @@ class GetReport extends MaintenanceBase {
 			if ( !is_array( $deposit ) ) {
 				continue;
 			}
-			$this->writeDepositArtifacts( $api, $path, $deposit );
-			$writtenIds[] = $this->getDepositId( $deposit );
+			$depositObject = new Deposit( $deposit );
+			$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
+			$writtenIds[] = $depositObject->getId();
 		}
 
 		if ( $this->getOption( 'stdout' ) ) {
@@ -332,15 +337,16 @@ class GetReport extends MaintenanceBase {
 
 	private function runDeposit( Api $api, string $path ): void {
 		$depositId = $this->requireOption( 'deposit-id' );
-		$deposit = $this->fetchDeposit( $api, $depositId );
-		$this->writeDepositArtifacts( $api, $path, $deposit );
+		$depositObject  = $this->fetchDeposit( $api, $depositId );
+		$deposit = $depositObject->getDeposit();
+		$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
 	}
 
-	private function writeDepositArtifacts( Api $api, string $path, array $deposit ): void {
-		$donations = $this->fetchDonationsForDeposit( $api, $this->getDepositId( $deposit ) );
-		$fileSuffix = $this->buildDepositFileSuffix( $deposit, $donations );
+	private function writeDepositArtifacts( Api $api, string $path, Deposit $depositObject, array $deposit ): void {
+		$donations = $this->fetchDonationsForDeposit( $api, $depositObject->getId() );
+		$fileSuffix = $this->buildDepositFileSuffix( $depositObject, $deposit, $donations );
 		$unknowns = $this->collectDepositUnknowns( $deposit, $donations );
-		$timestamp = $this->getDepositTimestampForFilename( $deposit );
+		$timestamp = $depositObject->getDepositTimestampForFilename();
 
 		if ( $unknowns !== [] || $this->getOption( 'include-json' ) ) {
 			$this->writeDepositJson( $path, $fileSuffix, $timestamp, $deposit, $donations );
@@ -393,10 +399,11 @@ class GetReport extends MaintenanceBase {
 	 *
 	 * @param Api $api
 	 * @param string $depositId
-	 * @return array
+	 *
+	 * @return \SmashPig\PaymentProviders\Chariot\Deposit
 	 */
-	private function fetchDeposit( Api $api, string $depositId ): array {
-		return $api->getDeposit( $depositId );
+	private function fetchDeposit( Api $api, string $depositId ): Deposit {
+		return new Deposit( $api->getDeposit( $depositId ) );
 	}
 
 	/**
@@ -703,11 +710,13 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Build the per-deposit filename suffix.
 	 *
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param array $deposit
 	 * @param array $donations
+	 *
 	 * @return string
 	 */
-	private function buildDepositFileSuffix( array $deposit, array $donations ): string {
+	private function buildDepositFileSuffix( Deposit $depositObject, array $deposit, array $donations ): string {
 		$parts = [];
 
 		$backendProcessor = trim( $this->getDepositBackendProcessor( $deposit, $donations ) );
@@ -716,7 +725,7 @@ class GetReport extends MaintenanceBase {
 		}
 
 		$parts[] = $this->getDepositTotalForFilename( $deposit );
-		$parts[] = $this->getDepositId( $deposit );
+		$parts[] = $depositObject->getId();
 
 		return implode( '-', $parts );
 	}
@@ -994,16 +1003,6 @@ class GetReport extends MaintenanceBase {
 	}
 
 	/**
-	 * Get the deposit id from a payload.
-	 *
-	 * @param array $deposit
-	 * @return string
-	 */
-	private function getDepositId( array $deposit ): string {
-		return ( new Deposit( $deposit, [] ) )->getId();
-	}
-
-	/**
 	 * Get the deposit transfer currency.
 	 *
 	 * @param array $deposit
@@ -1130,32 +1129,6 @@ class GetReport extends MaintenanceBase {
 
 		$convertedMajor = ( (float)$amountMinor * $exchangeRate ) / 100;
 		return CurrencyRoundingHelper::round( $convertedMajor, $currency );
-	}
-
-	/**
-	 * Get a deposit timestamp for filenames.
-	 *
-	 * @param array $deposit
-	 * @return string
-	 */
-	private function getDepositTimestampForFilename( array $deposit ): string {
-		$candidates = [
-			$deposit['settled_at'] ?? null,
-			$deposit['created_at'] ?? null,
-			$deposit['updated_at'] ?? null,
-		];
-
-		foreach ( $candidates as $candidate ) {
-			if ( !is_string( $candidate ) || trim( $candidate ) === '' ) {
-				continue;
-			}
-			$timestamp = strtotime( $candidate );
-			if ( $timestamp !== false ) {
-				return gmdate( 'YmdHis', $timestamp );
-			}
-		}
-
-		return gmdate( 'YmdHis' );
 	}
 
 	/**
