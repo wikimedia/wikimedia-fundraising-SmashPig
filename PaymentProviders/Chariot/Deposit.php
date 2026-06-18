@@ -35,4 +35,16 @@ class Deposit {
 		return $typeMap[$transfer['type']];
 	}
 
+	public function getCreatedAt(): string {
+		return (string)( $this->deposit['created_at'] ?? '' );
+	}
+
+	public function getSettledAt(): string {
+		return (string)( $this->deposit['settled_at'] ?? '' );
+	}
+
+	public function getPaymentSourceId(): string {
+		return (string)( $this->deposit['payment_source_id'] ?? '' );
+	}
+
 }
