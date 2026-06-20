@@ -10,3 +10,4 @@ PublicHttp/.htaccess
 
 # Composer deps only on deployment branch
 vendor
+.phpunit.result.cache
