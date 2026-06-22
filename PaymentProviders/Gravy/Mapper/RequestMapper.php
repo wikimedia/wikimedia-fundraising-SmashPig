@@ -31,6 +31,7 @@ class RequestMapper {
 		'sepa',
 		'ideal',
 		'stitch',
+		'venmo',
 		'vipps',
 		'webpay',
 		'trustly',

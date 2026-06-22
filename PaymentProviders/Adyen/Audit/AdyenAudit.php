@@ -21,7 +21,6 @@ abstract class AdyenAudit implements AuditParser {
 	protected static $ignoredTypes = [
 		'misccosts',
 		'merchantpayout',
-		'depositcorrection',
 		'matchedstatement',
 		'manualcorrected',
 		'authorisationschemefee',
@@ -111,7 +110,7 @@ abstract class AdyenAudit implements AuditParser {
 	protected function parseLine( $line, int $rowNumber ) {
 		$row = array_combine( $this->columnHeaders, $line );
 		$type = strtolower( $row[$this->type] );
-		if ( $type === 'fee' || $type === 'invoicededuction' || $type === 'misccosts' ) {
+		if ( $type === 'fee' || $type === 'invoicededuction' || $type === 'misccosts' || $type === 'depositcorrection' ) {
 			$this->fileData[] = $this->getFeeTransaction( $row, $rowNumber );
 			return;
 		}

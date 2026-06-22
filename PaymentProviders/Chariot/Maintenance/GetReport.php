@@ -9,6 +9,7 @@ use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Chariot\Api;
 use SmashPig\PaymentProviders\Chariot\Deposit;
+use SmashPig\PaymentProviders\Chariot\Donation;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
@@ -60,6 +61,7 @@ class GetReport extends MaintenanceBase {
 		'full_name',
 		'partner_full_name',
 		'prefix',
+		'suffix',
 		'email',
 		'phone',
 		'country',
@@ -93,6 +95,10 @@ class GetReport extends MaintenanceBase {
 		'properties',
 		'properties.CRM status',
 		'properties.Journaled in Sage',
+		'properties.Gift Type',
+		// We see lockbox_id and mail_item_id coming in from Digital Mailbox
+		'lockbox_id',
+		'mail_item_id',
 		'transfer',
 		'transfer.amount',
 		'transfer.currency',
@@ -154,6 +160,7 @@ class GetReport extends MaintenanceBase {
 		'attribution.primary_donor.address.country',
 		'attribution.joint_donor',
 		'attribution.joint_donor.email',
+		'attribution.joint_donor.full_name',
 		'donor_advised_fund_grant',
 		'donor_advised_fund_grant.donor_fund_name',
 		'donor_advised_fund_grant.organization_name',
@@ -189,6 +196,7 @@ class GetReport extends MaintenanceBase {
 		'properties.Country',
 		'properties.Partner',
 		'properties.Prefix',
+		'properties.Suffix',
 		'properties.Review status',
 		'properties.Journaled in Sage',
 		'properties.Groundswell Company Name',
@@ -208,6 +216,7 @@ class GetReport extends MaintenanceBase {
 		'partner',
 		'partner_full_name',
 		'prefix',
+		'suffix',
 		'received_offline_on',
 		'review_status',
 		'dafpay_form',
@@ -220,6 +229,9 @@ class GetReport extends MaintenanceBase {
 		'corporate_match.match_amount',
 		'corporate_match.program_name',
 		'corporate_match.source',
+		// We see lockbox_id and mail_item_id coming in from Digital Mailbox
+		'lockbox_id',
+		'mail_item_id',
 	];
 
 	private ProviderConfiguration $config;
@@ -231,6 +243,9 @@ class GetReport extends MaintenanceBase {
 	 */
 	private array $unknownPaths = [];
 
+	/**
+	 * @throws \SmashPig\Core\SmashPigException
+	 */
 	public function __construct() {
 		parent::__construct();
 		$this->addOption( 'mode', 'Which Chariot API call to run', self::MODE_DEPOSITS, 'r' );
@@ -273,15 +288,16 @@ class GetReport extends MaintenanceBase {
 	private function runDeposits( Api $api, string $path ): void {
 		$depositId = trim( (string)$this->getOption( 'deposit-id' ) );
 		if ( $depositId !== '' ) {
-			$deposit = $this->fetchDeposit( $api, $depositId );
-			$this->writeDepositArtifacts( $api, $path, $deposit );
+			$depositObject = $this->fetchDeposit( $api, $depositId );
+			$deposit = $depositObject->getDeposit();
+			$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
 
 			if ( $this->getOption( 'stdout' ) ) {
 				$summary = [
 					'mode' => self::MODE_DEPOSITS,
 					'count' => 1,
 					'next_tokens' => [],
-					'deposit_ids' => [ $this->getDepositId( $deposit ) ],
+					'deposit_ids' => [ $depositObject->getId() ],
 				];
 				$json = json_encode( $summary, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 				if ( $json !== false ) {
@@ -303,8 +319,9 @@ class GetReport extends MaintenanceBase {
 			if ( !is_array( $deposit ) ) {
 				continue;
 			}
-			$this->writeDepositArtifacts( $api, $path, $deposit );
-			$writtenIds[] = $this->getDepositId( $deposit );
+			$depositObject = new Deposit( $deposit );
+			$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
+			$writtenIds[] = $depositObject->getId();
 		}
 
 		if ( $this->getOption( 'stdout' ) ) {
@@ -323,15 +340,16 @@ class GetReport extends MaintenanceBase {
 
 	private function runDeposit( Api $api, string $path ): void {
 		$depositId = $this->requireOption( 'deposit-id' );
-		$deposit = $this->fetchDeposit( $api, $depositId );
-		$this->writeDepositArtifacts( $api, $path, $deposit );
+		$depositObject  = $this->fetchDeposit( $api, $depositId );
+		$deposit = $depositObject->getDeposit();
+		$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
 	}
 
-	private function writeDepositArtifacts( Api $api, string $path, array $deposit ): void {
-		$donations = $this->fetchDonationsForDeposit( $api, $this->getDepositId( $deposit ) );
-		$fileSuffix = $this->buildDepositFileSuffix( $deposit, $donations );
+	private function writeDepositArtifacts( Api $api, string $path, Deposit $depositObject, array $deposit ): void {
+		$donations = $this->fetchDonationsForDeposit( $api, $depositObject->getId() );
+		$fileSuffix = $this->buildDepositFileSuffix( $depositObject, $deposit, $donations );
 		$unknowns = $this->collectDepositUnknowns( $deposit, $donations );
-		$timestamp = $this->getDepositTimestampForFilename( $deposit );
+		$timestamp = $depositObject->getDepositTimestampForFilename();
 
 		if ( $unknowns !== [] || $this->getOption( 'include-json' ) ) {
 			$this->writeDepositJson( $path, $fileSuffix, $timestamp, $deposit, $donations );
@@ -384,10 +402,11 @@ class GetReport extends MaintenanceBase {
 	 *
 	 * @param Api $api
 	 * @param string $depositId
-	 * @return array
+	 *
+	 * @return \SmashPig\PaymentProviders\Chariot\Deposit
 	 */
-	private function fetchDeposit( Api $api, string $depositId ): array {
-		return $api->getDeposit( $depositId );
+	private function fetchDeposit( Api $api, string $depositId ): Deposit {
+		return new Deposit( $api->getDeposit( $depositId ) );
 	}
 
 	/**
@@ -467,7 +486,15 @@ class GetReport extends MaintenanceBase {
 		}
 
 		fputcsv( $handle, self::AUDIT_CSV_COLUMNS );
-
+		foreach ( $rows as $row ) {
+			foreach ( self::AUDIT_CSV_COLUMNS as $column ) {
+				if ( isset( $row[$column] ) && is_array( $row[$column] ) ) {
+					// Early warning against bugs sneaking in - fail hard.
+					// This would generally happen when new code is not correct.
+					throw new \Exception( $column . ' not expected to be an array ' . json_encode( $row[$column] ) );
+				}
+			}
+		}
 		foreach ( $rows as $row ) {
 			fputcsv(
 				$handle,
@@ -490,10 +517,10 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function flattenDepositPayoutRowForAuditCsv( array $deposit, array $donations ): array {
+		$depositObject = new Deposit( $deposit );
 		$paymentMethod = $this->getPaymentMethod( $deposit );
-
 		$transfer = $deposit['transfer'];
-		$currency = (string)( $transfer['currency'] ?? '' );
+		$currency = $depositObject->getCurrency();
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 		$amount = $this->getAmount( $transfer['amount'] );
 
@@ -501,16 +528,16 @@ class GetReport extends MaintenanceBase {
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
 			'backend_processor' => $backendProcessor,
-			'gateway_txn_id' => $deposit['id'],
-			'backend_processor_txn_id' => (string)( $deposit['payment_source_id'] ?? '' ),
+			'gateway_txn_id' => $depositObject->getId(),
+			'backend_processor_txn_id' => $depositObject->getPaymentSourceId(),
 			'settled_currency' => $currency,
 			'exchange_rate' => '1.000000',
-			'settlement_batch_reference' => $this->getSettlementBatchReference( $deposit ),
+			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
 			'settled_fee_amount' => $this->round( 0.0, $currency ),
 			'settled_net_amount' => $this->round( $amount, $currency ),
 			'settled_total_amount' => $this->round( $amount, $currency ),
-			'settled_date' => (string)( $deposit['settled_at'] ?? '' ),
-			'date' => (string)( $deposit['created_at'] ?? '' ),
+			'settled_date' => $depositObject->getSettledAt(),
+			'date' => $depositObject->getCreatedAt(),
 			'type' => 'payout',
 			'payment_method' => $paymentMethod,
 		];
@@ -525,12 +552,11 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function flattenDonationForAuditCsv( array $deposit, array $donation, float $exchangeRate ): array {
-		$platform = $donation['platform'] ?? [];
+		$donationObject = new Donation( $donation );
+		$depositObject = new Deposit( $deposit );
 		$daf = $donation['donor_advised_fund_grant'] ?? [];
 		$matchingGift = $donation['corporate_match'] ?? [];
-		$donor = $donation['attribution']['primary_donor'] ?? [];
-		$address = $donor['address'] ?? [];
-		$metadata = $platform['metadata'] ?? [];
+		$platform = $donation['platform'] ?? [];
 		$properties = $donation['properties'] ?? [];
 		$originalCurrency = $donation['currency'];
 		$settledCurrency = $this->getDepositCurrency( $deposit );
@@ -546,9 +572,9 @@ class GetReport extends MaintenanceBase {
 			'donor_advised_fund_name' => $daf['donor_fund_name'] ?? '',
 			'original_currency' => $originalCurrency,
 			'settled_currency' => $settledCurrency,
-			'settlement_batch_reference' => $this->getSettlementBatchReference( $deposit ),
-			'settled_date' => (string)( $deposit['settled_at'] ?? '' ),
-			'date' => (string)( $donation['created_at'] ?? '' ),
+			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
+			'settled_date' => $depositObject->getSettledAt(),
+			'date' => $depositObject->getCreatedAt(),
 			'original_fee_amount' => $this->getRoundedAmount( $donation['amount_fee'], $originalCurrency ),
 			'original_net_amount' => $this->getRoundedAmount( $donation['amount_net'], $originalCurrency ),
 			'original_total_amount' => $this->getRoundedAmount( $donation['amount_gross'], $originalCurrency ),
@@ -563,26 +589,27 @@ class GetReport extends MaintenanceBase {
 			'is_matching_gift' => !empty( $matchingGift ),
 			'matching_gift_organization' => $matchingGift['company_name'] ?? '',
 			'is_endowment' => !empty( $properties['Endowment flag?'] ) && $properties['Endowment flag?'] === 'Y',
-			'first_name' => $this->normalizePersonalField( (string)( $donor['first_name'] ?? '' ) ),
-			'last_name' => $this->normalizePersonalField( (string)( $donor['last_name'] ?? '' ) ),
-			'full_name' => $this->normalizePersonalField( (string)( $donor['full_name'] ?? '' ) ),
-			'partner_full_name' => $this->normalizePersonalField( (string)( $properties['Partner'] ?? $donation['partner_full_name'] ?? $donation['partner'] ?? '' ) ),
-			'prefix' => $this->normalizePersonalField( (string)( $donation['prefix'] ?? $properties['Prefix'] ?? '' ) ),
-			'email' => $this->normalizePersonalField( (string)( $donation['donor_email'] ?? $donor['email'] ?? '' ) ),
-			'phone' => $this->normalizePersonalField( (string)( $donation['donor_phone'] ?? '' ) ),
-			'country' => $this->normalizePersonalField( (string)( $properties['Country'] ?? $address['country'] ?? '' ) ),
-			'postal_code' => $this->normalizePersonalField( (string)( $address['postal_code'] ?? '' ) ),
-			'state_province' => $this->normalizePersonalField( trim( (string)( $address['state'] ?? '' ) ) ),
-			'city' => $this->normalizePersonalField( (string)( $address['city'] ?? '' ) ),
-			'street_address' => $this->normalizePersonalField( (string)( $address['line1'] ?? '' ) ),
-			'supplemental_address_1' => $this->normalizePersonalField( (string)( $address['line2'] ?? '' ) ),
+			'first_name' => $donationObject->getFirstName(),
+			'last_name' => $donationObject->getLastName(),
+			'full_name' => $donationObject->getFullName(),
+			'partner_full_name' => $donationObject->getPartnerName(),
+			'prefix' => $donationObject->getPrefix(),
+			'suffix' => $donationObject->getSuffix(),
+			'email' => $donationObject->getEmail(),
+			'phone' => $donationObject->getPhone(),
+			'country' => $donationObject->getCountry(),
+			'postal_code' => $donationObject->getPostalCode(),
+			'state_province' => $donationObject->getStateProvince(),
+			'city' => $donationObject->getCity(),
+			'street_address' => $donationObject->getStreetAddress(),
+			'supplemental_address_1' => $donationObject->getSupplementalAddress(),
 			'payment_method' => $paymentMethod,
-			'note' => $this->getNote( $metadata, $donation, $donor ),
+			'note' => $donationObject->getNote(),
 			'dafpay_frequency' => $donation['dafpay_frequency'] ?? '',
 			'dafpay_tracking_id' => $donation['dafpay_tracking_id'] ?? '',
 			'dafpay_type' => $donation['dafpay_type'] ?? '',
 			'dafpay_url' => $donation['dafpay_url'] ?? '',
-			'gift_source' => $donation['corporate_match']['source'] ?? '',
+			'gift_source' => $donationObject->getGiftSource(),
 		];
 	}
 
@@ -594,19 +621,20 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function buildRoundingFeeRow( array $deposit, int $deltaMinor, array $donations ): array {
-		$depositCurrency = $this->getDepositCurrency( $deposit );
+		$depositObject = new Deposit( $deposit );
+		$depositCurrency = $depositObject->getCurrency();
 		$negativeDeltaMinor = -1 * $deltaMinor;
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
 			'backend_processor' => $backendProcessor,
-			'backend_processor_txn_id' => ( $deposit['id'] ?? '' ) . '_rounding',
+			'backend_processor_txn_id' => $depositObject->getId() . '_rounding',
 			'currency' => $depositCurrency,
 			'original_currency' => $depositCurrency,
 			'settled_currency' => $depositCurrency,
 			'exchange_rate' => '1.000000',
-			'settlement_batch_reference' => $this->getSettlementBatchReference( $deposit ),
+			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
 			'original_fee_amount' => $this->round( $deltaMinor, $depositCurrency ),
 			'original_net_amount' => $this->round( $negativeDeltaMinor, $depositCurrency ),
 			'original_total_amount' => $this->round( 0, $depositCurrency ),
@@ -615,8 +643,8 @@ class GetReport extends MaintenanceBase {
 			'settled_fee_amount' => $this->round( $deltaMinor, $depositCurrency ),
 			'settled_net_amount' => $this->round( $negativeDeltaMinor, $depositCurrency ),
 			'settled_total_amount' => $this->round( 0, $depositCurrency ),
-			'settled_date' => (string)( $deposit['settled_at'] ?? '' ),
-			'date' => (string)( $deposit['created_at'] ?? '' ),
+			'settled_date' => $depositObject->getSettledAt(),
+			'date' => $depositObject->getCreatedAt(),
 			'type' => 'fee',
 			'first_name' => '',
 			'last_name' => '',
@@ -624,6 +652,7 @@ class GetReport extends MaintenanceBase {
 			'partner_full_name' => '',
 			'donor_advised_fund_organization' => '',
 			'prefix' => '',
+			'suffix' => '',
 			'email' => '',
 			'phone' => '',
 			'country' => '',
@@ -635,26 +664,6 @@ class GetReport extends MaintenanceBase {
 			'payment_method' => '',
 			'note' => self::ROUNDING_FEE_NOTE,
 		];
-	}
-
-	/**
-	 * Normalize personal fields.
-	 *
-	 * @param string $value
-	 * @return string
-	 */
-	private function normalizePersonalField( string $value ): string {
-		$value = trim( $value );
-		if ( $value === '' ) {
-			return '';
-		}
-
-		$normalized = strtolower( $value );
-		if ( in_array( $normalized, [ 'not shared by donor', 'not shared' ], true ) ) {
-			return '';
-		}
-
-		return $value;
 	}
 
 	/**
@@ -706,11 +715,13 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Build the per-deposit filename suffix.
 	 *
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param array $deposit
 	 * @param array $donations
+	 *
 	 * @return string
 	 */
-	private function buildDepositFileSuffix( array $deposit, array $donations ): string {
+	private function buildDepositFileSuffix( Deposit $depositObject, array $deposit, array $donations ): string {
 		$parts = [];
 
 		$backendProcessor = trim( $this->getDepositBackendProcessor( $deposit, $donations ) );
@@ -719,7 +730,7 @@ class GetReport extends MaintenanceBase {
 		}
 
 		$parts[] = $this->getDepositTotalForFilename( $deposit );
-		$parts[] = $this->getDepositId( $deposit );
+		$parts[] = $depositObject->getId();
 
 		return implode( '-', $parts );
 	}
@@ -997,26 +1008,6 @@ class GetReport extends MaintenanceBase {
 	}
 
 	/**
-	 * Get the deposit id from a payload.
-	 *
-	 * @param array $deposit
-	 * @return string
-	 */
-	private function getDepositId( array $deposit ): string {
-		return ( new Deposit( $deposit, [] ) )->getId();
-	}
-
-	/**
-	 * Strip the leading deposit_ prefix from the batch reference.
-	 *
-	 * @param array $deposit
-	 * @return string
-	 */
-	private function getSettlementBatchReference( array $deposit ): string {
-		return ( new Deposit( $deposit ) )->getSettlementBatchReference();
-	}
-
-	/**
 	 * Get the deposit transfer currency.
 	 *
 	 * @param array $deposit
@@ -1106,13 +1097,15 @@ class GetReport extends MaintenanceBase {
 		// Adjust by no more than .5 cents per donation - to allow for them all to err the same way.
 		$maximumRoundingAdjustment = count( $donations ) / 2;
 
+		$depositObject = new Deposit( $deposit );
+
 		if ( abs( $deltaMinor ) > $maximumRoundingAdjustment ) {
 			throw new \RuntimeException(
 				sprintf(
 					'FX rounding adjustment of %d minor units exceeds maximum allowed %d for deposit %s',
 					$deltaMinor,
 					$maximumRoundingAdjustment,
-					$this->getDepositId( $deposit )
+					$depositObject->getId(),
 				)
 			);
 		}
@@ -1141,32 +1134,6 @@ class GetReport extends MaintenanceBase {
 
 		$convertedMajor = ( (float)$amountMinor * $exchangeRate ) / 100;
 		return CurrencyRoundingHelper::round( $convertedMajor, $currency );
-	}
-
-	/**
-	 * Get a deposit timestamp for filenames.
-	 *
-	 * @param array $deposit
-	 * @return string
-	 */
-	private function getDepositTimestampForFilename( array $deposit ): string {
-		$candidates = [
-			$deposit['settled_at'] ?? null,
-			$deposit['created_at'] ?? null,
-			$deposit['updated_at'] ?? null,
-		];
-
-		foreach ( $candidates as $candidate ) {
-			if ( !is_string( $candidate ) || trim( $candidate ) === '' ) {
-				continue;
-			}
-			$timestamp = strtotime( $candidate );
-			if ( $timestamp !== false ) {
-				return gmdate( 'YmdHis', $timestamp );
-			}
-		}
-
-		return gmdate( 'YmdHis' );
 	}
 
 	/**
@@ -1214,30 +1181,6 @@ class GetReport extends MaintenanceBase {
 		}
 
 		Logger::info( 'Saved Chariot JSON file to ' . $fullPath );
-	}
-
-	/**
-	 * @param array $metadata
-	 * @param array $donation
-	 * @param array $donor
-	 *
-	 * @return string
-	 */
-	private function getNote( array $metadata, array $donation, array $donor ): string {
-		$acknowledgement = trim( (string)( $metadata['Acknowledgement'] ?? '' ) );
-		$note = (string)( $donation['note'] ?? '' );
-		if ( $note === '' ) {
-			$note = (string)( $donation['purpose'] ?? '' );
-		}
-		if ( $note === '' ) {
-			$note = (string)( $metadata['Description'] ?? '' );
-		}
-		if ( $acknowledgement !== '' && strcasecmp( $acknowledgement, $this->normalizePersonalField( (string)( $donor['full_name'] ?? '' ) ) ) !== 0 ) {
-			$note = $note !== ''
-				? $note . ' | Acknowledgement: ' . $acknowledgement
-				: 'Acknowledgement: ' . $acknowledgement;
-		}
-		return $note;
 	}
 
 	/**

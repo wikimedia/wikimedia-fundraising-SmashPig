@@ -86,15 +86,6 @@ class DonationsAudit implements AuditParser {
 		return array_filter( $msg, static fn ( $value ) => $value !== null && $value !== '' );
 	}
 
-	private function firstNonEmpty( ?string ...$values ): ?string {
-		foreach ( $values as $value ) {
-			if ( $value !== null && trim( $value ) !== '' ) {
-				return $value;
-			}
-		}
-		return null;
-	}
-
 	private function toUtcTimestamp( ?string $value ): ?int {
 		if ( $value === null || trim( $value ) === '' ) {
 			return null;
