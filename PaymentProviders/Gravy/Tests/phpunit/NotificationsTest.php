@@ -278,6 +278,32 @@ class NotificationsTest extends BaseGravyTestCase {
 		$this->assertTrue( $result, 'Listener should still return true for handled failed refunds' );
 	}
 
+	public function testRefundMessageDeclined(): void {
+		[ $request, $response ] = $this->getValidRequestResponseObjects();
+
+		// Create a declined refund webhook message by modifying the default one
+		$testGravyWebhook = json_decode( $this->getValidGravyRefundMessage(), true );
+		$testGravyWebhook['target']['id'] = '3e5ff669-54eb-5ecf-0b7e-d58ee142c9ce';
+		$testGravyWebhook['target']['transaction_id'] = 'e0fd9aac-1064-56b7-b3e3-8a559882a3aa';
+		$testGravyWebhook['target']['status'] = 'declined';
+
+		$request->method( 'getRawRequest' )->willReturn( json_encode( $testGravyWebhook ) );
+
+		$testGetRefundApiCallResponse = json_decode( file_get_contents( __DIR__ . '/../Data/declined-refund.json' ), true );
+
+		$this->mockApi->expects( $this->once() )
+		->method( 'getRefund' )
+		->willReturn( $testGetRefundApiCallResponse );
+
+		$result = $this->gravyListener->execute( $request, $response );
+
+		// Declined refunds should not be queued - admins are notified by email instead
+		$queued_message = $this->refundQueue->pop();
+
+		$this->assertNull( $queued_message, 'Declined refunds should not be queued' );
+		$this->assertTrue( $result, 'Listener should still return true for handled declined refunds' );
+	}
+
 	public function testReportExecutionMessage(): void {
 		[ $request, $response ] = $this->getValidRequestResponseObjects();
 		$reportExecutionResponseBody = json_decode( file_get_contents( __DIR__ . '/../Data/report-execution-successful.json' ), true );
