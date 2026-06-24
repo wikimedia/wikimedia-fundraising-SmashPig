@@ -76,6 +76,7 @@ class GetReport extends MaintenanceBase {
 		'dafpay_tracking_id',
 		'dafpay_type',
 		'dafpay_url',
+		'check_number',
 	];
 
 	/**
@@ -116,6 +117,7 @@ class GetReport extends MaintenanceBase {
 		'transfer.inbound_ach_transfer.status',
 		'transfer.inbound_ach_transfer.receiver_id',
 		'transfer.check_deposit',
+		// Oddly enough auxiliary_on_us is the donor check number.
 		'transfer.check_deposit.auxiliary_on_us',
 		'transfer.check_deposit.routing_number',
 		'transfer.check_deposit.submitted_at',
@@ -610,6 +612,7 @@ class GetReport extends MaintenanceBase {
 			'dafpay_type' => $donation['dafpay_type'] ?? '',
 			'dafpay_url' => $donation['dafpay_url'] ?? '',
 			'gift_source' => $donationObject->getGiftSource(),
+			'check_number' => $depositObject->getCheckNumber(),
 		];
 	}
 

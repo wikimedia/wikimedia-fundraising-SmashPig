@@ -81,6 +81,7 @@ class DonationsAudit implements AuditParser {
 			'postal_code' => $row['postal_code'],
 			'country' => $row['country'],
 			'is_endowment' => $row['is_endowment'] ?? false,
+			'check_number' => $row['check_number'],
 		];
 
 		return array_filter( $msg, static fn ( $value ) => $value !== null && $value !== '' );

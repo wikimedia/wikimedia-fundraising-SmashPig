@@ -29,4 +29,24 @@ class DepositTest extends TestCase {
 		$this->assertSame( 'payment_source_7yec8861', $deposit->getPaymentSourceId() );
 	}
 
+	public function testGetCheckNumber(): void {
+		$deposit = new Deposit( [
+			'transfer' => [
+				'check_deposit' => [
+					'auxiliary_on_us' => '123456',
+				],
+			],
+		] );
+
+		$this->assertSame( '123456', $deposit->getCheckNumber() );
+	}
+
+	public function testGetCheckNumberReturnsEmptyStringWhenMissing(): void {
+		$deposit = new Deposit( [
+			'transfer' => [],
+		] );
+
+		$this->assertSame( '', $deposit->getCheckNumber() );
+	}
+
 }

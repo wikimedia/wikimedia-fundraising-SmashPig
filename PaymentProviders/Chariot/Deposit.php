@@ -55,6 +55,10 @@ class Deposit {
 		return (string)( $this->deposit['payment_source_id'] ?? '' );
 	}
 
+	public function getCheckNumber(): string {
+		return (string)( $this->deposit['transfer']['check_deposit']['auxiliary_on_us'] ?? '' );
+	}
+
 	/**
 	 * Get a deposit timestamp for filenames.
 	 *
