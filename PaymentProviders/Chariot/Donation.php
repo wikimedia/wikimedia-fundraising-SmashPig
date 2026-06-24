@@ -112,6 +112,22 @@ class Donation {
 		return (string)( $this->donation['platform']['name'] ?? '' );
 	}
 
+	public function getCorporateMatchData(): array {
+		return $this->donation['corporate_match'] ?? [];
+	}
+
+	public function isMatchingGift(): bool {
+		return !empty( $this->getCorporateMatchData() );
+	}
+
+	public function getMatchingGiftOrganization(): string {
+		return (string)( $this->getCorporateMatchData()['company_name'] ?? '' );
+	}
+
+	public function getMatchingGiftAmount(): string {
+		return (string)( $this->getCorporateMatchData()['match_amount'] ?? '0' );
+	}
+
 	/**
 	 * @return string
 	 */

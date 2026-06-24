@@ -124,4 +124,50 @@ class DonationTest extends TestCase {
 		$this->assertSame( '', $donation->getPlatformName() );
 	}
 
+	public function testGetsCorporateMatchValues(): void {
+		$donation = new Donation( [
+			'corporate_match' => [
+				'company_name' => 'Disney',
+				'match_amount' => 400,
+				'program_name' => 'Payroll Match',
+				'source' => 'Payroll',
+			],
+		] );
+
+		$this->assertSame(
+			[
+				'company_name' => 'Disney',
+				'match_amount' => 400,
+				'program_name' => 'Payroll Match',
+				'source' => 'Payroll',
+			],
+			$donation->getCorporateMatchData()
+		);
+		$this->assertTrue( $donation->isMatchingGift() );
+		$this->assertSame( 'Disney', $donation->getMatchingGiftOrganization() );
+		$this->assertSame( '400', $donation->getMatchingGiftAmount() );
+	}
+
+	public function testGetsEmptyCorporateMatchValuesWhenMissing(): void {
+		$donation = new Donation( [] );
+
+		$this->assertSame( [], $donation->getCorporateMatchData() );
+		$this->assertFalse( $donation->isMatchingGift() );
+		$this->assertSame( '', $donation->getMatchingGiftOrganization() );
+		$this->assertSame( '0', $donation->getMatchingGiftAmount() );
+	}
+
+	public function testMatchingGiftCanHaveZeroAmount(): void {
+		$donation = new Donation( [
+			'corporate_match' => [
+				'company_name' => 'Disney',
+				'match_amount' => 0,
+			],
+		] );
+
+		$this->assertTrue( $donation->isMatchingGift() );
+		$this->assertSame( 'Disney', $donation->getMatchingGiftOrganization() );
+		$this->assertSame( '0', $donation->getMatchingGiftAmount() );
+	}
+
 }

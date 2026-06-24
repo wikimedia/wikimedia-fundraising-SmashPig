@@ -556,7 +556,6 @@ class GetReport extends MaintenanceBase {
 	private function flattenDonationForAuditCsv( array $deposit, array $donation, float $exchangeRate ): array {
 		$donationObject = new Donation( $donation );
 		$depositObject = new Deposit( $deposit );
-		$matchingGift = $donation['corporate_match'] ?? [];
 		$properties = $donation['properties'] ?? [];
 		$originalCurrency = $donation['currency'];
 		$settledCurrency = $this->getDepositCurrency( $deposit );
@@ -579,15 +578,15 @@ class GetReport extends MaintenanceBase {
 			'original_net_amount' => $this->getRoundedAmount( $donation['amount_net'], $originalCurrency ),
 			'original_total_amount' => $this->getRoundedAmount( $donation['amount_gross'], $originalCurrency ),
 			'original_individual_gift_amount' => $this->getAmount( $donation['individual_gift_amount'] ?? 0 ),
-			'original_matching_gift_amount' => $this->getAmount( $matchingGift['match_amount'] ?? 0 ),
+			'original_matching_gift_amount' => $this->getAmount( $donationObject->getMatchingGiftAmount() ),
 			'settled_fee_amount' => $this->getAmount( $donation['amount_fee'] ) * $exchangeRate,
 			'settled_net_amount' => $this->getAmount( $donation['amount_net'] ) * $exchangeRate,
 			'settled_total_amount' => $this->getAmount( $donation['amount_gross'] ) * $exchangeRate,
 			'exchange_rate' => number_format( $exchangeRate, 6, '.', '' ),
 			'type' => 'donation',
 			'is_daf' => $donationObject->isDonorAdvisedFundGrant(),
-			'is_matching_gift' => !empty( $matchingGift ),
-			'matching_gift_organization' => $matchingGift['company_name'] ?? '',
+			'is_matching_gift' => $donationObject->isMatchingGift(),
+			'matching_gift_organization' => $donationObject->getMatchingGiftOrganization(),
 			'is_endowment' => !empty( $properties['Endowment flag?'] ) && $properties['Endowment flag?'] === 'Y',
 			'first_name' => $donationObject->getFirstName(),
 			'last_name' => $donationObject->getLastName(),
