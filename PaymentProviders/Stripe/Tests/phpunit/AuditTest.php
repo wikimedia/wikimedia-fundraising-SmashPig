@@ -15,7 +15,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$processor = new StripeAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_report.csv' );
 
-		$this->assertCount( 6, $output );
+		$this->assertCount( 7, $output );
 
 		// Some generic ones.
 		$this->assertSame( 'stripe', $output[0]['audit_file_gateway'] );
@@ -56,7 +56,8 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertSame( 'txn_fee_01', $output[3]['backend_processor_txn_id'] );
 		$this->assertSame( 'po_test123', $output[3]['settlement_batch_reference'] );
 		$this->assertSame( 'fee', $output[4]['type'] );
-		$this->assertSame( 'payout', $output[5]['type'] );
+		$this->assertSame( 'chargeback_reversed', $output[5]['type'] );
+		$this->assertSame( 'payout', $output[6]['type'] );
 	}
 
 	public function testParsePaymentsActivityCsv(): void {
