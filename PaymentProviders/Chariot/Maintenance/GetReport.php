@@ -518,11 +518,8 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function flattenDepositPayoutRowForAuditCsv( array $deposit, array $donations ): array {
 		$depositObject = new Deposit( $deposit );
-		$paymentMethod = $this->getPaymentMethod( $deposit );
-		$transfer = $deposit['transfer'];
-		$currency = $depositObject->getCurrency();
+		$paymentMethod = $this->getPaymentMethod( $depositObject );
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
-		$amount = $this->getAmount( $transfer['amount'] );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
@@ -530,12 +527,12 @@ class GetReport extends MaintenanceBase {
 			'backend_processor' => $backendProcessor,
 			'gateway_txn_id' => $depositObject->getId(),
 			'backend_processor_txn_id' => $depositObject->getPaymentSourceId(),
-			'settled_currency' => $currency,
+			'settled_currency' => $depositObject->getCurrency(),
 			'exchange_rate' => '1.000000',
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
-			'settled_fee_amount' => $this->round( 0.0, $currency ),
-			'settled_net_amount' => $this->round( $amount, $currency ),
-			'settled_total_amount' => $this->round( $amount, $currency ),
+			'settled_fee_amount' => $depositObject->getZeroAmountRounded(),
+			'settled_net_amount' => $depositObject->getSettledAmount(),
+			'settled_total_amount' => $depositObject->getSettledAmount(),
 			'settled_date' => $depositObject->getSettledAt(),
 			'date' => $depositObject->getCreatedAt(),
 			'type' => 'payout',
@@ -551,13 +548,12 @@ class GetReport extends MaintenanceBase {
 	 * @param float $exchangeRate
 	 * @return array
 	 */
-	private function flattenDonationForAuditCsv( array $deposit, array $donation, float $exchangeRate ): array {
+	private function flattenDonationForAuditCsv( Deposit $depositObject, array $donation, float $exchangeRate ): array {
 		$donationObject = new Donation( $donation );
-		$depositObject = new Deposit( $deposit );
 		$properties = $donation['properties'] ?? [];
 		$originalCurrency = $donation['currency'];
-		$settledCurrency = $this->getDepositCurrency( $deposit );
-		$paymentMethod = $this->getPaymentMethod( $deposit, $donation );
+		$settledCurrency = $depositObject->getCurrency();
+		$paymentMethod = $this->getPaymentMethod( $depositObject, $donation );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
@@ -971,11 +967,11 @@ class GetReport extends MaintenanceBase {
 		return CurrencyRoundingHelper::round( (float)$amount, $currency );
 	}
 
-	public function getPaymentMethod( array $deposit, array $donation = [] ): string {
+	public function getPaymentMethod( Deposit $deposit, array $donation = [] ): string {
 		if ( !empty( $donation['dafpay_url'] ) ) {
 			return 'DAFpay';
 		}
-		return ( new Deposit( $deposit ) )->getPaymentMethod();
+		return $deposit->getPaymentMethod();
 	}
 
 	/**
@@ -985,12 +981,13 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function buildAuditRows( array $deposit, array $donations ): array {
+		$depositObject = new Deposit( $deposit );
 		$exchangeRate = $this->getBatchExchangeRate( $deposit, $donations );
 
 		$rows = [];
 		foreach ( $donations as $donation ) {
 			if ( is_array( $donation ) ) {
-				$rows[] = $this->flattenDonationForAuditCsv( $deposit, $donation, $exchangeRate );
+				$rows[] = $this->flattenDonationForAuditCsv( $depositObject, $donation, $exchangeRate );
 			}
 		}
 
@@ -1002,12 +999,10 @@ class GetReport extends MaintenanceBase {
 			}
 		}
 
-		$depositNetMinor = (int)( $deposit['transfer']['amount'] ?? 0 );
+		$depositNetMinor = $depositObject->getSettledAmount();
 		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
 		// Adjust by no more than .5 cents per donation - to allow for them all to err the same way.
 		$maximumRoundingAdjustment = count( $donations ) / 2;
-
-		$depositObject = new Deposit( $deposit );
 
 		if ( abs( $deltaMinor ) > $maximumRoundingAdjustment ) {
 			throw new \RuntimeException(

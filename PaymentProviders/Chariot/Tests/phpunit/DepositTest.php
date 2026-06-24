@@ -49,4 +49,42 @@ class DepositTest extends TestCase {
 		$this->assertSame( '', $deposit->getCheckNumber() );
 	}
 
+	public function testGetSettledAmountInMinorUnits(): void {
+		$deposit = new Deposit( [
+			'transfer' => [
+				'amount' => 124605,
+				'currency' => 'USD',
+			],
+		] );
+
+		$this->assertSame( 124605, $deposit->getSettledAmountInMinorUnits() );
+	}
+
+	public function testGetSettledAmountInMinorUnitsReturnsZeroWhenMissing(): void {
+		$deposit = new Deposit( [] );
+
+		$this->assertSame( 0, $deposit->getSettledAmountInMinorUnits() );
+	}
+
+	public function testGetSettledAmountRounded(): void {
+		$deposit = new Deposit( [
+			'transfer' => [
+				'amount' => 124605,
+				'currency' => 'USD',
+			],
+		] );
+
+		$this->assertSame( '1246.05', $deposit->getSettledAmount() );
+	}
+
+	public function testGetZeroAmountRounded(): void {
+		$deposit = new Deposit( [
+			'transfer' => [
+				'currency' => 'USD',
+			],
+		] );
+
+		$this->assertSame( '0.00', $deposit->getZeroAmountRounded() );
+	}
+
 }

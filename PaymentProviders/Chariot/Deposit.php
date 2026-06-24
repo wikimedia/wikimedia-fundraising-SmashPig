@@ -2,6 +2,8 @@
 
 namespace SmashPig\PaymentProviders\Chariot;
 
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
+
 class Deposit {
 	private array $deposit;
 
@@ -57,6 +59,21 @@ class Deposit {
 
 	public function getCheckNumber(): string {
 		return (string)( $this->deposit['transfer']['check_deposit']['auxiliary_on_us'] ?? '' );
+	}
+
+	public function getSettledAmount(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getSettledAmountInMinorUnits(),
+			$this->getCurrency()
+		);
+	}
+
+	public function getZeroAmountRounded(): string {
+		return CurrencyRoundingHelper::round( 0.0, $this->getCurrency() );
+	}
+
+	public function getSettledAmountInMinorUnits(): int {
+		return (int)( $this->deposit['transfer']['amount'] ?? 0 );
 	}
 
 	/**
