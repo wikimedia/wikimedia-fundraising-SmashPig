@@ -608,9 +608,6 @@ class GetReport extends MaintenanceBase {
 		}
 
 		$payload = [
-			'known_deposit_paths' => ChariotObjectMetadata::getKnownDepositPaths(),
-			'known_donation_paths' => ChariotObjectMetadata::getKnownDonationPaths(),
-			'handled_audit_columns' => self::AUDIT_CSV_COLUMNS,
 			'unknown_paths' => array_values( $unknowns ),
 		];
 
