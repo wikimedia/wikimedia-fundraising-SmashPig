@@ -106,8 +106,13 @@ class Donation {
 		return $this->donation['donor_advised_fund_grant'] ?? [];
 	}
 
+	/**
+	 * Is the donation from a donor advised fund. Note we treat it
+	 * as daf OR matching gift, prioritising the matching gift.
+	 * @return bool
+	 */
 	public function isDonorAdvisedFundGrant(): bool {
-		return (bool)$this->getDonorAdvisedFundData();
+		return ( $this->getDonorAdvisedFundData() && !$this->isMatchingGift() );
 	}
 
 	public function getPlatformName(): string {
