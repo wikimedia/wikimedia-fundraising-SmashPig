@@ -12,6 +12,31 @@ class Donation {
 		$this->donation = $donation;
 	}
 
+	/**
+	 * Get a value from the donation array at the given path.
+	 *
+	 * This function also enforces us updating our metadata as to which
+	 * fields are used, helping us to in-code document.
+	 *
+	 * @param string $path
+	 * @param mixed $default
+	 *
+	 * @return mixed
+	 */
+	private function getValue( string $path, $default = null ): mixed {
+		ChariotObjectMetadata::assertDonationFieldIsUsed( $path );
+
+		$value = $this->donation;
+		foreach ( explode( '.', $path ) as $key ) {
+			if ( !is_array( $value ) || !array_key_exists( $key, $value ) ) {
+				return $default;
+			}
+			$value = $value[$key];
+		}
+
+		return $value;
+	}
+
 	public function getDonor(): array {
 		return $this->donation['attribution']['primary_donor'] ?? [];
 	}
@@ -88,10 +113,10 @@ class Donation {
 	}
 
 	public function getGiftSource(): string {
-		if ( !empty( $this->getProperties()['Gift Type'] ) ) {
-			return (string)( $this->getProperties()['Gift Type'] );
+		if ( !empty( $this->getValue( 'properties.Gift Type' ) ) ) {
+			return (string)( $this->getValue( 'properties.Gift Type' ) );
 		}
-		return $this->donation['corporate_match']['source'] ?? '';
+		return (string)$this->getValue( 'corporate_match.source' );
 	}
 
 	public function getBankingInstitution(): string {

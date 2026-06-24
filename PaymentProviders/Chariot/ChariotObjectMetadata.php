@@ -174,7 +174,7 @@ class ChariotObjectMetadata {
 		'corporate_match.company_name' => [ 'status' => self::STATUS_USED ],
 		'corporate_match.match_amount' => [ 'status' => self::STATUS_USED ],
 		'corporate_match.program_name' => [],
-		'corporate_match.source' => [],
+		'corporate_match.source' => [ 'status' => self::STATUS_USED ],
 		'lockbox_id' => [
 			'note' => 'Digital Mailbox field.',
 		],
@@ -217,6 +217,26 @@ class ChariotObjectMetadata {
 		}
 
 		return array_keys( $paths );
+	}
+
+	public static function assertDepositFieldIsUsed( string $path ): void {
+		self::assertFieldIsUsed( $path, self::DEPOSIT_FIELDS, 'deposit' );
+	}
+
+	public static function assertDonationFieldIsUsed( string $path ): void {
+		self::assertFieldIsUsed( $path, self::DONATION_FIELDS, 'donation' );
+	}
+
+	private static function assertFieldIsUsed( string $path, array $fields, string $objectType ): void {
+		if ( ( $fields[$path]['status'] ?? null ) !== self::STATUS_USED ) {
+			throw new \RuntimeException(
+				sprintf(
+					'Chariot %s field "%s" is used by code but is not marked used in metadata.',
+					$objectType,
+					$path
+				)
+			);
+		}
 	}
 
 }

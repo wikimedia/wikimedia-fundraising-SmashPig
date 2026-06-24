@@ -11,12 +11,37 @@ class Deposit {
 		$this->deposit = $deposit;
 	}
 
+	/**
+	 * Get a value from the deposit array at the given path.
+	 *
+	 * This function also enforces us updating our metadata as to which
+	 * fields are used, helping us to in-code document.
+	 *
+	 * @param string $path
+	 * @param mixed|null $default
+	 *
+	 * @return mixed
+	 */
+	private function getValue( string $path, mixed $default = null ): mixed {
+		ChariotObjectMetadata::assertDepositFieldIsUsed( $path );
+
+		$value = $this->deposit;
+		foreach ( explode( '.', $path ) as $key ) {
+			if ( !is_array( $value ) || !array_key_exists( $key, $value ) ) {
+				return $default;
+			}
+			$value = $value[$key];
+		}
+
+		return $value;
+	}
+
 	public function getDeposit(): array {
 		return $this->deposit;
 	}
 
 	public function getId(): string {
-		$id = trim( (string)( $this->deposit['id'] ?? '' ) );
+		$id = trim( (string)( $this->getValue( 'id', '' ) ) );
 		if ( $id === '' ) {
 			throw new \RuntimeException( 'Deposit payload missing id' );
 		}
@@ -58,7 +83,7 @@ class Deposit {
 	}
 
 	public function getCheckNumber(): string {
-		return (string)( $this->deposit['transfer']['check_deposit']['auxiliary_on_us'] ?? '' );
+		return (string)( $this->getValue( 'transfer.check_deposit.auxiliary_on_us' ) );
 	}
 
 	public function getSettledAmount(): string {
