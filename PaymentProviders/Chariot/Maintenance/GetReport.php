@@ -205,6 +205,10 @@ class GetReport extends MaintenanceBase {
 		'properties.Marked for export',
 		'properties.Endowment flag?',
 		'properties.CRM status',
+		// Field used to categorise Groundswell donations based on text.
+		// Employee Giving, Matching Gift, Volunteer Match, Corporate Gift.
+		// Contributions to gift_source.
+		'properties.Gift Type',
 		'settlement',
 		'settlement.deposit_id',
 		'settlement.received_at',
