@@ -170,4 +170,46 @@ class DonationTest extends TestCase {
 		$this->assertSame( '0', $donation->getMatchingGiftAmount() );
 	}
 
+	public function testGetsOriginalAmountsInMinorUnits(): void {
+		$donation = new Donation( [
+			'amount_fee' => 87,
+			'amount_net' => 2013,
+			'amount_gross' => 2100,
+		] );
+
+		$this->assertSame( 87, $donation->getOriginalFeeAmountInMinorUnits() );
+		$this->assertSame( 2013, $donation->getOriginalNetAmountInMinorUnits() );
+		$this->assertSame( 2100, $donation->getOriginalTotalAmountInMinorUnits() );
+	}
+
+	public function testGetsOriginalAmountsInMinorUnitsAsZeroWhenMissing(): void {
+		$donation = new Donation( [] );
+
+		$this->assertSame( 0, $donation->getOriginalFeeAmountInMinorUnits() );
+		$this->assertSame( 0, $donation->getOriginalNetAmountInMinorUnits() );
+		$this->assertSame( 0, $donation->getOriginalTotalAmountInMinorUnits() );
+	}
+
+	public function testGetsSettledAmountsRounded(): void {
+		$donation = new Donation( [
+			'amount_fee' => 87,
+			'amount_net' => 2013,
+			'amount_gross' => 2100,
+		] );
+
+		$exchangeRate = 0.712197;
+
+		$this->assertSame( '0.62', $donation->getSettledFeeAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '14.34', $donation->getSettledNetAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '14.96', $donation->getSettledTotalAmountRounded( $exchangeRate, 'USD' ) );
+	}
+
+	public function testGetsSettledAmountRoundedToZeroWhenMissing(): void {
+		$donation = new Donation( [] );
+
+		$this->assertSame( '0.00', $donation->getSettledFeeAmountRounded( 0.712197, 'USD' ) );
+		$this->assertSame( '0.00', $donation->getSettledNetAmountRounded( 0.712197, 'USD' ) );
+		$this->assertSame( '0.00', $donation->getSettledTotalAmountRounded( 0.712197, 'USD' ) );
+	}
+
 }

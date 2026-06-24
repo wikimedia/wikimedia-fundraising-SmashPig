@@ -2,6 +2,8 @@
 
 namespace SmashPig\PaymentProviders\Chariot;
 
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
+
 class Donation {
 
 	private array $donation;
@@ -169,6 +171,49 @@ class Donation {
 		}
 
 		return $value;
+	}
+
+	public function getOriginalFeeAmountInMinorUnits(): int {
+		return (int)( $this->donation['amount_fee'] ?? 0 );
+	}
+
+	public function getOriginalNetAmountInMinorUnits(): int {
+		return (int)( $this->donation['amount_net'] ?? 0 );
+	}
+
+	public function getOriginalTotalAmountInMinorUnits(): int {
+		return (int)( $this->donation['amount_gross'] ?? 0 );
+	}
+
+	public function getSettledFeeAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalFeeAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	public function getSettledNetAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalNetAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	public function getSettledTotalAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalTotalAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	private function getConvertedAmountRounded( int $amount, float $exchangeRate, string $settledCurrency ): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			(int)round( $amount * $exchangeRate ),
+			$settledCurrency
+		);
 	}
 
 }
