@@ -10,6 +10,7 @@ use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Chariot\Api;
 use SmashPig\PaymentProviders\Chariot\Deposit;
 use SmashPig\PaymentProviders\Chariot\Donation;
+use SmashPig\PaymentProviders\Chariot\UnknownPathCollector;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
@@ -241,13 +242,6 @@ class GetReport extends MaintenanceBase {
 	];
 
 	private ProviderConfiguration $config;
-
-	/**
-	 * Accumulator for unknown paths during scanning.
-	 *
-	 * @var array<string,array<string,mixed>>
-	 */
-	private array $unknownPaths = [];
 
 	/**
 	 * @throws \SmashPig\Core\SmashPigException
@@ -747,17 +741,17 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function collectDepositUnknowns( array $deposit, array $donations ): array {
-		$this->unknownPaths = [];
+		$collector = new UnknownPathCollector();
 
-		$this->scanUnknownPaths( $deposit, '', self::KNOWN_DEPOSIT_PATHS );
+		$collector->scan( $deposit, self::KNOWN_DEPOSIT_PATHS );
+
 		foreach ( $donations as $donation ) {
 			if ( is_array( $donation ) ) {
-				$this->scanUnknownPaths( $donation, '', self::KNOWN_DONATION_PATHS );
+				$collector->scan( $donation, self::KNOWN_DONATION_PATHS );
 			}
 		}
 
-		ksort( $this->unknownPaths );
-		return $this->unknownPaths;
+		return $collector->getUnknowns();
 	}
 
 	/**
@@ -786,94 +780,6 @@ class GetReport extends MaintenanceBase {
 			$this->buildFilename( 'unknowns', $suffix, 'json', $timestamp ),
 			$payload
 		);
-	}
-
-	/**
-	 * Scan for unknown paths in a nested payload.
-	 *
-	 * @param mixed $value
-	 * @param string $path
-	 * @param array $knownPaths
-	 * @return void
-	 */
-	private function scanUnknownPaths( $value, string $path, array $knownPaths ): void {
-		if ( is_array( $value ) ) {
-			if ( $this->isListArray( $value ) ) {
-				$listPath = $path === '' ? '[]' : $path;
-				if ( !in_array( $listPath, $knownPaths, true ) ) {
-					$this->noteUnknownPath( $listPath, $value[0] ?? null );
-				}
-				foreach ( $value as $item ) {
-					if ( is_array( $item ) ) {
-						foreach ( $item as $key => $itemValue ) {
-							$childPath = $listPath . '[].' . $key;
-							$this->scanUnknownPaths( $itemValue, $childPath, $knownPaths );
-						}
-					}
-				}
-				return;
-			}
-
-			if ( $path !== '' && !in_array( $path, $knownPaths, true ) ) {
-				$this->noteUnknownPath( $path, $value );
-			}
-			foreach ( $value as $key => $child ) {
-				$childPath = $path === '' ? (string)$key : $path . '.' . $key;
-				$this->scanUnknownPaths( $child, $childPath, $knownPaths );
-			}
-			return;
-		}
-
-		if ( $path !== '' && !in_array( $path, $knownPaths, true ) ) {
-			$this->noteUnknownPath( $path, $value );
-		}
-	}
-
-	/**
-	 * Record an unknown path and sample value.
-	 *
-	 * @param string $path
-	 * @param mixed $sample
-	 * @return void
-	 */
-	private function noteUnknownPath( string $path, $sample ): void {
-		if ( !isset( $this->unknownPaths[$path] ) ) {
-			$this->unknownPaths[$path] = [
-				'path' => $path,
-				'count' => 0,
-				'sample' => $this->sampleValue( $sample ),
-			];
-		}
-		$this->unknownPaths[$path]['count']++;
-	}
-
-	/**
-	 * Create a sample value for an unknown-path report.
-	 *
-	 * @param mixed $value
-	 * @return mixed
-	 */
-	private function sampleValue( $value ) {
-		if ( is_array( $value ) ) {
-			return $value;
-		}
-		if ( is_bool( $value ) ) {
-			return $value;
-		}
-		if ( $value === null ) {
-			return null;
-		}
-		return (string)$value;
-	}
-
-	/**
-	 * Determine whether an array is a list array.
-	 *
-	 * @param array $value
-	 * @return bool
-	 */
-	private function isListArray( array $value ): bool {
-		return array_keys( $value ) === range( 0, count( $value ) - 1 );
 	}
 
 	/**
