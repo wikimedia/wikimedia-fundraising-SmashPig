@@ -92,6 +92,26 @@ class Donation {
 		return $this->donation['corporate_match']['source'] ?? '';
 	}
 
+	public function getBankingInstitution(): string {
+		return trim( (string)( $this->getDonorAdvisedFundData()['organization_name'] ?? '' ) );
+	}
+
+	public function getDonorAdvisedFundName(): string {
+		return (string)( $this->getDonorAdvisedFundData()['donor_fund_name'] ?? '' );
+	}
+
+	public function getDonorAdvisedFundData(): array {
+		return $this->donation['donor_advised_fund_grant'] ?? [];
+	}
+
+	public function isDonorAdvisedFundGrant(): bool {
+		return (bool)$this->getDonorAdvisedFundName();
+	}
+
+	public function getPlatformName(): string {
+		return (string)( $this->donation['platform']['name'] ?? '' );
+	}
+
 	/**
 	 * @return string
 	 */

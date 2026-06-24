@@ -556,9 +556,7 @@ class GetReport extends MaintenanceBase {
 	private function flattenDonationForAuditCsv( array $deposit, array $donation, float $exchangeRate ): array {
 		$donationObject = new Donation( $donation );
 		$depositObject = new Deposit( $deposit );
-		$daf = $donation['donor_advised_fund_grant'] ?? [];
 		$matchingGift = $donation['corporate_match'] ?? [];
-		$platform = $donation['platform'] ?? [];
 		$properties = $donation['properties'] ?? [];
 		$originalCurrency = $donation['currency'];
 		$settledCurrency = $this->getDepositCurrency( $deposit );
@@ -567,11 +565,11 @@ class GetReport extends MaintenanceBase {
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
-			'backend_processor' => (string)( $platform['name'] ?? '' ),
+			'backend_processor' => $donationObject->getPlatformName(),
 			'gateway_txn_id' => $donation['id'],
 			'backend_processor_txn_id' => (string)$donation['external_id'],
-			'banking_institution' => trim( (string)( $daf['organization_name'] ?? '' ) ),
-			'donor_advised_fund_name' => $daf['donor_fund_name'] ?? '',
+			'banking_institution' => $donationObject->getBankingInstitution(),
+			'donor_advised_fund_name' => $donationObject->getDonorAdvisedFundName(),
 			'original_currency' => $originalCurrency,
 			'settled_currency' => $settledCurrency,
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
@@ -587,7 +585,7 @@ class GetReport extends MaintenanceBase {
 			'settled_total_amount' => $this->getAmount( $donation['amount_gross'] ) * $exchangeRate,
 			'exchange_rate' => number_format( $exchangeRate, 6, '.', '' ),
 			'type' => 'donation',
-			'is_daf' => !empty( $daf['donor_fund_name'] ),
+			'is_daf' => $donationObject->isDonorAdvisedFundGrant(),
 			'is_matching_gift' => !empty( $matchingGift ),
 			'matching_gift_organization' => $matchingGift['company_name'] ?? '',
 			'is_endowment' => !empty( $properties['Endowment flag?'] ) && $properties['Endowment flag?'] === 'Y',

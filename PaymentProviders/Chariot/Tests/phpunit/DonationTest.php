@@ -86,4 +86,42 @@ class DonationTest extends TestCase {
 		];
 	}
 
+	public function testGetsDonorAdvisedFundValues(): void {
+		$donation = new Donation( [
+			'donor_advised_fund_grant' => [
+				'organization_name' => 'My Foundation',
+				'donor_fund_name' => 'Daisy Mouse Fund',
+			],
+		] );
+
+		$this->assertSame( 'My Foundation', $donation->getBankingInstitution() );
+		$this->assertSame( 'Daisy Mouse Fund', $donation->getDonorAdvisedFundName() );
+		$this->assertTrue( $donation->isDonorAdvisedFundGrant() );
+	}
+
+	public function testGetsEmptyDonorAdvisedFundValuesWhenMissing(): void {
+		$donation = new Donation( [] );
+
+		$this->assertSame( '', $donation->getBankingInstitution() );
+		$this->assertSame( '', $donation->getDonorAdvisedFundName() );
+		$this->assertSame( [], $donation->getDonorAdvisedFundData() );
+		$this->assertFalse( $donation->isDonorAdvisedFundGrant() );
+	}
+
+	public function testGetsPlatformName(): void {
+		$donation = new Donation( [
+			'platform' => [
+				'name' => 'Benevity',
+			],
+		] );
+
+		$this->assertSame( 'Benevity', $donation->getPlatformName() );
+	}
+
+	public function testGetsEmptyPlatformNameWhenMissing(): void {
+		$donation = new Donation( [] );
+
+		$this->assertSame( '', $donation->getPlatformName() );
+	}
+
 }
