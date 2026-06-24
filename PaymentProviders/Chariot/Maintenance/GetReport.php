@@ -621,6 +621,7 @@ class GetReport extends MaintenanceBase {
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 		return [
 			'gateway' => 'Chariot Disbursements',
+			'gateway_txn_id' => $depositObject->getId() . '_rounding',
 			'audit_file_gateway' => 'Chariot Disbursements',
 			'backend_processor' => $backendProcessor,
 			'backend_processor_txn_id' => $depositObject->getId() . '_rounding',
