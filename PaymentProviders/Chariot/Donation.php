@@ -105,7 +105,7 @@ class Donation {
 	}
 
 	public function isDonorAdvisedFundGrant(): bool {
-		return (bool)$this->getDonorAdvisedFundName();
+		return (bool)$this->getDonorAdvisedFundData();
 	}
 
 	public function getPlatformName(): string {
