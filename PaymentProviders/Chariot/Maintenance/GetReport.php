@@ -8,6 +8,7 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Chariot\Api;
+use SmashPig\PaymentProviders\Chariot\ChariotObjectMetadata;
 use SmashPig\PaymentProviders\Chariot\Deposit;
 use SmashPig\PaymentProviders\Chariot\Donation;
 use SmashPig\PaymentProviders\Chariot\UnknownPathCollector;
@@ -78,167 +79,6 @@ class GetReport extends MaintenanceBase {
 		'dafpay_type',
 		'dafpay_url',
 		'check_number',
-	];
-
-	/**
-	 * List of known paths in the json, if more are added an 'unknowns' file will be generated.
-	 *
-	 * We track these so that if additional columns are added we 'notice'.
-	 */
-	private const KNOWN_DEPOSIT_PATHS = [
-		'id',
-		'created_at',
-		'bank_created_at',
-		'updated_at',
-		'status',
-		'payment_source_id',
-		'settled_at',
-		'returned_at',
-		'properties',
-		'properties.CRM status',
-		'properties.Journaled in Sage',
-		'properties.Gift Type',
-		// We see lockbox_id and mail_item_id coming in from Digital Mailbox
-		'lockbox_id',
-		'mail_item_id',
-		'transfer',
-		'transfer.amount',
-		'transfer.currency',
-		'transfer.financial_account_id',
-		'transfer.description',
-		'transfer.inbound_account_transfer',
-		'transfer.inbound_account_transfer.created_at',
-		'transfer.inbound_ach_transfer',
-		'transfer.inbound_ach_transfer.standard_entry_class_code',
-		'transfer.inbound_ach_transfer.company_entry_description',
-		'transfer.inbound_ach_transfer.originator_routing_number',
-		'transfer.inbound_ach_transfer.originator_company_name',
-		'transfer.inbound_ach_transfer.trace_number',
-		'transfer.inbound_ach_transfer.effective_date',
-		'transfer.inbound_ach_transfer.status',
-		'transfer.inbound_ach_transfer.receiver_id',
-		'transfer.check_deposit',
-		// Oddly enough auxiliary_on_us is the donor check number.
-		'transfer.check_deposit.auxiliary_on_us',
-		'transfer.check_deposit.routing_number',
-		'transfer.check_deposit.submitted_at',
-		'transfer.check_deposit.status',
-		'transfer.type',
-	];
-
-	/**
-	 * Fields that relate to donations.
-	 *
-	 * We track these so that if additional columns are added we 'notice'.
-	 */
-	private const KNOWN_DONATION_PATHS = [
-		'id',
-		'created_at',
-		'updated_at',
-		'currency',
-		'amount_gross',
-		'amount_fee',
-		'amount_net',
-		'individual_gift_amount',
-		'match_amount',
-		'payment_status',
-		'payment_source_id',
-		'external_id',
-		'note',
-		'purpose',
-		'artifacts',
-		'attribution',
-		'attribution.primary_donor',
-		'attribution.primary_donor.full_name',
-		'attribution.primary_donor.first_name',
-		'attribution.primary_donor.last_name',
-		'attribution.primary_donor.email',
-		'attribution.primary_donor.prefix',
-		'attribution.primary_donor.address',
-		'attribution.primary_donor.address.line1',
-		'attribution.primary_donor.address.line2',
-		'attribution.primary_donor.address.city',
-		'attribution.primary_donor.address.state',
-		'attribution.primary_donor.address.postal_code',
-		'attribution.primary_donor.address.country',
-		'attribution.joint_donor',
-		'attribution.joint_donor.email',
-		'attribution.joint_donor.full_name',
-		'donor_advised_fund_grant',
-		'donor_advised_fund_grant.donor_fund_name',
-		'donor_advised_fund_grant.organization_name',
-		'donor_advised_fund_grant.program_name',
-		'donor_advised_fund_grant.sponsor_grant_id',
-		'platform',
-		'platform.acceptance',
-		'platform.acceptance.accepted',
-		'platform.acceptance.expires_at',
-		'platform.name',
-		'platform.platform_grant_id',
-		'platform.metadata',
-		'platform.metadata.contributionId',
-		'platform.metadata.donorId',
-		'platform.metadata.nonprofitId',
-		'platform.metadata.Payable To',
-		'platform.metadata.Recommended By',
-		'platform.metadata.Description',
-		'platform.metadata.Activity',
-		'platform.metadata.Disbursement ID',
-		'platform.metadata.Disbursing Entity',
-		'platform.metadata.Fee Comment',
-		'platform.metadata.Frequency',
-		'platform.metadata.Project',
-		'platform.metadata.Project Remote ID',
-		'platform.metadata.Reason',
-		'platform.metadata.Acknowledgement',
-		'platform.metadata.Confirmation Number',
-		'platform.metadata.Disbursement Method',
-		'platform.metadata.Distribution',
-		'properties',
-		'properties.Campaign',
-		'properties.Country',
-		'properties.Partner',
-		'properties.Prefix',
-		'properties.Suffix',
-		'properties.Review status',
-		'properties.Journaled in Sage',
-		'properties.Groundswell Company Name',
-		'properties.Marked for export',
-		'properties.Endowment flag?',
-		'properties.CRM status',
-		// Field used to categorise Groundswell donations based on text.
-		// Employee Giving, Matching Gift, Volunteer Match, Corporate Gift.
-		// Contributions to gift_source.
-		'properties.Gift Type',
-		'settlement',
-		'settlement.deposit_id',
-		'settlement.received_at',
-		'settlement.settled_at',
-		'donor_email',
-		'donor_phone',
-		'assignee',
-		'crm_status',
-		'groundswell_company_name',
-		'internal_note',
-		'partner',
-		'partner_full_name',
-		'prefix',
-		'suffix',
-		'received_offline_on',
-		'review_status',
-		'dafpay_form',
-		'dafpay_frequency',
-		'dafpay_tracking_id',
-		'dafpay_type',
-		'dafpay_url',
-		'corporate_match',
-		'corporate_match.company_name',
-		'corporate_match.match_amount',
-		'corporate_match.program_name',
-		'corporate_match.source',
-		// We see lockbox_id and mail_item_id coming in from Digital Mailbox
-		'lockbox_id',
-		'mail_item_id',
 	];
 
 	private ProviderConfiguration $config;
@@ -742,11 +582,11 @@ class GetReport extends MaintenanceBase {
 	private function collectDepositUnknowns( array $deposit, array $donations ): array {
 		$collector = new UnknownPathCollector();
 
-		$collector->scan( $deposit, self::KNOWN_DEPOSIT_PATHS );
+		$collector->scan( $deposit, ChariotObjectMetadata::getKnownDepositPaths() );
 
 		foreach ( $donations as $donation ) {
 			if ( is_array( $donation ) ) {
-				$collector->scan( $donation, self::KNOWN_DONATION_PATHS );
+				$collector->scan( $donation, ChariotObjectMetadata::getKnownDonationPaths() );
 			}
 		}
 
@@ -768,8 +608,8 @@ class GetReport extends MaintenanceBase {
 		}
 
 		$payload = [
-			'known_deposit_paths' => self::KNOWN_DEPOSIT_PATHS,
-			'known_donation_paths' => self::KNOWN_DONATION_PATHS,
+			'known_deposit_paths' => ChariotObjectMetadata::getKnownDepositPaths(),
+			'known_donation_paths' => ChariotObjectMetadata::getKnownDonationPaths(),
 			'handled_audit_columns' => self::AUDIT_CSV_COLUMNS,
 			'unknown_paths' => array_values( $unknowns ),
 		];
