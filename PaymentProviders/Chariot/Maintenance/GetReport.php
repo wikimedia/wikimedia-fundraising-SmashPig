@@ -611,13 +611,15 @@ class GetReport extends MaintenanceBase {
 	 * Build a fee row for FX rounding adjustments.
 	 *
 	 * @param array $deposit
-	 * @param int $deltaMinor
+	 * @param string $roundedAmount
+	 * @param array $donations
+	 *
 	 * @return array
 	 */
-	private function buildRoundingFeeRow( array $deposit, int $deltaMinor, array $donations ): array {
+	private function buildRoundingFeeRow( array $deposit, string $roundedAmount, array $donations ): array {
 		$depositObject = new Deposit( $deposit );
 		$depositCurrency = $depositObject->getCurrency();
-		$negativeDeltaMinor = -1 * $deltaMinor;
+		$negativeRoundedAmount = -1 * (float)$roundedAmount;
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 		return [
 			'gateway' => 'Chariot Disbursements',
@@ -630,14 +632,14 @@ class GetReport extends MaintenanceBase {
 			'settled_currency' => $depositCurrency,
 			'exchange_rate' => '1.000000',
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
-			'original_fee_amount' => $this->round( $deltaMinor, $depositCurrency ),
-			'original_net_amount' => $this->round( $negativeDeltaMinor, $depositCurrency ),
-			'original_total_amount' => $this->round( 0, $depositCurrency ),
-			'original_matching_gift_total_amount' => $this->round( 0, $depositCurrency ),
-			'original_combined_amount' => $this->round( 0, $depositCurrency ),
-			'settled_fee_amount' => $this->round( $deltaMinor, $depositCurrency ),
-			'settled_net_amount' => $this->round( $negativeDeltaMinor, $depositCurrency ),
-			'settled_total_amount' => $this->round( 0, $depositCurrency ),
+			'original_fee_amount' => $roundedAmount,
+			'original_net_amount' => $negativeRoundedAmount,
+			'original_total_amount' => $depositObject->getZeroAmountRounded(),
+			'original_matching_gift_total_amount' => $depositObject->getZeroAmountRounded(),
+			'original_combined_amount' => $depositObject->getZeroAmountRounded(),
+			'settled_fee_amount' => $roundedAmount,
+			'settled_net_amount' => $negativeRoundedAmount,
+			'settled_total_amount' => $depositObject->getZeroAmountRounded(),
 			'settled_date' => $depositObject->getSettledAt(),
 			'date' => $depositObject->getCreatedAt(),
 			'type' => 'fee',
@@ -1000,8 +1002,8 @@ class GetReport extends MaintenanceBase {
 			}
 		}
 
-		$depositNetMinor = $depositObject->getSettledAmount();
-		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
+		$depositNetMinor = $depositObject->getSettledAmountInMinorUnits();
+		$deltaMinor = $convertedNetMinorSum - $depositNetMinor;
 		// Adjust by no more than .5 cents per donation - to allow for them all to err the same way.
 		$maximumRoundingAdjustment = count( $donations ) / 2;
 
@@ -1017,7 +1019,7 @@ class GetReport extends MaintenanceBase {
 		}
 
 		if ( $deltaMinor !== 0 ) {
-			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor, $donations );
+			$rows[] = $this->buildRoundingFeeRow( $deposit, CurrencyRoundingHelper::getAmountInMajorUnits( $deltaMinor, $depositObject->getCurrency() ), $donations );
 		}
 
 		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );
