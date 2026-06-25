@@ -386,13 +386,14 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Flatten a donation into an audit row.
 	 *
-	 * @param array $deposit
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
+	 * @param \SmashPig\PaymentProviders\Chariot\Donation $donationObject
 	 * @param array $donation
 	 * @param float $exchangeRate
+	 *
 	 * @return array
 	 */
-	private function flattenDonationForAuditCsv( Deposit $depositObject, array $donation, float $exchangeRate ): array {
-		$donationObject = new Donation( $donation );
+	private function flattenDonationForAuditCsv( Deposit $depositObject, Donation $donationObject, array $donation, float $exchangeRate ): array {
 		$properties = $donation['properties'] ?? [];
 		$originalCurrency = $donation['currency'];
 		$settledCurrency = $depositObject->getCurrency();
@@ -904,7 +905,8 @@ class GetReport extends MaintenanceBase {
 		$rows = [];
 		foreach ( $donations as $donation ) {
 			if ( is_array( $donation ) ) {
-				$rows[] = $this->flattenDonationForAuditCsv( $depositObject, $donation, $exchangeRate );
+				$donationObject = new Donation( $donation );
+				$rows[] = $this->flattenDonationForAuditCsv( $depositObject, $donationObject, $donation, $donationObject->getExchangeRate() ?: $exchangeRate );
 			}
 		}
 

@@ -164,6 +164,13 @@ class Donation {
 		return (string)( $this->getValue( 'properties.Check Number' ) );
 	}
 
+	public function getExchangeRate(): ?float {
+		if ( !$this->getValue( 'platform.metadata.Foreign Exchange Rate' ) ) {
+			return null;
+		}
+		return (float)( $this->getValue( 'platform.metadata.Foreign Exchange Rate' ) );
+	}
+
 	public function getCorporateMatchData(): array {
 		return $this->donation['corporate_match'] ?? [];
 	}

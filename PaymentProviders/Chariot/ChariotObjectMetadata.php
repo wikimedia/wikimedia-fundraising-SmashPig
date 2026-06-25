@@ -136,6 +136,11 @@ class ChariotObjectMetadata {
 		'platform.metadata.Confirmation Number' => [],
 		'platform.metadata.Disbursement Method' => [],
 		'platform.metadata.Distribution' => [],
+		'platform.metadata.Foreign Exchange Rate' => [
+			'status' => self::STATUS_USED,
+			'note' => 'We calculate this on the deposit level but if it is present on donation level maybe it varies? '
+			. ' Shows up with Benevity',
+		],
 		'properties.Campaign' => [],
 		'properties.Country' => [ 'status' => self::STATUS_USED ],
 		'properties.Partner' => [ 'status' => self::STATUS_USED ],
