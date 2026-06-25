@@ -147,6 +147,10 @@ class ChariotObjectMetadata {
 		'properties.Marked for export' => [],
 		'properties.Endowment flag?' => [ 'status' => self::STATUS_USED ],
 		'properties.CRM status' => [],
+		'properties.Check Number' => [
+			'status' => self::STATUS_USED,
+			'note' => 'alternate location for check_number (also on deposit in some cases). Set by user defined policy',
+		],
 		'properties.Gift Type' => [
 			'status' => self::STATUS_USED,
 			'note' => 'Used to categorise Groundswell donations.',

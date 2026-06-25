@@ -160,6 +160,10 @@ class Donation {
 		return (string)( $this->donation['platform']['name'] ?? '' );
 	}
 
+	public function getCheckNumber(): string {
+		return (string)( $this->getValue( 'properties.Check Number' ) );
+	}
+
 	public function getCorporateMatchData(): array {
 		return $this->donation['corporate_match'] ?? [];
 	}

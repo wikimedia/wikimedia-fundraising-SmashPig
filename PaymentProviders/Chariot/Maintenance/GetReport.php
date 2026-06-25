@@ -446,7 +446,7 @@ class GetReport extends MaintenanceBase {
 			'dafpay_type' => $donationObject->getDafPayType(),
 			'dafpay_url' => $donationObject->getDafPayUrl(),
 			'gift_source' => $donationObject->getGiftSource(),
-			'check_number' => $depositObject->getCheckNumber(),
+			'check_number' => $donationObject->getCheckNumber() ?: $depositObject->getCheckNumber(),
 		];
 	}
 
