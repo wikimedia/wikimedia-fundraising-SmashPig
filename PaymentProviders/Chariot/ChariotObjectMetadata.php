@@ -171,6 +171,36 @@ class ChariotObjectMetadata {
 		'dafpay_tracking_id' => [ 'status' => self::STATUS_USED ],
 		'dafpay_type' => [ 'status' => self::STATUS_USED ],
 		'dafpay_url' => [ 'status' => self::STATUS_USED ],
+		'initiation.web_location_url' => [
+			'status' => self::STATUS_USED,
+			'sample' => "https://wikimediafoundation.org/give/donor-advised-funds/",
+			'note' => 'Alternate to dafpay_url, requesting chariot normalise, appears for DAFFY',
+		],
+		'initiation.frequency' => [
+			'status' => self::STATUS_USED,
+			'sample' => 'ONE_TIME',
+			'note' => 'Alternate to dafpay_frequency, requesting chariot normalise, appears for DAFFY',
+		],
+		'initiation.dafpay_tracking_id' => [
+			'status' => self::STATUS_USED,
+			'sample' => 'INTEGRATED',
+			'note' => 'Alternate to dafpay_type, requesting chariot normalise, appears for DAFFY',
+		],
+		'initiation.channel' => [
+			'status' => self::STATUS_USED,
+			'sample' => 'ZJXUH21234',
+			'note' => 'Alternate to dafpay_tracking_id, requesting chariot normalise, appears for DAFFY',
+		],
+		'initiation.initiated_at' => [
+			'status' => self::STATUS_IGNORED,
+			'sample' => "2026-06-18T14:56:03.216364Z",
+			'note' => 'DAFPay started at, appears for DAFFY',
+		],
+		'initiation.dafpay_form' => [
+			'status' => self::STATUS_IGNORED,
+			'sample' => 'Components',
+			'note' => 'Dafpay related, appears for DAFFY',
+		],
 		'corporate_match.company_name' => [ 'status' => self::STATUS_USED ],
 		'corporate_match.match_amount' => [ 'status' => self::STATUS_USED ],
 		'corporate_match.program_name' => [],

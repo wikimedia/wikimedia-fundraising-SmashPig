@@ -131,6 +131,22 @@ class Donation {
 		return $this->donation['donor_advised_fund_grant'] ?? [];
 	}
 
+	public function getDafPayUrl(): string {
+		return (string)( $this->getValue( 'dafpay_url' ) ?: $this->getValue( 'initiation.web_location_url' ) );
+	}
+
+	public function getDafPayFrequency(): string {
+		return (string)( $this->getValue( 'dafpay_frequency' ) ?: $this->getValue( 'initiation.frequency' ) );
+	}
+
+	public function getDafPayTrackingId(): string {
+		return (string)( $this->getValue( 'dafpay_tracking_id' ) ?: $this->getValue( 'initiation.dafpay_tracking_id' ) );
+	}
+
+	public function getDafPayType(): string {
+		return (string)( $this->getValue( 'dafpay_type' ) ?: $this->getValue( 'initiation.channel' ) );
+	}
+
 	/**
 	 * Is the donation from a donor advised fund. Note we treat it
 	 * as daf OR matching gift, prioritising the matching gift.
