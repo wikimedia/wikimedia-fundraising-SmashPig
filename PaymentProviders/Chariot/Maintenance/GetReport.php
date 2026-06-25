@@ -582,11 +582,11 @@ class GetReport extends MaintenanceBase {
 	private function collectDepositUnknowns( array $deposit, array $donations ): array {
 		$collector = new UnknownPathCollector();
 
-		$collector->scan( $deposit, ChariotObjectMetadata::getKnownDepositPaths() );
+		$collector->scanDeposit( $deposit, ChariotObjectMetadata::getKnownDepositPaths() );
 
 		foreach ( $donations as $donation ) {
 			if ( is_array( $donation ) ) {
-				$collector->scan( $donation, ChariotObjectMetadata::getKnownDonationPaths() );
+				$collector->scanDonation( $donation, ChariotObjectMetadata::getKnownDonationPaths() );
 			}
 		}
 

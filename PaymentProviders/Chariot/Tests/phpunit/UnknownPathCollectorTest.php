@@ -13,7 +13,7 @@ class UnknownPathCollectorTest extends BaseSmashPigUnitTestCase {
 	public function testReturnsNoUnknownsWhenAllPathsAreKnown(): void {
 		$collector = new UnknownPathCollector();
 
-		$collector->scan(
+		$collector->scanDeposit(
 			[
 				'id' => 'deposit_123',
 				'transfer' => [
@@ -33,7 +33,7 @@ class UnknownPathCollectorTest extends BaseSmashPigUnitTestCase {
 	public function testCollectsUnknownScalarPath(): void {
 		$collector = new UnknownPathCollector();
 
-		$collector->scan(
+		$collector->scanDeposit(
 			[
 				'id' => 'deposit_123',
 				'new_field' => 'surprise',
@@ -58,7 +58,7 @@ class UnknownPathCollectorTest extends BaseSmashPigUnitTestCase {
 	public function testCollectsUnknownNestedPath(): void {
 		$collector = new UnknownPathCollector();
 
-		$collector->scan(
+		$collector->scanDeposit(
 			[
 				'transfer' => [
 					'amount' => 100,
@@ -86,14 +86,14 @@ class UnknownPathCollectorTest extends BaseSmashPigUnitTestCase {
 	public function testCountsRepeatedUnknownPath(): void {
 		$collector = new UnknownPathCollector();
 
-		$collector->scan(
+		$collector->scanDeposit(
 			[
 				'new_field' => 'first',
 			],
 			[]
 		);
 
-		$collector->scan(
+		$collector->scanDeposit(
 			[
 				'new_field' => 'second',
 			],
@@ -115,7 +115,7 @@ class UnknownPathCollectorTest extends BaseSmashPigUnitTestCase {
 	public function testCollectsUnknownListPath(): void {
 		$collector = new UnknownPathCollector();
 
-		$collector->scan(
+		$collector->scanDonation(
 			[
 				'artifacts' => [
 					[
@@ -149,7 +149,7 @@ class UnknownPathCollectorTest extends BaseSmashPigUnitTestCase {
 	public function testKnownListChildrenAreNotUnknown(): void {
 		$collector = new UnknownPathCollector();
 
-		$collector->scan(
+		$collector->scanDonation(
 			[
 				'artifacts' => [
 					[
@@ -171,7 +171,7 @@ class UnknownPathCollectorTest extends BaseSmashPigUnitTestCase {
 	public function testSamplesBooleanAndNullValuesWithoutStringCasting(): void {
 		$collector = new UnknownPathCollector();
 
-		$collector->scan(
+		$collector->scanDeposit(
 			[
 				'is_active' => true,
 				'missing_value' => null,
