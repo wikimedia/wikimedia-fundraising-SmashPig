@@ -623,9 +623,10 @@ class GetReport extends MaintenanceBase {
 			return;
 		}
 
-		$payload = [
-			'unknown_paths' => array_values( $unknowns ),
-		];
+		$payload = array_filter( [
+			'unknown_deposit_paths' => array_values( $unknowns['deposit'] ?? [] ),
+			'unknown_donations_paths' => array_values( $unknowns['donation'] ?? [] ),
+		] );
 
 		$this->emitJsonFile(
 			$path,
@@ -642,13 +643,16 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function collectReportableUnknowns( array $deposit, array $donations ): array {
 		$reportableUnknowns = [];
-		foreach ( $this->depositUnknowns( $deposit ) + $this->donationUnknowns( $donations )as $unknown ) {
-			$sample = $unknown['sample'] ?? null;
+		$unknownCollections = [ 'deposit' => $this->depositUnknowns( $deposit ), 'donation' => $this->donationUnknowns( $donations ) ];
+		foreach ( $unknownCollections as $type => $unknownCollection ) {
+			foreach ( $unknownCollection as $unknown ) {
+				$sample = $unknown['sample'] ?? null;
 
-			if ( $sample === null || $sample === '' || $sample === [] ) {
-				continue;
+				if ( $sample === null || $sample === '' || $sample === [] ) {
+					continue;
+				}
+				$reportableUnknowns[$type][] = $unknown;
 			}
-			$reportableUnknowns[] = $unknown;
 		}
 
 		return $reportableUnknowns;
