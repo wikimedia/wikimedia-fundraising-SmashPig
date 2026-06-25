@@ -19,6 +19,8 @@ class GetReport extends MaintenanceBase {
 
 	private const MODE_DEPOSITS = 'deposits';
 	private const MODE_DEPOSIT = 'deposit';
+	private array $allUnknownDepositPaths = [];
+	private array $allUnknownDonationPaths = [];
 
 	private const VALID_MODES = [
 		self::MODE_DEPOSITS,
@@ -123,6 +125,7 @@ class GetReport extends MaintenanceBase {
 					break;
 			}
 		}
+		$this->logUnknownPathsSummary();
 	}
 
 	private function runDeposits( Api $api, string $path ): void {
@@ -188,7 +191,7 @@ class GetReport extends MaintenanceBase {
 	private function writeDepositArtifacts( Api $api, string $path, Deposit $depositObject, array $deposit ): void {
 		$donations = $this->fetchDonationsForDeposit( $api, $depositObject->getId() );
 		$fileSuffix = $this->buildDepositFileSuffix( $depositObject, $deposit, $donations );
-		$unknowns = $this->collectDepositUnknowns( $deposit, $donations );
+		$unknowns = $this->collectReportableUnknowns( $deposit, $donations );
 		$timestamp = $depositObject->getDepositTimestampForFilename();
 
 		if ( $unknowns !== [] || $this->getOption( 'include-json' ) ) {
@@ -576,21 +579,34 @@ class GetReport extends MaintenanceBase {
 	 * Collect unknown paths from a deposit and its donations.
 	 *
 	 * @param array $deposit
-	 * @param array $donations
+	 *
 	 * @return array
 	 */
-	private function collectDepositUnknowns( array $deposit, array $donations ): array {
+	private function depositUnknowns( array $deposit ): array {
 		$collector = new UnknownPathCollector();
-
 		$collector->scanDeposit( $deposit, ChariotObjectMetadata::getKnownDepositPaths() );
+		$unknowns = $collector->getUnknownDepositPaths();
+		$this->rememberUnknownPaths( $unknowns, 'deposit' );
+		return $unknowns;
+	}
 
+	/**
+	 * Collect unknown paths from a deposit and its donations.
+	 *
+	 * @param array $donations
+	 *
+	 * @return array
+	 */
+	private function donationUnknowns( array $donations ): array {
+		$collector = new UnknownPathCollector();
 		foreach ( $donations as $donation ) {
 			if ( is_array( $donation ) ) {
 				$collector->scanDonation( $donation, ChariotObjectMetadata::getKnownDonationPaths() );
 			}
 		}
-
-		return $collector->getUnknowns();
+		$unknowns = $collector->getUnknownDonationPaths();
+		$this->rememberUnknownPaths( $unknowns, 'donation' );
+		return $unknowns;
 	}
 
 	/**
@@ -616,6 +632,63 @@ class GetReport extends MaintenanceBase {
 			$this->buildFilename( 'unknowns', $suffix, 'json', $timestamp ),
 			$payload
 		);
+	}
+
+	/**
+	 * @param array $deposit
+	 * @param array $donations
+	 *
+	 * @return array
+	 */
+	private function collectReportableUnknowns( array $deposit, array $donations ): array {
+		$reportableUnknowns = [];
+		foreach ( $this->depositUnknowns( $deposit ) + $this->donationUnknowns( $donations )as $unknown ) {
+			$sample = $unknown['sample'] ?? null;
+
+			if ( $sample === null || $sample === '' || $sample === [] ) {
+				continue;
+			}
+			$reportableUnknowns[] = $unknown;
+		}
+
+		return $reportableUnknowns;
+	}
+
+	private function logUnknownPathsSummary(): void {
+		$this->logUnknownPathsForType( 'deposit', $this->allUnknownDepositPaths );
+		$this->logUnknownPathsForType( 'donation', $this->allUnknownDonationPaths );
+	}
+
+	private function logUnknownPathsForType( string $type, array $unknowns ): void {
+		if ( $unknowns === [] ) {
+			return;
+		}
+
+		ksort( $unknowns );
+
+		Logger::warning(
+			sprintf(
+				'Chariot unknown %s paths: %s',
+				$type,
+				implode( ', ', array_keys( $unknowns ) )
+			)
+		);
+	}
+
+	private function rememberUnknownPaths( array $unknowns, string $type ): void {
+		foreach ( $unknowns as $path => $unknown ) {
+			if ( $type === 'deposit' ) {
+				if ( !isset( $this->allUnknownDepositPaths[$path] ) ) {
+					$this->allUnknownDepositPaths[$path] = $unknown;
+				}
+				$this->allUnknownDepositPaths[$path] += $unknown['count'];
+			} elseif ( $type === 'donation' ) {
+				if ( !isset( $this->allUnknownDonationPaths[$path] ) ) {
+					$this->allUnknownDonationPaths[$path] = $unknown;
+				}
+				$this->allUnknownDonationPaths[$path]['count'] += $unknown['count'];
+			}
+		}
 	}
 
 	/**
