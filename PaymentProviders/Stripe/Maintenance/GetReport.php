@@ -65,6 +65,8 @@ class GetReport extends MaintenanceBase {
 		'card_funding',
 		'description',
 		'trace_id_status',
+		'customer_facing_amount',
+		'customer_facing_currency',
 	];
 
 	// Column order for settlement CSVs built directly from the Balance
