@@ -90,7 +90,7 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		$reference = str_replace( ' ', '-', $row['Modification Reference'] ?: ( $row['Type'] . '-' . $row['Booking Date'] ) );
 
 		if ( $type === 'misccosts' || $type === 'depositcorrection' ) {
-			$reference .= '-' . $rowNumber;
+			$reference .= '-' . $amount;
 		}
 		$prefix = $type === 'depositcorrection' ? 'adjustment-' . $row['Batch Number'] . '-' : 'fee-';
 		return [
