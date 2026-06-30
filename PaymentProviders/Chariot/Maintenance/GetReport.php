@@ -8,8 +8,10 @@ use SmashPig\Core\Logging\Logger;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Chariot\Api;
+use SmashPig\PaymentProviders\Chariot\ChariotObjectMetadata;
 use SmashPig\PaymentProviders\Chariot\Deposit;
 use SmashPig\PaymentProviders\Chariot\Donation;
+use SmashPig\PaymentProviders\Chariot\UnknownPathCollector;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
 
@@ -17,6 +19,8 @@ class GetReport extends MaintenanceBase {
 
 	private const MODE_DEPOSITS = 'deposits';
 	private const MODE_DEPOSIT = 'deposit';
+	private array $allUnknownDepositPaths = [];
+	private array $allUnknownDonationPaths = [];
 
 	private const VALID_MODES = [
 		self::MODE_DEPOSITS,
@@ -76,172 +80,10 @@ class GetReport extends MaintenanceBase {
 		'dafpay_tracking_id',
 		'dafpay_type',
 		'dafpay_url',
-	];
-
-	/**
-	 * List of known paths in the json, if more are added an 'unknowns' file will be generated.
-	 *
-	 * We track these so that if additional columns are added we 'notice'.
-	 */
-	private const KNOWN_DEPOSIT_PATHS = [
-		'id',
-		'created_at',
-		'bank_created_at',
-		'updated_at',
-		'status',
-		'payment_source_id',
-		'settled_at',
-		'returned_at',
-		'properties',
-		'properties.CRM status',
-		'properties.Journaled in Sage',
-		'properties.Gift Type',
-		// We see lockbox_id and mail_item_id coming in from Digital Mailbox
-		'lockbox_id',
-		'mail_item_id',
-		'transfer',
-		'transfer.amount',
-		'transfer.currency',
-		'transfer.financial_account_id',
-		'transfer.description',
-		'transfer.inbound_account_transfer',
-		'transfer.inbound_account_transfer.created_at',
-		'transfer.inbound_ach_transfer',
-		'transfer.inbound_ach_transfer.standard_entry_class_code',
-		'transfer.inbound_ach_transfer.company_entry_description',
-		'transfer.inbound_ach_transfer.originator_routing_number',
-		'transfer.inbound_ach_transfer.originator_company_name',
-		'transfer.inbound_ach_transfer.trace_number',
-		'transfer.inbound_ach_transfer.effective_date',
-		'transfer.inbound_ach_transfer.status',
-		'transfer.inbound_ach_transfer.receiver_id',
-		'transfer.check_deposit',
-		'transfer.check_deposit.auxiliary_on_us',
-		'transfer.check_deposit.routing_number',
-		'transfer.check_deposit.submitted_at',
-		'transfer.check_deposit.status',
-		'transfer.type',
-	];
-
-	/**
-	 * Fields that relate to donations.
-	 *
-	 * We track these so that if additional columns are added we 'notice'.
-	 */
-	private const KNOWN_DONATION_PATHS = [
-		'id',
-		'created_at',
-		'updated_at',
-		'currency',
-		'amount_gross',
-		'amount_fee',
-		'amount_net',
-		'individual_gift_amount',
-		'match_amount',
-		'payment_status',
-		'payment_source_id',
-		'external_id',
-		'note',
-		'purpose',
-		'artifacts',
-		'attribution',
-		'attribution.primary_donor',
-		'attribution.primary_donor.full_name',
-		'attribution.primary_donor.first_name',
-		'attribution.primary_donor.last_name',
-		'attribution.primary_donor.email',
-		'attribution.primary_donor.prefix',
-		'attribution.primary_donor.address',
-		'attribution.primary_donor.address.line1',
-		'attribution.primary_donor.address.line2',
-		'attribution.primary_donor.address.city',
-		'attribution.primary_donor.address.state',
-		'attribution.primary_donor.address.postal_code',
-		'attribution.primary_donor.address.country',
-		'attribution.joint_donor',
-		'attribution.joint_donor.email',
-		'attribution.joint_donor.full_name',
-		'donor_advised_fund_grant',
-		'donor_advised_fund_grant.donor_fund_name',
-		'donor_advised_fund_grant.organization_name',
-		'donor_advised_fund_grant.program_name',
-		'donor_advised_fund_grant.sponsor_grant_id',
-		'platform',
-		'platform.acceptance',
-		'platform.acceptance.accepted',
-		'platform.acceptance.expires_at',
-		'platform.name',
-		'platform.platform_grant_id',
-		'platform.metadata',
-		'platform.metadata.contributionId',
-		'platform.metadata.donorId',
-		'platform.metadata.nonprofitId',
-		'platform.metadata.Payable To',
-		'platform.metadata.Recommended By',
-		'platform.metadata.Description',
-		'platform.metadata.Activity',
-		'platform.metadata.Disbursement ID',
-		'platform.metadata.Disbursing Entity',
-		'platform.metadata.Fee Comment',
-		'platform.metadata.Frequency',
-		'platform.metadata.Project',
-		'platform.metadata.Project Remote ID',
-		'platform.metadata.Reason',
-		'platform.metadata.Acknowledgement',
-		'platform.metadata.Confirmation Number',
-		'platform.metadata.Disbursement Method',
-		'platform.metadata.Distribution',
-		'properties',
-		'properties.Campaign',
-		'properties.Country',
-		'properties.Partner',
-		'properties.Prefix',
-		'properties.Suffix',
-		'properties.Review status',
-		'properties.Journaled in Sage',
-		'properties.Groundswell Company Name',
-		'properties.Marked for export',
-		'properties.Endowment flag?',
-		'properties.CRM status',
-		'settlement',
-		'settlement.deposit_id',
-		'settlement.received_at',
-		'settlement.settled_at',
-		'donor_email',
-		'donor_phone',
-		'assignee',
-		'crm_status',
-		'groundswell_company_name',
-		'internal_note',
-		'partner',
-		'partner_full_name',
-		'prefix',
-		'suffix',
-		'received_offline_on',
-		'review_status',
-		'dafpay_form',
-		'dafpay_frequency',
-		'dafpay_tracking_id',
-		'dafpay_type',
-		'dafpay_url',
-		'corporate_match',
-		'corporate_match.company_name',
-		'corporate_match.match_amount',
-		'corporate_match.program_name',
-		'corporate_match.source',
-		// We see lockbox_id and mail_item_id coming in from Digital Mailbox
-		'lockbox_id',
-		'mail_item_id',
+		'check_number',
 	];
 
 	private ProviderConfiguration $config;
-
-	/**
-	 * Accumulator for unknown paths during scanning.
-	 *
-	 * @var array<string,array<string,mixed>>
-	 */
-	private array $unknownPaths = [];
 
 	/**
 	 * @throws \SmashPig\Core\SmashPigException
@@ -283,6 +125,7 @@ class GetReport extends MaintenanceBase {
 					break;
 			}
 		}
+		$this->logUnknownPathsSummary();
 	}
 
 	private function runDeposits( Api $api, string $path ): void {
@@ -348,7 +191,7 @@ class GetReport extends MaintenanceBase {
 	private function writeDepositArtifacts( Api $api, string $path, Deposit $depositObject, array $deposit ): void {
 		$donations = $this->fetchDonationsForDeposit( $api, $depositObject->getId() );
 		$fileSuffix = $this->buildDepositFileSuffix( $depositObject, $deposit, $donations );
-		$unknowns = $this->collectDepositUnknowns( $deposit, $donations );
+		$unknowns = $this->collectReportableUnknowns( $deposit, $donations );
 		$timestamp = $depositObject->getDepositTimestampForFilename();
 
 		if ( $unknowns !== [] || $this->getOption( 'include-json' ) ) {
@@ -518,11 +361,8 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function flattenDepositPayoutRowForAuditCsv( array $deposit, array $donations ): array {
 		$depositObject = new Deposit( $deposit );
-		$paymentMethod = $this->getPaymentMethod( $deposit );
-		$transfer = $deposit['transfer'];
-		$currency = $depositObject->getCurrency();
+		$paymentMethod = $this->getPaymentMethod( $depositObject );
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
-		$amount = $this->getAmount( $transfer['amount'] );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
@@ -530,12 +370,12 @@ class GetReport extends MaintenanceBase {
 			'backend_processor' => $backendProcessor,
 			'gateway_txn_id' => $depositObject->getId(),
 			'backend_processor_txn_id' => $depositObject->getPaymentSourceId(),
-			'settled_currency' => $currency,
+			'settled_currency' => $depositObject->getCurrency(),
 			'exchange_rate' => '1.000000',
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
-			'settled_fee_amount' => $this->round( 0.0, $currency ),
-			'settled_net_amount' => $this->round( $amount, $currency ),
-			'settled_total_amount' => $this->round( $amount, $currency ),
+			'settled_fee_amount' => $depositObject->getZeroAmountRounded(),
+			'settled_net_amount' => $depositObject->getSettledAmount(),
+			'settled_total_amount' => $depositObject->getSettledAmount(),
 			'settled_date' => $depositObject->getSettledAt(),
 			'date' => $depositObject->getCreatedAt(),
 			'type' => 'payout',
@@ -546,30 +386,27 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Flatten a donation into an audit row.
 	 *
-	 * @param array $deposit
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
+	 * @param \SmashPig\PaymentProviders\Chariot\Donation $donationObject
 	 * @param array $donation
 	 * @param float $exchangeRate
+	 *
 	 * @return array
 	 */
-	private function flattenDonationForAuditCsv( array $deposit, array $donation, float $exchangeRate ): array {
-		$donationObject = new Donation( $donation );
-		$depositObject = new Deposit( $deposit );
-		$daf = $donation['donor_advised_fund_grant'] ?? [];
-		$matchingGift = $donation['corporate_match'] ?? [];
-		$platform = $donation['platform'] ?? [];
+	private function flattenDonationForAuditCsv( Deposit $depositObject, Donation $donationObject, array $donation, float $exchangeRate ): array {
 		$properties = $donation['properties'] ?? [];
 		$originalCurrency = $donation['currency'];
-		$settledCurrency = $this->getDepositCurrency( $deposit );
-		$paymentMethod = $this->getPaymentMethod( $deposit, $donation );
+		$settledCurrency = $depositObject->getCurrency();
+		$paymentMethod = $this->getPaymentMethod( $depositObject, $donation );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
-			'backend_processor' => (string)( $platform['name'] ?? '' ),
+			'backend_processor' => $donationObject->getPlatformName(),
 			'gateway_txn_id' => $donation['id'],
 			'backend_processor_txn_id' => (string)$donation['external_id'],
-			'banking_institution' => trim( (string)( $daf['organization_name'] ?? '' ) ),
-			'donor_advised_fund_name' => $daf['donor_fund_name'] ?? '',
+			'banking_institution' => $donationObject->getBankingInstitution(),
+			'donor_advised_fund_name' => $donationObject->getDonorAdvisedFundName(),
 			'original_currency' => $originalCurrency,
 			'settled_currency' => $settledCurrency,
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
@@ -579,15 +416,15 @@ class GetReport extends MaintenanceBase {
 			'original_net_amount' => $this->getRoundedAmount( $donation['amount_net'], $originalCurrency ),
 			'original_total_amount' => $this->getRoundedAmount( $donation['amount_gross'], $originalCurrency ),
 			'original_individual_gift_amount' => $this->getAmount( $donation['individual_gift_amount'] ?? 0 ),
-			'original_matching_gift_amount' => $this->getAmount( $matchingGift['match_amount'] ?? 0 ),
-			'settled_fee_amount' => $this->getAmount( $donation['amount_fee'] ) * $exchangeRate,
-			'settled_net_amount' => $this->getAmount( $donation['amount_net'] ) * $exchangeRate,
-			'settled_total_amount' => $this->getAmount( $donation['amount_gross'] ) * $exchangeRate,
+			'original_matching_gift_amount' => $this->getAmount( $donationObject->getMatchingGiftAmount() ),
+			'settled_fee_amount' => $donationObject->getSettledFeeAmountRounded( $exchangeRate, $settledCurrency ),
+			'settled_net_amount' => $donationObject->getSettledNetAmountRounded( $exchangeRate, $settledCurrency ),
+			'settled_total_amount' => $donationObject->getSettledTotalAmountRounded( $exchangeRate, $settledCurrency ),
 			'exchange_rate' => number_format( $exchangeRate, 6, '.', '' ),
 			'type' => 'donation',
-			'is_daf' => !empty( $daf['donor_fund_name'] ),
-			'is_matching_gift' => !empty( $matchingGift ),
-			'matching_gift_organization' => $matchingGift['company_name'] ?? '',
+			'is_daf' => $donationObject->isDonorAdvisedFundGrant(),
+			'is_matching_gift' => $donationObject->isMatchingGift(),
+			'matching_gift_organization' => $donationObject->getMatchingGiftOrganization(),
 			'is_endowment' => !empty( $properties['Endowment flag?'] ) && $properties['Endowment flag?'] === 'Y',
 			'first_name' => $donationObject->getFirstName(),
 			'last_name' => $donationObject->getLastName(),
@@ -605,11 +442,12 @@ class GetReport extends MaintenanceBase {
 			'supplemental_address_1' => $donationObject->getSupplementalAddress(),
 			'payment_method' => $paymentMethod,
 			'note' => $donationObject->getNote(),
-			'dafpay_frequency' => $donation['dafpay_frequency'] ?? '',
-			'dafpay_tracking_id' => $donation['dafpay_tracking_id'] ?? '',
-			'dafpay_type' => $donation['dafpay_type'] ?? '',
-			'dafpay_url' => $donation['dafpay_url'] ?? '',
+			'dafpay_frequency' => $donationObject->getDafPayFrequency(),
+			'dafpay_tracking_id' => $donationObject->getDafPayTrackingId(),
+			'dafpay_type' => $donationObject->getDafPayType(),
+			'dafpay_url' => $donationObject->getDafPayUrl(),
 			'gift_source' => $donationObject->getGiftSource(),
+			'check_number' => $donationObject->getCheckNumber() ?: $depositObject->getCheckNumber(),
 		];
 	}
 
@@ -617,16 +455,19 @@ class GetReport extends MaintenanceBase {
 	 * Build a fee row for FX rounding adjustments.
 	 *
 	 * @param array $deposit
-	 * @param int $deltaMinor
+	 * @param string $roundedAmount
+	 * @param array $donations
+	 *
 	 * @return array
 	 */
-	private function buildRoundingFeeRow( array $deposit, int $deltaMinor, array $donations ): array {
+	private function buildRoundingFeeRow( array $deposit, string $roundedAmount, array $donations ): array {
 		$depositObject = new Deposit( $deposit );
 		$depositCurrency = $depositObject->getCurrency();
-		$negativeDeltaMinor = -1 * $deltaMinor;
+		$negativeRoundedAmount = -1 * (float)$roundedAmount;
 		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 		return [
 			'gateway' => 'Chariot Disbursements',
+			'gateway_txn_id' => $depositObject->getId() . '_rounding',
 			'audit_file_gateway' => 'Chariot Disbursements',
 			'backend_processor' => $backendProcessor,
 			'backend_processor_txn_id' => $depositObject->getId() . '_rounding',
@@ -635,14 +476,14 @@ class GetReport extends MaintenanceBase {
 			'settled_currency' => $depositCurrency,
 			'exchange_rate' => '1.000000',
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
-			'original_fee_amount' => $this->round( $deltaMinor, $depositCurrency ),
-			'original_net_amount' => $this->round( $negativeDeltaMinor, $depositCurrency ),
-			'original_total_amount' => $this->round( 0, $depositCurrency ),
-			'original_matching_gift_total_amount' => $this->round( 0, $depositCurrency ),
-			'original_combined_amount' => $this->round( 0, $depositCurrency ),
-			'settled_fee_amount' => $this->round( $deltaMinor, $depositCurrency ),
-			'settled_net_amount' => $this->round( $negativeDeltaMinor, $depositCurrency ),
-			'settled_total_amount' => $this->round( 0, $depositCurrency ),
+			'original_fee_amount' => $roundedAmount,
+			'original_net_amount' => $negativeRoundedAmount,
+			'original_total_amount' => $depositObject->getZeroAmountRounded(),
+			'original_matching_gift_total_amount' => $depositObject->getZeroAmountRounded(),
+			'original_combined_amount' => $depositObject->getZeroAmountRounded(),
+			'settled_fee_amount' => $roundedAmount,
+			'settled_net_amount' => $negativeRoundedAmount,
+			'settled_total_amount' => $depositObject->getZeroAmountRounded(),
 			'settled_date' => $depositObject->getSettledAt(),
 			'date' => $depositObject->getCreatedAt(),
 			'type' => 'fee',
@@ -739,21 +580,34 @@ class GetReport extends MaintenanceBase {
 	 * Collect unknown paths from a deposit and its donations.
 	 *
 	 * @param array $deposit
-	 * @param array $donations
+	 *
 	 * @return array
 	 */
-	private function collectDepositUnknowns( array $deposit, array $donations ): array {
-		$this->unknownPaths = [];
+	private function depositUnknowns( array $deposit ): array {
+		$collector = new UnknownPathCollector();
+		$collector->scanDeposit( $deposit, ChariotObjectMetadata::getKnownDepositPaths() );
+		$unknowns = $collector->getUnknownDepositPaths();
+		$this->rememberUnknownPaths( $unknowns, 'deposit' );
+		return $unknowns;
+	}
 
-		$this->scanUnknownPaths( $deposit, '', self::KNOWN_DEPOSIT_PATHS );
+	/**
+	 * Collect unknown paths from a deposit and its donations.
+	 *
+	 * @param array $donations
+	 *
+	 * @return array
+	 */
+	private function donationUnknowns( array $donations ): array {
+		$collector = new UnknownPathCollector();
 		foreach ( $donations as $donation ) {
 			if ( is_array( $donation ) ) {
-				$this->scanUnknownPaths( $donation, '', self::KNOWN_DONATION_PATHS );
+				$collector->scanDonation( $donation, ChariotObjectMetadata::getKnownDonationPaths() );
 			}
 		}
-
-		ksort( $this->unknownPaths );
-		return $this->unknownPaths;
+		$unknowns = $collector->getUnknownDonationPaths();
+		$this->rememberUnknownPaths( $unknowns, 'donation' );
+		return $unknowns;
 	}
 
 	/**
@@ -770,12 +624,10 @@ class GetReport extends MaintenanceBase {
 			return;
 		}
 
-		$payload = [
-			'known_deposit_paths' => self::KNOWN_DEPOSIT_PATHS,
-			'known_donation_paths' => self::KNOWN_DONATION_PATHS,
-			'handled_audit_columns' => self::AUDIT_CSV_COLUMNS,
-			'unknown_paths' => array_values( $unknowns ),
-		];
+		$payload = array_filter( [
+			'unknown_deposit_paths' => array_values( $unknowns['deposit'] ?? [] ),
+			'unknown_donations_paths' => array_values( $unknowns['donation'] ?? [] ),
+		] );
 
 		$this->emitJsonFile(
 			$path,
@@ -785,91 +637,63 @@ class GetReport extends MaintenanceBase {
 	}
 
 	/**
-	 * Scan for unknown paths in a nested payload.
+	 * @param array $deposit
+	 * @param array $donations
 	 *
-	 * @param mixed $value
-	 * @param string $path
-	 * @param array $knownPaths
-	 * @return void
+	 * @return array
 	 */
-	private function scanUnknownPaths( $value, string $path, array $knownPaths ): void {
-		if ( is_array( $value ) ) {
-			if ( $this->isListArray( $value ) ) {
-				$listPath = $path === '' ? '[]' : $path;
-				if ( !in_array( $listPath, $knownPaths, true ) ) {
-					$this->noteUnknownPath( $listPath, $value[0] ?? null );
-				}
-				foreach ( $value as $item ) {
-					if ( is_array( $item ) ) {
-						foreach ( $item as $key => $itemValue ) {
-							$childPath = $listPath . '[].' . $key;
-							$this->scanUnknownPaths( $itemValue, $childPath, $knownPaths );
-						}
-					}
-				}
-				return;
-			}
+	private function collectReportableUnknowns( array $deposit, array $donations ): array {
+		$reportableUnknowns = [];
+		$unknownCollections = [ 'deposit' => $this->depositUnknowns( $deposit ), 'donation' => $this->donationUnknowns( $donations ) ];
+		foreach ( $unknownCollections as $type => $unknownCollection ) {
+			foreach ( $unknownCollection as $unknown ) {
+				$sample = $unknown['sample'] ?? null;
 
-			if ( $path !== '' && !in_array( $path, $knownPaths, true ) ) {
-				$this->noteUnknownPath( $path, $value );
+				if ( $sample === null || $sample === '' || $sample === [] ) {
+					continue;
+				}
+				$reportableUnknowns[$type][] = $unknown;
 			}
-			foreach ( $value as $key => $child ) {
-				$childPath = $path === '' ? (string)$key : $path . '.' . $key;
-				$this->scanUnknownPaths( $child, $childPath, $knownPaths );
-			}
+		}
+
+		return $reportableUnknowns;
+	}
+
+	private function logUnknownPathsSummary(): void {
+		$this->logUnknownPathsForType( 'deposit', $this->allUnknownDepositPaths );
+		$this->logUnknownPathsForType( 'donation', $this->allUnknownDonationPaths );
+	}
+
+	private function logUnknownPathsForType( string $type, array $unknowns ): void {
+		if ( $unknowns === [] ) {
 			return;
 		}
 
-		if ( $path !== '' && !in_array( $path, $knownPaths, true ) ) {
-			$this->noteUnknownPath( $path, $value );
-		}
+		ksort( $unknowns );
+
+		Logger::warning(
+			sprintf(
+				'Chariot unknown %s paths: %s',
+				$type,
+				implode( ', ', array_keys( $unknowns ) )
+			)
+		);
 	}
 
-	/**
-	 * Record an unknown path and sample value.
-	 *
-	 * @param string $path
-	 * @param mixed $sample
-	 * @return void
-	 */
-	private function noteUnknownPath( string $path, $sample ): void {
-		if ( !isset( $this->unknownPaths[$path] ) ) {
-			$this->unknownPaths[$path] = [
-				'path' => $path,
-				'count' => 0,
-				'sample' => $this->sampleValue( $sample ),
-			];
+	private function rememberUnknownPaths( array $unknowns, string $type ): void {
+		foreach ( $unknowns as $path => $unknown ) {
+			if ( $type === 'deposit' ) {
+				if ( !isset( $this->allUnknownDepositPaths[$path] ) ) {
+					$this->allUnknownDepositPaths[$path] = $unknown;
+				}
+				$this->allUnknownDepositPaths[$path] += $unknown['count'];
+			} elseif ( $type === 'donation' ) {
+				if ( !isset( $this->allUnknownDonationPaths[$path] ) ) {
+					$this->allUnknownDonationPaths[$path] = $unknown;
+				}
+				$this->allUnknownDonationPaths[$path]['count'] += $unknown['count'];
+			}
 		}
-		$this->unknownPaths[$path]['count']++;
-	}
-
-	/**
-	 * Create a sample value for an unknown-path report.
-	 *
-	 * @param mixed $value
-	 * @return mixed
-	 */
-	private function sampleValue( $value ) {
-		if ( is_array( $value ) ) {
-			return $value;
-		}
-		if ( is_bool( $value ) ) {
-			return $value;
-		}
-		if ( $value === null ) {
-			return null;
-		}
-		return (string)$value;
-	}
-
-	/**
-	 * Determine whether an array is a list array.
-	 *
-	 * @param array $value
-	 * @return bool
-	 */
-	private function isListArray( array $value ): bool {
-		return array_keys( $value ) === range( 0, count( $value ) - 1 );
 	}
 
 	/**
@@ -1061,11 +885,11 @@ class GetReport extends MaintenanceBase {
 		return CurrencyRoundingHelper::round( (float)$amount, $currency );
 	}
 
-	public function getPaymentMethod( array $deposit, array $donation = [] ): string {
+	public function getPaymentMethod( Deposit $deposit, array $donation = [] ): string {
 		if ( !empty( $donation['dafpay_url'] ) ) {
 			return 'DAFpay';
 		}
-		return ( new Deposit( $deposit ) )->getPaymentMethod();
+		return $deposit->getPaymentMethod();
 	}
 
 	/**
@@ -1075,12 +899,14 @@ class GetReport extends MaintenanceBase {
 	 * @return array
 	 */
 	private function buildAuditRows( array $deposit, array $donations ): array {
+		$depositObject = new Deposit( $deposit );
 		$exchangeRate = $this->getBatchExchangeRate( $deposit, $donations );
 
 		$rows = [];
 		foreach ( $donations as $donation ) {
 			if ( is_array( $donation ) ) {
-				$rows[] = $this->flattenDonationForAuditCsv( $deposit, $donation, $exchangeRate );
+				$donationObject = new Donation( $donation );
+				$rows[] = $this->flattenDonationForAuditCsv( $depositObject, $donationObject, $donation, $donationObject->getExchangeRate() ?: $exchangeRate );
 			}
 		}
 
@@ -1092,12 +918,10 @@ class GetReport extends MaintenanceBase {
 			}
 		}
 
-		$depositNetMinor = (int)( $deposit['transfer']['amount'] ?? 0 );
-		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
+		$depositNetMinor = $depositObject->getSettledAmountInMinorUnits();
+		$deltaMinor = $convertedNetMinorSum - $depositNetMinor;
 		// Adjust by no more than .5 cents per donation - to allow for them all to err the same way.
 		$maximumRoundingAdjustment = count( $donations ) / 2;
-
-		$depositObject = new Deposit( $deposit );
 
 		if ( abs( $deltaMinor ) > $maximumRoundingAdjustment ) {
 			throw new \RuntimeException(
@@ -1111,7 +935,7 @@ class GetReport extends MaintenanceBase {
 		}
 
 		if ( $deltaMinor !== 0 ) {
-			$rows[] = $this->buildRoundingFeeRow( $deposit, $deltaMinor, $donations );
+			$rows[] = $this->buildRoundingFeeRow( $deposit, CurrencyRoundingHelper::getAmountInMajorUnits( $deltaMinor, $depositObject->getCurrency() ), $donations );
 		}
 
 		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );

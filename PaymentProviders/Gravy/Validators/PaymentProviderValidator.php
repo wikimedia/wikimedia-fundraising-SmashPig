@@ -67,15 +67,43 @@ abstract class PaymentProviderValidator {
 	}
 
 	/**
+	 *
+	 * Fixes missing first or last name by splitting multi-word strings.
+	 *
+	 * @param array &$params
+	 * @return void
+	 * @throws ValidationException
+	 */
+	public function recurringNameCheck( array &$params ): void {
+		$required = [
+			'first_name',
+			'last_name',
+		];
+		if ( empty( $params['first_name'] ) || empty( $params['last_name'] ) ) {
+			// Find which field has the data we need to split
+			$sourceField = !empty( $params['last_name'] ) ? 'last_name' : 'first_name';
+
+			if ( !empty( $params[$sourceField] ) ) {
+				$parts = explode( ' ', trim( $params[$sourceField] ), 2 );
+				if ( count( $parts ) > 1 ) {
+					$params['first_name'] = $parts[0];
+					$params['last_name']  = $parts[1];
+				}
+			}
+		}
+		$this->validateFields( $required, $params );
+	}
+
+	/**
 	 * Checks the recurring create payment input parameters for correctness and completeness.
 	 *
 	 * This method is the same for all payment methods on Gravy.
 	 *
-	 * @param array $params
+	 * @param array &$params
 	 * @throws ValidationException
 	 * @return void
 	 */
-	public function validateRecurringCreatePaymentInput( array $params ): void {
+	public function validateRecurringCreatePaymentInput( array &$params ): void {
 		$defaultRequiredFields = [
 			'recurring_payment_token',
 			'amount',
@@ -91,6 +119,8 @@ abstract class PaymentProviderValidator {
 		);
 
 		$this->validateFields( $required, $params );
+		// T424766 recurring from third party might have missing first name or last name
+		$this->recurringNameCheck( $params );
 	}
 
 	/**

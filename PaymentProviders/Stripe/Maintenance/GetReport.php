@@ -65,6 +65,8 @@ class GetReport extends MaintenanceBase {
 		'card_funding',
 		'description',
 		'trace_id_status',
+		'customer_facing_amount',
+		'customer_facing_currency',
 	];
 
 	// Column order for settlement CSVs built directly from the Balance
@@ -568,7 +570,7 @@ class GetReport extends MaintenanceBase {
 		if ( !$lines || !isset( $lines[0] ) ) {
 			return $csvContents;
 		}
-		$headers = str_getcsv( $lines[0] );
+		$headers = str_getcsv( $lines[0], ',', '"', "\\" );
 		$row = $this->buildSyntheticPayoutRow( $payout, $headers );
 		$handle = fopen( 'php://temp', 'r+' );
 		fputcsv( $handle, array_map( static fn ( string $header ) => $row[$header] ?? '', $headers ) );
@@ -641,7 +643,7 @@ class GetReport extends MaintenanceBase {
 		}
 
 		foreach ( $lines as $index => $line ) {
-			$row = str_getcsv( $line );
+			$row = str_getcsv( $line, ',', '"', "\\" );
 			$row[] = $index === 0 ? 'gateway_account' : $gatewayAccount;
 			fputcsv( $handle, $row );
 		}

@@ -2,12 +2,39 @@
 
 namespace SmashPig\PaymentProviders\Chariot;
 
+use SmashPig\Core\Helpers\CurrencyRoundingHelper;
+
 class Donation {
 
 	private array $donation;
 
 	public function __construct( array $donation ) {
 		$this->donation = $donation;
+	}
+
+	/**
+	 * Get a value from the donation array at the given path.
+	 *
+	 * This function also enforces us updating our metadata as to which
+	 * fields are used, helping us to in-code document.
+	 *
+	 * @param string $path
+	 * @param mixed $default
+	 *
+	 * @return mixed
+	 */
+	private function getValue( string $path, $default = null ): mixed {
+		ChariotObjectMetadata::assertDonationFieldIsUsed( $path );
+
+		$value = $this->donation;
+		foreach ( explode( '.', $path ) as $key ) {
+			if ( !is_array( $value ) || !array_key_exists( $key, $value ) ) {
+				return $default;
+			}
+			$value = $value[$key];
+		}
+
+		return $value;
 	}
 
 	public function getDonor(): array {
@@ -86,10 +113,78 @@ class Donation {
 	}
 
 	public function getGiftSource(): string {
-		if ( !empty( $this->getProperties()['Gift Type'] ) ) {
-			return (string)( $this->getProperties()['Gift Type'] );
+		if ( !empty( $this->getValue( 'properties.Gift Type' ) ) ) {
+			return (string)( $this->getValue( 'properties.Gift Type' ) );
 		}
-		return $this->donation['corporate_match']['source'] ?? '';
+		return (string)$this->getValue( 'corporate_match.source' );
+	}
+
+	public function getBankingInstitution(): string {
+		return trim( (string)( $this->getDonorAdvisedFundData()['organization_name'] ?? '' ) );
+	}
+
+	public function getDonorAdvisedFundName(): string {
+		return (string)( $this->getDonorAdvisedFundData()['donor_fund_name'] ?? '' );
+	}
+
+	public function getDonorAdvisedFundData(): array {
+		return $this->donation['donor_advised_fund_grant'] ?? [];
+	}
+
+	public function getDafPayUrl(): string {
+		return (string)( $this->getValue( 'dafpay_url' ) ?: $this->getValue( 'initiation.web_location_url' ) );
+	}
+
+	public function getDafPayFrequency(): string {
+		return (string)( $this->getValue( 'dafpay_frequency' ) ?: $this->getValue( 'initiation.frequency' ) );
+	}
+
+	public function getDafPayTrackingId(): string {
+		return (string)( $this->getValue( 'dafpay_tracking_id' ) ?: $this->getValue( 'initiation.dafpay_tracking_id' ) );
+	}
+
+	public function getDafPayType(): string {
+		return (string)( $this->getValue( 'dafpay_type' ) ?: $this->getValue( 'initiation.channel' ) );
+	}
+
+	/**
+	 * Is the donation from a donor advised fund. Note we treat it
+	 * as daf OR matching gift, prioritising the matching gift.
+	 * @return bool
+	 */
+	public function isDonorAdvisedFundGrant(): bool {
+		return ( $this->getDonorAdvisedFundData() && !$this->isMatchingGift() );
+	}
+
+	public function getPlatformName(): string {
+		return (string)( $this->donation['platform']['name'] ?? '' );
+	}
+
+	public function getCheckNumber(): string {
+		return (string)( $this->getValue( 'properties.Check Number' ) );
+	}
+
+	public function getExchangeRate(): ?float {
+		if ( !$this->getValue( 'platform.metadata.Foreign Exchange Rate' ) ) {
+			return null;
+		}
+		return (float)( $this->getValue( 'platform.metadata.Foreign Exchange Rate' ) );
+	}
+
+	public function getCorporateMatchData(): array {
+		return $this->donation['corporate_match'] ?? [];
+	}
+
+	public function isMatchingGift(): bool {
+		return !empty( $this->getCorporateMatchData() );
+	}
+
+	public function getMatchingGiftOrganization(): string {
+		return (string)( $this->getCorporateMatchData()['company_name'] ?? '' );
+	}
+
+	public function getMatchingGiftAmount(): string {
+		return (string)( $this->getCorporateMatchData()['match_amount'] ?? '0' );
 	}
 
 	/**
@@ -133,6 +228,49 @@ class Donation {
 		}
 
 		return $value;
+	}
+
+	public function getOriginalFeeAmountInMinorUnits(): int {
+		return (int)( $this->donation['amount_fee'] ?? 0 );
+	}
+
+	public function getOriginalNetAmountInMinorUnits(): int {
+		return (int)( $this->donation['amount_net'] ?? 0 );
+	}
+
+	public function getOriginalTotalAmountInMinorUnits(): int {
+		return (int)( $this->donation['amount_gross'] ?? 0 );
+	}
+
+	public function getSettledFeeAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalFeeAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	public function getSettledNetAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalNetAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	public function getSettledTotalAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalTotalAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	private function getConvertedAmountRounded( int $amount, float $exchangeRate, string $settledCurrency ): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			(int)round( $amount * $exchangeRate ),
+			$settledCurrency
+		);
 	}
 
 }
