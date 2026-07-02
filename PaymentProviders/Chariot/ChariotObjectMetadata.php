@@ -141,6 +141,26 @@ class ChariotObjectMetadata {
 			'note' => 'We calculate this on the deposit level but if it is present on donation level maybe it varies? '
 			. ' Shows up with Benevity',
 		],
+		'platform.metadata.Donor ID' => [
+			'sample' => '9465027',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'From YourCause platform',
+		],
+		'platform.metadata.Donor Type' => [
+			'sample' => 'Individual',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'From YourCause platform',
+		],
+		'platform.metadata.Payment ID' => [
+			'sample' => '9700368688',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'From YourCause platform',
+		],
+		'platform.metadata.Transaction Type' => [
+			'sample' => 'Individual Payroll',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'From YourCause platform',
+		],
 		'properties.Campaign' => [],
 		'properties.Country' => [ 'status' => self::STATUS_USED ],
 		'properties.Partner' => [ 'status' => self::STATUS_USED ],
