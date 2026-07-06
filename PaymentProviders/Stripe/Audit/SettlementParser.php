@@ -45,10 +45,10 @@ class SettlementParser extends BaseParser {
 			return [];
 		}
 		return [
-			'currency' => $this->row['customer_facing_currency'],
+			'currency' => $this->normalizeCurrency( $this->row['customer_facing_currency'] ),
 			'gross' => $this->row['customer_facing_amount'],
 			'original_total_amount' => $this->row['customer_facing_amount'],
-			'original_currency' => $this->row['customer_facing_currency'],
+			'original_currency' => $this->normalizeCurrency( $this->row['customer_facing_currency'] ),
 		];
 	}
 

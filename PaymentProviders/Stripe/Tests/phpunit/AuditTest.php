@@ -21,6 +21,8 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertSame( 'stripe', $output[0]['audit_file_gateway'] );
 		$this->assertSame( 'stripe', $output[0]['backend_processor'] );
 		$this->assertSame( 'acct_live', $output[0]['gateway_account'] );
+		$this->assertSame( 'USD', $output[1]['original_currency'] );
+		$this->assertSame( 'USD', $output[1]['currency'] );
 
 		// Check order ID from any of the 3 places it might be in.
 		$this->assertSame( '24315.1', $output[0]['order_id'] );
