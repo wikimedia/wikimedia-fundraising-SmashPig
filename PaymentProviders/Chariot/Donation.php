@@ -10,6 +10,7 @@ class Donation {
 
 	public function __construct( array $donation ) {
 		$this->donation = $donation;
+		$this->validateAmounts();
 	}
 
 	/**
@@ -417,6 +418,53 @@ class Donation {
 			(int)round( $amount * $exchangeRate ),
 			$settledCurrency
 		);
+	}
+
+	public function validateAmounts(): void {
+		$this->assertAmountsEqual(
+			$this->getOriginalNetAmountInMinorUnits(),
+			$this->getOriginalTotalAmountInMinorUnits() +
+			$this->getOriginalFeeAmountInMinorUnits(),
+			'Total + (negative)  fee must equal net'
+		);
+
+		$this->assertAmountsEqual(
+			$this->getOriginalTotalAmountInMinorUnits(),
+			$this->getOriginalIndividualGiftTotalAmountInMinorUnits() +
+			$this->getOriginalMatchingGiftTotalAmountInMinorUnits(),
+			'Individual + matching totals must equal total'
+		);
+
+		$this->assertAmountsEqual(
+			$this->getOriginalFeeAmountInMinorUnits(),
+			$this->getOriginalIndividualGiftFeeAmountInMinorUnits() +
+			$this->getOriginalMatchingGiftFeeAmountInMinorUnits(),
+			'Individual + matching fees must equal fee'
+		);
+
+		$this->assertAmountsEqual(
+			$this->getOriginalNetAmountInMinorUnits(),
+			$this->getOriginalIndividualGiftNetAmountInMinorUnits() +
+			$this->getOriginalMatchingGiftNetAmountInMinorUnits(),
+			'Individual + matching net amounts must equal net'
+		);
+	}
+
+	private function assertAmountsEqual(
+		int $expected,
+		int $actual,
+		string $description
+	): void {
+		if ( $expected !== $actual ) {
+			throw new \UnexpectedValueException(
+				sprintf(
+					'%s: expected %d, got %d',
+					$description,
+					$expected,
+					$actual
+				)
+			);
+		}
 	}
 
 }

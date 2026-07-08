@@ -126,6 +126,10 @@ class DonationTest extends TestCase {
 
 	public function testGetsCorporateMatchValues(): void {
 		$donation = new Donation( [
+			'amount_fee' => 0,
+			'amount_net' => 400,
+			'amount_gross' => 400,
+			'individual_gift_amount' => 0,
 			'corporate_match' => [
 				'company_name' => 'Disney',
 				'match_amount' => 400,
@@ -175,6 +179,7 @@ class DonationTest extends TestCase {
 			'amount_fee' => 87,
 			'amount_net' => 2013,
 			'amount_gross' => 2100,
+			'individual_gift_amount' => 2100,
 		] );
 
 		$this->assertSame( -87, $donation->getOriginalFeeAmountInMinorUnits() );
@@ -195,6 +200,7 @@ class DonationTest extends TestCase {
 			'amount_fee' => 87,
 			'amount_net' => 2013,
 			'amount_gross' => 2100,
+			'individual_gift_amount' => 2100,
 		] );
 
 		$exchangeRate = 0.712197;
