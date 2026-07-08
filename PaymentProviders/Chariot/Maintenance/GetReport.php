@@ -11,6 +11,7 @@ use SmashPig\PaymentProviders\Chariot\Api;
 use SmashPig\PaymentProviders\Chariot\ChariotObjectMetadata;
 use SmashPig\PaymentProviders\Chariot\Deposit;
 use SmashPig\PaymentProviders\Chariot\Donation;
+use SmashPig\PaymentProviders\Chariot\PendingDepositTracker;
 use SmashPig\PaymentProviders\Chariot\UnknownPathCollector;
 
 require __DIR__ . '/../../../Maintenance/MaintenanceBase.php';
@@ -47,8 +48,18 @@ class GetReport extends MaintenanceBase {
 		'original_total_amount',
 		'original_fee_amount',
 		'original_net_amount',
-		'original_matching_gift_amount',
-		'original_individual_gift_amount',
+		'original_matching_gift_total_amount',
+		'original_matching_gift_fee_amount',
+		'original_matching_gift_net_amount',
+		'original_individual_gift_total_amount',
+		'original_individual_gift_fee_amount',
+		'original_individual_gift_net_amount',
+		'settled_matching_gift_total_amount',
+		'settled_matching_gift_fee_amount',
+		'settled_matching_gift_net_amount',
+		'settled_individual_gift_total_amount',
+		'settled_individual_gift_fee_amount',
+		'settled_individual_gift_net_amount',
 		'settlement_batch_reference',
 		'settled_total_amount',
 		'settled_fee_amount',
@@ -84,6 +95,7 @@ class GetReport extends MaintenanceBase {
 	];
 
 	private ProviderConfiguration $config;
+	private PendingDepositTracker $pendingDepositTracker;
 
 	/**
 	 * @throws \SmashPig\Core\SmashPigException
@@ -112,7 +124,7 @@ class GetReport extends MaintenanceBase {
 		if ( !is_dir( $path ) ) {
 			throw new \RuntimeException( 'Output directory does not exist: ' . $path );
 		}
-
+		$this->pendingDepositTracker = new PendingDepositTracker( $path );
 		$api = new Api();
 
 		foreach ( $this->getRequestedModes() as $mode ) {
@@ -157,22 +169,27 @@ class GetReport extends MaintenanceBase {
 			'nextPageToken'
 		);
 
-		$writtenIds = [];
+		$attemptedIds = $writtenIds = [];
 		foreach ( $result['results'] as $deposit ) {
 			if ( !is_array( $deposit ) ) {
 				continue;
 			}
 			$depositObject = new Deposit( $deposit );
-			$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
-			$writtenIds[] = $depositObject->getId();
+			$attemptedIds[] = $depositObject->getId();
+			if ( $this->writeDepositArtifacts( $api, $path, $depositObject, $deposit ) ) {
+				$writtenIds[] = $depositObject->getId();
+			}
 		}
+
+		$this->retryPendingDeposits( $api, $path, $attemptedIds );
 
 		if ( $this->getOption( 'stdout' ) ) {
 			$summary = [
 				'mode' => self::MODE_DEPOSITS,
 				'count' => count( $writtenIds ),
+				'attempted' => count( $attemptedIds ),
 				'next_tokens' => $result['next_tokens'],
-				'deposit_ids' => $writtenIds,
+				'deposit_ids' => $attemptedIds,
 			];
 			$json = json_encode( $summary, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 			if ( $json !== false ) {
@@ -188,8 +205,17 @@ class GetReport extends MaintenanceBase {
 		$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
 	}
 
-	private function writeDepositArtifacts( Api $api, string $path, Deposit $depositObject, array $deposit ): void {
-		$donations = $this->fetchDonationsForDeposit( $api, $depositObject->getId() );
+	private function writeDepositArtifacts( Api $api, string $path, Deposit $depositObject, array $deposit ): bool {
+		$depositId = $depositObject->getId();
+
+		$donations = $this->fetchDonationsForDeposit( $api, $depositId );
+
+		if ( $donations === [] ) {
+			$this->pendingDepositTracker->markPending( $depositId, 'No donations found for deposit yet' );
+			Logger::warning( 'Chariot deposit pending: ' . $depositId . ' - no donations found yet' );
+			return false;
+		}
+
 		$fileSuffix = $this->buildDepositFileSuffix( $depositObject, $deposit, $donations );
 		$unknowns = $this->collectReportableUnknowns( $deposit, $donations );
 		$timestamp = $depositObject->getDepositTimestampForFilename();
@@ -197,9 +223,11 @@ class GetReport extends MaintenanceBase {
 		if ( $unknowns !== [] || $this->getOption( 'include-json' ) ) {
 			$this->writeDepositJson( $path, $fileSuffix, $timestamp, $deposit, $donations );
 		}
-
 		$this->writeDepositAuditCsv( $path, $fileSuffix, $timestamp, $deposit, $donations );
 		$this->writeDepositUnknownsReport( $path, $fileSuffix, $timestamp, $unknowns );
+		$this->pendingDepositTracker->markResolved( $depositId );
+
+		return true;
 	}
 
 	/**
@@ -395,7 +423,6 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function flattenDonationForAuditCsv( Deposit $depositObject, Donation $donationObject, array $donation, float $exchangeRate ): array {
 		$properties = $donation['properties'] ?? [];
-		$originalCurrency = $donation['currency'];
 		$settledCurrency = $depositObject->getCurrency();
 		$paymentMethod = $this->getPaymentMethod( $depositObject, $donation );
 
@@ -407,16 +434,26 @@ class GetReport extends MaintenanceBase {
 			'backend_processor_txn_id' => (string)$donation['external_id'],
 			'banking_institution' => $donationObject->getBankingInstitution(),
 			'donor_advised_fund_name' => $donationObject->getDonorAdvisedFundName(),
-			'original_currency' => $originalCurrency,
+			'original_currency' => $donationObject->getOriginalCurrency(),
 			'settled_currency' => $settledCurrency,
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
 			'settled_date' => $depositObject->getSettledAt(),
 			'date' => $depositObject->getCreatedAt(),
-			'original_fee_amount' => $this->getRoundedAmount( $donation['amount_fee'], $originalCurrency ),
-			'original_net_amount' => $this->getRoundedAmount( $donation['amount_net'], $originalCurrency ),
-			'original_total_amount' => $this->getRoundedAmount( $donation['amount_gross'], $originalCurrency ),
-			'original_individual_gift_amount' => $this->getAmount( $donation['individual_gift_amount'] ?? 0 ),
-			'original_matching_gift_amount' => $this->getAmount( $donationObject->getMatchingGiftAmount() ),
+			'original_fee_amount' => $donationObject->getOriginalFeeAmountRounded(),
+			'original_net_amount' => $donationObject->getOriginalNetAmountRounded(),
+			'original_total_amount' => $donationObject->getOriginalTotalAmountRounded(),
+			'original_individual_gift_total_amount' => $donationObject->getOriginalIndividualGiftTotalAmountRounded(),
+			'original_matching_gift_total_amount' => $donationObject->getOriginalMatchingGiftTotalAmountRounded(),
+			'original_individual_gift_net_amount' => $donationObject->getOriginalIndividualGiftNetAmountRounded(),
+			'original_matching_gift_net_amount' => $donationObject->getOriginalMatchingGiftNetAmountRounded(),
+			'original_individual_gift_fee_amount' => $donationObject->getOriginalIndividualGiftFeeAmountRounded(),
+			'original_matching_gift_fee_amount' => $donationObject->getOriginalMatchingGiftFeeAmountRounded(),
+			'settled_individual_gift_total_amount' => $donationObject->getSettledIndividualGiftTotalAmountRounded( $exchangeRate, $settledCurrency ),
+			'settled_matching_gift_total_amount' => $donationObject->getSettledMatchingGiftTotalAmountRounded( $exchangeRate, $settledCurrency ),
+			'settled_individual_gift_net_amount' => $donationObject->getSettledIndividualGiftNetAmountRounded( $exchangeRate, $settledCurrency ),
+			'settled_matching_gift_net_amount' => $donationObject->getSettledMatchingGiftNetAmountRounded( $exchangeRate, $settledCurrency ),
+			'settled_individual_gift_fee_amount' => $donationObject->getSettledIndividualGiftFeeAmountRounded( $exchangeRate, $settledCurrency ),
+			'settled_matching_gift_fee_amount' => $donationObject->getSettledMatchingGiftFeeAmountRounded( $exchangeRate, $settledCurrency ),
 			'settled_fee_amount' => $donationObject->getSettledFeeAmountRounded( $exchangeRate, $settledCurrency ),
 			'settled_net_amount' => $donationObject->getSettledNetAmountRounded( $exchangeRate, $settledCurrency ),
 			'settled_total_amount' => $donationObject->getSettledTotalAmountRounded( $exchangeRate, $settledCurrency ),
@@ -1017,15 +1054,20 @@ class GetReport extends MaintenanceBase {
 		return $totalMinor / 100;
 	}
 
-	/**
-	 * @param mixed $field
-	 * @param string $settledCurrency
-	 *
-	 * @return float
-	 */
-	public function getRoundedAmount( string $field, string $settledCurrency ): float {
-		$feeMinor = $this->getAmount( $field );
-		return $this->round( $feeMinor, $settledCurrency );
+	private function retryPendingDeposits( Api $api, string $path, array $alreadyAttemptedIds ): void {
+		foreach ( $this->pendingDepositTracker->getPendingDepositIds() as $depositId ) {
+			if ( in_array( $depositId, $alreadyAttemptedIds, true ) ) {
+				continue;
+			}
+
+			$depositObject = $this->fetchDeposit( $api, $depositId );
+			$this->writeDepositArtifacts(
+				$api,
+				$path,
+				$depositObject,
+				$depositObject->getDeposit()
+			);
+		}
 	}
 }
 

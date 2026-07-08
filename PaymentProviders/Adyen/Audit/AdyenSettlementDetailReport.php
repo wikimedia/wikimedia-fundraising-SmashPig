@@ -77,7 +77,7 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 			floatval( $row['Interchange (NC)'] );
 	}
 
-	protected function getFeeTransaction( array $row, int $rowNumber ): ?array {
+	protected function getAccountLevelTransaction( array $row, int $rowNumber ): ?array {
 		$debit = $row['Net Debit (NC)'] ?? null;
 		$credit = $row['Net Credit (NC)'] ?? 0;
 		$type = strtolower( $row['Type'] );
@@ -92,7 +92,7 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 		if ( $type === 'misccosts' || $type === 'depositcorrection' ) {
 			$reference .= '-' . $amount;
 		}
-		$prefix = $type === 'depositcorrection' ? 'adjustment-' . $row['Batch Number'] . '-' : 'fee-';
+		$prefix = in_array( $type, $this->adjustmentTypes, true ) ? 'adjustment-' . $row['Batch Number'] . '-' : 'fee-';
 		return [
 			'settled_date' => UtcDate::getUtcTimestamp( $row[$this->date], $row['TimeZone'] ),
 			'date' => UtcDate::getUtcTimestamp( $row[$this->date], $row['TimeZone'] ),
