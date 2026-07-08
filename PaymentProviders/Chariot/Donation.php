@@ -183,10 +183,6 @@ class Donation {
 		return (string)( $this->getCorporateMatchData()['company_name'] ?? '' );
 	}
 
-	public function getMatchingGiftAmount(): string {
-		return (string)( $this->getCorporateMatchData()['match_amount'] ?? '0' );
-	}
-
 	/**
 	 * @return string
 	 */
@@ -230,16 +226,126 @@ class Donation {
 		return $value;
 	}
 
+	public function getOriginalCurrency(): string {
+		return $this->donation['currency'];
+	}
+
+	public function getOriginalTotalAmountInMinorUnits(): int {
+		return (int)( $this->donation['amount_gross'] ?? 0 );
+	}
+
 	public function getOriginalFeeAmountInMinorUnits(): int {
-		return (int)( $this->donation['amount_fee'] ?? 0 );
+		if ( empty( $this->donation['amount_fee'] ) ) {
+			return 0;
+		}
+		return (int)-( $this->donation['amount_fee'] );
 	}
 
 	public function getOriginalNetAmountInMinorUnits(): int {
 		return (int)( $this->donation['amount_net'] ?? 0 );
 	}
 
-	public function getOriginalTotalAmountInMinorUnits(): int {
-		return (int)( $this->donation['amount_gross'] ?? 0 );
+	public function getOriginalIndividualGiftTotalAmountInMinorUnits(): int {
+		return (int)( $this->donation['individual_gift_amount'] ?? 0 );
+	}
+
+	/**
+	 * Allocate the donation fee between the individual and matching gift.
+	 *
+	 * If a matching gift exists, the entire fee is attributed to it.
+	 * Otherwise, the fee is attributed to the individual gift.
+	 *
+	 * @return int
+	 */
+	public function getOriginalIndividualGiftFeeAmountInMinorUnits(): int {
+		return $this->getOriginalMatchingGiftTotalAmountInMinorUnits() ? 0 : $this->getOriginalFeeAmountInMinorUnits();
+	}
+
+	public function getOriginalIndividualGiftNetAmountInMinorUnits(): int {
+		return $this->getOriginalIndividualGiftTotalAmountInMinorUnits() + $this->getOriginalIndividualGiftFeeAmountInMinorUnits();
+	}
+
+	public function getOriginalMatchingGiftTotalAmountInMinorUnits(): int {
+		return (int)( $this->getCorporateMatchData()['match_amount'] ?? '0' );
+	}
+
+	public function getOriginalMatchingGiftFeeAmountInMinorUnits(): int {
+		return $this->getOriginalMatchingGiftTotalAmountInMinorUnits() ? $this->getOriginalFeeAmountInMinorUnits() : 0;
+	}
+
+	public function getOriginalMatchingGiftNetAmountInMinorUnits(): int {
+		return $this->getOriginalMatchingGiftTotalAmountInMinorUnits() + $this->getOriginalMatchingGiftFeeAmountInMinorUnits();
+	}
+
+	public function getOriginalTotalAmountRounded(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getOriginalTotalAmountInMinorUnits(),
+			$this->getOriginalCurrency()
+		);
+	}
+
+	public function getOriginalFeeAmountRounded(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getOriginalFeeAmountInMinorUnits(),
+			$this->getOriginalCurrency()
+		);
+	}
+
+	public function getOriginalNetAmountRounded(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getOriginalNetAmountInMinorUnits(),
+			$this->getOriginalCurrency()
+		);
+	}
+
+	public function getOriginalIndividualGiftTotalAmountRounded(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getOriginalIndividualGiftTotalAmountInMinorUnits(),
+			$this->getOriginalCurrency()
+		);
+	}
+
+	public function getOriginalIndividualGiftFeeAmountRounded(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getOriginalIndividualGiftFeeAmountInMinorUnits(),
+			$this->getOriginalCurrency()
+		);
+	}
+
+	public function getOriginalIndividualGiftNetAmountRounded(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getOriginalIndividualGiftNetAmountInMinorUnits(),
+			$this->getOriginalCurrency()
+		);
+	}
+
+	public function getOriginalMatchingGiftTotalAmountRounded(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getOriginalMatchingGiftTotalAmountInMinorUnits(),
+			$this->getOriginalCurrency()
+		);
+	}
+
+	public function getOriginalMatchingGiftFeeAmountRounded(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getOriginalMatchingGiftFeeAmountInMinorUnits(),
+			$this->getOriginalCurrency()
+		);
+	}
+
+	public function getOriginalMatchingGiftNetAmountRounded(): string {
+		return CurrencyRoundingHelper::getAmountInMajorUnits(
+			$this->getOriginalMatchingGiftNetAmountInMinorUnits(),
+			$this->getOriginalCurrency()
+		);
+	}
+
+	public function getSettledTotalAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalTotalAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
 	}
 
 	public function getSettledFeeAmountRounded( float $exchangeRate, string $settledCurrency ): string {
@@ -258,9 +364,49 @@ class Donation {
 		);
 	}
 
-	public function getSettledTotalAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+	public function getSettledIndividualGiftTotalAmountRounded( float $exchangeRate, string $settledCurrency ): string {
 		return $this->getConvertedAmountRounded(
-			$this->getOriginalTotalAmountInMinorUnits(),
+			$this->getOriginalIndividualGiftTotalAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	public function getSettledIndividualGiftFeeAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalIndividualGiftFeeAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	public function getSettledIndividualGiftNetAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalIndividualGiftNetAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	public function getSettledMatchingGiftTotalAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalMatchingGiftTotalAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	public function getSettledMatchingGiftFeeAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalMatchingGiftFeeAmountInMinorUnits(),
+			$exchangeRate,
+			$settledCurrency
+		);
+	}
+
+	public function getSettledMatchingGiftNetAmountRounded( float $exchangeRate, string $settledCurrency ): string {
+		return $this->getConvertedAmountRounded(
+			$this->getOriginalMatchingGiftNetAmountInMinorUnits(),
 			$exchangeRate,
 			$settledCurrency
 		);

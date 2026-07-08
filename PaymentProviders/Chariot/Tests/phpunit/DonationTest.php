@@ -145,7 +145,7 @@ class DonationTest extends TestCase {
 		);
 		$this->assertTrue( $donation->isMatchingGift() );
 		$this->assertSame( 'Disney', $donation->getMatchingGiftOrganization() );
-		$this->assertSame( '400', $donation->getMatchingGiftAmount() );
+		$this->assertSame( 400, $donation->getOriginalMatchingGiftTotalAmountInMinorUnits() );
 	}
 
 	public function testGetsEmptyCorporateMatchValuesWhenMissing(): void {
@@ -154,7 +154,7 @@ class DonationTest extends TestCase {
 		$this->assertSame( [], $donation->getCorporateMatchData() );
 		$this->assertFalse( $donation->isMatchingGift() );
 		$this->assertSame( '', $donation->getMatchingGiftOrganization() );
-		$this->assertSame( '0', $donation->getMatchingGiftAmount() );
+		$this->assertSame( 0, $donation->getOriginalMatchingGiftTotalAmountInMinorUnits() );
 	}
 
 	public function testMatchingGiftCanHaveZeroAmount(): void {
@@ -167,7 +167,7 @@ class DonationTest extends TestCase {
 
 		$this->assertTrue( $donation->isMatchingGift() );
 		$this->assertSame( 'Disney', $donation->getMatchingGiftOrganization() );
-		$this->assertSame( '0', $donation->getMatchingGiftAmount() );
+		$this->assertSame( 0, $donation->getOriginalMatchingGiftTotalAmountInMinorUnits() );
 	}
 
 	public function testGetsOriginalAmountsInMinorUnits(): void {
@@ -177,13 +177,13 @@ class DonationTest extends TestCase {
 			'amount_gross' => 2100,
 		] );
 
-		$this->assertSame( 87, $donation->getOriginalFeeAmountInMinorUnits() );
+		$this->assertSame( -87, $donation->getOriginalFeeAmountInMinorUnits() );
 		$this->assertSame( 2013, $donation->getOriginalNetAmountInMinorUnits() );
 		$this->assertSame( 2100, $donation->getOriginalTotalAmountInMinorUnits() );
 	}
 
 	public function testGetsOriginalAmountsInMinorUnitsAsZeroWhenMissing(): void {
-		$donation = new Donation( [] );
+		$donation = new Donation( [ 'amount_fee' => '' ] );
 
 		$this->assertSame( 0, $donation->getOriginalFeeAmountInMinorUnits() );
 		$this->assertSame( 0, $donation->getOriginalNetAmountInMinorUnits() );
@@ -199,17 +199,94 @@ class DonationTest extends TestCase {
 
 		$exchangeRate = 0.712197;
 
-		$this->assertSame( '0.62', $donation->getSettledFeeAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '-0.62', $donation->getSettledFeeAmountRounded( $exchangeRate, 'USD' ) );
 		$this->assertSame( '14.34', $donation->getSettledNetAmountRounded( $exchangeRate, 'USD' ) );
 		$this->assertSame( '14.96', $donation->getSettledTotalAmountRounded( $exchangeRate, 'USD' ) );
 	}
 
 	public function testGetsSettledAmountRoundedToZeroWhenMissing(): void {
-		$donation = new Donation( [] );
+		$donation = new Donation( [ 'amount_fee' => '' ] );
 
 		$this->assertSame( '0.00', $donation->getSettledFeeAmountRounded( 0.712197, 'USD' ) );
 		$this->assertSame( '0.00', $donation->getSettledNetAmountRounded( 0.712197, 'USD' ) );
 		$this->assertSame( '0.00', $donation->getSettledTotalAmountRounded( 0.712197, 'USD' ) );
+	}
+
+	public function testGetsIndividualGiftAmountsWithoutMatchingGift(): void {
+		$donation = new Donation( [
+			'amount_fee' => 87,
+			'amount_net' => 2013,
+			'amount_gross' => 2100,
+			'individual_gift_amount' => 2100,
+		] );
+
+		$this->assertSame( 2100, $donation->getOriginalIndividualGiftTotalAmountInMinorUnits() );
+		$this->assertSame( -87, $donation->getOriginalIndividualGiftFeeAmountInMinorUnits() );
+		$this->assertSame( 2013, $donation->getOriginalIndividualGiftNetAmountInMinorUnits() );
+
+		$this->assertSame( 0, $donation->getOriginalMatchingGiftTotalAmountInMinorUnits() );
+		$this->assertSame( 0, $donation->getOriginalMatchingGiftFeeAmountInMinorUnits() );
+		$this->assertSame( 0, $donation->getOriginalMatchingGiftNetAmountInMinorUnits() );
+
+		$this->assertSame(
+			$donation->getOriginalTotalAmountInMinorUnits(),
+			$donation->getOriginalIndividualGiftTotalAmountInMinorUnits()
+			+ $donation->getOriginalMatchingGiftTotalAmountInMinorUnits()
+		);
+
+		$this->assertSame(
+			$donation->getOriginalFeeAmountInMinorUnits(),
+			$donation->getOriginalIndividualGiftFeeAmountInMinorUnits()
+			+ $donation->getOriginalMatchingGiftFeeAmountInMinorUnits()
+		);
+
+		$this->assertSame(
+			$donation->getOriginalNetAmountInMinorUnits(),
+			$donation->getOriginalIndividualGiftNetAmountInMinorUnits()
+			+ $donation->getOriginalMatchingGiftNetAmountInMinorUnits()
+		);
+	}
+
+	public function testGetsIndividualAndMatchingGiftAmounts(): void {
+		$donation = new Donation( [
+			'amount_fee' => 87,
+			'amount_net' => 2413,
+			'amount_gross' => 2500,
+			'individual_gift_amount' => 2100,
+			'corporate_match' => [
+				'match_amount' => 400,
+			],
+		] );
+
+		$this->assertSame( 2100, $donation->getOriginalIndividualGiftTotalAmountInMinorUnits() );
+		$this->assertSame( 0, $donation->getOriginalIndividualGiftFeeAmountInMinorUnits() );
+		$this->assertSame( 2100, $donation->getOriginalIndividualGiftNetAmountInMinorUnits() );
+
+		$this->assertSame( 400, $donation->getOriginalMatchingGiftTotalAmountInMinorUnits() );
+		$this->assertSame( -87, $donation->getOriginalMatchingGiftFeeAmountInMinorUnits() );
+		$this->assertSame( 313, $donation->getOriginalMatchingGiftNetAmountInMinorUnits() );
+	}
+
+	public function testGetsSettledIndividualAndMatchingGiftAmountsRounded(): void {
+		$donation = new Donation( [
+			'amount_fee' => 87,
+			'amount_net' => 2413,
+			'amount_gross' => 2500,
+			'individual_gift_amount' => 2100,
+			'corporate_match' => [
+				'match_amount' => 400,
+			],
+		] );
+
+		$exchangeRate = 0.712197;
+
+		$this->assertSame( '14.96', $donation->getSettledIndividualGiftTotalAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '0.00', $donation->getSettledIndividualGiftFeeAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '14.96', $donation->getSettledIndividualGiftNetAmountRounded( $exchangeRate, 'USD' ) );
+
+		$this->assertSame( '2.85', $donation->getSettledMatchingGiftTotalAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '-0.62', $donation->getSettledMatchingGiftFeeAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '2.23', $donation->getSettledMatchingGiftNetAmountRounded( $exchangeRate, 'USD' ) );
 	}
 
 }

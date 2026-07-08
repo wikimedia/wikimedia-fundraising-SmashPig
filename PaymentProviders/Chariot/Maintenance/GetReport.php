@@ -395,7 +395,6 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function flattenDonationForAuditCsv( Deposit $depositObject, Donation $donationObject, array $donation, float $exchangeRate ): array {
 		$properties = $donation['properties'] ?? [];
-		$originalCurrency = $donation['currency'];
 		$settledCurrency = $depositObject->getCurrency();
 		$paymentMethod = $this->getPaymentMethod( $depositObject, $donation );
 
@@ -407,16 +406,16 @@ class GetReport extends MaintenanceBase {
 			'backend_processor_txn_id' => (string)$donation['external_id'],
 			'banking_institution' => $donationObject->getBankingInstitution(),
 			'donor_advised_fund_name' => $donationObject->getDonorAdvisedFundName(),
-			'original_currency' => $originalCurrency,
+			'original_currency' => $donationObject->getOriginalCurrency(),
 			'settled_currency' => $settledCurrency,
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
 			'settled_date' => $depositObject->getSettledAt(),
 			'date' => $depositObject->getCreatedAt(),
-			'original_fee_amount' => $this->getRoundedAmount( $donation['amount_fee'], $originalCurrency ),
-			'original_net_amount' => $this->getRoundedAmount( $donation['amount_net'], $originalCurrency ),
-			'original_total_amount' => $this->getRoundedAmount( $donation['amount_gross'], $originalCurrency ),
-			'original_individual_gift_amount' => $this->getAmount( $donation['individual_gift_amount'] ?? 0 ),
-			'original_matching_gift_amount' => $this->getAmount( $donationObject->getMatchingGiftAmount() ),
+			'original_fee_amount' => $donationObject->getOriginalFeeAmountRounded(),
+			'original_net_amount' => $donationObject->getOriginalNetAmountRounded(),
+			'original_total_amount' => $donationObject->getOriginalTotalAmountRounded(),
+			'original_individual_gift_amount' => $donationObject->getOriginalIndividualGiftTotalAmountRounded(),
+			'original_matching_gift_amount' => $donationObject->getOriginalMatchingGiftTotalAmountRounded(),
 			'settled_fee_amount' => $donationObject->getSettledFeeAmountRounded( $exchangeRate, $settledCurrency ),
 			'settled_net_amount' => $donationObject->getSettledNetAmountRounded( $exchangeRate, $settledCurrency ),
 			'settled_total_amount' => $donationObject->getSettledTotalAmountRounded( $exchangeRate, $settledCurrency ),
