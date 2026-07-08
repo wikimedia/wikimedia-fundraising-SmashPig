@@ -166,6 +166,10 @@ class ChariotObjectMetadata {
 			'sample' => '216435446f434a6c72',
 			'status' => self::STATUS_IGNORED,
 		],
+		'platform.metadata.Community Investment Grant Requirements' => [
+			'note' => 'Benevity - unknown reference, empty so far',
+			'status' => self::STATUS_IGNORED,
+		],
 		'properties.Campaign' => [],
 		'properties.Country' => [ 'status' => self::STATUS_USED ],
 		'properties.Partner' => [ 'status' => self::STATUS_USED ],
