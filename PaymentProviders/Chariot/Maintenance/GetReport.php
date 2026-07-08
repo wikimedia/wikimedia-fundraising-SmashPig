@@ -47,8 +47,12 @@ class GetReport extends MaintenanceBase {
 		'original_total_amount',
 		'original_fee_amount',
 		'original_net_amount',
-		'original_matching_gift_amount',
-		'original_individual_gift_amount',
+		'original_matching_gift_total_amount',
+		'original_matching_gift_fee_amount',
+		'original_matching_gift_net_amount',
+		'original_individual_gift_total_amount',
+		'original_individual_gift_fee_amount',
+		'original_individual_gift_net_amount',
 		'settlement_batch_reference',
 		'settled_total_amount',
 		'settled_fee_amount',
@@ -414,8 +418,12 @@ class GetReport extends MaintenanceBase {
 			'original_fee_amount' => $donationObject->getOriginalFeeAmountRounded(),
 			'original_net_amount' => $donationObject->getOriginalNetAmountRounded(),
 			'original_total_amount' => $donationObject->getOriginalTotalAmountRounded(),
-			'original_individual_gift_amount' => $donationObject->getOriginalIndividualGiftTotalAmountRounded(),
-			'original_matching_gift_amount' => $donationObject->getOriginalMatchingGiftTotalAmountRounded(),
+			'original_individual_gift_total_amount' => $donationObject->getOriginalIndividualGiftTotalAmountRounded(),
+			'original_matching_gift_total_amount' => $donationObject->getOriginalMatchingGiftTotalAmountRounded(),
+			'original_individual_gift_net_amount' => $donationObject->getOriginalIndividualGiftNetAmountRounded(),
+			'original_matching_gift_net_amount' => $donationObject->getOriginalMatchingGiftNetAmountRounded(),
+			'original_individual_gift_fee_amount' => $donationObject->getOriginalIndividualGiftFeeAmountRounded(),
+			'original_matching_gift_fee_amount' => $donationObject->getOriginalMatchingGiftFeeAmountRounded(),
 			'settled_fee_amount' => $donationObject->getSettledFeeAmountRounded( $exchangeRate, $settledCurrency ),
 			'settled_net_amount' => $donationObject->getSettledNetAmountRounded( $exchangeRate, $settledCurrency ),
 			'settled_total_amount' => $donationObject->getSettledTotalAmountRounded( $exchangeRate, $settledCurrency ),
@@ -1016,16 +1024,6 @@ class GetReport extends MaintenanceBase {
 		return $totalMinor / 100;
 	}
 
-	/**
-	 * @param mixed $field
-	 * @param string $settledCurrency
-	 *
-	 * @return float
-	 */
-	public function getRoundedAmount( string $field, string $settledCurrency ): float {
-		$feeMinor = $this->getAmount( $field );
-		return $this->round( $feeMinor, $settledCurrency );
-	}
 }
 
 $maintClass = GetReport::class;
