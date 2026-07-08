@@ -161,6 +161,11 @@ class ChariotObjectMetadata {
 			'status' => self::STATUS_IGNORED,
 			'note' => 'From YourCause platform',
 		],
+		'platform.metadata.Project External ID' => [
+			'note' => 'Benevity - unknown reference',
+			'sample' => '216435446f434a6c72',
+			'status' => self::STATUS_IGNORED,
+		],
 		'properties.Campaign' => [],
 		'properties.Country' => [ 'status' => self::STATUS_USED ],
 		'properties.Partner' => [ 'status' => self::STATUS_USED ],
