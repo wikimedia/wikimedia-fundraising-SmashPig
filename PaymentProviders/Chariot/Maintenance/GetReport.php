@@ -96,6 +96,7 @@ class GetReport extends MaintenanceBase {
 
 	private ProviderConfiguration $config;
 	private PendingDepositTracker $pendingDepositTracker;
+	private Api $api;
 
 	/**
 	 * @throws \SmashPig\Core\SmashPigException
@@ -125,27 +126,27 @@ class GetReport extends MaintenanceBase {
 			throw new \RuntimeException( 'Output directory does not exist: ' . $path );
 		}
 		$this->pendingDepositTracker = new PendingDepositTracker( $path );
-		$api = new Api();
+		$this->api = new Api();
 
 		foreach ( $this->getRequestedModes() as $mode ) {
 			switch ( $mode ) {
 				case self::MODE_DEPOSITS:
-					$this->runDeposits( $api, $path );
+					$this->runDeposits( $path );
 					break;
 				case self::MODE_DEPOSIT:
-					$this->runDeposit( $api, $path );
+					$this->runDeposit( $path );
 					break;
 			}
 		}
 		$this->logUnknownPathsSummary();
 	}
 
-	private function runDeposits( Api $api, string $path ): void {
+	private function runDeposits( string $path ): void {
 		$depositId = trim( (string)$this->getOption( 'deposit-id' ) );
 		if ( $depositId !== '' ) {
-			$depositObject = $this->fetchDeposit( $api, $depositId );
+			$depositObject = $this->fetchDeposit( $depositId );
 			$deposit = $depositObject->getDeposit();
-			$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
+			$this->writeDepositArtifacts( $path, $depositObject, $deposit );
 
 			if ( $this->getOption( 'stdout' ) ) {
 				$summary = [
@@ -164,7 +165,7 @@ class GetReport extends MaintenanceBase {
 		}
 
 		$result = $this->collectPagedResults(
-			fn ( ?string $token ): array => $this->fetchDepositsPage( $api, $token ),
+			fn ( ?string $token ): array => $this->fetchDepositsPage( $token ),
 			'next_page_token',
 			'nextPageToken'
 		);
@@ -176,12 +177,12 @@ class GetReport extends MaintenanceBase {
 			}
 			$depositObject = new Deposit( $deposit );
 			$attemptedIds[] = $depositObject->getId();
-			if ( $this->writeDepositArtifacts( $api, $path, $depositObject, $deposit ) ) {
+			if ( $this->writeDepositArtifacts( $path, $depositObject, $deposit ) ) {
 				$writtenIds[] = $depositObject->getId();
 			}
 		}
 
-		$this->retryPendingDeposits( $api, $path, $attemptedIds );
+		$this->retryPendingDeposits( $path, $attemptedIds );
 
 		if ( $this->getOption( 'stdout' ) ) {
 			$summary = [
@@ -198,17 +199,17 @@ class GetReport extends MaintenanceBase {
 		}
 	}
 
-	private function runDeposit( Api $api, string $path ): void {
+	private function runDeposit( string $path ): void {
 		$depositId = $this->requireOption( 'deposit-id' );
-		$depositObject  = $this->fetchDeposit( $api, $depositId );
+		$depositObject  = $this->fetchDeposit( $depositId );
 		$deposit = $depositObject->getDeposit();
-		$this->writeDepositArtifacts( $api, $path, $depositObject, $deposit );
+		$this->writeDepositArtifacts( $path, $depositObject, $deposit );
 	}
 
-	private function writeDepositArtifacts( Api $api, string $path, Deposit $depositObject, array $deposit ): bool {
+	private function writeDepositArtifacts( string $path, Deposit $depositObject, array $deposit ): bool {
 		$depositId = $depositObject->getId();
 
-		$donations = $this->fetchDonationsForDeposit( $api, $depositId );
+		$donations = $this->fetchDonationsForDeposit( $depositId );
 
 		if ( $donations === [] ) {
 			$this->pendingDepositTracker->markPending( $depositId, 'No donations found for deposit yet' );
@@ -236,11 +237,10 @@ class GetReport extends MaintenanceBase {
 	 * Chariot API docs:
 	 * https://docs.givechariot.com/v2026-01-15/api/deposits/list?explorer=true
 	 *
-	 * @param Api $api
 	 * @param string|null $token
 	 * @return array
 	 */
-	private function fetchDepositsPage( Api $api, ?string $token ): array {
+	private function fetchDepositsPage( ?string $token ): array {
 		$params = [];
 
 		$limit = $this->getLimitOption();
@@ -262,7 +262,7 @@ class GetReport extends MaintenanceBase {
 			$params['settled_at.before'] = $endDate;
 		}
 
-		return $api->listDeposits( $params );
+		return $this->api->listDeposits( $params );
 	}
 
 	/**
@@ -271,13 +271,12 @@ class GetReport extends MaintenanceBase {
 	 * Chariot API docs:
 	 * https://docs.givechariot.com/v2026-01-15/api/deposits/get
 	 *
-	 * @param Api $api
 	 * @param string $depositId
 	 *
 	 * @return \SmashPig\PaymentProviders\Chariot\Deposit
 	 */
-	private function fetchDeposit( Api $api, string $depositId ): Deposit {
-		return new Deposit( $api->getDeposit( $depositId ) );
+	private function fetchDeposit( string $depositId ): Deposit {
+		return new Deposit( $this->api->getDeposit( $depositId ) );
 	}
 
 	/**
@@ -286,11 +285,11 @@ class GetReport extends MaintenanceBase {
 	 * Chariot API docs:
 	 * https://docs.givechariot.com/api/donations/list
 	 *
-	 * @param Api $api
 	 * @param string $depositId
 	 * @return array
 	 */
-	private function fetchDonationsForDeposit( Api $api, string $depositId ): array {
+	private function fetchDonationsForDeposit( string $depositId ): array {
+		$api = $this->api;
 		$result = $this->collectPagedResults(
 			function ( ?string $token ) use ( $api, $depositId ): array {
 				$params = [
@@ -1054,15 +1053,14 @@ class GetReport extends MaintenanceBase {
 		return $totalMinor / 100;
 	}
 
-	private function retryPendingDeposits( Api $api, string $path, array $alreadyAttemptedIds ): void {
+	private function retryPendingDeposits( string $path, array $alreadyAttemptedIds ): void {
 		foreach ( $this->pendingDepositTracker->getPendingDepositIds() as $depositId ) {
 			if ( in_array( $depositId, $alreadyAttemptedIds, true ) ) {
 				continue;
 			}
 
-			$depositObject = $this->fetchDeposit( $api, $depositId );
+			$depositObject = $this->fetchDeposit( $depositId );
 			$this->writeDepositArtifacts(
-				$api,
 				$path,
 				$depositObject,
 				$depositObject->getDeposit()

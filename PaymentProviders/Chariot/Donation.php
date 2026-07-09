@@ -82,7 +82,7 @@ class Donation {
 	}
 
 	public function getPhone(): string {
-		return $this->normalizePersonalField( (string)( $this->donation['donor_phone'] ?? '' ) );
+		return $this->normalizePersonalField( $this->getValue( 'donor_phone', '' ) ?: $this->getValue( 'attribution.primary_donor.phone', '' ) );
 	}
 
 	public function getAddress(): array {
