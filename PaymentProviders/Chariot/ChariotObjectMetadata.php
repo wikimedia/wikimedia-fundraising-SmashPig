@@ -108,6 +108,11 @@ class ChariotObjectMetadata {
 		'attribution.joint_donor' => [],
 		'attribution.joint_donor.email' => [],
 		'attribution.joint_donor.full_name' => [],
+		'attribution.primary_donor.phone' => [
+			'sample' => '123-456-789',
+			'status' => self::STATUS_USED,
+			'note' => 'seen in some cybersource, phone number not also set',
+		],
 		'donor_advised_fund_grant' => [],
 		'donor_advised_fund_grant.donor_fund_name' => [ 'status' => self::STATUS_USED ],
 		'donor_advised_fund_grant.organization_name' => [ 'status' => self::STATUS_USED ],
@@ -136,6 +141,26 @@ class ChariotObjectMetadata {
 		'platform.metadata.Confirmation Number' => [],
 		'platform.metadata.Disbursement Method' => [],
 		'platform.metadata.Distribution' => [],
+		'platform.metadata.Donation Frequency' => [
+			'status' => self::STATUS_IGNORED,
+			'sample' => 'one_time',
+			'note' => 'seen for cybersource. Maybe use in future',
+		],
+		'platform.metadata.Payment Date' => [
+			'status' => self::STATUS_IGNORED,
+			'sample' => '2026-07-07',
+			'note' => 'seen for cybersource, but not other platforms - we are using the settled date at the moment',
+		],
+		'platform.metadata.Payment Method' => [
+			'status' => self::STATUS_IGNORED,
+			'sample' => 'ACH',
+			'note' => 'seen for cybersource. Is the same as we are determining from the deposit',
+		],
+		'platform.metadata.Payment Number' => [
+			'status' => self::STATUS_IGNORED,
+			'sample' => 'ACH',
+			'note' => 'seen for cybersource. I Let chariot know that it looked wrong - ie ACH rather than a number',
+		],
 		'platform.metadata.Foreign Exchange Rate' => [
 			'status' => self::STATUS_USED,
 			'note' => 'We calculate this on the deposit level but if it is present on donation level maybe it varies? '
