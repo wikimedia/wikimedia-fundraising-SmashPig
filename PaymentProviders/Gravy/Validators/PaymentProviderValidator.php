@@ -66,6 +66,18 @@ abstract class PaymentProviderValidator {
 		}
 	}
 
+	public function validateProcessorContactId( array &$params ): void {
+		// avoid processor_contact_id if not uuid
+		if ( !empty( $params['processor_contact_id'] ) &&
+			!preg_match(
+				'/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
+				$params['processor_contact_id']
+			)
+		) {
+			$params['processor_contact_id'] = null;
+		}
+	}
+
 	/**
 	 *
 	 * Fixes missing first or last name by splitting multi-word strings.
@@ -131,6 +143,8 @@ abstract class PaymentProviderValidator {
 		$this->validateFields( $required, $params );
 		// T424766 recurring from third party might have missing first name or last name
 		$this->recurringNameCheck( $params );
+		// T431327 uuid should be the only format for processor_contact_id
+		$this->validateProcessorContactId( $params );
 	}
 
 	/**

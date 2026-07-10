@@ -120,6 +120,41 @@ class PaymentProviderValidatorTest extends TestCase {
 		}
 	}
 
+	/**
+	 * @dataProvider provideRecurringProcessorContactIdData
+	 */
+	public function testRecurringValidateProcessorContactId( array $params, array $expectedResults = [] ): void {
+		// Test successful split execution
+		$this->validator->validateRecurringCreatePaymentInput( $params );
+		$this->assertEquals( $expectedResults['processor_contact_id'], $params['processor_contact_id'] );
+	}
+
+	public function provideRecurringProcessorContactIdData(): array {
+		$baseParams = [
+			'recurring_payment_token' => 'token-123',
+			'amount' => '10.00',
+			'currency' => 'USD',
+			'country' => 'US',
+			'order_id' => 'TEST-123',
+			'email' => 'test@example.org',
+		];
+
+		return [
+			'not uuid processor_contact_id' => [
+				array_merge( $baseParams, [ 'processor_contact_id' => '123456789.1' ] ),
+				[ 'processor_contact_id' => null ]
+			],
+			'empty processor_contact_id' => [
+				array_merge( $baseParams, [ 'processor_contact_id' => '' ] ),
+				[ 'processor_contact_id' => null ]
+			],
+			'right processor_contact_id' => [
+				array_merge( $baseParams, [ 'processor_contact_id' => '12345678-1234-4234-8234-123456789012' ] ),
+				[ 'processor_contact_id' => '12345678-1234-4234-8234-123456789012' ] // Expected outcome
+			]
+		];
+	}
+
 	public function provideRecurringNameTestData(): array {
 		$baseParams = [
 			'recurring_payment_token' => 'token-123',
