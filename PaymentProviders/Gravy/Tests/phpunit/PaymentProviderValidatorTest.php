@@ -114,7 +114,9 @@ class PaymentProviderValidatorTest extends TestCase {
 			// Test successful split execution
 			$this->validator->validateRecurringCreatePaymentInput( $params );
 			$this->assertEquals( $expectedResults['first_name'], $params['first_name'] );
-			$this->assertEquals( $expectedResults['last_name'], $params['last_name'] );
+			if ( isset( $expectedResults['last_name'] ) ) {
+				$this->assertEquals( $expectedResults['last_name'], $params['last_name'] );
+			}
 		}
 	}
 
@@ -129,15 +131,20 @@ class PaymentProviderValidatorTest extends TestCase {
 		];
 
 		return [
-			'Missing both names throws exception' => [
-				array_merge( $baseParams, [ 'first_name' => '', 'last_name' => '' ] ),
-				ValidationException::class,
-				[ 'first_name', 'last_name' ] // Expected error keys
+			'Missing both names not throws exception' => [
+				array_merge( $baseParams, [] ),
+				null, // No exception expected
+				[ 'first_name' => null ] // Expected outcome
 			],
-			'Missing last name with single-word first name throws exception' => [
-				array_merge( $baseParams, [ 'first_name' => 'asdf', 'last_name' => '' ] ),
-				ValidationException::class,
-				[ 'last_name' ] // Expected error keys
+			'Missing last name with single-word first name not throws exception' => [
+				array_merge( $baseParams, [ 'first_name' => 'asdf' ] ),
+				null, // No exception expected
+				[ 'first_name' => 'asdf' ] // Expected outcome
+			],
+			'Missing first name with single-word last name not throws exception' => [
+				array_merge( $baseParams, [ 'first_name' => '', 'last_name' => 'asdf' ] ),
+				null, // No exception expected
+				[ 'first_name' => 'asdf' ] // Expected outcome
 			],
 			'Missing last name with multi-word first name successfully splits' => [
 				array_merge( $baseParams, [ 'first_name' => 'asdf ssss', 'last_name' => '' ] ),
@@ -148,6 +155,11 @@ class PaymentProviderValidatorTest extends TestCase {
 				array_merge( $baseParams, [ 'first_name' => '', 'last_name' => 'xxx L yyyy' ] ),
 				null, // No exception expected
 				[ 'first_name' => 'xxx', 'last_name' => 'L yyyy' ] // Expected outcome
+			],
+			'Missing last name with multi-word split by . successfully splits' => [
+				array_merge( $baseParams, [ 'first_name' => 'xxxx.yyy.', 'last_name' => '' ] ),
+				null, // No exception expected
+				[ 'first_name' => 'xxxx', 'last_name' => 'yyy.' ] // Expected outcome
 			],
 		];
 	}

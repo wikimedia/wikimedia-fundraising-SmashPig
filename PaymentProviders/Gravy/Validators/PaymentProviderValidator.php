@@ -75,23 +75,33 @@ abstract class PaymentProviderValidator {
 	 * @throws ValidationException
 	 */
 	public function recurringNameCheck( array &$params ): void {
-		$required = [
-			'first_name',
-			'last_name',
-		];
 		if ( empty( $params['first_name'] ) || empty( $params['last_name'] ) ) {
-			// Find which field has the data we need to split
+			// Find which field has the data we might split
 			$sourceField = !empty( $params['last_name'] ) ? 'last_name' : 'first_name';
 
 			if ( !empty( $params[$sourceField] ) ) {
-				$parts = explode( ' ', trim( $params[$sourceField] ), 2 );
+				$raw = trim( $params[$sourceField] );
+				if ( str_contains( $raw, ' ' ) ) {
+					$parts = explode( ' ', $raw, 2 );
+				} elseif ( str_contains( $raw, '.' ) ) {
+					$parts = explode( '.', $raw, 2 );
+				} else {
+					$parts = [ $raw ];
+				}
+
 				if ( count( $parts ) > 1 ) {
 					$params['first_name'] = $parts[0];
 					$params['last_name']  = $parts[1];
+				} elseif ( count( $parts ) === 1 ) {
+					// Only one part of name exists; use it as first_name and drop last_name
+					$params['first_name'] = $parts[0]; // use firstname for ty email
+					unset( $params['last_name'] );
 				}
+			} else {
+				$params['first_name'] = null;
+				unset( $params['last_name'] );
 			}
 		}
-		$this->validateFields( $required, $params );
 	}
 
 	/**
