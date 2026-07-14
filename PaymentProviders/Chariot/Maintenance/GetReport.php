@@ -947,24 +947,6 @@ class GetReport extends MaintenanceBase {
 	}
 
 	/**
-	 * Convert a minor-unit amount using an exchange rate and round it for the
-	 * target currency.
-	 *
-	 * @param mixed $amountMinor
-	 * @param float $exchangeRate
-	 * @param string $currency
-	 * @return string
-	 */
-	private function getConvertedAmount( $amountMinor, float $exchangeRate, string $currency ): string {
-		if ( $amountMinor === null || $amountMinor === '' || !is_numeric( $amountMinor ) ) {
-			return CurrencyRoundingHelper::round( 0, $currency );
-		}
-
-		$convertedMajor = ( (float)$amountMinor * $exchangeRate ) / 100;
-		return CurrencyRoundingHelper::round( $convertedMajor, $currency );
-	}
-
-	/**
 	 * Build an output filename.
 	 *
 	 * @param string $prefix
