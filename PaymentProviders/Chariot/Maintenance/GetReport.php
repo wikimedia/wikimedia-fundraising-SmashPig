@@ -210,6 +210,7 @@ class GetReport extends MaintenanceBase {
 		$depositId = $depositObject->getId();
 
 		$donations = $this->fetchDonationsForDeposit( $depositId );
+		$depositObject->setDonations( $donations );
 
 		if ( $donations === [] ) {
 			$this->pendingDepositTracker->markPending( $depositId, 'No donations found for deposit yet' );
@@ -217,7 +218,7 @@ class GetReport extends MaintenanceBase {
 			return false;
 		}
 
-		$fileSuffix = $this->buildDepositFileSuffix( $depositObject, $donations );
+		$fileSuffix = $this->buildDepositFileSuffix( $depositObject );
 		$unknowns = $this->collectReportableUnknowns( $deposit, $donations );
 		$timestamp = $depositObject->getDepositTimestampForFilename();
 
@@ -551,26 +552,9 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function getDepositBackendProcessor( Deposit $depositObject, array $donations ): string {
 		$values = [];
-
-		foreach ( $donations as $donation ) {
-			if ( !is_array( $donation ) ) {
-				continue;
-			}
-			$platformName = trim( (string)( $donation['platform']['name'] ?? '' ) );
-			$orgName = trim( (string)( $donation['donor_advised_fund_grant']['organization_name'] ?? '' ) );
-
-			if ( $platformName !== '' ) {
-				$values[] = $platformName;
-			} elseif ( $orgName !== '' ) {
-				$values[] = $orgName;
-			}
-		}
-
-		$values = array_values( array_unique( $values ) );
-		if ( count( $values ) === 1 ) {
-			return $values[0];
-		}
-
+		// This is transitional, in case it's not set. We can move away from this function entirely
+		// but for refactor baby-steps....
+		$depositObject->setDonations( $donations );
 		return $depositObject->getBackendProcessor();
 	}
 
@@ -578,14 +562,13 @@ class GetReport extends MaintenanceBase {
 	 * Build the per-deposit filename suffix.
 	 *
 	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
-	 * @param array $donations
 	 *
 	 * @return string
 	 */
-	private function buildDepositFileSuffix( Deposit $depositObject, array $donations ): string {
+	private function buildDepositFileSuffix( Deposit $depositObject ): string {
 		$parts = [];
 
-		$backendProcessor = trim( $this->getDepositBackendProcessor( $depositObject, $donations ) );
+		$backendProcessor = trim( $this->getDepositBackendProcessor( $depositObject, $depositObject->getDonations() ) );
 		if ( $backendProcessor !== '' ) {
 			$parts[] = $backendProcessor;
 		}

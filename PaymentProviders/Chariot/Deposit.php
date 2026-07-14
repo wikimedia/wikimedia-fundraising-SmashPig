@@ -6,9 +6,20 @@ use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 
 class Deposit {
 	private array $deposit;
+	private array $donations;
 
-	public function __construct( array $deposit ) {
+	public function __construct( array $deposit, array $donations = [] ) {
 		$this->deposit = $deposit;
+		$this->donations = $donations;
+	}
+
+	public function getDonations(): array {
+		return $this->donations;
+	}
+
+	public function setDonations( array $donations ): Deposit {
+		$this->donations = $donations;
+		return $this;
 	}
 
 	/**
@@ -132,9 +143,29 @@ class Deposit {
 	 * @return string
 	 */
 	public function getBackendProcessor(): string {
+		$values = [];
+
+		foreach ( $this->donations as $donation ) {
+			if ( !is_array( $donation ) ) {
+				continue;
+			}
+			$platformName = trim( (string)( $donation['platform']['name'] ?? '' ) );
+			$orgName = trim( (string)( $donation['donor_advised_fund_grant']['organization_name'] ?? '' ) );
+
+			if ( $platformName !== '' ) {
+				$values[] = $platformName;
+			} elseif ( $orgName !== '' ) {
+				$values[] = $orgName;
+			}
+		}
+
+		$values = array_values( array_unique( $values ) );
+		if ( count( $values ) === 1 ) {
+			return $values[0];
+		}
 		$transfer = is_array( $this->deposit['transfer'] ?? null ) ? $this->deposit['transfer'] : [];
 		$ach = is_array( $transfer['inbound_ach_transfer'] ?? null ) ? $transfer['inbound_ach_transfer'] : [];
-		return (string)( $ach['originator_company_name'] ?? '' );
+		return trim( (string)( $ach['originator_company_name'] ?? '' ) );
 	}
 
 }
