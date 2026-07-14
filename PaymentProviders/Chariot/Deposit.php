@@ -126,4 +126,15 @@ class Deposit {
 		return gmdate( 'YmdHis' );
 	}
 
+	/**
+	 * Determine the backend processor for a deposit batch.
+	 *
+	 * @return string
+	 */
+	public function getBackendProcessor(): string {
+		$transfer = is_array( $this->deposit['transfer'] ?? null ) ? $this->deposit['transfer'] : [];
+		$ach = is_array( $transfer['inbound_ach_transfer'] ?? null ) ? $transfer['inbound_ach_transfer'] : [];
+		return (string)( $ach['originator_company_name'] ?? '' );
+	}
+
 }

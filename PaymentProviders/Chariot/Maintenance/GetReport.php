@@ -389,7 +389,7 @@ class GetReport extends MaintenanceBase {
 	private function flattenDepositPayoutRowForAuditCsv( array $deposit, array $donations ): array {
 		$depositObject = new Deposit( $deposit );
 		$paymentMethod = $this->getPaymentMethod( $depositObject );
-		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
+		$backendProcessor = $this->getDepositBackendProcessor( $depositObject, $donations );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
@@ -500,7 +500,7 @@ class GetReport extends MaintenanceBase {
 		$depositObject = new Deposit( $deposit );
 		$depositCurrency = $depositObject->getCurrency();
 		$negativeRoundedAmount = -1 * (float)$roundedAmount;
-		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
+		$backendProcessor = $this->getDepositBackendProcessor( $depositObject, $donations );
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'gateway_txn_id' => $depositObject->getId() . '_rounding',
@@ -546,11 +546,11 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Determine the backend processor for a deposit batch.
 	 *
-	 * @param array $deposit
+	 * @param Deposit $depositObject
 	 * @param array $donations
 	 * @return string
 	 */
-	private function getDepositBackendProcessor( array $deposit, array $donations ): string {
+	private function getDepositBackendProcessor( Deposit $depositObject, array $donations ): string {
 		$values = [];
 
 		foreach ( $donations as $donation ) {
@@ -572,9 +572,7 @@ class GetReport extends MaintenanceBase {
 			return $values[0];
 		}
 
-		$transfer = is_array( $deposit['transfer'] ?? null ) ? $deposit['transfer'] : [];
-		$ach = is_array( $transfer['inbound_ach_transfer'] ?? null ) ? $transfer['inbound_ach_transfer'] : [];
-		return (string)( $ach['originator_company_name'] ?? '' );
+		return $depositObject->getBackendProcessor();
 	}
 
 	/**
@@ -601,7 +599,7 @@ class GetReport extends MaintenanceBase {
 	private function buildDepositFileSuffix( Deposit $depositObject, array $deposit, array $donations ): string {
 		$parts = [];
 
-		$backendProcessor = trim( $this->getDepositBackendProcessor( $deposit, $donations ) );
+		$backendProcessor = trim( $this->getDepositBackendProcessor( $depositObject, $donations ) );
 		if ( $backendProcessor !== '' ) {
 			$parts[] = $backendProcessor;
 		}
