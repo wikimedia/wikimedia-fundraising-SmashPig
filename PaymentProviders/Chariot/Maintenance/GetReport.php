@@ -225,7 +225,7 @@ class GetReport extends MaintenanceBase {
 		if ( $unknowns !== [] || $this->getOption( 'include-json' ) ) {
 			$this->writeDepositJson( $path, $fileSuffix, $timestamp, $deposit, $donations );
 		}
-		$this->writeDepositAuditCsv( $path, $fileSuffix, $timestamp, $depositObject, $deposit );
+		$this->writeDepositAuditCsv( $path, $fileSuffix, $timestamp, $depositObject );
 		$this->writeDepositUnknownsReport( $path, $fileSuffix, $timestamp, $unknowns );
 		$this->pendingDepositTracker->markResolved( $depositId );
 
@@ -345,13 +345,12 @@ class GetReport extends MaintenanceBase {
 	 * @param string $suffix
 	 * @param string $timestamp
 	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
-	 * @param array $deposit
 	 *
 	 * @return void
 	 * @throws \Exception
 	 */
-	private function writeDepositAuditCsv( string $path, string $suffix, string $timestamp, Deposit $depositObject, array $deposit ): void {
-		$rows = $this->buildAuditRows( $depositObject, $deposit );
+	private function writeDepositAuditCsv( string $path, string $suffix, string $timestamp, Deposit $depositObject ): void {
+		$rows = $this->buildAuditRows( $depositObject );
 		$filename = $this->buildFilename( '', $suffix, 'csv', $timestamp );
 		$handle = fopen( $path . '/' . $filename, 'w' );
 		if ( !$handle ) {
@@ -385,18 +384,17 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Flatten a deposit into a payout audit row.
 	 *
-	 * @param array $deposit
-	 * @param array $donations
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
+	 *
 	 * @return array
 	 */
-	private function flattenDepositPayoutRowForAuditCsv( Deposit $depositObject, array $donations ): array {
+	private function flattenDepositPayoutRowForAuditCsv( Deposit $depositObject ): array {
 		$paymentMethod = $this->getPaymentMethod( $depositObject );
-		$backendProcessor = $this->getDepositBackendProcessor( $depositObject, $donations );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
-			'backend_processor' => $backendProcessor,
+			'backend_processor' => $depositObject->getBackendProcessor(),
 			'gateway_txn_id' => $depositObject->getId(),
 			'backend_processor_txn_id' => $depositObject->getPaymentSourceId(),
 			'settled_currency' => $depositObject->getCurrency(),
@@ -494,19 +492,18 @@ class GetReport extends MaintenanceBase {
 	 *
 	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param string $roundedAmount
-	 * @param array $donations
 	 *
 	 * @return array
 	 */
-	private function buildRoundingFeeRow( Deposit $depositObject, string $roundedAmount, array $donations ): array {
+	private function buildRoundingFeeRow( Deposit $depositObject, string $roundedAmount ): array {
 		$depositCurrency = $depositObject->getCurrency();
 		$negativeRoundedAmount = -1 * (float)$roundedAmount;
-		$backendProcessor = $this->getDepositBackendProcessor( $depositObject, $donations );
+
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'gateway_txn_id' => $depositObject->getId() . '_rounding',
 			'audit_file_gateway' => 'Chariot Disbursements',
-			'backend_processor' => $backendProcessor,
+			'backend_processor' => $depositObject->getBackendProcessor(),
 			'backend_processor_txn_id' => $depositObject->getId() . '_rounding',
 			'currency' => $depositCurrency,
 			'original_currency' => $depositCurrency,
@@ -569,7 +566,7 @@ class GetReport extends MaintenanceBase {
 	private function buildDepositFileSuffix( Deposit $depositObject ): string {
 		$parts = [];
 
-		$backendProcessor = trim( $this->getDepositBackendProcessor( $depositObject, $depositObject->getDonations() ) );
+		$backendProcessor = $depositObject->getBackendProcessor();
 		if ( $backendProcessor !== '' ) {
 			$parts[] = $backendProcessor;
 		}
@@ -884,10 +881,10 @@ class GetReport extends MaintenanceBase {
 		}
 
 		if ( $deltaMinor !== 0 ) {
-			$rows[] = $this->buildRoundingFeeRow( $depositObject, CurrencyRoundingHelper::getAmountInMajorUnits( $deltaMinor, $depositObject->getCurrency() ), $donations );
+			$rows[] = $this->buildRoundingFeeRow( $depositObject, CurrencyRoundingHelper::getAmountInMajorUnits( $deltaMinor, $depositObject->getCurrency() ) );
 		}
 
-		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $depositObject, $donations );
+		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $depositObject );
 		return $rows;
 	}
 
