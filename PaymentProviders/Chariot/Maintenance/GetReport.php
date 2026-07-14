@@ -835,28 +835,6 @@ class GetReport extends MaintenanceBase {
 		return $value;
 	}
 
-	/**
-	 * Get the deposit transfer currency.
-	 *
-	 * @param array $deposit
-	 * @return string
-	 */
-	private function getDepositCurrency( array $deposit ): string {
-		return ( new Deposit( $deposit ) )->getCurrency();
-	}
-
-	/**
-	 * Round a minor-unit amount into a decimal string for a currency.
-	 *
-	 * @param mixed $amount
-	 * @param string $currency
-	 *
-	 * @return string
-	 */
-	private function round( float $amount, string $currency ): string {
-		return CurrencyRoundingHelper::round( (float)$amount, $currency );
-	}
-
 	public function getPaymentMethod( Deposit $deposit, array $donation = [] ): string {
 		if ( !empty( $donation['dafpay_url'] ) ) {
 			return 'DAFpay';
