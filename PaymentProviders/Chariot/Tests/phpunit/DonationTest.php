@@ -201,6 +201,7 @@ class DonationTest extends TestCase {
 			'amount_net' => 2013,
 			'amount_gross' => 2100,
 			'individual_gift_amount' => 2100,
+			'currency' => 'USD',
 		] );
 
 		$exchangeRate = 0.712197;
@@ -210,18 +211,35 @@ class DonationTest extends TestCase {
 		$this->assertSame( '14.96', $donation->getSettledTotalAmountRounded( $exchangeRate, 'USD' ) );
 	}
 
-	public function testGetsSettledAmountRoundedToZeroWhenMissing(): void {
-		$donation = new Donation( [ 'amount_fee' => '' ] );
+	public function testGetSettledAmountsRoundedForJpy(): void {
+		$donation = new Donation( [
+			'amount_fee' => 0,
+			'amount_net' => 1000,
+			'amount_gross' => 1000,
+			'currency' => 'JPY',
+			'individual_gift_amount' => 1000,
+		] );
+
+		$exchangeRate = 0.006084;
+
+		$this->assertSame( '0.00', $donation->getSettledFeeAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '6.08', $donation->getSettledNetAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '6.08', $donation->getSettledTotalAmountRounded( $exchangeRate, 'USD' ) );
+	}
+
+	public function testGetSettledAmountRoundedToZeroWhenMissing(): void {
+		$donation = new Donation( [ 'amount_fee' => '', 'currency' => 'USD' ] );
 
 		$this->assertSame( '0.00', $donation->getSettledFeeAmountRounded( 0.712197, 'USD' ) );
 		$this->assertSame( '0.00', $donation->getSettledNetAmountRounded( 0.712197, 'USD' ) );
 		$this->assertSame( '0.00', $donation->getSettledTotalAmountRounded( 0.712197, 'USD' ) );
 	}
 
-	public function testGetsIndividualGiftAmountsWithoutMatchingGift(): void {
+	public function testGetIndividualGiftAmountsWithoutMatchingGift(): void {
 		$donation = new Donation( [
 			'amount_fee' => 87,
 			'amount_net' => 2013,
+			'currency' => 'USD',
 			'amount_gross' => 2100,
 			'individual_gift_amount' => 2100,
 		] );
@@ -258,6 +276,7 @@ class DonationTest extends TestCase {
 			'amount_fee' => 87,
 			'amount_net' => 2413,
 			'amount_gross' => 2500,
+			'currency' => 'USD',
 			'individual_gift_amount' => 2100,
 			'corporate_match' => [
 				'match_amount' => 400,
@@ -279,6 +298,7 @@ class DonationTest extends TestCase {
 			'amount_net' => 2413,
 			'amount_gross' => 2500,
 			'individual_gift_amount' => 2100,
+			'currency' => 'USD',
 			'corporate_match' => [
 				'match_amount' => 400,
 			],

@@ -6,11 +6,20 @@ use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 
 class Deposit {
 	private array $deposit;
+
+	/**
+	 * @var array
+	 */
 	private array $donations;
+
+	/**
+	 * @var array[Donation]
+	 */
+	private array $donationObjects;
 
 	public function __construct( array $deposit, array $donations = [] ) {
 		$this->deposit = $deposit;
-		$this->donations = $donations;
+		$this->setDonations( $donations );
 	}
 
 	public function getDonations(): array {
@@ -18,6 +27,9 @@ class Deposit {
 	}
 
 	public function setDonations( array $donations ): Deposit {
+		foreach ( $donations as $donation ) {
+			$this->donationObjects[] = new Donation( $donation );
+		}
 		$this->donations = $donations;
 		return $this;
 	}
@@ -175,17 +187,15 @@ class Deposit {
 	 * @return float
 	 */
 	public function getExchangeRate(): float {
-		$depositNetMinor = $this->getSettledAmountInMinorUnits();
+		$depositNetMinor = $this->getSettledAmount();
+
 		if ( !is_numeric( $depositNetMinor ) ) {
 			throw new \RuntimeException( 'Deposit transfer amount is missing or non-numeric' );
 		}
 
 		$originalBatchNetMinor = 0.0;
-		foreach ( $this->donations as $donation ) {
-			if ( !is_array( $donation ) ) {
-				continue;
-			}
-			$net = $donation['amount_net'] ?? null;
+		foreach ( $this->donationObjects as $donationObject ) {
+			$net = $donationObject->getOriginalNetAmountRounded();
 			if ( is_numeric( $net ) ) {
 				$originalBatchNetMinor += (float)$net;
 			}
