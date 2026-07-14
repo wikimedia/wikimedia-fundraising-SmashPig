@@ -217,7 +217,7 @@ class GetReport extends MaintenanceBase {
 			return false;
 		}
 
-		$fileSuffix = $this->buildDepositFileSuffix( $depositObject, $deposit, $donations );
+		$fileSuffix = $this->buildDepositFileSuffix( $depositObject, $donations );
 		$unknowns = $this->collectReportableUnknowns( $deposit, $donations );
 		$timestamp = $depositObject->getDepositTimestampForFilename();
 
@@ -386,8 +386,7 @@ class GetReport extends MaintenanceBase {
 	 * @param array $donations
 	 * @return array
 	 */
-	private function flattenDepositPayoutRowForAuditCsv( array $deposit, array $donations ): array {
-		$depositObject = new Deposit( $deposit );
+	private function flattenDepositPayoutRowForAuditCsv( Deposit $depositObject, array $donations ): array {
 		$paymentMethod = $this->getPaymentMethod( $depositObject );
 		$backendProcessor = $this->getDepositBackendProcessor( $depositObject, $donations );
 
@@ -579,12 +578,11 @@ class GetReport extends MaintenanceBase {
 	 * Build the per-deposit filename suffix.
 	 *
 	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
-	 * @param array $deposit
 	 * @param array $donations
 	 *
 	 * @return string
 	 */
-	private function buildDepositFileSuffix( Deposit $depositObject, array $deposit, array $donations ): string {
+	private function buildDepositFileSuffix( Deposit $depositObject, array $donations ): string {
 		$parts = [];
 
 		$backendProcessor = trim( $this->getDepositBackendProcessor( $depositObject, $donations ) );
@@ -960,7 +958,7 @@ class GetReport extends MaintenanceBase {
 			$rows[] = $this->buildRoundingFeeRow( $deposit, CurrencyRoundingHelper::getAmountInMajorUnits( $deltaMinor, $depositObject->getCurrency() ), $donations );
 		}
 
-		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );
+		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $depositObject, $donations );
 		return $rows;
 	}
 
