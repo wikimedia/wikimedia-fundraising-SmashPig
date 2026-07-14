@@ -218,7 +218,7 @@ class GetReport extends MaintenanceBase {
 			return false;
 		}
 
-		$fileSuffix = $this->buildDepositFileSuffix( $depositObject );
+		$fileSuffix = $depositObject->getFileSuffix();
 		$unknowns = $this->collectReportableUnknowns( $deposit, $donations );
 		$timestamp = $depositObject->getDepositTimestampForFilename();
 
@@ -539,27 +539,6 @@ class GetReport extends MaintenanceBase {
 			'payment_method' => '',
 			'note' => self::ROUNDING_FEE_NOTE,
 		];
-	}
-
-	/**
-	 * Build the per-deposit filename suffix.
-	 *
-	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
-	 *
-	 * @return string
-	 */
-	private function buildDepositFileSuffix( Deposit $depositObject ): string {
-		$parts = [];
-
-		$backendProcessor = $depositObject->getBackendProcessor();
-		if ( $backendProcessor !== '' ) {
-			$parts[] = $backendProcessor;
-		}
-
-		$parts[] = $depositObject->getSettledAmountInMinorUnits();
-		$parts[] = $depositObject->getId();
-
-		return implode( '-', $parts );
 	}
 
 	/**

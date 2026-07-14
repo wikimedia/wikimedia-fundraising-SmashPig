@@ -198,4 +198,23 @@ class Deposit {
 		return (float)$depositNetMinor / $originalBatchNetMinor;
 	}
 
+	/**
+	 * Get the suffix to use for the various output files related to this deposit.
+	 *
+	 * @return string
+	 */
+	public function getFileSuffix(): string {
+		$parts = [];
+
+		$backendProcessor = $this->getBackendProcessor();
+		if ( $backendProcessor !== '' ) {
+			$parts[] = $backendProcessor;
+		}
+
+		$parts[] = $this->getSettledAmountInMinorUnits();
+		$parts[] = $this->getId();
+
+		return implode( '-', $parts );
+	}
+
 }
