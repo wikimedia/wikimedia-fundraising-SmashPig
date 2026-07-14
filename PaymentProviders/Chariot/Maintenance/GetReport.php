@@ -331,7 +331,7 @@ class GetReport extends MaintenanceBase {
 
 		$this->emitJsonFile(
 			$path,
-			$this->buildFilename( '', $depositObject, 'json' ),
+			$depositObject->buildFilename( '', 'json' ),
 			$payload
 		);
 	}
@@ -347,7 +347,7 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function writeDepositAuditCsv( string $path, Deposit $depositObject ): void {
 		$rows = $this->buildAuditRows( $depositObject );
-		$filename = $this->buildFilename( '', $depositObject, 'csv' );
+		$filename = $depositObject->buildFilename( '', 'csv' );
 		$handle = fopen( $path . '/' . $filename, 'w' );
 		if ( !$handle ) {
 			throw new \RuntimeException( 'Unable to open deposit audit CSV file for writing.' );
@@ -592,7 +592,7 @@ class GetReport extends MaintenanceBase {
 
 		$this->emitJsonFile(
 			$path,
-			$this->buildFilename( 'unknowns', $depositObject, 'json' ),
+			$depositObject->buildFilename( 'unknowns', 'json' ),
 			$payload
 		);
 	}
@@ -846,30 +846,6 @@ class GetReport extends MaintenanceBase {
 
 		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $depositObject );
 		return $rows;
-	}
-
-	/**
-	 * Build an output filename.
-	 *
-	 * @param string $prefix
-	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
-	 * @param string $extension
-	 *
-	 * @return string
-	 */
-	private function buildFilename( string $prefix, Deposit $depositObject, string $extension ): string {
-		$parts = [];
-		if ( $prefix !== '' ) {
-			$parts[] = $prefix;
-		}
-		$parts[] = $depositObject->getDepositTimestampForFilename();
-		$parts[] = $depositObject->getFileSuffix();
-
-		$base = implode( '-', array_filter( $parts, static fn ( string $part ): bool => $part !== '' ) );
-		$base = preg_replace( '/[^A-Za-z0-9._-]+/', '_', $base );
-		$base = trim( (string)$base, '_-' );
-
-		return $base . '.' . $extension;
 	}
 
 	/**

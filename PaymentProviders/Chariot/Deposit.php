@@ -199,6 +199,29 @@ class Deposit {
 	}
 
 	/**
+	 * Build an output filename.
+	 *
+	 * @param string $prefix
+	 * @param string $extension
+	 *
+	 * @return string
+	 */
+	public function buildFilename( string $prefix, string $extension ): string {
+		$parts = [];
+		if ( $prefix !== '' ) {
+			$parts[] = $prefix;
+		}
+		$parts[] = $this->getDepositTimestampForFilename();
+		$parts[] = $this->getFileSuffix();
+
+		$base = implode( '-', array_filter( $parts, static fn ( string $part ): bool => $part !== '' ) );
+		$base = preg_replace( '/[^A-Za-z0-9._-]+/', '_', $base );
+		$base = trim( (string)$base, '_-' );
+
+		return $base . '.' . $extension;
+	}
+
+	/**
 	 * Get the suffix to use for the various output files related to this deposit.
 	 *
 	 * @return string
