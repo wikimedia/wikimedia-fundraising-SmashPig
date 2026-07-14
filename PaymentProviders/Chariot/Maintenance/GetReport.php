@@ -212,6 +212,13 @@ class GetReport extends MaintenanceBase {
 		$donations = $this->fetchDonationsForDeposit( $depositId );
 		$depositObject->setDonations( $donations );
 
+		if ( $this->auditFileExists( $depositObject ) ) {
+			Logger::info(
+				'Skipping Chariot deposit because audit file already exists: ' . $depositId
+			);
+			return false;
+		}
+
 		if ( $donations === [] ) {
 			$this->pendingDepositTracker->markPending( $depositId, 'No donations found for deposit yet' );
 			Logger::warning( 'Chariot deposit pending: ' . $depositId . ' - no donations found yet' );
@@ -903,6 +910,28 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function getIncomingPath(): mixed {
 		return $this->config->get( 'reports_incoming_path' );
+	}
+
+	private function auditFileExists( Deposit $depositObject ): bool {
+		$filename = $depositObject->buildFilename( '', 'csv' );
+
+		foreach ( $this->getReportPaths() as $path ) {
+			if ( file_exists( $path . '/' . $filename ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function getReportPaths(): array {
+		$incoming = $this->getIncomingPath();
+
+		return [
+			$incoming,
+			str_replace( 'incoming', 'completed', $incoming ),
+			str_replace( 'incoming', 'ignored', $incoming ),
+		];
 	}
 
 }
