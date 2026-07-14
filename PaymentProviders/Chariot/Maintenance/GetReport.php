@@ -225,7 +225,7 @@ class GetReport extends MaintenanceBase {
 		if ( $unknowns !== [] || $this->getOption( 'include-json' ) ) {
 			$this->writeDepositJson( $path, $fileSuffix, $timestamp, $deposit, $donations );
 		}
-		$this->writeDepositAuditCsv( $path, $fileSuffix, $timestamp, $deposit, $donations );
+		$this->writeDepositAuditCsv( $path, $fileSuffix, $timestamp, $depositObject, $deposit );
 		$this->writeDepositUnknownsReport( $path, $fileSuffix, $timestamp, $unknowns );
 		$this->pendingDepositTracker->markResolved( $depositId );
 
@@ -344,12 +344,14 @@ class GetReport extends MaintenanceBase {
 	 * @param string $path
 	 * @param string $suffix
 	 * @param string $timestamp
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param array $deposit
-	 * @param array $donations
+	 *
 	 * @return void
+	 * @throws \Exception
 	 */
-	private function writeDepositAuditCsv( string $path, string $suffix, string $timestamp, array $deposit, array $donations ): void {
-		$rows = $this->buildAuditRows( $deposit, $donations );
+	private function writeDepositAuditCsv( string $path, string $suffix, string $timestamp, Deposit $depositObject, array $deposit ): void {
+		$rows = $this->buildAuditRows( $depositObject, $deposit );
 		$filename = $this->buildFilename( '', $suffix, 'csv', $timestamp );
 		$handle = fopen( $path . '/' . $filename, 'w' );
 		if ( !$handle ) {
@@ -490,14 +492,13 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Build a fee row for FX rounding adjustments.
 	 *
-	 * @param array $deposit
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param string $roundedAmount
 	 * @param array $donations
 	 *
 	 * @return array
 	 */
-	private function buildRoundingFeeRow( array $deposit, string $roundedAmount, array $donations ): array {
-		$depositObject = new Deposit( $deposit );
+	private function buildRoundingFeeRow( Deposit $depositObject, string $roundedAmount, array $donations ): array {
 		$depositCurrency = $depositObject->getCurrency();
 		$negativeRoundedAmount = -1 * (float)$roundedAmount;
 		$backendProcessor = $this->getDepositBackendProcessor( $depositObject, $donations );
@@ -896,13 +897,13 @@ class GetReport extends MaintenanceBase {
 	}
 
 	/**
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param array $deposit
-	 * @param array $donations
 	 *
 	 * @return array
 	 */
-	private function buildAuditRows( array $deposit, array $donations ): array {
-		$depositObject = new Deposit( $deposit );
+	private function buildAuditRows( Deposit $depositObject, array $deposit ): array {
+		$donations = $depositObject->getDonations();
 		$exchangeRate = $this->getBatchExchangeRate( $deposit, $donations );
 
 		$rows = [];
@@ -938,7 +939,7 @@ class GetReport extends MaintenanceBase {
 		}
 
 		if ( $deltaMinor !== 0 ) {
-			$rows[] = $this->buildRoundingFeeRow( $deposit, CurrencyRoundingHelper::getAmountInMajorUnits( $deltaMinor, $depositObject->getCurrency() ), $donations );
+			$rows[] = $this->buildRoundingFeeRow( $depositObject, CurrencyRoundingHelper::getAmountInMajorUnits( $deltaMinor, $depositObject->getCurrency() ), $donations );
 		}
 
 		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $depositObject, $donations );
