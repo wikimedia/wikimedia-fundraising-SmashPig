@@ -576,18 +576,6 @@ class GetReport extends MaintenanceBase {
 	}
 
 	/**
-	 * Get the deposit total for filenames.
-	 *
-	 * @param array $deposit
-	 * @return string
-	 */
-	private function getDepositTotalForFilename( array $deposit ): string {
-		$amount = $deposit['transfer']['amount'] ?? 0;
-		$currency = $this->getDepositCurrency( $deposit );
-		return $this->round( $amount, $currency );
-	}
-
-	/**
 	 * Build the per-deposit filename suffix.
 	 *
 	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
@@ -604,7 +592,7 @@ class GetReport extends MaintenanceBase {
 			$parts[] = $backendProcessor;
 		}
 
-		$parts[] = $this->getDepositTotalForFilename( $deposit );
+		$parts[] = $depositObject->getSettledAmountInMinorUnits();
 		$parts[] = $depositObject->getId();
 
 		return implode( '-', $parts );
