@@ -121,7 +121,7 @@ class GetReport extends MaintenanceBase {
 
 	public function execute(): void {
 		$this->config = Context::get()->getProviderConfiguration();
-		$path = $this->config->get( 'reports_incoming_path' );
+		$path = $this->getIncomingPath();
 		if ( !is_dir( $path ) ) {
 			throw new \RuntimeException( 'Output directory does not exist: ' . $path );
 		}
@@ -895,6 +895,16 @@ class GetReport extends MaintenanceBase {
 			);
 		}
 	}
+
+	/**
+	 * @return array|mixed
+	 * @throws \Psr\Container\ContainerExceptionInterface
+	 * @throws \Psr\Container\NotFoundExceptionInterface
+	 */
+	private function getIncomingPath(): mixed {
+		return $this->config->get( 'reports_incoming_path' );
+	}
+
 }
 
 $maintClass = GetReport::class;
