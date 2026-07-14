@@ -542,21 +542,6 @@ class GetReport extends MaintenanceBase {
 	}
 
 	/**
-	 * Determine the backend processor for a deposit batch.
-	 *
-	 * @param Deposit $depositObject
-	 * @param array $donations
-	 * @return string
-	 */
-	private function getDepositBackendProcessor( Deposit $depositObject, array $donations ): string {
-		$values = [];
-		// This is transitional, in case it's not set. We can move away from this function entirely
-		// but for refactor baby-steps....
-		$depositObject->setDonations( $donations );
-		return $depositObject->getBackendProcessor();
-	}
-
-	/**
 	 * Build the per-deposit filename suffix.
 	 *
 	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
