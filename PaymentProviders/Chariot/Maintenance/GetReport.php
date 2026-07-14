@@ -218,15 +218,13 @@ class GetReport extends MaintenanceBase {
 			return false;
 		}
 
-		$fileSuffix = $depositObject->getFileSuffix();
 		$unknowns = $this->collectReportableUnknowns( $deposit, $donations );
-		$timestamp = $depositObject->getDepositTimestampForFilename();
 
 		if ( $unknowns !== [] || $this->getOption( 'include-json' ) ) {
-			$this->writeDepositJson( $path, $fileSuffix, $timestamp, $deposit, $donations );
+			$this->writeDepositJson( $path, $depositObject, $deposit, $donations );
 		}
-		$this->writeDepositAuditCsv( $path, $fileSuffix, $timestamp, $depositObject );
-		$this->writeDepositUnknownsReport( $path, $fileSuffix, $timestamp, $unknowns );
+		$this->writeDepositAuditCsv( $path, $depositObject );
+		$this->writeDepositUnknownsReport( $path, $depositObject, $unknowns );
 		$this->pendingDepositTracker->markResolved( $depositId );
 
 		return true;
@@ -319,13 +317,13 @@ class GetReport extends MaintenanceBase {
 	 * Write the combined deposit and donations JSON payload.
 	 *
 	 * @param string $path
-	 * @param string $suffix
-	 * @param string $timestamp
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param array $deposit
 	 * @param array $donations
+	 *
 	 * @return void
 	 */
-	private function writeDepositJson( string $path, string $suffix, string $timestamp, array $deposit, array $donations ): void {
+	private function writeDepositJson( string $path, Deposit $depositObject, array $deposit, array $donations ): void {
 		$payload = [
 			'deposit' => $deposit,
 			'donations' => $donations,
@@ -333,7 +331,7 @@ class GetReport extends MaintenanceBase {
 
 		$this->emitJsonFile(
 			$path,
-			$this->buildFilename( '', $suffix, 'json', $timestamp ),
+			$this->buildFilename( '', $depositObject, 'json' ),
 			$payload
 		);
 	}
@@ -342,16 +340,14 @@ class GetReport extends MaintenanceBase {
 	 * Write the audit CSV for a deposit batch.
 	 *
 	 * @param string $path
-	 * @param string $suffix
-	 * @param string $timestamp
 	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 *
 	 * @return void
 	 * @throws \Exception
 	 */
-	private function writeDepositAuditCsv( string $path, string $suffix, string $timestamp, Deposit $depositObject ): void {
+	private function writeDepositAuditCsv( string $path, Deposit $depositObject ): void {
 		$rows = $this->buildAuditRows( $depositObject );
-		$filename = $this->buildFilename( '', $suffix, 'csv', $timestamp );
+		$filename = $this->buildFilename( '', $depositObject, 'csv' );
 		$handle = fopen( $path . '/' . $filename, 'w' );
 		if ( !$handle ) {
 			throw new \RuntimeException( 'Unable to open deposit audit CSV file for writing.' );
@@ -579,12 +575,12 @@ class GetReport extends MaintenanceBase {
 	 * Write the unknown-paths report when unknowns are present.
 	 *
 	 * @param string $path
-	 * @param string $suffix
-	 * @param string $timestamp
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param array $unknowns
+	 *
 	 * @return void
 	 */
-	private function writeDepositUnknownsReport( string $path, string $suffix, string $timestamp, array $unknowns ): void {
+	private function writeDepositUnknownsReport( string $path, Deposit $depositObject, array $unknowns ): void {
 		if ( $unknowns === [] ) {
 			return;
 		}
@@ -596,7 +592,7 @@ class GetReport extends MaintenanceBase {
 
 		$this->emitJsonFile(
 			$path,
-			$this->buildFilename( 'unknowns', $suffix, 'json', $timestamp ),
+			$this->buildFilename( 'unknowns', $depositObject, 'json' ),
 			$payload
 		);
 	}
@@ -856,18 +852,18 @@ class GetReport extends MaintenanceBase {
 	 * Build an output filename.
 	 *
 	 * @param string $prefix
-	 * @param string $suffix
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param string $extension
-	 * @param string $timestamp
+	 *
 	 * @return string
 	 */
-	private function buildFilename( string $prefix, string $suffix, string $extension, string $timestamp ): string {
+	private function buildFilename( string $prefix, Deposit $depositObject, string $extension ): string {
 		$parts = [];
 		if ( $prefix !== '' ) {
 			$parts[] = $prefix;
 		}
-		$parts[] = $timestamp;
-		$parts[] = $suffix;
+		$parts[] = $depositObject->getDepositTimestampForFilename();
+		$parts[] = $depositObject->getFileSuffix();
 
 		$base = implode( '-', array_filter( $parts, static fn ( string $part ): bool => $part !== '' ) );
 		$base = preg_replace( '/[^A-Za-z0-9._-]+/', '_', $base );
