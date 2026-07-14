@@ -846,38 +846,6 @@ class GetReport extends MaintenanceBase {
 	}
 
 	/**
-	 * Calculate a batch exchange rate from the summed original donation net
-	 * amounts and the deposit payout amount.
-	 *
-	 * @param array $deposit
-	 * @param array $donations
-	 * @return float
-	 */
-	private function getBatchExchangeRate( array $deposit, array $donations ): float {
-		$depositNetMinor = $deposit['transfer']['amount'] ?? null;
-		if ( !is_numeric( $depositNetMinor ) ) {
-			throw new \RuntimeException( 'Deposit transfer amount is missing or non-numeric' );
-		}
-
-		$originalBatchNetMinor = 0.0;
-		foreach ( $donations as $donation ) {
-			if ( !is_array( $donation ) ) {
-				continue;
-			}
-			$net = $donation['amount_net'] ?? null;
-			if ( is_numeric( $net ) ) {
-				$originalBatchNetMinor += (float)$net;
-			}
-		}
-
-		if ( $originalBatchNetMinor <= 0.0 ) {
-			throw new \RuntimeException( 'Cannot calculate exchange rate from zero donation net total' );
-		}
-
-		return (float)$depositNetMinor / $originalBatchNetMinor;
-	}
-
-	/**
 	 * Round a minor-unit amount into a decimal string for a currency.
 	 *
 	 * @param mixed $amount
@@ -898,13 +866,12 @@ class GetReport extends MaintenanceBase {
 
 	/**
 	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
-	 * @param array $deposit
 	 *
 	 * @return array
 	 */
-	private function buildAuditRows( Deposit $depositObject, array $deposit ): array {
+	private function buildAuditRows( Deposit $depositObject ): array {
 		$donations = $depositObject->getDonations();
-		$exchangeRate = $this->getBatchExchangeRate( $deposit, $donations );
+		$exchangeRate = $depositObject->getExchangeRate();
 
 		$rows = [];
 		foreach ( $donations as $donation ) {

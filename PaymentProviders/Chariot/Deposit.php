@@ -168,4 +168,34 @@ class Deposit {
 		return trim( (string)( $ach['originator_company_name'] ?? '' ) );
 	}
 
+	/**
+	 * Calculate a batch exchange rate from the summed original donation net
+	 * amounts and the deposit payout amount.
+	 *
+	 * @return float
+	 */
+	public function getExchangeRate(): float {
+		$depositNetMinor = $this->getSettledAmountInMinorUnits();
+		if ( !is_numeric( $depositNetMinor ) ) {
+			throw new \RuntimeException( 'Deposit transfer amount is missing or non-numeric' );
+		}
+
+		$originalBatchNetMinor = 0.0;
+		foreach ( $this->donations as $donation ) {
+			if ( !is_array( $donation ) ) {
+				continue;
+			}
+			$net = $donation['amount_net'] ?? null;
+			if ( is_numeric( $net ) ) {
+				$originalBatchNetMinor += (float)$net;
+			}
+		}
+
+		if ( $originalBatchNetMinor <= 0.0 ) {
+			throw new \RuntimeException( 'Cannot calculate exchange rate from zero donation net total' );
+		}
+
+		return (float)$depositNetMinor / $originalBatchNetMinor;
+	}
+
 }
