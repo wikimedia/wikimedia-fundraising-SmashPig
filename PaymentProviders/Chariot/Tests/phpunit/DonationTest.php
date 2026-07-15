@@ -319,7 +319,8 @@ class DonationTest extends TestCase {
 	 * Test that matching_gift and individual_gift add up to total when adjustment required.
 	 *
 	 * In this scenario the 2 gifts individually convert to 3.37, but together they convert
-	 * to 6.75. We add an extra cent to the matching to accommodate.
+	 * to 6.75. We need to check that the total_amount, net_amount and fee_amount are correct in
+	 * this case (ie the total & net wind up being each adjusted by one cent)
 	 *
 	 * @return void
 	 */
@@ -348,6 +349,30 @@ class DonationTest extends TestCase {
 		$this->assertSame(
 			'3.38',
 			$donation->getSettledMatchingGiftTotalAmountRounded( $exchangeRate, 'USD' )
+		);
+		$this->assertSame(
+			'6.75',
+			$donation->getSettledNetAmountRounded( $exchangeRate, 'USD' )
+		);
+
+		$this->assertSame(
+			'3.37',
+			$donation->getSettledIndividualGiftNetAmountRounded( $exchangeRate, 'USD' )
+		);
+
+		$this->assertSame(
+			'3.38',
+			$donation->getSettledMatchingGiftNetAmountRounded( $exchangeRate, 'USD' )
+		);
+
+		$this->assertSame(
+			'0.00',
+			$donation->getSettledIndividualGiftFeeAmountRounded( $exchangeRate, 'USD' )
+		);
+
+		$this->assertSame(
+			'0.00',
+			$donation->getSettledMatchingGiftFeeAmountRounded( $exchangeRate, 'USD' )
 		);
 	}
 
