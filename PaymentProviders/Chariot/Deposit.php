@@ -7,8 +7,31 @@ use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 class Deposit {
 	private array $deposit;
 
-	public function __construct( array $deposit ) {
+	/**
+	 * @var array
+	 */
+	private array $donations;
+
+	/**
+	 * @var array[Donation]
+	 */
+	private array $donationObjects;
+
+	public function __construct( array $deposit, array $donations = [] ) {
 		$this->deposit = $deposit;
+		$this->setDonations( $donations );
+	}
+
+	public function getDonations(): array {
+		return $this->donations;
+	}
+
+	public function setDonations( array $donations ): Deposit {
+		foreach ( $donations as $donation ) {
+			$this->donationObjects[] = new Donation( $donation );
+		}
+		$this->donations = $donations;
+		return $this;
 	}
 
 	/**
@@ -124,6 +147,107 @@ class Deposit {
 		}
 
 		return gmdate( 'YmdHis' );
+	}
+
+	/**
+	 * Determine the backend processor for a deposit batch.
+	 *
+	 * @return string
+	 */
+	public function getBackendProcessor(): string {
+		$values = [];
+
+		foreach ( $this->donations as $donation ) {
+			if ( !is_array( $donation ) ) {
+				continue;
+			}
+			$platformName = trim( (string)( $donation['platform']['name'] ?? '' ) );
+			$orgName = trim( (string)( $donation['donor_advised_fund_grant']['organization_name'] ?? '' ) );
+
+			if ( $platformName !== '' ) {
+				$values[] = $platformName;
+			} elseif ( $orgName !== '' ) {
+				$values[] = $orgName;
+			}
+		}
+
+		$values = array_values( array_unique( $values ) );
+		if ( count( $values ) === 1 ) {
+			return $values[0];
+		}
+		$transfer = is_array( $this->deposit['transfer'] ?? null ) ? $this->deposit['transfer'] : [];
+		$ach = is_array( $transfer['inbound_ach_transfer'] ?? null ) ? $transfer['inbound_ach_transfer'] : [];
+		return trim( (string)( $ach['originator_company_name'] ?? '' ) );
+	}
+
+	/**
+	 * Calculate a batch exchange rate from the summed original donation net
+	 * amounts and the deposit payout amount.
+	 *
+	 * @return float
+	 */
+	public function getExchangeRate(): float {
+		$depositNetMinor = $this->getSettledAmount();
+
+		if ( !is_numeric( $depositNetMinor ) ) {
+			throw new \RuntimeException( 'Deposit transfer amount is missing or non-numeric' );
+		}
+
+		$originalBatchNetMinor = 0.0;
+		foreach ( $this->donationObjects as $donationObject ) {
+			$net = $donationObject->getOriginalNetAmountRounded();
+			if ( is_numeric( $net ) ) {
+				$originalBatchNetMinor += (float)$net;
+			}
+		}
+
+		if ( $originalBatchNetMinor <= 0.0 ) {
+			throw new \RuntimeException( 'Cannot calculate exchange rate from zero donation net total' );
+		}
+
+		return (float)$depositNetMinor / $originalBatchNetMinor;
+	}
+
+	/**
+	 * Build an output filename.
+	 *
+	 * @param string $prefix
+	 * @param string $extension
+	 *
+	 * @return string
+	 */
+	public function buildFilename( string $prefix, string $extension ): string {
+		$parts = [];
+		if ( $prefix !== '' ) {
+			$parts[] = $prefix;
+		}
+		$parts[] = $this->getDepositTimestampForFilename();
+		$parts[] = $this->getFileSuffix();
+
+		$base = implode( '-', array_filter( $parts, static fn ( string $part ): bool => $part !== '' ) );
+		$base = preg_replace( '/[^A-Za-z0-9._-]+/', '_', $base );
+		$base = trim( (string)$base, '_-' );
+
+		return $base . '.' . $extension;
+	}
+
+	/**
+	 * Get the suffix to use for the various output files related to this deposit.
+	 *
+	 * @return string
+	 */
+	public function getFileSuffix(): string {
+		$parts = [];
+
+		$backendProcessor = $this->getBackendProcessor();
+		if ( $backendProcessor !== '' ) {
+			$parts[] = $backendProcessor;
+		}
+
+		$parts[] = $this->getSettledAmountInMinorUnits();
+		$parts[] = $this->getId();
+
+		return implode( '-', $parts );
 	}
 
 }

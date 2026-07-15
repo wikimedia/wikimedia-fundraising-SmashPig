@@ -414,8 +414,15 @@ class Donation {
 	}
 
 	private function getConvertedAmountRounded( int $amount, float $exchangeRate, string $settledCurrency ): string {
-		return CurrencyRoundingHelper::getAmountInMajorUnits(
-			(int)round( $amount * $exchangeRate ),
+		$originalMajor = CurrencyRoundingHelper::getAmountInMajorUnits(
+			$amount,
+			$this->getOriginalCurrency()
+		);
+
+		$settledMajor = (float)$originalMajor * $exchangeRate;
+
+		return CurrencyRoundingHelper::round(
+			$settledMajor,
 			$settledCurrency
 		);
 	}

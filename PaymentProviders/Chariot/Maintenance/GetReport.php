@@ -121,7 +121,7 @@ class GetReport extends MaintenanceBase {
 
 	public function execute(): void {
 		$this->config = Context::get()->getProviderConfiguration();
-		$path = $this->config->get( 'reports_incoming_path' );
+		$path = $this->getIncomingPath();
 		if ( !is_dir( $path ) ) {
 			throw new \RuntimeException( 'Output directory does not exist: ' . $path );
 		}
@@ -210,6 +210,14 @@ class GetReport extends MaintenanceBase {
 		$depositId = $depositObject->getId();
 
 		$donations = $this->fetchDonationsForDeposit( $depositId );
+		$depositObject->setDonations( $donations );
+
+		if ( $this->auditFileExists( $depositObject ) ) {
+			Logger::info(
+				'Skipping Chariot deposit because audit file already exists: ' . $depositId
+			);
+			return false;
+		}
 
 		if ( $donations === [] ) {
 			$this->pendingDepositTracker->markPending( $depositId, 'No donations found for deposit yet' );
@@ -217,15 +225,13 @@ class GetReport extends MaintenanceBase {
 			return false;
 		}
 
-		$fileSuffix = $this->buildDepositFileSuffix( $depositObject, $deposit, $donations );
 		$unknowns = $this->collectReportableUnknowns( $deposit, $donations );
-		$timestamp = $depositObject->getDepositTimestampForFilename();
 
 		if ( $unknowns !== [] || $this->getOption( 'include-json' ) ) {
-			$this->writeDepositJson( $path, $fileSuffix, $timestamp, $deposit, $donations );
+			$this->writeDepositJson( $path, $depositObject, $deposit, $donations );
 		}
-		$this->writeDepositAuditCsv( $path, $fileSuffix, $timestamp, $deposit, $donations );
-		$this->writeDepositUnknownsReport( $path, $fileSuffix, $timestamp, $unknowns );
+		$this->writeDepositAuditCsv( $path, $depositObject );
+		$this->writeDepositUnknownsReport( $path, $depositObject, $unknowns );
 		$this->pendingDepositTracker->markResolved( $depositId );
 
 		return true;
@@ -318,13 +324,13 @@ class GetReport extends MaintenanceBase {
 	 * Write the combined deposit and donations JSON payload.
 	 *
 	 * @param string $path
-	 * @param string $suffix
-	 * @param string $timestamp
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param array $deposit
 	 * @param array $donations
+	 *
 	 * @return void
 	 */
-	private function writeDepositJson( string $path, string $suffix, string $timestamp, array $deposit, array $donations ): void {
+	private function writeDepositJson( string $path, Deposit $depositObject, array $deposit, array $donations ): void {
 		$payload = [
 			'deposit' => $deposit,
 			'donations' => $donations,
@@ -332,7 +338,7 @@ class GetReport extends MaintenanceBase {
 
 		$this->emitJsonFile(
 			$path,
-			$this->buildFilename( '', $suffix, 'json', $timestamp ),
+			$depositObject->buildFilename( '', 'json' ),
 			$payload
 		);
 	}
@@ -341,15 +347,14 @@ class GetReport extends MaintenanceBase {
 	 * Write the audit CSV for a deposit batch.
 	 *
 	 * @param string $path
-	 * @param string $suffix
-	 * @param string $timestamp
-	 * @param array $deposit
-	 * @param array $donations
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
+	 *
 	 * @return void
+	 * @throws \Exception
 	 */
-	private function writeDepositAuditCsv( string $path, string $suffix, string $timestamp, array $deposit, array $donations ): void {
-		$rows = $this->buildAuditRows( $deposit, $donations );
-		$filename = $this->buildFilename( '', $suffix, 'csv', $timestamp );
+	private function writeDepositAuditCsv( string $path, Deposit $depositObject ): void {
+		$rows = $this->buildAuditRows( $depositObject );
+		$filename = $depositObject->buildFilename( '', 'csv' );
 		$handle = fopen( $path . '/' . $filename, 'w' );
 		if ( !$handle ) {
 			throw new \RuntimeException( 'Unable to open deposit audit CSV file for writing.' );
@@ -382,19 +387,17 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Flatten a deposit into a payout audit row.
 	 *
-	 * @param array $deposit
-	 * @param array $donations
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
+	 *
 	 * @return array
 	 */
-	private function flattenDepositPayoutRowForAuditCsv( array $deposit, array $donations ): array {
-		$depositObject = new Deposit( $deposit );
+	private function flattenDepositPayoutRowForAuditCsv( Deposit $depositObject ): array {
 		$paymentMethod = $this->getPaymentMethod( $depositObject );
-		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'audit_file_gateway' => 'Chariot Disbursements',
-			'backend_processor' => $backendProcessor,
+			'backend_processor' => $depositObject->getBackendProcessor(),
 			'gateway_txn_id' => $depositObject->getId(),
 			'backend_processor_txn_id' => $depositObject->getPaymentSourceId(),
 			'settled_currency' => $depositObject->getCurrency(),
@@ -490,35 +493,33 @@ class GetReport extends MaintenanceBase {
 	/**
 	 * Build a fee row for FX rounding adjustments.
 	 *
-	 * @param array $deposit
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param string $roundedAmount
-	 * @param array $donations
 	 *
 	 * @return array
 	 */
-	private function buildRoundingFeeRow( array $deposit, string $roundedAmount, array $donations ): array {
-		$depositObject = new Deposit( $deposit );
+	private function buildRoundingFeeRow( Deposit $depositObject, string $roundedAmount ): array {
 		$depositCurrency = $depositObject->getCurrency();
-		$negativeRoundedAmount = -1 * (float)$roundedAmount;
-		$backendProcessor = $this->getDepositBackendProcessor( $deposit, $donations );
+
 		return [
 			'gateway' => 'Chariot Disbursements',
 			'gateway_txn_id' => $depositObject->getId() . '_rounding',
 			'audit_file_gateway' => 'Chariot Disbursements',
-			'backend_processor' => $backendProcessor,
+			'backend_processor' => $depositObject->getBackendProcessor(),
 			'backend_processor_txn_id' => $depositObject->getId() . '_rounding',
-			'currency' => $depositCurrency,
-			'original_currency' => $depositCurrency,
+			'currency' => '',
+			'original_currency' => '',
 			'settled_currency' => $depositCurrency,
 			'exchange_rate' => '1.000000',
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
-			'original_fee_amount' => $roundedAmount,
-			'original_net_amount' => $negativeRoundedAmount,
-			'original_total_amount' => $depositObject->getZeroAmountRounded(),
-			'original_matching_gift_total_amount' => $depositObject->getZeroAmountRounded(),
-			'original_combined_amount' => $depositObject->getZeroAmountRounded(),
+			'original_fee_amount' => '',
+			'original_net_amount' => '',
+			'original_total_amount' => '',
+			'original_individual_gift_total_amount' => '',
+			'original_matching_gift_total_amount' => '',
+			'original_combined_amount' => '',
 			'settled_fee_amount' => $roundedAmount,
-			'settled_net_amount' => $negativeRoundedAmount,
+			'settled_net_amount' => $roundedAmount,
 			'settled_total_amount' => $depositObject->getZeroAmountRounded(),
 			'settled_date' => $depositObject->getSettledAt(),
 			'date' => $depositObject->getCreatedAt(),
@@ -541,75 +542,6 @@ class GetReport extends MaintenanceBase {
 			'payment_method' => '',
 			'note' => self::ROUNDING_FEE_NOTE,
 		];
-	}
-
-	/**
-	 * Determine the backend processor for a deposit batch.
-	 *
-	 * @param array $deposit
-	 * @param array $donations
-	 * @return string
-	 */
-	private function getDepositBackendProcessor( array $deposit, array $donations ): string {
-		$values = [];
-
-		foreach ( $donations as $donation ) {
-			if ( !is_array( $donation ) ) {
-				continue;
-			}
-			$platformName = trim( (string)( $donation['platform']['name'] ?? '' ) );
-			$orgName = trim( (string)( $donation['donor_advised_fund_grant']['organization_name'] ?? '' ) );
-
-			if ( $platformName !== '' ) {
-				$values[] = $platformName;
-			} elseif ( $orgName !== '' ) {
-				$values[] = $orgName;
-			}
-		}
-
-		$values = array_values( array_unique( $values ) );
-		if ( count( $values ) === 1 ) {
-			return $values[0];
-		}
-
-		$transfer = is_array( $deposit['transfer'] ?? null ) ? $deposit['transfer'] : [];
-		$ach = is_array( $transfer['inbound_ach_transfer'] ?? null ) ? $transfer['inbound_ach_transfer'] : [];
-		return (string)( $ach['originator_company_name'] ?? '' );
-	}
-
-	/**
-	 * Get the deposit total for filenames.
-	 *
-	 * @param array $deposit
-	 * @return string
-	 */
-	private function getDepositTotalForFilename( array $deposit ): string {
-		$amount = $deposit['transfer']['amount'] ?? 0;
-		$currency = $this->getDepositCurrency( $deposit );
-		return $this->round( $amount, $currency );
-	}
-
-	/**
-	 * Build the per-deposit filename suffix.
-	 *
-	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
-	 * @param array $deposit
-	 * @param array $donations
-	 *
-	 * @return string
-	 */
-	private function buildDepositFileSuffix( Deposit $depositObject, array $deposit, array $donations ): string {
-		$parts = [];
-
-		$backendProcessor = trim( $this->getDepositBackendProcessor( $deposit, $donations ) );
-		if ( $backendProcessor !== '' ) {
-			$parts[] = $backendProcessor;
-		}
-
-		$parts[] = $this->getDepositTotalForFilename( $deposit );
-		$parts[] = $depositObject->getId();
-
-		return implode( '-', $parts );
 	}
 
 	/**
@@ -650,12 +582,12 @@ class GetReport extends MaintenanceBase {
 	 * Write the unknown-paths report when unknowns are present.
 	 *
 	 * @param string $path
-	 * @param string $suffix
-	 * @param string $timestamp
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 * @param array $unknowns
+	 *
 	 * @return void
 	 */
-	private function writeDepositUnknownsReport( string $path, string $suffix, string $timestamp, array $unknowns ): void {
+	private function writeDepositUnknownsReport( string $path, Deposit $depositObject, array $unknowns ): void {
 		if ( $unknowns === [] ) {
 			return;
 		}
@@ -667,7 +599,7 @@ class GetReport extends MaintenanceBase {
 
 		$this->emitJsonFile(
 			$path,
-			$this->buildFilename( 'unknowns', $suffix, 'json', $timestamp ),
+			$depositObject->buildFilename( 'unknowns', 'json' ),
 			$payload
 		);
 	}
@@ -867,60 +799,6 @@ class GetReport extends MaintenanceBase {
 		return $value;
 	}
 
-	/**
-	 * Get the deposit transfer currency.
-	 *
-	 * @param array $deposit
-	 * @return string
-	 */
-	private function getDepositCurrency( array $deposit ): string {
-		return ( new Deposit( $deposit ) )->getCurrency();
-	}
-
-	/**
-	 * Calculate a batch exchange rate from the summed original donation net
-	 * amounts and the deposit payout amount.
-	 *
-	 * @param array $deposit
-	 * @param array $donations
-	 * @return float
-	 */
-	private function getBatchExchangeRate( array $deposit, array $donations ): float {
-		$depositNetMinor = $deposit['transfer']['amount'] ?? null;
-		if ( !is_numeric( $depositNetMinor ) ) {
-			throw new \RuntimeException( 'Deposit transfer amount is missing or non-numeric' );
-		}
-
-		$originalBatchNetMinor = 0.0;
-		foreach ( $donations as $donation ) {
-			if ( !is_array( $donation ) ) {
-				continue;
-			}
-			$net = $donation['amount_net'] ?? null;
-			if ( is_numeric( $net ) ) {
-				$originalBatchNetMinor += (float)$net;
-			}
-		}
-
-		if ( $originalBatchNetMinor <= 0.0 ) {
-			throw new \RuntimeException( 'Cannot calculate exchange rate from zero donation net total' );
-		}
-
-		return (float)$depositNetMinor / $originalBatchNetMinor;
-	}
-
-	/**
-	 * Round a minor-unit amount into a decimal string for a currency.
-	 *
-	 * @param mixed $amount
-	 * @param string $currency
-	 *
-	 * @return string
-	 */
-	private function round( float $amount, string $currency ): string {
-		return CurrencyRoundingHelper::round( (float)$amount, $currency );
-	}
-
 	public function getPaymentMethod( Deposit $deposit, array $donation = [] ): string {
 		if ( !empty( $donation['dafpay_url'] ) ) {
 			return 'DAFpay';
@@ -929,14 +807,13 @@ class GetReport extends MaintenanceBase {
 	}
 
 	/**
-	 * @param array $deposit
-	 * @param array $donations
+	 * @param \SmashPig\PaymentProviders\Chariot\Deposit $depositObject
 	 *
 	 * @return array
 	 */
-	private function buildAuditRows( array $deposit, array $donations ): array {
-		$depositObject = new Deposit( $deposit );
-		$exchangeRate = $this->getBatchExchangeRate( $deposit, $donations );
+	private function buildAuditRows( Deposit $depositObject ): array {
+		$donations = $depositObject->getDonations();
+		$exchangeRate = $depositObject->getExchangeRate();
 
 		$rows = [];
 		foreach ( $donations as $donation ) {
@@ -949,13 +826,13 @@ class GetReport extends MaintenanceBase {
 		$convertedNetMinorSum = 0;
 		foreach ( $rows as $row ) {
 			if ( ( $row['type'] ?? '' ) === 'donation' ) {
-				$rounded = (int)round( (float)( $row['original_net_amount'] * 100 * $exchangeRate ) );
+				$rounded = CurrencyRoundingHelper::getAmountInMinorUnits( $row['settled_net_amount'], $row['settled_currency'] );
 				$convertedNetMinorSum += $rounded;
 			}
 		}
 
 		$depositNetMinor = $depositObject->getSettledAmountInMinorUnits();
-		$deltaMinor = $convertedNetMinorSum - $depositNetMinor;
+		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
 		// Adjust by no more than .5 cents per donation - to allow for them all to err the same way.
 		$maximumRoundingAdjustment = count( $donations ) / 2;
 
@@ -971,53 +848,11 @@ class GetReport extends MaintenanceBase {
 		}
 
 		if ( $deltaMinor !== 0 ) {
-			$rows[] = $this->buildRoundingFeeRow( $deposit, CurrencyRoundingHelper::getAmountInMajorUnits( $deltaMinor, $depositObject->getCurrency() ), $donations );
+			$rows[] = $this->buildRoundingFeeRow( $depositObject, CurrencyRoundingHelper::getAmountInMajorUnits( $deltaMinor, $depositObject->getCurrency() ) );
 		}
 
-		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $deposit, $donations );
+		$rows[] = $this->flattenDepositPayoutRowForAuditCsv( $depositObject );
 		return $rows;
-	}
-
-	/**
-	 * Convert a minor-unit amount using an exchange rate and round it for the
-	 * target currency.
-	 *
-	 * @param mixed $amountMinor
-	 * @param float $exchangeRate
-	 * @param string $currency
-	 * @return string
-	 */
-	private function getConvertedAmount( $amountMinor, float $exchangeRate, string $currency ): string {
-		if ( $amountMinor === null || $amountMinor === '' || !is_numeric( $amountMinor ) ) {
-			return CurrencyRoundingHelper::round( 0, $currency );
-		}
-
-		$convertedMajor = ( (float)$amountMinor * $exchangeRate ) / 100;
-		return CurrencyRoundingHelper::round( $convertedMajor, $currency );
-	}
-
-	/**
-	 * Build an output filename.
-	 *
-	 * @param string $prefix
-	 * @param string $suffix
-	 * @param string $extension
-	 * @param string $timestamp
-	 * @return string
-	 */
-	private function buildFilename( string $prefix, string $suffix, string $extension, string $timestamp ): string {
-		$parts = [];
-		if ( $prefix !== '' ) {
-			$parts[] = $prefix;
-		}
-		$parts[] = $timestamp;
-		$parts[] = $suffix;
-
-		$base = implode( '-', array_filter( $parts, static fn ( string $part ): bool => $part !== '' ) );
-		$base = preg_replace( '/[^A-Za-z0-9._-]+/', '_', $base );
-		$base = trim( (string)$base, '_-' );
-
-		return $base . '.' . $extension;
 	}
 
 	/**
@@ -1067,6 +902,38 @@ class GetReport extends MaintenanceBase {
 			);
 		}
 	}
+
+	/**
+	 * @return array|mixed
+	 * @throws \Psr\Container\ContainerExceptionInterface
+	 * @throws \Psr\Container\NotFoundExceptionInterface
+	 */
+	private function getIncomingPath(): mixed {
+		return $this->config->get( 'reports_incoming_path' );
+	}
+
+	private function auditFileExists( Deposit $depositObject ): bool {
+		$filename = $depositObject->buildFilename( '', 'csv' );
+
+		foreach ( $this->getReportPaths() as $path ) {
+			if ( file_exists( $path . '/' . $filename ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function getReportPaths(): array {
+		$incoming = $this->getIncomingPath();
+
+		return [
+			$incoming,
+			str_replace( 'incoming', 'completed', $incoming ),
+			str_replace( 'incoming', 'ignored', $incoming ),
+		];
+	}
+
 }
 
 $maintClass = GetReport::class;

@@ -207,7 +207,7 @@ class DonationsAudit implements AuditParser {
 					'%s: expected %s, got %s',
 					$description,
 					$sum,
-					$this->minorUnitsToAmount( $actual )
+					$this->minorUnitsToAmount( $actual, $currency )
 				)
 			);
 		}
