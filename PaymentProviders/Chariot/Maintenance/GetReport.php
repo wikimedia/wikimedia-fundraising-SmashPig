@@ -916,7 +916,9 @@ class GetReport extends MaintenanceBase {
 		$filename = $depositObject->buildFilename( '', 'csv' );
 
 		foreach ( $this->getReportPaths() as $path ) {
-			if ( file_exists( $path . '/' . $filename ) ) {
+			if ( file_exists( $path . '/' . $filename )
+			  || file_exists( $path . '/' . $filename . '.gz' )
+			) {
 				return true;
 			}
 		}
