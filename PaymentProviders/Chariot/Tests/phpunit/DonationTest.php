@@ -292,7 +292,7 @@ class DonationTest extends TestCase {
 		$this->assertSame( 313, $donation->getOriginalMatchingGiftNetAmountInMinorUnits() );
 	}
 
-	public function testGetsSettledIndividualAndMatchingGiftAmountsRounded(): void {
+	public function testGetSettledIndividualAndMatchingGiftAmountsRounded(): void {
 		$donation = new Donation( [
 			'amount_fee' => 87,
 			'amount_net' => 2413,
@@ -310,9 +310,45 @@ class DonationTest extends TestCase {
 		$this->assertSame( '0.00', $donation->getSettledIndividualGiftFeeAmountRounded( $exchangeRate, 'USD' ) );
 		$this->assertSame( '14.96', $donation->getSettledIndividualGiftNetAmountRounded( $exchangeRate, 'USD' ) );
 
-		$this->assertSame( '2.85', $donation->getSettledMatchingGiftTotalAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '2.84', $donation->getSettledMatchingGiftTotalAmountRounded( $exchangeRate, 'USD' ) );
 		$this->assertSame( '-0.62', $donation->getSettledMatchingGiftFeeAmountRounded( $exchangeRate, 'USD' ) );
 		$this->assertSame( '2.23', $donation->getSettledMatchingGiftNetAmountRounded( $exchangeRate, 'USD' ) );
+	}
+
+	/**
+	 * Test that matching_gift and individual_gift add up to total when adjustment required.
+	 *
+	 * In this scenario the 2 gifts individually convert to 3.37, but together they convert
+	 * to 6.75. We add an extra cent to the matching to accommodate.
+	 *
+	 * @return void
+	 */
+	public function testMatchingGiftSettledAmountsRoundToSettledTotal(): void {
+		$donation = new Donation( [
+			'amount_gross' => 600,
+			'amount_net' => 600,
+			'amount_fee' => 0,
+			'individual_gift_amount' => 300,
+			'corporate_match' => [ 'match_amount' => 300 ],
+			'currency' => 'EUR',
+		] );
+
+		$exchangeRate = 1.1248;
+
+		$this->assertSame(
+			'6.75',
+			$donation->getSettledTotalAmountRounded( $exchangeRate, 'USD' )
+		);
+
+		$this->assertSame(
+			'3.37',
+			$donation->getSettledIndividualGiftTotalAmountRounded( $exchangeRate, 'USD' )
+		);
+
+		$this->assertSame(
+			'3.38',
+			$donation->getSettledMatchingGiftTotalAmountRounded( $exchangeRate, 'USD' )
+		);
 	}
 
 }

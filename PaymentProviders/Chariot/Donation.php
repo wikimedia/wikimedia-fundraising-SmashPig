@@ -390,11 +390,38 @@ class Donation {
 	}
 
 	public function getSettledMatchingGiftTotalAmountRounded( float $exchangeRate, string $settledCurrency ): string {
-		return $this->getConvertedAmountRounded(
+		$value = $this->getConvertedAmountRounded(
 			$this->getOriginalMatchingGiftTotalAmountInMinorUnits(),
 			$exchangeRate,
 			$settledCurrency
 		);
+
+		// This might need to be adjusted if exchange rate rounding means the matching gift
+		// and the individual gift do not add up to the converted total - but only
+		// round if it is one cent - otherwise it would be a larger problem.
+		$expected = (float)$this->getSettledTotalAmountRounded( $exchangeRate, $settledCurrency );
+		$actual = (float)$this->getSettledIndividualGiftTotalAmountRounded( $exchangeRate, $settledCurrency )
+			+ (float)$value;
+
+		$difference = $expected - $actual;
+
+		if ( abs( $difference ) > 0.011 ) {
+			throw new \RuntimeException(
+				sprintf(
+					'Matching gift rounding difference of %0.2f exceeds one cent',
+					$difference
+				)
+			);
+		}
+
+		if ( abs( $difference ) >= 0.009 ) {
+			return CurrencyRoundingHelper::round(
+				(float)$value + $difference,
+				$settledCurrency
+			);
+		}
+
+		return $value;
 	}
 
 	public function getSettledMatchingGiftFeeAmountRounded( float $exchangeRate, string $settledCurrency ): string {
