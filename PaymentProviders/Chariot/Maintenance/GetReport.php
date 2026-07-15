@@ -500,7 +500,6 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function buildRoundingFeeRow( Deposit $depositObject, string $roundedAmount ): array {
 		$depositCurrency = $depositObject->getCurrency();
-		$negativeRoundedAmount = -1 * (float)$roundedAmount;
 
 		return [
 			'gateway' => 'Chariot Disbursements',
@@ -508,18 +507,19 @@ class GetReport extends MaintenanceBase {
 			'audit_file_gateway' => 'Chariot Disbursements',
 			'backend_processor' => $depositObject->getBackendProcessor(),
 			'backend_processor_txn_id' => $depositObject->getId() . '_rounding',
-			'currency' => $depositCurrency,
-			'original_currency' => $depositCurrency,
+			'currency' => '',
+			'original_currency' => '',
 			'settled_currency' => $depositCurrency,
 			'exchange_rate' => '1.000000',
 			'settlement_batch_reference' => $depositObject->getSettlementBatchReference(),
-			'original_fee_amount' => $roundedAmount,
-			'original_net_amount' => $negativeRoundedAmount,
-			'original_total_amount' => $depositObject->getZeroAmountRounded(),
-			'original_matching_gift_total_amount' => $depositObject->getZeroAmountRounded(),
-			'original_combined_amount' => $depositObject->getZeroAmountRounded(),
+			'original_fee_amount' => '',
+			'original_net_amount' => '',
+			'original_total_amount' => '',
+			'original_individual_gift_total_amount' => '',
+			'original_matching_gift_total_amount' => '',
+			'original_combined_amount' => '',
 			'settled_fee_amount' => $roundedAmount,
-			'settled_net_amount' => $negativeRoundedAmount,
+			'settled_net_amount' => $roundedAmount,
 			'settled_total_amount' => $depositObject->getZeroAmountRounded(),
 			'settled_date' => $depositObject->getSettledAt(),
 			'date' => $depositObject->getCreatedAt(),
@@ -826,13 +826,13 @@ class GetReport extends MaintenanceBase {
 		$convertedNetMinorSum = 0;
 		foreach ( $rows as $row ) {
 			if ( ( $row['type'] ?? '' ) === 'donation' ) {
-				$rounded = (int)round( (float)( $row['original_net_amount'] * 100 * $exchangeRate ) );
+				$rounded = CurrencyRoundingHelper::getAmountInMinorUnits( $row['settled_net_amount'], $row['settled_currency'] );
 				$convertedNetMinorSum += $rounded;
 			}
 		}
 
 		$depositNetMinor = $depositObject->getSettledAmountInMinorUnits();
-		$deltaMinor = $convertedNetMinorSum - $depositNetMinor;
+		$deltaMinor = $depositNetMinor - $convertedNetMinorSum;
 		// Adjust by no more than .5 cents per donation - to allow for them all to err the same way.
 		$maximumRoundingAdjustment = count( $donations ) / 2;
 
