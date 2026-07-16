@@ -206,6 +206,11 @@ class ChariotObjectMetadata {
 			'status' => self::STATUS_IGNORED,
 		],
 		'properties.Campaign' => [],
+		'properties.Appeal Code' => [
+			'status' => self::STATUS_USED,
+			'sample' => 'White Mail',
+			'note' => 'Maps to our Gift_Data.Appeal (output as direct_mail_appeal)'
+		],
 		'properties.Country' => [ 'status' => self::STATUS_USED ],
 		'properties.Partner' => [ 'status' => self::STATUS_USED ],
 		'properties.Prefix' => [ 'status' => self::STATUS_USED ],
