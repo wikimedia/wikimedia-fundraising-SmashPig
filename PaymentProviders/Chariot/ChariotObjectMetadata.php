@@ -195,7 +195,22 @@ class ChariotObjectMetadata {
 			'note' => 'Benevity - unknown reference, empty so far',
 			'status' => self::STATUS_IGNORED,
 		],
+		'platform.metadata.Alternate Recognition Name' => [
+			'sample' => 'Jane Doe',
+			'note' => 'YourCause field - same as in the full_name field',
+			'status' => self::STATUS_IGNORED,
+		],
+		'platform.metadata.Pass-through Agent' => [
+			'sample' => 'Giving Charity',
+			'note' => 'CyberGrant field - same as in the corporate_match.program_name field',
+			'status' => self::STATUS_IGNORED,
+		],
 		'properties.Campaign' => [],
+		'properties.Appeal Code' => [
+			'status' => self::STATUS_USED,
+			'sample' => 'White Mail',
+			'note' => 'Maps to our Gift_Data.Appeal (output as direct_mail_appeal)'
+		],
 		'properties.Country' => [ 'status' => self::STATUS_USED ],
 		'properties.Partner' => [ 'status' => self::STATUS_USED ],
 		'properties.Prefix' => [ 'status' => self::STATUS_USED ],

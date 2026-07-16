@@ -71,6 +71,7 @@ class GetReport extends MaintenanceBase {
 		'date',
 		'type',
 		'gift_source',
+		'direct_mail_appeal',
 		'first_name',
 		'last_name',
 		'full_name',
@@ -486,6 +487,7 @@ class GetReport extends MaintenanceBase {
 			'dafpay_type' => $donationObject->getDafPayType(),
 			'dafpay_url' => $donationObject->getDafPayUrl(),
 			'gift_source' => $donationObject->getGiftSource(),
+			'direct_mail_appeal' => $donationObject->getAppeal(),
 			'check_number' => $donationObject->getCheckNumber() ?: $depositObject->getCheckNumber(),
 		];
 	}

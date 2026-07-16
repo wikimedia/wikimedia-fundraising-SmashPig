@@ -120,6 +120,10 @@ class Donation {
 		return (string)$this->getValue( 'corporate_match.source' );
 	}
 
+	public function getAppeal(): string {
+		return (string)$this->getValue( 'properties.Appeal Code' );
+	}
+
 	public function getBankingInstitution(): string {
 		return trim( (string)( $this->getDonorAdvisedFundData()['organization_name'] ?? '' ) );
 	}

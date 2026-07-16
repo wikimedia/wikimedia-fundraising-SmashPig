@@ -44,6 +44,7 @@ class DonationsAudit implements AuditParser {
 			'audit_file_gateway' => 'chariot',
 			'type' => $row['type'] ?: 'donation',
 			'gift_source' => $row['gift_source'] ?: '',
+			'direct_mail_appeal' => $row['direct_mail_appeal'] ?: '',
 			'date' => $this->toUtcTimestamp( $row['date'] ?? null ),
 			'settled_date' => $this->toUtcTimestamp( $row['settled_date'] ?? null ),
 			'gateway_txn_id' => $row['gateway_txn_id'],
