@@ -50,7 +50,7 @@ class AuditTest extends TestCase {
 			'gateway' => 'checkoutcom',
 			'audit_file_gateway' => 'checkoutcom',
 			'type' => 'fee',
-			'gateway_txn_id' => 'fee-pay_test_fee_001',
+			'gateway_txn_id' => 'fee-pay_test_fee_0011782910800Charge',
 			'gateway_account' => 'Example donation channel',
 			'settlement_batch_reference' => '00000003K599',
 			'date' => 1782910800,

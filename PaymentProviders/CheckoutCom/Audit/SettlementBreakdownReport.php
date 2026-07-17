@@ -66,7 +66,8 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 			'gateway' => 'checkoutcom',
 			'audit_file_gateway' => 'checkoutcom',
 			'type' => 'fee',
-			'gateway_txn_id' => 'fee-' . $row['Payment ID'],
+			// Payment ID may be the same as for a relevant donation so make it more unique.
+			'gateway_txn_id' => 'fee-' . $row['Payment ID'] . strtotime( ( (string)$row['Processed On'] ) ) . $row['Type'],
 			'gateway_account' => $row['Processing Channel Name'],
 			'settlement_batch_reference' => $row['Payout ID'],
 			'date' => $this->getUtcTimestamp( $row['Processed On'] ),
