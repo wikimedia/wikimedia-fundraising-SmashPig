@@ -2,10 +2,10 @@
 
 namespace SmashPig\PaymentProviders\CheckoutCom\Tests;
 
-use PHPUnit\Framework\TestCase;
 use SmashPig\PaymentProviders\CheckoutCom\Audit\CheckoutComAudit;
+use SmashPig\Tests\BaseSmashPigUnitTestCase;
 
-class AuditTest extends TestCase {
+class AuditTest extends BaseSmashPigUnitTestCase {
 
 	public function testProcessSettlementBreakdownDonation(): void {
 		$processor = new CheckoutComAudit();
