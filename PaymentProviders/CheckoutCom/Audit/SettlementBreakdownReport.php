@@ -35,17 +35,24 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getOriginalCurrency(): string {
+		return $this->row['Processing Currency'];
+	}
+
+	/**
 	 * @param array<string,string|null> $row
 	 * @return array<string,mixed>
 	 */
 	protected function parseDonation( array $row ): array {
 		$msg = $this->setCommonValues( $row );
 		$msg['type'] = 'donation';
-		$msg['currency'] = $msg['original_currency'] = $row['Processing Currency'];
-		$msg['settled_currency'] = $row['Holding Currency'];
-		$msg['original_total_amount'] = $msg['gross'] = $this->amount( $row['Gross In Processing Currency'], $row['Processing Currency'] );
-		$msg['original_fee_amount'] = $this->amount( (float)$row['Deduction In Holding Currency'] / $msg['exchange_rate'], $row['Processing Currency'] );
-		$msg['original_net_amount'] = $this->amount( (float)$msg['original_total_amount'] + (float)$msg['original_fee_amount'], $this->getSettledCurrency() );
+		$msg['currency'] = $msg['original_currency'] = $this->getOriginalCurrency();
+		$msg['settled_currency'] = $this->getSettledCurrency();
+		$msg['original_total_amount'] = $msg['gross'] = $this->amount( $row['Gross In Processing Currency'], $this->getOriginalCurrency() );
+		$msg['original_fee_amount'] = $this->amount( (float)$row['Deduction In Holding Currency'] / $msg['exchange_rate'], $this->getOriginalCurrency() );
+		$msg['original_net_amount'] = $this->amount( (float)$msg['original_total_amount'] + (float)$msg['original_fee_amount'], $this->getOriginalCurrency() );
 		$msg['settled_fee_amount'] = $this->getSettledFeeAmountRounded();
 		$msg['settled_net_amount'] = $this->amount( $row['Net In Holding Currency'], $this->getSettledCurrency() );
 		$msg['settled_total_amount'] = $this->getSettledTotalAmountRounded();
@@ -61,17 +68,17 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 	protected function parseRefund( array $row, string $type ): array {
 		$msg = $this->setCommonValues( $row );
 		$msg['type'] = $type === 'chargeback' ? 'chargeback' : 'refund';
-		$msg['gross'] = abs( $this->amount( $row['Gross In Processing Currency'], $row['Processing Currency'] ) );
-		$msg['gross_currency'] = $msg['original_currency'] = $row['Processing Currency'];
+		$msg['gross'] = abs( $this->amount( $row['Gross In Processing Currency'], $this->getOriginalCurrency() ) );
+		$msg['gross_currency'] = $msg['original_currency'] = $this->getOriginalCurrency();
 		$msg['backend_processor_parent_id'] = $row['Payment ID'];
 		$msg['backend_processor_reversal_id'] = $row['Payment ID'];
-		$msg['original_total_amount'] = -abs( $this->amount( $row['Gross In Processing Currency'], $row['Processing Currency'] ) );
-		$msg['original_fee_amount'] = $this->amount( (float)$row['Deduction In Holding Currency'] / $msg['exchange_rate'], $row['Processing Currency'] );
-		$msg['original_net_amount'] = $this->amount( ( (float)$msg['original_total_amount'] + (float)$msg['original_fee_amount'] ), $row['Processing Currency'] );
+		$msg['original_total_amount'] = -abs( $this->amount( $row['Gross In Processing Currency'], $this->getOriginalCurrency() ) );
+		$msg['original_fee_amount'] = $this->amount( (float)$row['Deduction In Holding Currency'] / $msg['exchange_rate'], $this->getOriginalCurrency() );
+		$msg['original_net_amount'] = $this->amount( ( (float)$msg['original_total_amount'] + (float)$msg['original_fee_amount'] ), $this->getOriginalCurrency() );
 		$msg['settled_fee_amount'] = $this->getSettledFeeAmountRounded();
-		$msg['settled_net_amount'] = $this->amount( $row['Net In Holding Currency'], $row['Holding Currency'] );
+		$msg['settled_net_amount'] = $this->amount( $row['Net In Holding Currency'], $this->getSettledCurrency() );
 		$msg['settled_total_amount'] = $this->getSettledTotalAmountRounded();
-		$msg['settled_currency'] = $row['Holding Currency'];
+		$msg['settled_currency'] = $this->getSettledCurrency();
 
 		return $msg;
 	}
