@@ -10,16 +10,11 @@ use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 class SettlementBreakdownReport extends CheckoutComAudit {
 
 	protected array $row;
+	protected array $feeRows;
 
-	public function __construct( array $row ) {
+	public function __construct( array $row, array $feeRows ) {
 		$this->row = $row;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getOriginalFeeAmountRounded(): string {
-		return $this->amount( (float)$this->row['Deduction In Holding Currency'] / $this->getExchangeRate(), $this->getOriginalCurrency() );
+		$this->feeRows = $feeRows;
 	}
 
 	/**
@@ -31,7 +26,7 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 
 	public function getSettledNetAmountRounded(): string {
 		$netAmount = Money::of( $this->getSettledTotalAmountRounded(), $this->getSettledCurrency() )
-		  ->plus( $this->getSettledFeeAmountRounded() );
+		  ->plus( $this->getSettledFees() );
 
 		// Now check our calculated value against the reported value in the CSV.
 		// We expect it to differ by no more than 1 cent in either direction.
@@ -41,6 +36,9 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 			null,
 			RoundingMode::HalfUp
 		);
+		foreach ( $this->feeRows as $feeRow ) {
+			$reported = $reported->plus( $feeRow['Net In Holding Currency'] );
+		}
 
 		$difference = $reported->minus( $netAmount )->getMinorAmount()->toInt();
 
@@ -62,7 +60,26 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 	 * @return string
 	 */
 	public function getSettledFeeAmountRounded(): string {
-		return $this->amount( $this->row['Deduction In Holding Currency'], $this->getSettledCurrency() );
+		return (string)$this->getSettledFees()->getAmount();
+	}
+
+	public function getSettledFees(): Money {
+		$fees = Money::of( $this->row['Deduction In Holding Currency'], $this->getSettledCurrency(), null, RoundingMode::HalfUp );
+		foreach ( $this->feeRows as $row ) {
+			$fees = $fees->plus( $row['Deduction In Holding Currency'], RoundingMode::HalfUp );
+		}
+		return $fees;
+	}
+
+	public function getOriginalFees(): Money {
+		return $this->getSettledFees()->convertedTo( $this->getOriginalCurrency(), (string)$this->getExchangeRate(), null, RoundingMode::HalfUp );
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getOriginalFeeAmountRounded(): string {
+		return (string)$this->getOriginalFees()->getAmount();
 	}
 
 	/**

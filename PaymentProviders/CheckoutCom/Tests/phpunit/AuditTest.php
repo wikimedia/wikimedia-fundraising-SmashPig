@@ -31,10 +31,10 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'original_currency' => 'USD',
 			'settled_currency' => 'USD',
 			'original_total_amount' => '50.00',
-			'original_fee_amount' => '-1.50',
-			'original_net_amount' => '48.50',
-			'settled_fee_amount' => '-1.50',
-			'settled_net_amount' => '48.50',
+			'original_fee_amount' => '-1.60',
+			'original_net_amount' => '48.40',
+			'settled_fee_amount' => '-1.60',
+			'settled_net_amount' => '48.40',
 			'settled_total_amount' => '50.00',
 		];
 		$this->assertEquals( $expected, $actual );
@@ -57,6 +57,17 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 			'settled_fee_amount' => '-0.25',
 			'settled_net_amount' => '-0.25',
 		], $output );
+	}
+
+	public function testProcessSettlementFeeRowSquashed(): void {
+		$actual = $this->processFile();
+		// 9 rows in file + rounding + payout less squashed fee row.
+		$this->assertCount( 10, $actual );
+		foreach ( $actual as $row ) {
+			if ( $row['type'] === 'fee' ) {
+				$this->assertStringNotContainsString( 'pay_test_token_001', $row['gateway_txn_id'], 'row should have been squashed' );
+			}
+		}
 	}
 
 	public function testProcessSettlementRoundingRow(): void {

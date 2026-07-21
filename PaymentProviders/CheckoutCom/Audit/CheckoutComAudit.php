@@ -68,6 +68,9 @@ class CheckoutComAudit {
 		'Payout Amount',
 	];
 
+	private array $feeRows = [];
+	private array $rows = [];
+
 	/**
 	 * @param string $path
 	 * @return array<int,array<string,mixed>>
@@ -93,13 +96,21 @@ class CheckoutComAudit {
 
 			try {
 				$row = array_combine( $this->columnHeaders, $line );
-				$this->parseLine( $row );
+				if ( $this->isFeeRow( $row ) ) {
+					$this->feeRows[$row['Reference']][] = $row;
+				} else {
+					$this->rows[] = $row;
+				}
 			} catch ( OutOfBoundsException $ex ) {
 				Logger::error( $ex->getMessage() );
 			}
 		}
 		fclose( $file );
 
+		foreach ( $this->rows as $row ) {
+			$this->parseRow( $row );
+		}
+		$this->appendUnusedFeeRows();
 		$this->appendPayoutTransaction( $path );
 
 		return $this->fileData;
@@ -108,9 +119,11 @@ class CheckoutComAudit {
 	/**
 	 * @param array<int,string|null> $row
 	 */
-	protected function parseLine( array $row ): void {
+	protected function parseRow( array $row ): void {
 		$type = strtolower( $row['Type'] );
-		$parser = $this->getParser( $row );
+		$feeRows = $this->feeRows[$row['Reference']] ?? [];
+		unset( $this->feeRows[$row['Reference']] );
+		$parser = $this->getParser( $row, $feeRows );
 
 		if ( $this->isDonationRow( $row ) ) {
 			$transaction = $parser->parseDonation( $row );
@@ -259,6 +272,14 @@ class CheckoutComAudit {
 			'settled_fee_amount' => (string)$adjustment->getAmount(),
 			'settled_net_amount' => (string)$adjustment->getAmount(),
 		];
+	}
+
+	protected function appendUnusedFeeRows(): void {
+		foreach ( $this->feeRows as $rows ) {
+			foreach ( $rows as $row ) {
+				$this->parseRow( $row );
+			}
+		}
 	}
 
 	/**
@@ -438,8 +459,8 @@ class CheckoutComAudit {
 		return ( new \DateTimeImmutable( $date, new \DateTimeZone( 'UTC' ) ) )->getTimestamp();
 	}
 
-	private function getParser( array $row ): SettlementBreakdownReport {
-		return new SettlementBreakdownReport( $row );
+	private function getParser( array $row, array $feeRows = [] ): SettlementBreakdownReport {
+		return new SettlementBreakdownReport( $row, $feeRows );
 	}
 
 }
