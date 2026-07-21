@@ -15,9 +15,6 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 		$this->row = $row;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getSettledNetAmountRounded(): string {
 		$netAmount = Money::of( $this->getSettledTotalAmountRounded(), $this->getSettledCurrency() )
 		  ->plus( $this->getSettledFeeAmountRounded() );
@@ -75,6 +72,10 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 		return $this->row['Processing Currency'];
 	}
 
+	public function getOriginalTotalAmountRounded(): string {
+		return CurrencyRoundingHelper::round( $this->row['Gross In Processing Currency'], $this->getOriginalCurrency() );
+	}
+
 	/**
 	 * @param array<string,string|null> $row
 	 * @return array<string,mixed>
@@ -84,7 +85,7 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 		$msg['type'] = 'donation';
 		$msg['currency'] = $msg['original_currency'] = $this->getOriginalCurrency();
 		$msg['settled_currency'] = $this->getSettledCurrency();
-		$msg['original_total_amount'] = $msg['gross'] = $this->amount( $row['Gross In Processing Currency'], $this->getOriginalCurrency() );
+		$msg['original_total_amount'] = $msg['gross'] = $this->getOriginalTotalAmountRounded();
 		$msg['original_fee_amount'] = $this->amount( (float)$row['Deduction In Holding Currency'] / $msg['exchange_rate'], $this->getOriginalCurrency() );
 		$msg['original_net_amount'] = $this->amount( (float)$msg['original_total_amount'] + (float)$msg['original_fee_amount'], $this->getOriginalCurrency() );
 		$msg['settled_fee_amount'] = $this->getSettledFeeAmountRounded();
