@@ -90,8 +90,10 @@ class CheckoutComAudit {
 		}
 
 		while ( $line = fgetcsv( $file, 0, ',', '"', '\\' ) ) {
+
 			try {
-				$this->parseLine( $line );
+				$row = array_combine( $this->columnHeaders, $line );
+				$this->parseLine( $row );
 			} catch ( OutOfBoundsException $ex ) {
 				Logger::error( $ex->getMessage() );
 			}
@@ -104,10 +106,9 @@ class CheckoutComAudit {
 	}
 
 	/**
-	 * @param array<int,string|null> $line
+	 * @param array<int,string|null> $row
 	 */
-	protected function parseLine( array $line ): void {
-		$row = array_combine( $this->columnHeaders, $line );
+	protected function parseLine( array $row ): void {
 		$type = strtolower( $row['Type'] );
 		$parser = $this->getParser( $row );
 
