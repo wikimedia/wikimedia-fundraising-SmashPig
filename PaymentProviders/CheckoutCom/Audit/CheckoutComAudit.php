@@ -111,26 +111,50 @@ class CheckoutComAudit {
 		$type = strtolower( $row['Type'] );
 		$parser = $this->getParser( $row );
 
-		if ( $type === 'charge' && (float)$row['Gross In Processing Currency'] > 0 ) {
+		if ( $this->isDonationRow( $row ) ) {
 			$transaction = $parser->parseDonation( $row );
 			$this->trackSettlementRounding( $row, $transaction );
 			$this->fileData[] = $transaction;
 			return;
 		}
 
-		if ( in_array( $type, [ 'refund', 'chargeback' ], true ) ) {
+		if ( $this->isRefundRow( $row ) ) {
 			$transaction = $parser->parseRefund( $row, $type );
 			$this->trackSettlementRounding( $row, $transaction );
 			$this->fileData[] = $transaction;
 			return;
 		}
+		if ( $this->isFeeRow( $row ) ) {
+			$transaction = $parser->getFeeTransaction( $row );
+			$this->trackSettlementRounding( $row, $transaction );
+			$this->fileData[] = $transaction;
+			return;
+		}
+		throw new SmashPigException( 'Unknown row type ' . json_encode( $row ) );
+	}
 
-		// Network token, account updater, voids, merchant payout fees,
-		// zero-gross charge rows, and similar settlement-cost rows do not
-		// represent donor payments, but they do affect payout.
-		$transaction = $parser->getFeeTransaction( $row );
-		$this->trackSettlementRounding( $row, $transaction );
-		$this->fileData[] = $transaction;
+	protected function isDonationRow( array $row ): bool {
+		return strtolower( $row['Type'] ?? '' ) === 'charge'
+			&& (float)$row['Gross In Processing Currency'] > 0;
+	}
+
+	protected function isRefundRow( array $row ): bool {
+		return in_array(
+			strtolower( $row['Type'] ?? '' ),
+			[ 'refund', 'chargeback' ],
+			true
+		);
+	}
+
+	/**
+	 * Is this row a fee of some sort.
+	 *
+	 * Network token, account updater, voids, merchant payout fees,
+	 * zero-gross charge rows, and similar settlement-cost rows do not
+	 * represent donor payments, but they do affect payout.
+	 */
+	protected function isFeeRow( array $row ): bool {
+		return !$this->isDonationRow( $row ) && !$this->isRefundRow( $row );
 	}
 
 	/**
