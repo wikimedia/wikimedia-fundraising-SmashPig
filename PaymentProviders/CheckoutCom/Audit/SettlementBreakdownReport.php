@@ -16,6 +16,13 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getOriginalFeeAmountRounded(): string {
+		return $this->amount( (float)$this->row['Deduction In Holding Currency'] / $this->getExchangeRate(), $this->getOriginalCurrency() );
+	}
+
+	/**
 	 * @return float
 	 */
 	public function getExchangeRate(): float {
@@ -93,8 +100,8 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 		$msg['currency'] = $msg['original_currency'] = $this->getOriginalCurrency();
 		$msg['settled_currency'] = $this->getSettledCurrency();
 		$msg['original_total_amount'] = $msg['gross'] = $this->getOriginalTotalAmountRounded();
-		$msg['original_fee_amount'] = $this->amount( (float)$row['Deduction In Holding Currency'] / $this->getExchangeRate(), $this->getOriginalCurrency() );
-		$msg['original_net_amount'] = $this->amount( (float)$msg['original_total_amount'] + (float)$msg['original_fee_amount'], $this->getOriginalCurrency() );
+		$msg['original_fee_amount'] = $this->getOriginalFeeAmountRounded();
+		$msg['original_net_amount'] = $this->amount( (float)$msg['original_total_amount'] + (float)$this->getOriginalFeeAmountRounded(), $this->getOriginalCurrency() );
 		$msg['settled_fee_amount'] = $this->getSettledFeeAmountRounded();
 		$msg['settled_net_amount'] = $this->getSettledNetAmountRounded();
 		$msg['settled_total_amount'] = $this->getSettledTotalAmountRounded();
@@ -115,8 +122,8 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 		$msg['backend_processor_parent_id'] = $row['Payment ID'];
 		$msg['backend_processor_reversal_id'] = $row['Payment ID'];
 		$msg['original_total_amount'] = -abs( $this->amount( $row['Gross In Processing Currency'], $this->getOriginalCurrency() ) );
-		$msg['original_fee_amount'] = $this->amount( (float)$row['Deduction In Holding Currency'] / $this->getExchangeRate(), $this->getOriginalCurrency() );
-		$msg['original_net_amount'] = $this->amount( ( (float)$msg['original_total_amount'] + (float)$msg['original_fee_amount'] ), $this->getOriginalCurrency() );
+		$msg['original_fee_amount'] = $this->getOriginalFeeAmountRounded();
+		$msg['original_net_amount'] = $this->amount( ( (float)$msg['original_total_amount'] + (float)$this->getOriginalFeeAmountRounded() ), $this->getOriginalCurrency() );
 		$msg['settled_fee_amount'] = $this->getSettledFeeAmountRounded();
 		$msg['settled_net_amount'] = $this->amount( $row['Net In Holding Currency'], $this->getSettledCurrency() );
 		$msg['settled_total_amount'] = $this->getSettledTotalAmountRounded();
