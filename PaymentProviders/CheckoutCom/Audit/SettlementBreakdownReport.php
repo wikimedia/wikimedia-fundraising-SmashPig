@@ -2,6 +2,8 @@
 
 namespace SmashPig\PaymentProviders\CheckoutCom\Audit;
 
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use SmashPig\Core\Helpers\Base62Helper;
 use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 
@@ -11,6 +13,38 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 
 	public function __construct( array $row ) {
 		$this->row = $row;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getSettledNetAmountRounded(): string {
+		$netAmount = Money::of( $this->getSettledTotalAmountRounded(), $this->getSettledCurrency() )
+		  ->plus( $this->getSettledFeeAmountRounded() );
+
+		// Now check our calculated value against the reported value in the CSV.
+		// We expect it to differ by no more than 1 cent in either direction.
+		$reported = Money::of(
+			$this->row['Net In Holding Currency'],
+			$this->getSettledCurrency(),
+			null,
+			RoundingMode::HalfUp
+		);
+
+		$difference = $reported->minus( $netAmount )->getMinorAmount()->toInt();
+
+		if ( abs( $difference ) > 1 ) {
+			throw new \RuntimeException( sprintf(
+				'Rounded net calculation differs from CSV by %d minor units. ' .
+				'CSV=%s Calculated=%s Payment=%s',
+				$difference,
+				$reported->getAmount(),
+				$netAmount->getAmount(),
+				$this->row['Payment ID'] ?? '(unknown)'
+			) );
+		}
+
+		return (string)$netAmount->getAmount();
 	}
 
 	/**
@@ -54,7 +88,7 @@ class SettlementBreakdownReport extends CheckoutComAudit {
 		$msg['original_fee_amount'] = $this->amount( (float)$row['Deduction In Holding Currency'] / $msg['exchange_rate'], $this->getOriginalCurrency() );
 		$msg['original_net_amount'] = $this->amount( (float)$msg['original_total_amount'] + (float)$msg['original_fee_amount'], $this->getOriginalCurrency() );
 		$msg['settled_fee_amount'] = $this->getSettledFeeAmountRounded();
-		$msg['settled_net_amount'] = $this->amount( $row['Net In Holding Currency'], $this->getSettledCurrency() );
+		$msg['settled_net_amount'] = $this->getSettledNetAmountRounded();
 		$msg['settled_total_amount'] = $this->getSettledTotalAmountRounded();
 
 		return $msg;

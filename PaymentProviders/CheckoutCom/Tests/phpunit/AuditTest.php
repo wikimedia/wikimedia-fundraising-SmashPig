@@ -59,6 +59,15 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		], $output );
 	}
 
+	public function testProcessSettlementRoundingRow(): void {
+		$feeRow = $this->processFile( 'rounding-00000003K599' );
+		$this->assertSame( 'fee', $feeRow['type'] );
+		$this->assertSame( '0.01', $feeRow['settled_fee_amount'] );
+		$this->assertSame( '0.01', $feeRow['settled_net_amount'] );
+		$this->assertSame( '00000003K599', $feeRow['settlement_batch_reference'] );
+		$this->assertSame( 'rounding-00000003K599', $feeRow['gateway_txn_id'] );
+	}
+
 	public function testProcessSettlementBreakdownPayout(): void {
 		$payout = $this->processFile( '00000003K599' );
 		$this->assertSame( 'payout', $payout['type'] );

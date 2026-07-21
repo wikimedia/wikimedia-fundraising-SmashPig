@@ -2,10 +2,13 @@
 
 namespace SmashPig\PaymentProviders\CheckoutCom\Audit;
 
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use DateTimeImmutable;
 use OutOfBoundsException;
 use RuntimeException;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\SmashPigException;
 
 class CheckoutComAudit {
 
@@ -170,20 +173,37 @@ class CheckoutComAudit {
 	 * @param array<string,string|null> $payoutRow
 	 */
 	protected function appendRoundingAdjustmentIfNeeded( array $payoutRow ): void {
-		$expectedPayoutAmount = round( (float)$payoutRow['Payout Amount'], 2 );
-		$actualSettlementAmount = 0.0;
+		$currency = $payoutRow['Holding Currency'];
+		$expectedPayoutAmount = Money::of( $payoutRow['Payout Amount'], $currency, null, RoundingMode::HalfUp );
+		$actualSettlementAmount = Money::zero( $payoutRow['Holding Currency'] );
+		$actualFeeAmount = Money::zero( $currency );
+		$actualTotalAmount = Money::zero( $currency );
 
 		foreach ( $this->fileData as $transaction ) {
-			$actualSettlementAmount += (float)( $transaction['settled_net_amount'] ?? 0 );
+			$actualSettlementAmount = $actualSettlementAmount->plus(
+				Money::of( $transaction['settled_net_amount'], $payoutRow['Holding Currency'] )
+			);
+			$actualFeeAmount = $actualFeeAmount->plus(
+				Money::of( $transaction['settled_fee_amount'], $payoutRow['Holding Currency'] )
+			);
+			$actualTotalAmount = $actualTotalAmount->plus(
+				Money::of( $transaction['settled_total_amount'], $payoutRow['Holding Currency'] )
+			);
+			$check = $actualTotalAmount->plus( $actualFeeAmount )->minus( $actualSettlementAmount );
+			if ( !$check->isEqualTo( Money::zero( $currency ) ) ) {
+				throw new SmashPigException( 'Money addition issue total_amount ' . (string)$actualSettlementAmount->getAmount()
+				  . 'should equal ' . (string)$actualFeeAmount->getAmount() . ' plus ' . (string)$actualTotalAmount->getAmount()
+				);
+			}
 		}
 
-		$adjustment = round( $expectedPayoutAmount - $actualSettlementAmount, 2 );
-		if ( $adjustment === 0.0 ) {
+		$adjustment = $expectedPayoutAmount->minus( $actualSettlementAmount );
+		if ( $adjustment->isEqualTo( 0 ) ) {
 			return;
 		}
 
-		$maximumExpectedAdjustment = self::MAX_ROUNDING_ADJUSTMENT_PER_ROW * $this->roundingRows;
-		if ( abs( $adjustment ) > $maximumExpectedAdjustment ) {
+		$maximumExpectedAdjustment = Money::of( $this->roundingRows, $currency, null, RoundingMode::HalfUp )->multipliedBy( (string)self::MAX_ROUNDING_ADJUSTMENT_PER_ROW, RoundingMode::HalfUp );
+		if ( $adjustment->abs()->isGreaterThan( $maximumExpectedAdjustment ) ) {
 			throw new RuntimeException(
 				"Checkout.com payout rounding adjustment {$adjustment} exceeds expected maximum "
 				. "{$maximumExpectedAdjustment} for {$this->roundingRows} rows"
@@ -194,7 +214,7 @@ class CheckoutComAudit {
 			'Checkout.com adding payout rounding adjustment for payout {payout_id}: adjustment {adjustment}, tracked_rounding {tracked_rounding}, rows {rows}',
 			[
 				'payout_id' => $payoutRow['Payout ID'],
-				'adjustment' => number_format( $adjustment, 2, '.', '' ),
+				'adjustment' => (string)$adjustment->getAmount(),
 				'tracked_rounding' => number_format( $this->roundingAdjustment, 8, '.', '' ),
 				'rows' => $this->roundingRows,
 			]
@@ -211,8 +231,8 @@ class CheckoutComAudit {
 			'settled_date' => $this->getUtcTimestamp( $payoutRow['Payout Date'] ),
 			'settled_currency' => $payoutRow['Holding Currency'],
 			'settled_total_amount' => '0.00',
-			'settled_fee_amount' => number_format( $adjustment, 2, '.', '' ),
-			'settled_net_amount' => number_format( $adjustment, 2, '.', '' ),
+			'settled_fee_amount' => (string)$adjustment->getAmount(),
+			'settled_net_amount' => (string)$adjustment->getAmount(),
 		];
 	}
 
