@@ -35,6 +35,9 @@ class Donation {
 			$value = $value[$key];
 		}
 
+		if ( is_string( $value ) ) {
+			$value = trim( $value );
+		}
 		return $value;
 	}
 
@@ -125,11 +128,11 @@ class Donation {
 	}
 
 	public function getBankingInstitution(): string {
-		return trim( (string)( $this->getDonorAdvisedFundData()['organization_name'] ?? '' ) );
+		return (string)( $this->getValue( 'donor_advised_fund_grant.organization_name' ) );
 	}
 
 	public function getDonorAdvisedFundName(): string {
-		return (string)( $this->getDonorAdvisedFundData()['donor_fund_name'] ?? '' );
+		return (string)( $this->getValue( 'donor_advised_fund_grant.donor_fund_name' ) );
 	}
 
 	public function getDonorAdvisedFundData(): array {
