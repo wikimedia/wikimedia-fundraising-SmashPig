@@ -53,11 +53,11 @@ abstract class PaymentProviderValidator {
 	/**
 	 * Resolves the type of validation for the create payment input depending on the transaction type.
 	 *
-	 * @param array $params
+	 * @param array &$params
 	 * @throws ValidationException
 	 * @return void
 	 */
-	public function validateCreatePaymentInput( array $params ): void {
+	public function validateCreatePaymentInput( array &$params ): void {
 		// recurring charge is same across all methods
 		if ( isset( $params['recurring_payment_token'] ) ) {
 			$this->validateRecurringCreatePaymentInput( $params );
@@ -70,7 +70,7 @@ abstract class PaymentProviderValidator {
 		// avoid processor_contact_id if not uuid
 		if ( !empty( $params['processor_contact_id'] ) &&
 			!preg_match(
-				'/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
+				'/^[0-9a-f]{8}-?[0-9a-f]{4}-?4[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12}$/i',
 				$params['processor_contact_id']
 			)
 		) {
