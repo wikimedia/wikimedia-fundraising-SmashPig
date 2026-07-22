@@ -108,6 +108,75 @@ class DonationTest extends TestCase {
 		$this->assertFalse( $donation->isDonorAdvisedFundGrant() );
 	}
 
+	/**
+	 * @dataProvider fullNameFundNameProvider
+	 */
+	public function testIgnoresPersonalFieldsWhenFullNameIsFundName(
+		string $fullName,
+		string $fundName
+	): void {
+		$donation = new Donation( [
+			'attribution' => [
+				'primary_donor' => [
+					'full_name' => $fullName,
+					'first_name' => 'Jane',
+					'last_name' => 'Smith',
+					'email' => 'jane@example.org',
+				],
+			],
+			'donor_advised_fund_grant' => [
+				'donor_fund_name' => $fundName,
+			],
+		] );
+
+		$this->assertTrue( $donation->isFullNameFundName() );
+
+		$this->assertSame( '', $donation->getFullName() );
+		$this->assertSame( '', $donation->getFirstName() );
+		$this->assertSame( '', $donation->getLastName() );
+		$this->assertSame( '', $donation->getEmail() );
+	}
+
+	public function fullNameFundNameProvider(): array {
+		return [
+			'exact_match' => [
+				'Acme Charitable Fund',
+				'Acme Charitable Fund',
+			],
+			'fund_suffix' => [
+				'John Smith Fund',
+				'Schwab Charitable',
+			],
+			'account_suffix' => [
+				'John Smith Account',
+				'Fidelity Charitable',
+			],
+		];
+	}
+
+	public function testDoesNotIgnorePersonalFieldsForNormalDonor(): void {
+		$donation = new Donation( [
+			'attribution' => [
+				'primary_donor' => [
+					'full_name' => 'Jane Smith',
+					'first_name' => 'Jane',
+					'last_name' => 'Smith',
+					'email' => 'jane@example.org',
+				],
+			],
+			'donor_advised_fund_grant' => [
+				'donor_fund_name' => 'Acme Charitable Fund',
+			],
+		] );
+
+		$this->assertFalse( $donation->isFullNameFundName() );
+
+		$this->assertSame( 'Jane Smith', $donation->getFullName() );
+		$this->assertSame( 'Jane', $donation->getFirstName() );
+		$this->assertSame( 'Smith', $donation->getLastName() );
+		$this->assertSame( 'jane@example.org', $donation->getEmail() );
+	}
+
 	public function testGetsPlatformName(): void {
 		$donation = new Donation( [
 			'platform' => [

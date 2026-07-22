@@ -222,6 +222,11 @@ class Donation {
 	 * @return string
 	 */
 	private function normalizePersonalField( string $value ): string {
+		if ( $this->isFullNameFundName() ) {
+			// If the full name field has the fund rather than the individual we
+			// can discard all individual details.
+			return '';
+		}
 		$value = trim( $value );
 		if ( $value === '' ) {
 			return '';
@@ -496,6 +501,31 @@ class Donation {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Is the full name actually the name of the Donor Advised Fund.
+	 *
+	 * The full_name should hold the name of the individual donor but chariot data
+	 * hygiene is not always consistent, so we check if the name is actually the
+	 * same as the func name or ends in a 'fundy string' - ' Account' or ' Fund'
+	 * and ignore individual fields if it is.
+	 *
+	 * @return bool
+	 */
+	public function isFullNameFundName(): bool {
+		$name = $this->getValue( 'attribution.primary_donor.full_name' );
+		$donorAdvisedFundName = $this->getDonorAdvisedFundName();
+		if ( !$donorAdvisedFundName || !$name ) {
+			return false;
+		}
+		if ( $name === $donorAdvisedFundName
+		  || str_ends_with( $name, ' Account' ) || str_ends_with( $name, ' Fund' )
+
+		) {
+			return true;
+		}
+		return false;
 	}
 
 }
