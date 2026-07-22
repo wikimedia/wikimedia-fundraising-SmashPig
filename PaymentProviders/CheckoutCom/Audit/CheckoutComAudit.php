@@ -2,10 +2,13 @@
 
 namespace SmashPig\PaymentProviders\CheckoutCom\Audit;
 
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use DateTimeImmutable;
 use OutOfBoundsException;
 use RuntimeException;
 use SmashPig\Core\Logging\Logger;
+use SmashPig\Core\SmashPigException;
 
 class CheckoutComAudit {
 
@@ -65,6 +68,9 @@ class CheckoutComAudit {
 		'Payout Amount',
 	];
 
+	private array $feeRows = [];
+	private array $rows = [];
+
 	/**
 	 * @param string $path
 	 * @return array<int,array<string,mixed>>
@@ -87,47 +93,82 @@ class CheckoutComAudit {
 		}
 
 		while ( $line = fgetcsv( $file, 0, ',', '"', '\\' ) ) {
+
 			try {
-				$this->parseLine( $line );
+				$row = array_combine( $this->columnHeaders, $line );
+				if ( $this->isFeeRow( $row ) ) {
+					$this->feeRows[$row['Reference']][] = $row;
+				} else {
+					$this->rows[] = $row;
+				}
 			} catch ( OutOfBoundsException $ex ) {
 				Logger::error( $ex->getMessage() );
 			}
 		}
 		fclose( $file );
 
+		foreach ( $this->rows as $row ) {
+			$this->parseRow( $row );
+		}
+		$this->appendUnusedFeeRows();
 		$this->appendPayoutTransaction( $path );
 
 		return $this->fileData;
 	}
 
 	/**
-	 * @param array<int,string|null> $line
+	 * @param array<int,string|null> $row
 	 */
-	protected function parseLine( array $line ): void {
-		$row = array_combine( $this->columnHeaders, $line );
+	protected function parseRow( array $row ): void {
 		$type = strtolower( $row['Type'] );
-		$parser = $this->getParser( $row );
+		$feeRows = $this->feeRows[$row['Reference']] ?? [];
+		unset( $this->feeRows[$row['Reference']] );
+		$parser = $this->getParser( $row, $feeRows );
 
-		if ( $type === 'charge' && (float)$row['Gross In Processing Currency'] > 0 ) {
+		if ( $this->isDonationRow( $row ) ) {
 			$transaction = $parser->parseDonation( $row );
 			$this->trackSettlementRounding( $row, $transaction );
 			$this->fileData[] = $transaction;
 			return;
 		}
 
-		if ( in_array( $type, [ 'refund', 'chargeback' ], true ) ) {
+		if ( $this->isRefundRow( $row ) ) {
 			$transaction = $parser->parseRefund( $row, $type );
 			$this->trackSettlementRounding( $row, $transaction );
 			$this->fileData[] = $transaction;
 			return;
 		}
+		if ( $this->isFeeRow( $row ) ) {
+			$transaction = $parser->getFeeTransaction( $row );
+			$this->trackSettlementRounding( $row, $transaction );
+			$this->fileData[] = $transaction;
+			return;
+		}
+		throw new SmashPigException( 'Unknown row type ' . json_encode( $row ) );
+	}
 
-		// Network token, account updater, voids, merchant payout fees,
-		// zero-gross charge rows, and similar settlement-cost rows do not
-		// represent donor payments, but they do affect payout.
-		$transaction = $parser->getFeeTransaction( $row );
-		$this->trackSettlementRounding( $row, $transaction );
-		$this->fileData[] = $transaction;
+	protected function isDonationRow( array $row ): bool {
+		return strtolower( $row['Type'] ?? '' ) === 'charge'
+			&& (float)$row['Gross In Processing Currency'] > 0;
+	}
+
+	protected function isRefundRow( array $row ): bool {
+		return in_array(
+			strtolower( $row['Type'] ?? '' ),
+			[ 'refund', 'chargeback' ],
+			true
+		);
+	}
+
+	/**
+	 * Is this row a fee of some sort.
+	 *
+	 * Network token, account updater, voids, merchant payout fees,
+	 * zero-gross charge rows, and similar settlement-cost rows do not
+	 * represent donor payments, but they do affect payout.
+	 */
+	protected function isFeeRow( array $row ): bool {
+		return !$this->isDonationRow( $row ) && !$this->isRefundRow( $row );
 	}
 
 	/**
@@ -170,20 +211,37 @@ class CheckoutComAudit {
 	 * @param array<string,string|null> $payoutRow
 	 */
 	protected function appendRoundingAdjustmentIfNeeded( array $payoutRow ): void {
-		$expectedPayoutAmount = round( (float)$payoutRow['Payout Amount'], 2 );
-		$actualSettlementAmount = 0.0;
+		$currency = $payoutRow['Holding Currency'];
+		$expectedPayoutAmount = Money::of( $payoutRow['Payout Amount'], $currency, null, RoundingMode::HalfUp );
+		$actualSettlementAmount = Money::zero( $payoutRow['Holding Currency'] );
+		$actualFeeAmount = Money::zero( $currency );
+		$actualTotalAmount = Money::zero( $currency );
 
 		foreach ( $this->fileData as $transaction ) {
-			$actualSettlementAmount += (float)( $transaction['settled_net_amount'] ?? 0 );
+			$actualSettlementAmount = $actualSettlementAmount->plus(
+				Money::of( $transaction['settled_net_amount'], $payoutRow['Holding Currency'] )
+			);
+			$actualFeeAmount = $actualFeeAmount->plus(
+				Money::of( $transaction['settled_fee_amount'], $payoutRow['Holding Currency'] )
+			);
+			$actualTotalAmount = $actualTotalAmount->plus(
+				Money::of( $transaction['settled_total_amount'], $payoutRow['Holding Currency'] )
+			);
+			$check = $actualTotalAmount->plus( $actualFeeAmount )->minus( $actualSettlementAmount );
+			if ( !$check->isEqualTo( Money::zero( $currency ) ) ) {
+				throw new SmashPigException( 'Money addition issue total_amount ' . (string)$actualSettlementAmount->getAmount()
+				  . 'should equal ' . (string)$actualFeeAmount->getAmount() . ' plus ' . (string)$actualTotalAmount->getAmount()
+				);
+			}
 		}
 
-		$adjustment = round( $expectedPayoutAmount - $actualSettlementAmount, 2 );
-		if ( $adjustment === 0.0 ) {
+		$adjustment = $expectedPayoutAmount->minus( $actualSettlementAmount );
+		if ( $adjustment->isEqualTo( 0 ) ) {
 			return;
 		}
 
-		$maximumExpectedAdjustment = self::MAX_ROUNDING_ADJUSTMENT_PER_ROW * $this->roundingRows;
-		if ( abs( $adjustment ) > $maximumExpectedAdjustment ) {
+		$maximumExpectedAdjustment = Money::of( $this->roundingRows, $currency, null, RoundingMode::HalfUp )->multipliedBy( (string)self::MAX_ROUNDING_ADJUSTMENT_PER_ROW, RoundingMode::HalfUp );
+		if ( $adjustment->abs()->isGreaterThan( $maximumExpectedAdjustment ) ) {
 			throw new RuntimeException(
 				"Checkout.com payout rounding adjustment {$adjustment} exceeds expected maximum "
 				. "{$maximumExpectedAdjustment} for {$this->roundingRows} rows"
@@ -194,7 +252,7 @@ class CheckoutComAudit {
 			'Checkout.com adding payout rounding adjustment for payout {payout_id}: adjustment {adjustment}, tracked_rounding {tracked_rounding}, rows {rows}',
 			[
 				'payout_id' => $payoutRow['Payout ID'],
-				'adjustment' => number_format( $adjustment, 2, '.', '' ),
+				'adjustment' => (string)$adjustment->getAmount(),
 				'tracked_rounding' => number_format( $this->roundingAdjustment, 8, '.', '' ),
 				'rows' => $this->roundingRows,
 			]
@@ -211,9 +269,17 @@ class CheckoutComAudit {
 			'settled_date' => $this->getUtcTimestamp( $payoutRow['Payout Date'] ),
 			'settled_currency' => $payoutRow['Holding Currency'],
 			'settled_total_amount' => '0.00',
-			'settled_fee_amount' => number_format( $adjustment, 2, '.', '' ),
-			'settled_net_amount' => number_format( $adjustment, 2, '.', '' ),
+			'settled_fee_amount' => (string)$adjustment->getAmount(),
+			'settled_net_amount' => (string)$adjustment->getAmount(),
 		];
+	}
+
+	protected function appendUnusedFeeRows(): void {
+		foreach ( $this->feeRows as $rows ) {
+			foreach ( $rows as $row ) {
+				$this->parseRow( $row );
+			}
+		}
 	}
 
 	/**
@@ -393,8 +459,8 @@ class CheckoutComAudit {
 		return ( new \DateTimeImmutable( $date, new \DateTimeZone( 'UTC' ) ) )->getTimestamp();
 	}
 
-	private function getParser( array $row ): SettlementBreakdownReport {
-		return new SettlementBreakdownReport( $row );
+	private function getParser( array $row, array $feeRows = [] ): SettlementBreakdownReport {
+		return new SettlementBreakdownReport( $row, $feeRows );
 	}
 
 }
