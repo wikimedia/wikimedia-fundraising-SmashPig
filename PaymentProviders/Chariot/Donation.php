@@ -370,9 +370,11 @@ class Donation {
 	}
 
 	public function getSettledNetAmountRounded( float $exchangeRate, string $settledCurrency ): string {
-		return $this->getConvertedAmountRounded(
-			$this->getOriginalNetAmountInMinorUnits(),
-			$exchangeRate,
+		$net = (float)$this->getSettledTotalAmountRounded( $exchangeRate, $settledCurrency )
+			+ (float)$this->getSettledFeeAmountRounded( $exchangeRate, $settledCurrency );
+
+		return CurrencyRoundingHelper::round(
+			$net,
 			$settledCurrency
 		);
 	}
