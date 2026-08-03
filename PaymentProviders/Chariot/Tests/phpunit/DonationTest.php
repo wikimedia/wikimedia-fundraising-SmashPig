@@ -42,6 +42,30 @@ class DonationTest extends TestCase {
 		];
 	}
 
+	public function testSettledNetAmountReconcilesWithRoundedTotalAndFee(): void {
+		$donation = new Donation( [
+			'amount_gross' => 400,
+			'amount_net' => 392,
+			'amount_fee' => 8,
+			'individual_gift_amount' => 200,
+			'corporate_match' => [
+				'match_amount' => 200,
+			],
+			'currency' => 'CAD',
+		] );
+
+		$exchangeRate = 0.698200;
+
+		$this->assertSame( '2.79', $donation->getSettledTotalAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '-0.06', $donation->getSettledFeeAmountRounded( $exchangeRate, 'USD' ) );
+
+		// Regression test: rounded amounts must reconcile.
+		$this->assertSame(
+			'2.73',
+			$donation->getSettledNetAmountRounded( $exchangeRate, 'USD' )
+		);
+	}
+
 	/**
 	 * @param array $donation
 	 * @param string $expected
@@ -381,7 +405,7 @@ class DonationTest extends TestCase {
 
 		$this->assertSame( '2.84', $donation->getSettledMatchingGiftTotalAmountRounded( $exchangeRate, 'USD' ) );
 		$this->assertSame( '-0.62', $donation->getSettledMatchingGiftFeeAmountRounded( $exchangeRate, 'USD' ) );
-		$this->assertSame( '2.23', $donation->getSettledMatchingGiftNetAmountRounded( $exchangeRate, 'USD' ) );
+		$this->assertSame( '2.22', $donation->getSettledMatchingGiftNetAmountRounded( $exchangeRate, 'USD' ) );
 	}
 
 	/**
