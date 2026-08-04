@@ -53,4 +53,18 @@ class ReversalFieldsTest extends AuditTestBase {
 		$chargeback = $this->findByType( $output, 'chargeback' );
 		$this->assertSame( '9100000003', $chargeback['backend_processor_reversal_id'] );
 	}
+
+	/**
+	 * ACH return codes other than R08/R10 (e.g. R03) are treated as reversals or reversal_reversals, if positive.
+	 */
+	public function testUnhandledRCodeIsTypedAsReversal(): void {
+		$output = $this->processFile( 'P11KFUN-3618-r-code-reversal.csv' );
+
+		$reversal = $this->findByType( $output, 'reversal' );
+		$this->assertSame( '9400131071', $reversal['backend_processor_reversal_id'] );
+
+		$reversed = $this->findByType( $output, 'reversal_reversed' );
+		$this->assertSame( '9400131071', $reversed['backend_processor_txn_id'] );
+		$this->assertArrayNotHasKey( 'backend_processor_reversal_id', $reversed );
+	}
 }
