@@ -80,8 +80,18 @@ class PendingDepositTracker {
 
 	private function writeJsonFile( string $path, array $payload ): void {
 		$json = json_encode( $payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
-		if ( $json === false || file_put_contents( $path, $json . "\n" ) === false ) {
-			throw new \RuntimeException( 'Unable to write pending Chariot deposit file: ' . $path );
+		if ( $json === false ) {
+			throw new \RuntimeException( 'Unable to write Chariot json: ' . $path );
+		}
+
+		$json .= "\n";
+
+		if ( file_exists( $path ) && file_get_contents( $path ) === $json ) {
+			return;
+		}
+
+		if ( file_put_contents( $path, $json ) === false ) {
+			throw new \RuntimeException( 'Unable to write Chariot json file: ' . $path );
 		}
 	}
 
