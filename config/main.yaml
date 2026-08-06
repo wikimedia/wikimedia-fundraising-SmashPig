@@ -27,6 +27,12 @@ data-store:
       -
         <<: *REDIS
 
+  payment-attempts:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+
   pending:
     class: PHPQueue\Backend\Predis
     constructor-parameters:

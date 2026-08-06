@@ -28,6 +28,13 @@ data-store:
         connection_string: 'sqlite::memory:'
         queue: payments_init
 
+  payment-attempts:
+    class: PHPQueue\Backend\PDO
+    constructor-parameters:
+      -
+        connection_string: 'sqlite::memory:'
+        queue: payment_attempts
+
   pending:
     <<: *QUEUE
 
