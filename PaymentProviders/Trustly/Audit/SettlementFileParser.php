@@ -69,8 +69,8 @@ class SettlementFileParser extends BaseParser {
 			$reversalFields['backend_processor_reversal_id'] = $this->row['transaction_id'];
 			if ( $this->isGravy() ) {
 				$reversalFields['gateway_parent_id'] = Base62Helper::toUuid( $this->row['original_merchant_reference'] );
-				// Doesn't seem to be anything better than this, but it's not 100% clear whose it is.
-				$reversalFields['gateway_refund_id'] = $this->row['payment_provider_transaction_id'];
+				// We don't have a gravy ID for this - use the trustly one.
+				$reversalFields['gateway_refund_id'] = $this->row['transaction_id'];
 			} else {
 				$reversalFields['backend_processor_parent_id'] = $this->row['original_transaction_id'];
 			}
