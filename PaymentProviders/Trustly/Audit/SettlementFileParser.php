@@ -50,10 +50,6 @@ class SettlementFileParser extends BaseParser {
 	}
 
 	protected function getGatewayTxnId(): string {
-		if ( $this->isChargeback() || $this->isRefund() ) {
-			// We don't seem to get a gravy transaction ID for these.
-			return $this->row['transaction_id'];
-		}
 		return $this->isGravy() ? Base62Helper::toUuid( $this->row['original_merchant_reference'] ) : $this->row['transaction_id'];
 	}
 
@@ -70,14 +66,13 @@ class SettlementFileParser extends BaseParser {
 		$reversalFields = [];
 		if ( $this->isChargeback() || $this->isRefund() ) {
 			$reversalFields['type'] = $this->isChargeback() ? 'chargeback' : 'refund';
+			$reversalFields['backend_processor_reversal_id'] = $this->row['transaction_id'];
 			if ( $this->isGravy() ) {
 				$reversalFields['gateway_parent_id'] = Base62Helper::toUuid( $this->row['original_merchant_reference'] );
 				// Doesn't seem to be anything better than this, but it's not 100% clear whose it is.
 				$reversalFields['gateway_refund_id'] = $this->row['payment_provider_transaction_id'];
 			} else {
 				$reversalFields['backend_processor_parent_id'] = $this->row['original_transaction_id'];
-				// Doesn't seem to be anything better than this, but it's not 100% clear whose it is.
-				$reversalFields['backend_processor_reversal_id'] = $this->row['payment_provider_transaction_id'];
 			}
 		}
 		return $reversalFields;
