@@ -96,14 +96,24 @@ class SettlementFileParser extends BaseParser {
 	}
 
 	/**
+	 * ACH return codes for which we have dedicated chargeback handling below,
+	 * as opposed to the generic reversal/reversal_reversed handling applied
+	 * to other R codes (see isUnhandledRCode()).
+	 */
+	private const CHARGEBACK_REASON_CODES = [ 'R08', 'R10' ];
+
+	/**
 	 * @return bool
 	 */
 	protected function isChargeback(): bool {
-		if ( $this->row['reason'] === 'R08' && $this->row['amount'] < 0 && $this->row['settlement_batch_transaction_type'] === 'Return' ) {
-			return true;
+		if ( !in_array( $this->row['reason'], self::CHARGEBACK_REASON_CODES, true ) ) {
+			return false;
 		}
-		// Perhaps the same amount check should apply here too?
-		return $this->row['reason'] === 'R10';
+		if ( $this->row['reason'] === 'R08' ) {
+			// Perhaps the same amount check should apply to R10 too?
+			return $this->row['amount'] < 0 && $this->row['settlement_batch_transaction_type'] === 'Return';
+		}
+		return true;
 	}
 
 	/**
@@ -133,7 +143,7 @@ class SettlementFileParser extends BaseParser {
 	 */
 	private function isUnhandledRCode(): bool {
 		return str_starts_with( (string)( $this->row['reason'] ?? '' ), 'R' )
-			&& !$this->isChargeback()
+			&& !in_array( $this->row['reason'], self::CHARGEBACK_REASON_CODES, true )
 			&& !$this->isRefund();
 	}
 
