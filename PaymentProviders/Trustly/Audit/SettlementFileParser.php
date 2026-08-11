@@ -46,14 +46,13 @@ class SettlementFileParser extends BaseParser {
 		if ( !empty( $msg['settled_date'] ) ) {
 			$msg['settled_date'] = strtotime( $msg['settled_date'] );
 		}
+		if ( $this->isReversalReversal() ) {
+			$msg['type'] = 'reversal_reversed';
+		}
 		return array_filter( $msg ) + $this->getReversalFields();
 	}
 
 	protected function getGatewayTxnId(): string {
-		if ( $this->isChargeback() || $this->isRefund() ) {
-			// We don't seem to get a gravy transaction ID for these.
-			return $this->row['transaction_id'];
-		}
 		return $this->isGravy() ? Base62Helper::toUuid( $this->row['original_merchant_reference'] ) : $this->row['transaction_id'];
 	}
 
@@ -68,17 +67,23 @@ class SettlementFileParser extends BaseParser {
 	 */
 	protected function getReversalFields(): array {
 		$reversalFields = [];
-		if ( $this->isChargeback() || $this->isRefund() ) {
-			$reversalFields['type'] = $this->isChargeback() ? 'chargeback' : 'refund';
-			if ( $this->isGravy() ) {
-				$reversalFields['gateway_parent_id'] = Base62Helper::toUuid( $this->row['original_merchant_reference'] );
-				// Doesn't seem to be anything better than this, but it's not 100% clear whose it is.
-				$reversalFields['gateway_refund_id'] = $this->row['payment_provider_transaction_id'];
-			} else {
-				$reversalFields['backend_processor_parent_id'] = $this->row['original_transaction_id'];
-				// Doesn't seem to be anything better than this, but it's not 100% clear whose it is.
-				$reversalFields['backend_processor_reversal_id'] = $this->row['payment_provider_transaction_id'];
-			}
+		if ( !$this->isChargeback() && !$this->isRefund() && !$this->isReversal() ) {
+			return $reversalFields;
+		}
+		if ( $this->isChargeback() ) {
+			$reversalFields['type'] = 'chargeback';
+		} elseif ( $this->isRefund() ) {
+			$reversalFields['type'] = 'refund';
+		} else {
+			$reversalFields['type'] = 'reversal';
+		}
+		$reversalFields['backend_processor_reversal_id'] = $this->row['transaction_id'];
+		if ( $this->isGravy() ) {
+			$reversalFields['gateway_parent_id'] = Base62Helper::toUuid( $this->row['original_merchant_reference'] );
+			// We don't have a gravy ID for this - use the trustly one.
+			$reversalFields['gateway_refund_id'] = $this->row['transaction_id'];
+		} else {
+			$reversalFields['backend_processor_parent_id'] = $this->row['original_transaction_id'];
 		}
 		return $reversalFields;
 	}
@@ -91,14 +96,55 @@ class SettlementFileParser extends BaseParser {
 	}
 
 	/**
+	 * ACH return codes for which we have dedicated chargeback handling below,
+	 * as opposed to the generic reversal/reversal_reversed handling applied
+	 * to other R codes (see isUnhandledRCode()).
+	 */
+	private const CHARGEBACK_REASON_CODES = [ 'R08', 'R10' ];
+
+	/**
 	 * @return bool
 	 */
 	protected function isChargeback(): bool {
-		if ( $this->row['reason'] === 'R08' && $this->row['amount'] < 0 && $this->row['settlement_batch_transaction_type'] === 'Return' ) {
-			return true;
+		if ( !in_array( $this->row['reason'], self::CHARGEBACK_REASON_CODES, true ) ) {
+			return false;
 		}
-		// Perhaps the same amount check should apply here too?
-		return $this->row['reason'] === 'R10';
+		if ( $this->row['reason'] === 'R08' ) {
+			// Perhaps the same amount check should apply to R10 too?
+			return $this->row['amount'] < 0 && $this->row['settlement_batch_transaction_type'] === 'Return';
+		}
+		return true;
+	}
+
+	/**
+	 * Any ACH return code we don't have specific chargeback/refund handling
+	 * for, on its negative (Return) leg. Catches things like R03 (no
+	 * account/unable to locate account) that otherwise fell through as an
+	 * unlabeled settled message with a negative amount.
+	 *
+	 * @return bool
+	 */
+	protected function isReversal(): bool {
+		return $this->isUnhandledRCode() && $this->row['amount'] < 0;
+	}
+
+	/**
+	 * The positive-amount counterpart of isReversal() - the Sale leg of the
+	 * same event, sharing reason code, batch and transaction_id.
+	 *
+	 * @return bool
+	 */
+	protected function isReversalReversal(): bool {
+		return $this->isUnhandledRCode() && $this->row['amount'] >= 0;
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function isUnhandledRCode(): bool {
+		return str_starts_with( (string)( $this->row['reason'] ?? '' ), 'R' )
+			&& !in_array( $this->row['reason'], self::CHARGEBACK_REASON_CODES, true )
+			&& !$this->isRefund();
 	}
 
 }
