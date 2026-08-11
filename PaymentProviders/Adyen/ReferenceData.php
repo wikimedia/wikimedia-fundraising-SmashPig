@@ -33,6 +33,10 @@ class ReferenceData {
 	 *  ],
 	 */
 	protected static array $methods = [
+		'accel' => [
+			'method' => 'cc',
+			'submethod' => 'accel',
+		],
 		'ach' => [
 			'method' => 'dd',
 			'submethod' => 'ach',
