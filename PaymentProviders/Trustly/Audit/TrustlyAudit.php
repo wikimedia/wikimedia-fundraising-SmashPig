@@ -48,8 +48,12 @@ class TrustlyAudit implements AuditParser {
 			$recordType = preg_replace( '/^\xEF\xBB\xBF/', '', $recordType );
 			$line[0] = $recordType;
 
+			if ( $recordType === 'record_type' ) {
+				// Per https://phabricator.wikimedia.org/T434472 this is the norm now.
+				continue;
+			}
 			if ( $recordType === 'H' ) {
-				// Header row - imagine - they could have put headers in it...
+				// Header row (probably only older files now).
 				$numberOfFiles = explode( 'of', $line[6] );
 				// Setting these here for reference as to what data we can get from
 				// them, rather than usefulness.
