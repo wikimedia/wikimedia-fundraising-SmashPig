@@ -78,6 +78,13 @@ data-store:
         connection_string: 'sqlite::memory:'
         queue: recurring_modify
 
+  lead-generation:
+    class: PHPQueue\Backend\PDO
+    constructor-parameters:
+      -
+        connection_string: 'sqlite::memory:'
+        queue: lead_generation
+
   jobs-paypal:
     class: PHPQueue\Backend\PDO
     constructor-parameters:

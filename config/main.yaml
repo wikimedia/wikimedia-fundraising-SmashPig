@@ -112,6 +112,13 @@ data-store:
         <<: *REDIS
         queue: recurring-modify
 
+  lead-generation:
+    class: PHPQueue\Backend\Predis
+    constructor-parameters:
+      -
+        <<: *REDIS
+        queue: lead-generation
+
   jobs-paypal:
     class: PHPQueue\Backend\Predis
     constructor-parameters:
