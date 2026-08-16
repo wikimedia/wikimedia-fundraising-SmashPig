@@ -28,7 +28,7 @@ class SettlementFileParser extends BaseParser {
 		$msg = [
 			'currency' => (string)$this->row['currency'],
 			'gross' => ( (float)$this->row['amount'] ),
-			'gateway' => 'gravy',
+			'gateway' => $this->isGravy() ? 'gravy' : 'trustly',
 			'audit_file_gateway' => 'trustly',
 			'gateway_txn_id' => $this->getGatewayTxnId(),
 			'backend_processor' => 'trustly',
@@ -57,6 +57,9 @@ class SettlementFileParser extends BaseParser {
 	}
 
 	protected function isGravy(): bool {
+		if ( $this->isReversalReversal() ) {
+			return false;
+		}
 		// Checking strlen feels a bit blunt - but it all does.
 		// Some refunds seem to bypass gravy. There is precedent for this in the Adyen code.
 		return !empty( $this->row['original_merchant_reference'] && strlen( $this->row['original_merchant_reference'] ) < 64 );
