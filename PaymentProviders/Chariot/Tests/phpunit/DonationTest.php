@@ -153,7 +153,7 @@ class DonationTest extends TestCase {
 			],
 		] );
 
-		$this->assertTrue( $donation->isFullNameFundName() );
+		$this->assertTrue( $donation->isFullNameFundOrFamilyName() );
 
 		$this->assertSame( '', $donation->getFullName() );
 		$this->assertSame( '', $donation->getFirstName() );
@@ -175,6 +175,10 @@ class DonationTest extends TestCase {
 				'John Smith Account',
 				'Fidelity Charitable',
 			],
+			'family_suffix' => [
+				'John Smith Family',
+				'Fidelity Charitable',
+			],
 		];
 	}
 
@@ -193,7 +197,7 @@ class DonationTest extends TestCase {
 			],
 		] );
 
-		$this->assertFalse( $donation->isFullNameFundName() );
+		$this->assertFalse( $donation->isFullNameFundOrFamilyName() );
 
 		$this->assertSame( 'Jane Smith', $donation->getFullName() );
 		$this->assertSame( 'Jane', $donation->getFirstName() );
