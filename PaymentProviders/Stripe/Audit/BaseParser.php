@@ -4,6 +4,7 @@ namespace SmashPig\PaymentProviders\Stripe\Audit;
 
 use SmashPig\Core\Helpers\Base62Helper;
 use SmashPig\Core\UtcDate;
+use SmashPig\PaymentProviders\Stripe\ReferenceData;
 
 // Shared parser logic for Stripe settlement and activity files.
 // Stripe field references:
@@ -84,7 +85,7 @@ abstract class BaseParser {
 			'order_id' => $this->getOrderId(),
 			'contribution_tracking_id' => $this->getContributionTrackingId(),
 			'backend_processor_txn_id' => $this->getBackendProcessorTxnId(),
-			'payment_method' => $this->row['payment_method_type'] ?: null,
+			'payment_method' => $this->getPaymentMethod(),
 		] + $this->getOriginalCurrencyFields() + $this->getSettlementFields() + $this->getGravyFields() + $this->getContactFields();
 
 		if ( $type === 'refund' || $type === 'chargeback' ) {
@@ -106,6 +107,22 @@ abstract class BaseParser {
 	 */
 	protected function getGravyFields(): array {
 		return [ 'payment_orchestrator_reconciliation_id' => $this->getPaymentOrchestratorReconciliationID() ];
+	}
+
+	/**
+	 * Decode Stripe's payment_method_type via ReferenceData, matching the
+	 * pattern used by the other gateways' ReferenceData classes (e.g.
+	 * PaymentProviders/Adyen/ReferenceData.php::decodePaymentMethod()).
+	 *
+	 * @return string|null
+	 */
+	protected function getPaymentMethod(): ?string {
+		$paymentMethodType = (string)( $this->row['payment_method_type'] ?? '' );
+		if ( $paymentMethodType === '' ) {
+			return null;
+		}
+		[ $paymentMethod ] = ReferenceData::decodePaymentMethod( $paymentMethodType );
+		return $paymentMethod;
 	}
 
 	/**

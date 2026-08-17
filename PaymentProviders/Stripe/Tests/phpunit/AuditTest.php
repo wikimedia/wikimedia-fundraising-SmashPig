@@ -104,7 +104,10 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 
 		// The Giving Basket transfer has no per-donor billing details, so
 		// it is flagged with the sending organization's name, and its
+		// Stripe Connect payment_method_type is mapped to the canonical
+		// PaymentMethod::STRIPE value.
 		$this->assertSame( 'Give Lively', $output[1]['organization_name'] );
+		$this->assertSame( 'stripe', $output[1]['payment_method'] );
 	}
 
 	public function testParsePaymentsActivityCsv(): void {
