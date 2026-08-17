@@ -132,7 +132,30 @@ abstract class BaseParser {
 			'state_province' => (string)( $this->row['customer_address_state'] ?? '' ),
 			'postal_code' => (string)( $this->row['customer_address_postal_code'] ?? '' ),
 			'country' => (string)( $this->row['customer_address_country'] ?? '' ),
-		] );
+		] + $this->getOrganizationFields() );
+	}
+
+	/**
+	 * Give Lively's "Giving Basket" feature aggregates many small gifts into
+	 * a single Stripe Connect transfer per charity (source_id prefixed py_,
+	 * see GetReport.php's getSourceData). Those transfers have no per-donor
+	 * billing details at all, so instead we surface the sending
+	 * organization's name for the CRM layer to link the gift to a known
+	 * organization contact rather than creating a blank individual.
+	 *
+	 * Note: "Give Lively" alone is not a safe signal - ordinary card
+	 * donations processed through their platform also carry descriptions
+	 * like "Give Lively / Smart Donations" and do have full billing
+	 * details, so only the specific "Giving Basket" phrase is matched.
+	 *
+	 * @return array
+	 */
+	protected function getOrganizationFields(): array {
+		$description = (string)( $this->row['description'] ?? '' );
+		if ( stripos( $description, 'Giving Basket' ) === false ) {
+			return [];
+		}
+		return [ 'organization_name' => 'Give Lively' ];
 	}
 
 	/**

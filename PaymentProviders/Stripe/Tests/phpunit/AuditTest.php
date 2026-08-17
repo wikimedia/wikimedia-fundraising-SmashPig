@@ -89,6 +89,24 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertSame( 'cher@example.com', $output[1]['email'] );
 	}
 
+	public function testParseGivingBasketCsv(): void {
+		$processor = new StripeAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_report_giving_basket.csv' );
+
+		$this->assertCount( 2, $output );
+
+		// An ordinary card donation processed via Give Lively's platform is
+		// not the Giving Basket bundle - it has full customer data and
+		// should not be flagged as an organization gift.
+		$this->assertArrayNotHasKey( 'organization_name', $output[0] );
+		$this->assertSame( 'Homer Simpson', $output[0]['full_name'] );
+		$this->assertSame( 'card', $output[0]['payment_method'] );
+
+		// The Giving Basket transfer has no per-donor billing details, so
+		// it is flagged with the sending organization's name, and its
+		$this->assertSame( 'Give Lively', $output[1]['organization_name'] );
+	}
+
 	public function testParsePaymentsActivityCsv(): void {
 		$processor = new StripeAudit();
 		$output = $processor->parseFile( __DIR__ . '/../Data/payments_activity.csv' );
