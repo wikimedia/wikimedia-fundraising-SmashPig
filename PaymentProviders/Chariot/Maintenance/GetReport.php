@@ -361,7 +361,7 @@ class GetReport extends MaintenanceBase {
 			throw new \RuntimeException( 'Unable to open deposit audit CSV file for writing.' );
 		}
 
-		fputcsv( $handle, self::AUDIT_CSV_COLUMNS );
+		fputcsv( $handle, self::AUDIT_CSV_COLUMNS, ",", '"', "\\" );
 		foreach ( $rows as $row ) {
 			foreach ( self::AUDIT_CSV_COLUMNS as $column ) {
 				if ( isset( $row[$column] ) && is_array( $row[$column] ) ) {
@@ -377,7 +377,10 @@ class GetReport extends MaintenanceBase {
 				array_map(
 					static fn ( string $column ) => $row[$column] ?? '',
 					self::AUDIT_CSV_COLUMNS
-				)
+				),
+				",",
+				'"',
+				"\\"
 			);
 		}
 

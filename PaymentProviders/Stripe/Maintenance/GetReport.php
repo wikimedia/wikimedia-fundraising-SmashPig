@@ -573,7 +573,7 @@ class GetReport extends MaintenanceBase {
 		$headers = str_getcsv( $lines[0], ',', '"', "\\" );
 		$row = $this->buildSyntheticPayoutRow( $payout, $headers );
 		$handle = fopen( 'php://temp', 'r+' );
-		fputcsv( $handle, array_map( static fn ( string $header ) => $row[$header] ?? '', $headers ) );
+		fputcsv( $handle, array_map( static fn ( string $header ) => $row[$header] ?? '', $headers ), ",", '"', "\\" );
 		rewind( $handle );
 		$payoutCsvRow = stream_get_contents( $handle );
 		fclose( $handle );
@@ -615,9 +615,9 @@ class GetReport extends MaintenanceBase {
 
 	private function rowsToCsv( array $headers, array $rows ): string {
 		$handle = fopen( 'php://temp', 'r+' );
-		fputcsv( $handle, $headers );
+		fputcsv( $handle, $headers, ",", '"', "\\" );
 		foreach ( $rows as $row ) {
-			fputcsv( $handle, array_map( static fn ( string $header ) => $row[$header] ?? '', $headers ) );
+			fputcsv( $handle, array_map( static fn ( string $header ) => $row[$header] ?? '', $headers ), ",", '"', "\\" );
 		}
 		rewind( $handle );
 		$contents = (string)stream_get_contents( $handle );
@@ -645,7 +645,7 @@ class GetReport extends MaintenanceBase {
 		foreach ( $lines as $index => $line ) {
 			$row = str_getcsv( $line, ',', '"', "\\" );
 			$row[] = $index === 0 ? 'gateway_account' : $gatewayAccount;
-			fputcsv( $handle, $row );
+			fputcsv( $handle, $row, ",", '"', "\\" );
 		}
 
 		rewind( $handle );
