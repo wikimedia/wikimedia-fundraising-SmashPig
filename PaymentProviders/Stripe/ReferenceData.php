@@ -1,7 +1,5 @@
 <?php namespace SmashPig\PaymentProviders\Stripe;
 
-use SmashPig\PaymentData\PaymentMethod;
-
 class ReferenceData {
 
 	/**
@@ -23,7 +21,7 @@ class ReferenceData {
 		// Give Lively's "Giving Basket" feature sends a Stripe Connect
 		// transfer (stripe_account) rather than a card charge.
 		'stripe_account' => [
-			'method' => PaymentMethod::STRIPE,
+			'method' => 'cc',
 			'submethod' => '',
 		],
 	];

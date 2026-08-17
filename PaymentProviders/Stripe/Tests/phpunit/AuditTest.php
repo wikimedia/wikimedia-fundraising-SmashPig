@@ -107,7 +107,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		// Stripe Connect payment_method_type is mapped to the canonical
 		// PaymentMethod::STRIPE value.
 		$this->assertSame( 'Give Lively', $output[1]['organization_name'] );
-		$this->assertSame( 'stripe', $output[1]['payment_method'] );
+		$this->assertSame( 'cc', $output[1]['payment_method'] );
 	}
 
 	public function testParsePaymentsActivityCsv(): void {
