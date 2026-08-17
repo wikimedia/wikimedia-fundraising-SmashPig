@@ -60,6 +60,33 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		$this->assertSame( 'fee', $output[4]['type'] );
 		$this->assertSame( 'chargeback_reversed', $output[5]['type'] );
 		$this->assertSame( 'payout', $output[6]['type'] );
+
+		// customer_* columns are absent from this fixture, so no contact
+		// fields should be bubbled up.
+		$this->assertArrayNotHasKey( 'email', $output[0] );
+		$this->assertArrayNotHasKey( 'full_name', $output[0] );
+	}
+
+	public function testParseSettlementReportWithCustomerDataCsv(): void {
+		$processor = new StripeAudit();
+		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_report_with_customer_data.csv' );
+
+		$this->assertCount( 3, $output );
+
+		// Full name splits into first/last, and the address fields bubble up.
+		$this->assertSame( 'Homer Simpson', $output[0]['full_name'] );
+		$this->assertSame( 'homer@example.com', $output[0]['email'] );
+		$this->assertSame( '555-1234', $output[0]['phone'] );
+		$this->assertSame( '742 Evergreen Terrace', $output[0]['street_address'] );
+		$this->assertSame( 'Apt 2', $output[0]['supplemental_address_1'] );
+		$this->assertSame( 'Springfield', $output[0]['city'] );
+		$this->assertSame( 'IL', $output[0]['state_province'] );
+		$this->assertSame( '62701', $output[0]['postal_code'] );
+		$this->assertSame( 'US', $output[0]['country'] );
+
+		// A single-word name has no last name.
+		$this->assertSame( 'Cher', $output[1]['full_name'] );
+		$this->assertSame( 'cher@example.com', $output[1]['email'] );
 	}
 
 	public function testParsePaymentsActivityCsv(): void {

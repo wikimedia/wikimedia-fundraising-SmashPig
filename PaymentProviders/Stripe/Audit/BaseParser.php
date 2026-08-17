@@ -85,7 +85,7 @@ abstract class BaseParser {
 			'contribution_tracking_id' => $this->getContributionTrackingId(),
 			'backend_processor_txn_id' => $this->getBackendProcessorTxnId(),
 			'payment_method' => $this->row['payment_method_type'] ?: null,
-		] + $this->getOriginalCurrencyFields() + $this->getSettlementFields() + $this->getGravyFields();
+		] + $this->getOriginalCurrencyFields() + $this->getSettlementFields() + $this->getGravyFields() + $this->getContactFields();
 
 		if ( $type === 'refund' || $type === 'chargeback' ) {
 			$msg['gateway_parent_id'] = $this->row['payment_intent_id'];
@@ -106,6 +106,33 @@ abstract class BaseParser {
 	 */
 	protected function getGravyFields(): array {
 		return [ 'payment_orchestrator_reconciliation_id' => $this->getPaymentOrchestratorReconciliationID() ];
+	}
+
+	/**
+	 * Bubble up the customer_* columns added by GetReport.php's
+	 * --include-customer-data option, if present in the CSV. Older audit
+	 * files, and report types the flag doesn't apply to, won't have these
+	 * columns, so we only add the normalized fields when the source data
+	 * is there.
+	 *
+	 * @return array
+	 */
+	protected function getContactFields(): array {
+		if ( !isset( $this->row['customer_name'] ) && !isset( $this->row['customer_email'] ) ) {
+			return [];
+		}
+
+		return array_filter( [
+			'full_name' => (string)$this->row['customer_name'],
+			'email' => (string)( $this->row['customer_email'] ?? '' ),
+			'phone' => (string)( $this->row['customer_phone'] ?? '' ),
+			'street_address' => (string)( $this->row['customer_address_line1'] ?? '' ),
+			'supplemental_address_1' => (string)( $this->row['customer_address_line2'] ?? '' ),
+			'city' => (string)( $this->row['customer_address_city'] ?? '' ),
+			'state_province' => (string)( $this->row['customer_address_state'] ?? '' ),
+			'postal_code' => (string)( $this->row['customer_address_postal_code'] ?? '' ),
+			'country' => (string)( $this->row['customer_address_country'] ?? '' ),
+		] );
 	}
 
 	/**
