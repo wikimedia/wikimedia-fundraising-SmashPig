@@ -67,4 +67,22 @@ class ReversalFieldsTest extends AuditTestBase {
 		$this->assertSame( '9400131071', $reversed['backend_processor_txn_id'] );
 		$this->assertArrayNotHasKey( 'backend_processor_reversal_id', $reversed );
 	}
+
+	/**
+	 * The reversal_reversed Sale leg should report gateway 'trustly' - that's
+	 * what isGravy()'s early return exists for (T434916). But an AC118 refund
+	 * with a long (hashed) original_merchant_reference also fails isGravy()
+	 * for an unrelated reason, and must still report gateway 'gravy': CRM-side
+	 * matching (AuditMessage::getExistingContribution()) only tries the
+	 * backend_processor_txn_id fallback lookup when the raw gateway is
+	 * 'gravy', which is how these refunds - lacking a real gravy gateway_txn_id
+	 * match - get linked to their parent contribution at all.
+	 */
+	public function testRefundWithLongMerchantReferenceKeepsGravyGateway(): void {
+		$output = $this->processFile( 'P11KFUN-3618-refund-long-merchant-reference.csv' );
+		$refund = $this->findByType( $output, 'refund' );
+
+		$this->assertSame( 'gravy', $refund['gateway'] );
+		$this->assertSame( '9500000000', $refund['backend_processor_parent_id'] );
+	}
 }

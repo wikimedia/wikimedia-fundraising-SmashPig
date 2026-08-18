@@ -28,7 +28,12 @@ class SettlementFileParser extends BaseParser {
 		$msg = [
 			'currency' => (string)$this->row['currency'],
 			'gross' => ( (float)$this->row['amount'] ),
-			'gateway' => $this->isGravy() ? 'gravy' : 'trustly',
+			// Only the reversal_reversed Sale leg should report gateway 'trustly' -
+			// gravy 'trustly' refunds also fail isGravy() (long merchant reference)
+			// but CRM-side matching (AuditMessage::getExistingContribution()) relies
+			// on gateway staying 'gravy' for those, falling back to backend_processor
+			// fields to find the parent. See T434916.
+			'gateway' => $this->isReversalReversal() ? 'trustly' : 'gravy',
 			'audit_file_gateway' => 'trustly',
 			'gateway_txn_id' => $this->getGatewayTxnId(),
 			'backend_processor' => 'trustly',
