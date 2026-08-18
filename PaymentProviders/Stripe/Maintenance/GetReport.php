@@ -809,6 +809,13 @@ class GetReport extends MaintenanceBase {
 	}
 
 	private function getFromConfig( string $path, mixed $default = null ): mixed {
+		if ( !$this->config->has( $path ) ) {
+			// Configuration::get()/val() throws rather than returning null for a
+			// key that isn't declared at all - not every config key we might look
+			// up here (e.g. include-customer-data) is expected to exist in every
+			// deployment's config file.
+			return $default;
+		}
 		return $this->config->get( $path ) ?: $default;
 	}
 
