@@ -222,7 +222,7 @@ class Donation {
 	 * @return string
 	 */
 	private function normalizePersonalField( string $value ): string {
-		if ( $this->isFullNameFundName() ) {
+		if ( $this->isFullNameFundOrFamilyName() ) {
 			// If the full name field has the fund rather than the individual we
 			// can discard all individual details.
 			return '';
@@ -515,7 +515,7 @@ class Donation {
 	 *
 	 * @return bool
 	 */
-	public function isFullNameFundName(): bool {
+	public function isFullNameFundOrFamilyName(): bool {
 		$name = $this->getValue( 'attribution.primary_donor.full_name' );
 		$donorAdvisedFundName = $this->getDonorAdvisedFundName();
 		if ( !$donorAdvisedFundName || !$name ) {
@@ -523,7 +523,7 @@ class Donation {
 		}
 		if ( $name === $donorAdvisedFundName
 		  || str_ends_with( $name, ' Account' ) || str_ends_with( $name, ' Fund' )
-
+			|| str_ends_with( $name, ' Family' )
 		) {
 			return true;
 		}
