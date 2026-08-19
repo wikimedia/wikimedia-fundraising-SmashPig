@@ -28,12 +28,15 @@ class SettlementFileParser extends BaseParser {
 		$msg = [
 			'currency' => (string)$this->row['currency'],
 			'gross' => ( (float)$this->row['amount'] ),
-			// Only the reversal_reversed Sale leg should report gateway 'trustly' -
-			// gravy 'trustly' refunds also fail isGravy() (long merchant reference)
-			// but CRM-side matching (AuditMessage::getExistingContribution()) relies
-			// on gateway staying 'gravy' for those, falling back to backend_processor
-			// fields to find the parent. See T434916.
-			'gateway' => $this->isReversalReversal() ? 'trustly' : 'gravy',
+			// Both legs of an unhandled R-code event (e.g. R03) are a pure Trustly
+			// ACH bank return, not a gravy transaction - even though the Return leg
+			// often has a short original_merchant_reference that would otherwise
+			// pass isGravy()'s heuristic. AC118 refunds with a long (hashed)
+			// original_merchant_reference also fail isGravy(), for an unrelated
+			// reason, but CRM-side matching (AuditMessage::getExistingContribution())
+			// relies on gateway staying 'gravy' for those, falling back to
+			// backend_processor fields to find the parent. See T434916.
+			'gateway' => ( $this->isReversalReversal() || $this->isReversal() ) ? 'trustly' : 'gravy',
 			'audit_file_gateway' => 'trustly',
 			'gateway_txn_id' => $this->getGatewayTxnId(),
 			'backend_processor' => 'trustly',
@@ -62,7 +65,7 @@ class SettlementFileParser extends BaseParser {
 	}
 
 	protected function isGravy(): bool {
-		if ( $this->isReversalReversal() ) {
+		if ( $this->isReversalReversal() || $this->isReversal() ) {
 			return false;
 		}
 		// Checking strlen feels a bit blunt - but it all does.

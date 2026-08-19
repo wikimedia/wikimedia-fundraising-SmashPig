@@ -85,4 +85,26 @@ class ReversalFieldsTest extends AuditTestBase {
 		$this->assertSame( 'gravy', $refund['gateway'] );
 		$this->assertSame( '9500000000', $refund['backend_processor_parent_id'] );
 	}
+
+	/**
+	 * Both legs of an unhandled R-code event (e.g. R03) are a pure Trustly ACH
+	 * bank return, not a gravy transaction. The Return leg's
+	 * original_merchant_reference is often short, which would otherwise pass
+	 * isGravy()'s heuristic and (wrongly) report gateway 'gravy' with a
+	 * fabricated gateway_parent_id/gateway_refund_id - causing CRM-side
+	 * matching to find the wrong (original) contribution instead of an
+	 * already-recorded reversal that only carries a backend_processor
+	 * identifier. See T434916.
+	 */
+	public function testRCodeReversalReportsTrustlyGatewayOnBothLegs(): void {
+		$output = $this->processFile( 'P11KFUN-3618-r-code-reversal.csv' );
+
+		$reversal = $this->findByType( $output, 'reversal' );
+		$this->assertSame( 'trustly', $reversal['gateway'] );
+		$this->assertSame( '9400130000', $reversal['backend_processor_parent_id'] );
+		$this->assertArrayNotHasKey( 'gateway_parent_id', $reversal );
+
+		$reversed = $this->findByType( $output, 'reversal_reversed' );
+		$this->assertSame( 'trustly', $reversed['gateway'] );
+	}
 }
