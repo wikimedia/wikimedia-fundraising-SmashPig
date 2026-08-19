@@ -804,7 +804,7 @@ class GetReport extends MaintenanceBase {
 		return $value;
 	}
 
-	public function getPaymentMethod( Deposit $deposit, ?Donation $donationObject ): string {
+	public function getPaymentMethod( Deposit $deposit, ?Donation $donationObject = null ): string {
 		if ( $donationObject && $donationObject->getDafPayUrl() ) {
 			return 'DAFpay';
 		}
