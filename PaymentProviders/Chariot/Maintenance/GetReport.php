@@ -430,7 +430,7 @@ class GetReport extends MaintenanceBase {
 	private function flattenDonationForAuditCsv( Deposit $depositObject, Donation $donationObject, array $donation, float $exchangeRate ): array {
 		$properties = $donation['properties'] ?? [];
 		$settledCurrency = $depositObject->getCurrency();
-		$paymentMethod = $this->getPaymentMethod( $depositObject, $donation );
+		$paymentMethod = $this->getPaymentMethod( $depositObject, $donationObject );
 
 		return [
 			'gateway' => 'Chariot Disbursements',
@@ -804,8 +804,8 @@ class GetReport extends MaintenanceBase {
 		return $value;
 	}
 
-	public function getPaymentMethod( Deposit $deposit, array $donation = [] ): string {
-		if ( !empty( $donation['dafpay_url'] ) ) {
+	public function getPaymentMethod( Deposit $deposit, ?Donation $donationObject ): string {
+		if ( $donationObject && $donationObject->getDafPayUrl() ) {
 			return 'DAFpay';
 		}
 		return $deposit->getPaymentMethod();
