@@ -276,7 +276,25 @@ class ResponseMapper {
 
 		$this->mapPaymentResponsePaymentService( $result, $response );
 
+		if ( ( $response['payment_source'] ?? null ) === 'moto' ) {
+			$this->mapPaymentResponseMotoDetails( $result, $response );
+		}
+
 		return $result;
+	}
+
+	/**
+	 * Maps the metadata that comes with a moto transaction.
+	 *
+	 * Moto = mail order / telephone order: staff key these in from a mailed form or a phone call.
+	 *
+	 * @param array &$result
+	 * @param array $response
+	 * @return void
+	 */
+	protected function mapPaymentResponseMotoDetails( array &$result, array $response ): void {
+		$result['is_moto'] = true;
+		$result['moto_metadata'] = $response['metadata'] ?? [];
 	}
 
 	/**

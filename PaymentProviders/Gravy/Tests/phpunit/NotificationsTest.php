@@ -94,6 +94,26 @@ class NotificationsTest extends BaseGravyTestCase {
 		$this->assertTrue( $result );
 	}
 
+	public function testMotoCapturedTransactionMessage(): void {
+		[ $request, $response ] = $this->getValidRequestResponseObjects();
+		$message = json_decode( file_get_contents( __DIR__ . '/../Data/moto-transaction-capture-message.json' ), true );
+		$request->method( 'getRawRequest' )->willReturn( json_encode( $message ) );
+		$this->mockApi->expects( $this->never() )
+			->method( 'getTransaction' );
+		$result = $this->gravyListener->execute( $request, $response );
+		$queued_message = $this->jobsGravyQueue->pop();
+		$this->assertEquals( RecordCaptureJob::class, $queued_message['class'] );
+		$payload = array_merge(
+				[
+					"eventDate" => $message["created_at"]
+				], ( new ResponseMapper() )->mapFromPaymentResponse( $message['target'] )
+			);
+		$this->assertSame( $payload, $queued_message['payload'] );
+		$this->assertTrue( $queued_message['payload']['is_moto'] );
+		$this->assertSame( $message['target']['metadata'], $queued_message['payload']['moto_metadata'] );
+		$this->assertTrue( $result );
+	}
+
 	public function testAuthorizedTransactionMessage(): void {
 		$providerConfig = Context::get()->getProviderConfiguration();
 		$providerConfig->override(

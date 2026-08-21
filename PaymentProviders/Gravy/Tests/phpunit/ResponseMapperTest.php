@@ -32,6 +32,36 @@ class ResponseMapperTest extends BaseGravyTestCase {
 		$this->assertEquals( 'insufficient_funds', $result['description'] );
 	}
 
+	public function testMapMotoTransactionSetsMotoFields() {
+		$rawResponse = $this->loadTestData( 'moto-transaction-capture-message.json' )['target'];
+		$mapper = new ResponseMapper();
+		$result = $mapper->mapFromPaymentResponse( $rawResponse );
+
+		$this->assertTrue( $result['is_moto'] );
+		$this->assertSame( $rawResponse['metadata'], $result['moto_metadata'] );
+	}
+
+	public function testMapNonMotoTransactionDoesNotSetMotoFields() {
+		// This transaction carries metadata of its own, which should be left alone
+		// because it is not a moto gift.
+		$rawResponse = $this->loadTestData( 'successful-transaction-capture-message.json' )['target'];
+		$mapper = new ResponseMapper();
+		$result = $mapper->mapFromPaymentResponse( $rawResponse );
+
+		$this->assertArrayNotHasKey( 'is_moto', $result );
+		$this->assertArrayNotHasKey( 'moto_metadata', $result );
+	}
+
+	public function testMapMotoTransactionWithoutMetadata() {
+		$rawResponse = $this->loadTestData( 'moto-transaction-capture-message.json' )['target'];
+		unset( $rawResponse['metadata'] );
+		$mapper = new ResponseMapper();
+		$result = $mapper->mapFromPaymentResponse( $rawResponse );
+
+		$this->assertTrue( $result['is_moto'] );
+		$this->assertSame( [], $result['moto_metadata'] );
+	}
+
 	/**
 	 * Helper method to load JSON test data
 	 */
