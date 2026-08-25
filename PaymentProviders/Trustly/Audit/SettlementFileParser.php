@@ -68,9 +68,26 @@ class SettlementFileParser extends BaseParser {
 		if ( $this->isReversalReversal() || $this->isReversal() ) {
 			return false;
 		}
-		// Checking strlen feels a bit blunt - but it all does.
-		// Some refunds seem to bypass gravy. There is precedent for this in the Adyen code.
-		return !empty( $this->row['original_merchant_reference'] && strlen( $this->row['original_merchant_reference'] ) < 64 );
+		return $this->hasDecodableGravyReference();
+	}
+
+	/**
+	 * Does original_merchant_reference actually decode to a valid UUID, as
+	 * opposed to e.g. the ~64 char hex hash some AC118 refunds carry instead
+	 * (see commit a51dc3da)? Checking real decodability rather than a length
+	 * cutoff.
+	 */
+	protected function hasDecodableGravyReference(): bool {
+		$reference = $this->row['original_merchant_reference'] ?? '';
+		if ( $reference === '' ) {
+			return false;
+		}
+		try {
+			$hex = str_pad( Base62Helper::toHex( $reference ), 32, '0', STR_PAD_LEFT );
+		} catch ( \InvalidArgumentException $e ) {
+			return false;
+		}
+		return Base62Helper::isValidHexUuid( $hex );
 	}
 
 	/**
