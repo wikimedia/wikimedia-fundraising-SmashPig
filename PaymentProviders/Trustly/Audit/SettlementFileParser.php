@@ -36,7 +36,7 @@ class SettlementFileParser extends BaseParser {
 			'date' => strtotime( $this->row['created_at'] ),
 			// Arguably the trace_id makes sense here
 			'settlement_batch_reference' => $this->row['batch_id'] ?? null,
-			'payment_orchestrator_reconciliation_id' => $this->isGravy() ? $this->row['original_merchant_reference'] : null,
+			'payment_orchestrator_reconciliation_id' => $this->getPaymentOrchestratorReconciliationId(),
 			'settled_date' => $this->row['processed_at'] ?? null,
 			'settled_fee_amount' => CurrencyRoundingHelper::round( ( $this->row['fee'] ?? null ) ? (float)$this->row['fee'] : 0, $this->row['currency'] ),
 			'settled_net_amount' => CurrencyRoundingHelper::round( ( $this->row['amount'] ?? 0 ) + ( ( $this->row['fee'] ?? null ) ? (float)$this->row['fee'] : 0 ), $this->row['currency'] ),
@@ -80,6 +80,10 @@ class SettlementFileParser extends BaseParser {
 
 	protected function getGatewayTxnId(): string {
 		return $this->isGravy() ? Base62Helper::toUuid( $this->row['original_merchant_reference'] ) : $this->row['transaction_id'];
+	}
+
+	protected function getPaymentOrchestratorReconciliationId(): ?string {
+		return $this->isGravy() ? $this->row['original_merchant_reference'] : null;
 	}
 
 	protected function isGravy(): bool {
