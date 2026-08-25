@@ -46,12 +46,12 @@ class ReversalFieldsTest extends AuditTestBase {
 	}
 
 	/**
-	 * Test that our backend processor identifier bubbles up.
+	 * Chargebacks use trace_id, not transaction_id, for backend_processor_reversal_id.
 	 */
 	public function testChargebackRefundHasBackendProcessorReversal(): void {
 		$output = $this->processFile( 'P11KFUN-3618-recurring-series-collision.csv' );
 		$chargeback = $this->findByType( $output, 'chargeback' );
-		$this->assertSame( '9100000003', $chargeback['backend_processor_reversal_id'] );
+		$this->assertSame( 'T2', $chargeback['backend_processor_reversal_id'] );
 	}
 
 	/**
@@ -61,7 +61,7 @@ class ReversalFieldsTest extends AuditTestBase {
 		$output = $this->processFile( 'P11KFUN-3618-r-code-reversal.csv' );
 
 		$reversal = $this->findByType( $output, 'reversal' );
-		$this->assertSame( '9400131071', $reversal['backend_processor_reversal_id'] );
+		$this->assertSame( 'T5', $reversal['backend_processor_reversal_id'] );
 
 		$reversed = $this->findByType( $output, 'reversal_reversed' );
 		$this->assertSame( '9400131071', $reversed['backend_processor_txn_id'] );

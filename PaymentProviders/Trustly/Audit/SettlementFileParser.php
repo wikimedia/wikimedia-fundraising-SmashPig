@@ -110,6 +110,18 @@ class SettlementFileParser extends BaseParser {
 	}
 
 	/**
+	 * Get the id that uniquely identifies the reversal.
+	 *
+	 * For chargebacks, trace_id is unique to the reversal whereas
+	 * transaction_id is shared with the original transaction it reverses.
+	 * Refunds are the exception - transaction_id is stable and unique for
+	 * those, and it's what the IPN uses to identify them.
+	 */
+	protected function getBackendProcessorReversalId(): string {
+		return $this->isRefund() ? $this->row['transaction_id'] : $this->row['trace_id'];
+	}
+
+	/**
 	 * @return array
 	 */
 	protected function getReversalFields(): array {
@@ -124,7 +136,7 @@ class SettlementFileParser extends BaseParser {
 		} else {
 			$reversalFields['type'] = 'reversal';
 		}
-		$reversalFields['backend_processor_reversal_id'] = $this->row['transaction_id'];
+		$reversalFields['backend_processor_reversal_id'] = $this->getBackendProcessorReversalId();
 		if ( $this->isGravy() ) {
 			$reversalFields['gateway_parent_id'] = Base62Helper::toUuid( $this->row['original_merchant_reference'] );
 			// We don't have a gravy ID for this - use the trustly one.
