@@ -46,9 +46,6 @@ class SettlementFileParser extends BaseParser {
 		if ( !empty( $msg['settled_date'] ) ) {
 			$msg['settled_date'] = strtotime( $msg['settled_date'] );
 		}
-		if ( $this->isReversalReversal() ) {
-			$msg['type'] = 'reversal_reversed';
-		}
 		return array_filter( $msg ) + $this->getReversalFields();
 	}
 
@@ -126,16 +123,10 @@ class SettlementFileParser extends BaseParser {
 	 */
 	protected function getReversalFields(): array {
 		$reversalFields = [];
-		if ( !$this->isChargeback() && !$this->isRefund() && !$this->isReversal() ) {
+		if ( !$this->isChargeback() && !$this->isRefund() ) {
 			return $reversalFields;
 		}
-		if ( $this->isChargeback() ) {
-			$reversalFields['type'] = 'chargeback';
-		} elseif ( $this->isRefund() ) {
-			$reversalFields['type'] = 'refund';
-		} else {
-			$reversalFields['type'] = 'reversal';
-		}
+		$reversalFields['type'] = $this->isChargeback() ? 'chargeback' : 'refund';
 		$reversalFields['backend_processor_reversal_id'] = $this->getBackendProcessorReversalId();
 		if ( $this->isGravy() ) {
 			$reversalFields['gateway_parent_id'] = Base62Helper::toUuid( $this->row['original_merchant_reference'] );
@@ -155,55 +146,17 @@ class SettlementFileParser extends BaseParser {
 	}
 
 	/**
-	 * ACH return codes for which we have dedicated chargeback handling below,
-	 * as opposed to the generic reversal/reversal_reversed handling applied
-	 * to other R codes (see isUnhandledRCode()).
-	 */
-	private const CHARGEBACK_REASON_CODES = [ 'R08', 'R10' ];
-
-	/**
+	 * Any R-code (ACH return) negative leg is a chargeback - IPN treats
+	 * every failed Trustly-backed transaction as a chargeback regardless of
+	 * reason code, so we no longer distinguish "dedicated" codes (R08/R10)
+	 * from the rest.
+	 *
 	 * @return bool
 	 */
 	protected function isChargeback(): bool {
-		if ( !in_array( $this->row['reason'], self::CHARGEBACK_REASON_CODES, true ) ) {
-			return false;
-		}
-		if ( $this->row['reason'] === 'R08' ) {
-			// Perhaps the same amount check should apply to R10 too?
-			return $this->row['amount'] < 0 && $this->row['settlement_batch_transaction_type'] === 'Return';
-		}
-		return true;
-	}
-
-	/**
-	 * Any ACH return code we don't have specific chargeback/refund handling
-	 * for, on its negative (Return) leg. Catches things like R03 (no
-	 * account/unable to locate account) that otherwise fell through as an
-	 * unlabeled settled message with a negative amount.
-	 *
-	 * @return bool
-	 */
-	protected function isReversal(): bool {
-		return $this->isUnhandledRCode() && $this->row['amount'] < 0;
-	}
-
-	/**
-	 * The positive-amount counterpart of isReversal() - the Sale leg of the
-	 * same event, sharing reason code, batch and transaction_id.
-	 *
-	 * @return bool
-	 */
-	protected function isReversalReversal(): bool {
-		return $this->isUnhandledRCode() && $this->row['amount'] >= 0;
-	}
-
-	/**
-	 * @return bool
-	 */
-	private function isUnhandledRCode(): bool {
-		return str_starts_with( (string)( $this->row['reason'] ?? '' ), 'R' )
-			&& !in_array( $this->row['reason'], self::CHARGEBACK_REASON_CODES, true )
-			&& !$this->isRefund();
+		return $this->row['reason'] !== 'AC118'
+			&& $this->row['amount'] < 0
+			&& $this->row['settlement_batch_transaction_type'] === 'Return';
 	}
 
 }
