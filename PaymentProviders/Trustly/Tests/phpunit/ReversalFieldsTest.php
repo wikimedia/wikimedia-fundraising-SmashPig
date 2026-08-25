@@ -69,14 +69,15 @@ class ReversalFieldsTest extends AuditTestBase {
 	}
 
 	/**
-	 * The reversal_reversed Sale leg should report gateway 'trustly' - that's
-	 * what isGravy()'s early return exists for (T434916). But an AC118 refund
-	 * with a long (hashed) original_merchant_reference also fails isGravy()
-	 * for an unrelated reason, and must still report gateway 'gravy': CRM-side
-	 * matching (AuditMessage::getExistingContribution()) only tries the
-	 * backend_processor_txn_id fallback lookup when the raw gateway is
-	 * 'gravy', which is how these refunds - lacking a real gravy gateway_txn_id
-	 * match - get linked to their parent contribution at all.
+	 * Test that an AC118 refund has a gateway of gravy.
+	 *
+	 * It may have a long (hashed) original_merchant_reference that is not a gravy id
+	 * but still need to be matched with a gravy transaction. Seen in real data:
+	 * transaction_id 8090501261 (P11KFUN-3618-20260208120000-20260209120000-0001of0001.csv)
+	 * is a genuinely gravy capture with a normal short reference, but its own AC118 refund -
+	 * transaction_id 8094565296, original_transaction_id 8090501261
+	 * (P11KFUN-3618-20260216120000-20260217120000-0001of0001.csv) - carries a long 64-char
+	 * hash reference instead.
 	 */
 	public function testRefundWithLongMerchantReferenceKeepsGravyGateway(): void {
 		$output = $this->processFile( 'P11KFUN-3618-refund-long-merchant-reference.csv' );
@@ -87,24 +88,25 @@ class ReversalFieldsTest extends AuditTestBase {
 	}
 
 	/**
-	 * Both legs of an unhandled R-code event (e.g. R03) are a pure Trustly ACH
-	 * bank return, not a gravy transaction. The Return leg's
-	 * original_merchant_reference is often short, which would otherwise pass
-	 * isGravy()'s heuristic and (wrongly) report gateway 'gravy' with a
-	 * fabricated gateway_parent_id/gateway_refund_id - causing CRM-side
-	 * matching to find the wrong (original) contribution instead of an
-	 * already-recorded reversal that only carries a backend_processor
-	 * identifier. See T434916.
+	 * Both legs of an unhandled R-code event (e.g. R03) are treated as gravy
+	 * as we do not know for sure. Confirmed in real data: transaction_id
+	 * 8206407324 (original_transaction_id 8049361922,
+	 * P11KFUN-3618-20260811120000-20260812120000-0001of0001.csv), an R01 ACH
+	 * return, is a genuinely gravy transaction per the real IPN log
+	 * (public/audit/trustly/incoming/logs/fundraising-misc-20260807.gz.txt:
+	 * gateway_txn_id 6bef478f-f60d-4b37-ac06-84fb176f45a2,
+	 * payment_orchestrator_reconciliation_id 3HfWrU84VLlXcqGKxdCisk) despite
+	 * the R-code reason.
 	 */
-	public function testRCodeReversalReportsTrustlyGatewayOnBothLegs(): void {
+	public function testRCodeReversalReportsGravyGatewayOnBothLegs(): void {
 		$output = $this->processFile( 'P11KFUN-3618-r-code-reversal.csv' );
 
 		$reversal = $this->findByType( $output, 'reversal' );
-		$this->assertSame( 'trustly', $reversal['gateway'] );
+		$this->assertSame( 'gravy', $reversal['gateway'] );
 		$this->assertSame( '9400130000', $reversal['backend_processor_parent_id'] );
 		$this->assertArrayNotHasKey( 'gateway_parent_id', $reversal );
 
 		$reversed = $this->findByType( $output, 'reversal_reversed' );
-		$this->assertSame( 'trustly', $reversed['gateway'] );
+		$this->assertSame( 'gravy', $reversed['gateway'] );
 	}
 }

@@ -28,15 +28,7 @@ class SettlementFileParser extends BaseParser {
 		$msg = [
 			'currency' => (string)$this->row['currency'],
 			'gross' => ( (float)$this->row['amount'] ),
-			// Both legs of an unhandled R-code event (e.g. R03) are a pure Trustly
-			// ACH bank return, not a gravy transaction - even though the Return leg
-			// often has a short original_merchant_reference that would otherwise
-			// pass isGravy()'s heuristic. AC118 refunds with a long (hashed)
-			// original_merchant_reference also fail isGravy(), for an unrelated
-			// reason, but CRM-side matching (AuditMessage::getExistingContribution())
-			// relies on gateway staying 'gravy' for those, falling back to
-			// backend_processor fields to find the parent. See T434916.
-			'gateway' => ( $this->isReversalReversal() || $this->isReversal() ) ? 'trustly' : 'gravy',
+			'gateway' => $this->getGateway(),
 			'audit_file_gateway' => 'trustly',
 			'gateway_txn_id' => $this->getGatewayTxnId(),
 			'backend_processor' => 'trustly',
@@ -60,14 +52,37 @@ class SettlementFileParser extends BaseParser {
 		return array_filter( $msg ) + $this->getReversalFields();
 	}
 
+	/**
+	 * Get the gateway for the transaction.
+	 *
+	 * After some trial and error it seems we just return gravy.
+	 * There are some transactions (odd reversals) that gravy doesn't know about but
+	 * we can't really tell from the detail in the report so we have to sort that out higher up.
+	 *
+	 * I did try to check the original_merchant_reference, but real data proves it doesn't
+	 * track gravy-ness reliably in either direction:
+	 * - transaction_id 8090501261 (P11KFUN-3618-20260208120000-20260209120000-0001of0001.csv)
+	 *   is a genuinely gravy capture with a normal short reference (1BSfLaECoOEP4Fjg4TpnEX),
+	 *   but its own AC118 refund - transaction_id 8094565296, original_transaction_id
+	 *   8090501261 (P11KFUN-3618-20260216120000-20260217120000-0001of0001.csv) - carries a
+	 *   long 64-char hash reference instead, which does not decode.
+	 * - transaction_id 8206407324 (original_transaction_id 8049361922,
+	 *   P11KFUN-3618-20260811120000-20260812120000-0001of0001.csv), an R01 ACH return, is
+	 *   confirmed gravy from the real IPN log
+	 *   (public/audit/trustly/incoming/logs/fundraising-misc-20260807.gz.txt: gateway_txn_id
+	 *   6bef478f-f60d-4b37-ac06-84fb176f45a2, payment_orchestrator_reconciliation_id
+	 *   3HfWrU84VLlXcqGKxdCisk, contribution_recur_id 2619919) - despite an R-code reason.
+	 * So we cannot conclude gravy-ness from the reference or the reason code.
+	 */
+	protected function getGateway(): string {
+		return 'gravy';
+	}
+
 	protected function getGatewayTxnId(): string {
 		return $this->isGravy() ? Base62Helper::toUuid( $this->row['original_merchant_reference'] ) : $this->row['transaction_id'];
 	}
 
 	protected function isGravy(): bool {
-		if ( $this->isReversalReversal() || $this->isReversal() ) {
-			return false;
-		}
 		return $this->hasDecodableGravyReference();
 	}
 
