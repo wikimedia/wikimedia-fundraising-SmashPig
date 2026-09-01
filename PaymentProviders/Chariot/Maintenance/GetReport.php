@@ -42,7 +42,7 @@ class GetReport extends MaintenanceBase {
 		'banking_institution',
 		'is_matching_gift',
 		'is_daf',
-		'is_endowment',
+		'manual_review',
 		'donor_advised_fund_name',
 		'matching_gift_organization',
 		'original_total_amount',
@@ -437,7 +437,7 @@ class GetReport extends MaintenanceBase {
 			'audit_file_gateway' => 'Chariot Disbursements',
 			'backend_processor' => $donationObject->getPlatformName(),
 			'gateway_txn_id' => $donation['id'],
-			'backend_processor_txn_id' => (string)$donation['external_id'],
+			'backend_processor_txn_id' => $donationObject->getBackendProcessorTxnId(),
 			'banking_institution' => $donationObject->getBankingInstitution(),
 			'donor_advised_fund_name' => $donationObject->getDonorAdvisedFundName(),
 			'original_currency' => $donationObject->getOriginalCurrency(),
@@ -468,7 +468,7 @@ class GetReport extends MaintenanceBase {
 			'is_daf' => $donationObject->isDonorAdvisedFundGrant(),
 			'is_matching_gift' => $donationObject->isMatchingGift(),
 			'matching_gift_organization' => $donationObject->getMatchingGiftOrganization(),
-			'is_endowment' => !empty( $properties['Endowment flag?'] ) && $properties['Endowment flag?'] === 'Y',
+			'manual_review' => $properties['Flag'] ?? '',
 			'first_name' => $donationObject->getFirstName(),
 			'last_name' => $donationObject->getLastName(),
 			'full_name' => $donationObject->getFullName(),
@@ -658,13 +658,15 @@ class GetReport extends MaintenanceBase {
 			if ( $type === 'deposit' ) {
 				if ( !isset( $this->allUnknownDepositPaths[$path] ) ) {
 					$this->allUnknownDepositPaths[$path] = $unknown;
+				} else {
+					$this->allUnknownDepositPaths[$path]['count'] += $unknown['count'];
 				}
-				$this->allUnknownDepositPaths[$path] += $unknown['count'];
 			} elseif ( $type === 'donation' ) {
 				if ( !isset( $this->allUnknownDonationPaths[$path] ) ) {
 					$this->allUnknownDonationPaths[$path] = $unknown;
+				} else {
+					$this->allUnknownDonationPaths[$path]['count'] += $unknown['count'];
 				}
-				$this->allUnknownDonationPaths[$path]['count'] += $unknown['count'];
 			}
 		}
 	}
