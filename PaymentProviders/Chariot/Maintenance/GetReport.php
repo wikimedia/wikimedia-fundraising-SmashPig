@@ -437,7 +437,7 @@ class GetReport extends MaintenanceBase {
 			'audit_file_gateway' => 'Chariot Disbursements',
 			'backend_processor' => $donationObject->getPlatformName(),
 			'gateway_txn_id' => $donation['id'],
-			'backend_processor_txn_id' => (string)$donation['external_id'],
+			'backend_processor_txn_id' => $donationObject->getBackendProcessorTxnId(),
 			'banking_institution' => $donationObject->getBankingInstitution(),
 			'donor_advised_fund_name' => $donationObject->getDonorAdvisedFundName(),
 			'original_currency' => $donationObject->getOriginalCurrency(),

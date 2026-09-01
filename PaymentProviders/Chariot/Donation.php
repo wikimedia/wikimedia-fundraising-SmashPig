@@ -168,6 +168,10 @@ class Donation {
 		return (string)( $this->donation['platform']['name'] ?? '' );
 	}
 
+	public function getBackendProcessorTxnId(): string {
+		return (string)( $this->getValue( 'external_id' ) );
+	}
+
 	public function getCheckNumber(): string {
 		return (string)( $this->getValue( 'properties.Check Number' ) );
 	}
