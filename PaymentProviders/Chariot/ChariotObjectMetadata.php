@@ -236,7 +236,10 @@ class ChariotObjectMetadata {
 		'properties.Journaled in Sage' => [],
 		'properties.Groundswell Company Name' => [],
 		'properties.Marked for export' => [],
-		'properties.Endowment flag?' => [ 'status' => self::STATUS_USED ],
+		'properties.Flag' => [
+			'status' => self::STATUS_USED,
+			'note' => 'Free text flag for manual review. Used to be a boolean endowment flag, now a string set by user defined policy.',
+		],
 		'properties.CRM status' => [],
 		'properties.Check Number' => [
 			'status' => self::STATUS_USED,
