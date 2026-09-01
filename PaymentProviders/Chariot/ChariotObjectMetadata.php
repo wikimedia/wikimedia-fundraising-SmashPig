@@ -93,6 +93,22 @@ class ChariotObjectMetadata {
 		'note' => [ 'status' => self::STATUS_USED ],
 		'purpose' => [ 'status' => self::STATUS_USED, 'note' => 'used for note' ],
 		'artifacts' => [],
+		'artifacts[].id' => [
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Attached artifact/document metadata (e.g. a scanned check or mail item file). Not important for us',
+		],
+		'artifacts[].file_id' => [
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Attached artifact/document metadata (e.g. a scanned check or mail item file). Not important for us',
+		],
+		'artifacts[].name' => [
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Attached artifact/document metadata (e.g. a scanned check or mail item file). Not important for us',
+		],
+		'artifacts[].created_at' => [
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Attached artifact/document metadata (e.g. a scanned check or mail item file). Not important for us',
+		],
 		'attribution.primary_donor' => [],
 		'attribution.primary_donor.full_name' => [ 'status' => self::STATUS_USED ],
 		'attribution.primary_donor.first_name' => [ 'status' => self::STATUS_USED ],
