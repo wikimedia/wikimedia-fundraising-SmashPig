@@ -46,6 +46,7 @@ class ChariotObjectMetadata {
 		'transfer.inbound_ach_transfer' => [ 'status' => self::STATUS_USED ],
 		'transfer.inbound_ach_transfer.standard_entry_class_code' => [],
 		'transfer.inbound_ach_transfer.company_entry_description' => [],
+		'transfer.inbound_ach_transfer.company_discretionary_data' => [],
 		'transfer.inbound_ach_transfer.originator_routing_number' => [],
 		'transfer.inbound_ach_transfer.originator_company_name' => [ 'status' => self::STATUS_USED ],
 		'transfer.inbound_ach_transfer.trace_number' => [],
