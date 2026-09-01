@@ -658,13 +658,15 @@ class GetReport extends MaintenanceBase {
 			if ( $type === 'deposit' ) {
 				if ( !isset( $this->allUnknownDepositPaths[$path] ) ) {
 					$this->allUnknownDepositPaths[$path] = $unknown;
+				} else {
+					$this->allUnknownDepositPaths[$path]['count'] += $unknown['count'];
 				}
-				$this->allUnknownDepositPaths[$path] += $unknown['count'];
 			} elseif ( $type === 'donation' ) {
 				if ( !isset( $this->allUnknownDonationPaths[$path] ) ) {
 					$this->allUnknownDonationPaths[$path] = $unknown;
+				} else {
+					$this->allUnknownDonationPaths[$path]['count'] += $unknown['count'];
 				}
-				$this->allUnknownDonationPaths[$path]['count'] += $unknown['count'];
 			}
 		}
 	}
