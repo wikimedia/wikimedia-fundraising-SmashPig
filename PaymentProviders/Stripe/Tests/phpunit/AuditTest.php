@@ -100,7 +100,7 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		// should not be flagged as an organization gift.
 		$this->assertArrayNotHasKey( 'organization_name', $output[0] );
 		$this->assertSame( 'Homer Simpson', $output[0]['full_name'] );
-		$this->assertSame( 'card', $output[0]['payment_method'] );
+		$this->assertSame( 'cc', $output[0]['payment_method'] );
 
 		// The Giving Basket transfer has no per-donor billing details, so
 		// it is flagged with the sending organization's name, and its
