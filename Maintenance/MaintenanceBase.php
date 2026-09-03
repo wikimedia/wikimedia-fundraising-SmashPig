@@ -302,6 +302,57 @@ abstract class MaintenanceBase {
 	}
 
 	/**
+	 * Use a CLI option if one was given, otherwise fall back to a value from
+	 * the current provider's configuration (the config node set via
+	 * --config-node, e.g. 'chariot', 'stripe', 'overflow'), otherwise
+	 * $default.
+	 *
+	 * Unlike getOptionOrConfig(), which reads the global configuration, this
+	 * reads provider configuration - the tree most maintenance scripts for a
+	 * specific payment provider actually need (e.g. reports_incoming_path).
+	 *
+	 * @param string $optName Name of the CLI option to check first
+	 * @param string $configPath Provider config node to fall back to
+	 * @param mixed $default Value to use if neither option nor config is set
+	 *
+	 * @return mixed
+	 */
+	protected function chooseOptionOrConfig( string $optName, string $configPath, $default = null ) {
+		$opt = $this->getOption( $optName );
+		if ( $opt !== null && $opt !== '' && $opt !== false ) {
+			return $opt;
+		}
+		$config = Context::get()->getProviderConfiguration();
+		if ( $config->has( $configPath ) ) {
+			$value = $config->get( $configPath );
+			if ( $value !== null && $value !== '' ) {
+				return $value;
+			}
+		}
+		return $default;
+	}
+
+	/**
+	 * Use --path if given, otherwise fall back to the reports_incoming_path
+	 * config value. Scripts that write audit files to an incoming directory
+	 * (Chariot/Overflow's GetReport, and others in future) share this rather
+	 * than each maintaining their own copy - they just need to addOption()
+	 * 'path' themselves, for their own --help description.
+	 *
+	 * @return string
+	 * @throws \InvalidArgumentException if neither --path nor config is set
+	 */
+	protected function getIncomingPath(): string {
+		$path = trim( (string)$this->chooseOptionOrConfig( 'path', 'reports_incoming_path', '' ) );
+		if ( $path === '' ) {
+			throw new \InvalidArgumentException(
+				'--path is required (or set reports_incoming_path in config).'
+			);
+		}
+		return $path;
+	}
+
+	/**
 	 * Adds a numbered argument that can be parsed out of the command line string.
 	 *
 	 * @param string $arg Name of the argument, like 'start'
