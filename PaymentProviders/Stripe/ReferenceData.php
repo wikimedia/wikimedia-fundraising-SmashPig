@@ -18,6 +18,10 @@ class ReferenceData {
 	 *  ],
 	 */
 	protected static array $methods = [
+		'card' => [
+			'method' => 'cc',
+			'submethod' => '',
+		],
 		// Give Lively's "Giving Basket" feature sends a Stripe Connect
 		// transfer (stripe_account) rather than a card charge.
 		'stripe_account' => [
