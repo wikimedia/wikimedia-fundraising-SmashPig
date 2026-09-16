@@ -804,16 +804,6 @@ class GetReport extends MaintenanceBase {
 		return $this->asBool( $this->getOption( 'list-payouts', true ) );
 	}
 
-	private function asBool( mixed $value ): bool {
-		if ( is_bool( $value ) ) {
-			return $value;
-		}
-		if ( $value === null ) {
-			return false;
-		}
-		return in_array( strtolower( trim( (string)$value ) ), [ '1', 'true', 'yes', 'y', 'on' ], true );
-	}
-
 	private function formatAmount( int $amount, string $currency ): string {
 		$zeroDecimalCurrencies = [ 'bif', 'clp', 'djf', 'gnf', 'jpy', 'kmf', 'krw', 'mga', 'pyg', 'rwf', 'ugx', 'vnd', 'vuv', 'xaf', 'xof', 'xpf' ];
 		$currency = strtolower( $currency );
