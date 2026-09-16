@@ -175,7 +175,7 @@ class GetReport extends MaintenanceBase {
 	private function collectDeposits(): array {
 		$results = [];
 		$page = 1;
-		$maxPages = $this->getMaxPagesOption();
+		$maxPages = $this->getPositiveIntOption( 'max-pages' );
 
 		while ( true ) {
 			if ( $maxPages !== null && $page > $maxPages ) {
@@ -198,7 +198,7 @@ class GetReport extends MaintenanceBase {
 				$response['totalCount'] ?? 0
 			);
 
-			$limit = $this->getLimitOption();
+			$limit = $this->getPositiveIntOption( 'limit' );
 
 			/*
 			 * If the API tells us the total number of results,
@@ -243,7 +243,7 @@ class GetReport extends MaintenanceBase {
 			'page' => $page,
 		];
 
-		$limit = $this->getLimitOption();
+		$limit = $this->getPositiveIntOption( 'limit' );
 
 		if ( $limit !== null ) {
 			$params['limit'] = $limit;
@@ -260,38 +260,6 @@ class GetReport extends MaintenanceBase {
 		}
 
 		return $this->api->getDeposits( $params );
-	}
-
-	/**
-	 * Get a normalized UTC ISO-8601 timestamp for a CLI option.
-	 *
-	 * @param string $name
-	 *
-	 * @return string|null
-	 */
-	private function getNormalizedDateOption( string $name ): ?string {
-		$value = trim( (string)$this->getOption( $name ) );
-
-		if ( $value === '' ) {
-			return null;
-		}
-
-		$timestamp = strtotime( $value );
-
-		if ( $timestamp === false ) {
-			throw new \InvalidArgumentException(
-				sprintf(
-					'Invalid date for --%s: %s',
-					$name,
-					$value
-				)
-			);
-		}
-
-		return gmdate(
-			'Y-m-d\TH:i:s\Z',
-			$timestamp
-		);
 	}
 
 	/**
@@ -407,27 +375,6 @@ class GetReport extends MaintenanceBase {
 		return preg_replace( '/[^A-Za-z0-9_-]+/', '-', $value );
 	}
 
-	/**
-	 * @return int|null
-	 */
-	private function getLimitOption(): ?int {
-		$value = trim(
-			(string)$this->getOption( 'limit' )
-		);
-
-		return $value === '' ? null : (int)$value;
-	}
-
-	/**
-	 * @return int|null
-	 */
-	private function getMaxPagesOption(): ?int {
-		$value = trim(
-			(string)$this->getOption( 'max-pages' )
-		);
-
-		return $value === '' ? null : (int)$value;
-	}
 }
 
 $maintClass = \SmashPig\PaymentProviders\Overflow\Maintenance\GetReport::class;
