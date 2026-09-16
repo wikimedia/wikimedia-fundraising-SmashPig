@@ -247,7 +247,7 @@ class GetReport extends MaintenanceBase {
 	private function fetchDepositsPage( ?string $token ): array {
 		$params = [];
 
-		$limit = $this->getLimitOption();
+		$limit = $this->getPositiveIntOption( 'limit' );
 		if ( $limit !== null ) {
 			$params['limit'] = $limit;
 		}
@@ -300,7 +300,7 @@ class GetReport extends MaintenanceBase {
 					'deposit_id' => $depositId,
 				];
 
-				$limit = $this->getLimitOption();
+				$limit = $this->getPositiveIntOption( 'limit' );
 				if ( $limit !== null ) {
 					$params['limit'] = $limit;
 				}
@@ -677,7 +677,7 @@ class GetReport extends MaintenanceBase {
 	 */
 	private function collectPagedResults( callable $loadPage, string ...$tokenKeys ): array {
 		$results = [];
-		$maxPages = $this->getMaxPagesOption();
+		$maxPages = $this->getPositiveIntOption( 'max-pages' );
 		$token = null;
 		$nextTokens = [];
 		$page = 0;
@@ -737,70 +737,6 @@ class GetReport extends MaintenanceBase {
 		}
 
 		return array_values( array_unique( $requested ) );
-	}
-
-	/**
-	 * Get the optional list-call limit.
-	 *
-	 * @return int|null
-	 */
-	private function getLimitOption(): ?int {
-		$value = trim( (string)$this->getOption( 'limit' ) );
-		if ( $value === '' ) {
-			return null;
-		}
-
-		$intValue = (int)$value;
-		return $intValue > 0 ? $intValue : null;
-	}
-
-	/**
-	 * Get the optional max-pages value.
-	 *
-	 * @return int|null
-	 */
-	private function getMaxPagesOption(): ?int {
-		$value = trim( (string)$this->getOption( 'max-pages' ) );
-		if ( $value === '' ) {
-			return null;
-		}
-
-		$intValue = (int)$value;
-		return $intValue > 0 ? $intValue : null;
-	}
-
-	/**
-	 * Get a normalized UTC ISO-8601 timestamp for a CLI option.
-	 *
-	 * @param string $name
-	 * @return string|null
-	 */
-	private function getNormalizedDateOption( string $name ): ?string {
-		$value = trim( (string)$this->getOption( $name ) );
-		if ( $value === '' ) {
-			return null;
-		}
-
-		$timestamp = strtotime( $value );
-		if ( $timestamp === false ) {
-			throw new \InvalidArgumentException( sprintf( 'Invalid date for --%s: %s', $name, $value ) );
-		}
-
-		return gmdate( 'Y-m-d\TH:i:s\Z', $timestamp );
-	}
-
-	/**
-	 * Require an option value.
-	 *
-	 * @param string $name
-	 * @return string
-	 */
-	private function requireOption( string $name ): string {
-		$value = trim( (string)$this->getOption( $name ) );
-		if ( $value === '' ) {
-			throw new \InvalidArgumentException( sprintf( 'Missing required --%s option', $name ) );
-		}
-		return $value;
 	}
 
 	public function getPaymentMethod( Deposit $deposit, ?Donation $donationObject = null ): string {
