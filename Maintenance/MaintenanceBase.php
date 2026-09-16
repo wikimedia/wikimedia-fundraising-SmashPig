@@ -353,6 +353,78 @@ abstract class MaintenanceBase {
 	}
 
 	/**
+	 * Get a positive integer CLI option (e.g. --limit, --max-pages), or null
+	 * if it wasn't given or isn't a positive integer.
+	 *
+	 * @param string $name
+	 *
+	 * @return int|null
+	 */
+	protected function getPositiveIntOption( string $name ): ?int {
+		$value = trim( (string)$this->getOption( $name ) );
+		if ( $value === '' ) {
+			return null;
+		}
+		$intValue = (int)$value;
+		return $intValue > 0 ? $intValue : null;
+	}
+
+	/**
+	 * Get a normalized UTC ISO-8601 timestamp for a CLI option that accepts
+	 * any strtotime()-parseable date/time, or null if it wasn't given.
+	 *
+	 * @param string $name
+	 *
+	 * @return string|null
+	 * @throws \InvalidArgumentException if the value isn't a parseable date
+	 */
+	protected function getNormalizedDateOption( string $name ): ?string {
+		$value = trim( (string)$this->getOption( $name ) );
+		if ( $value === '' ) {
+			return null;
+		}
+		$timestamp = strtotime( $value );
+		if ( $timestamp === false ) {
+			throw new \InvalidArgumentException( sprintf( 'Invalid date for --%s: %s', $name, $value ) );
+		}
+		return gmdate( 'Y-m-d\TH:i:s\Z', $timestamp );
+	}
+
+	/**
+	 * Require a CLI option to be set, throwing if it's missing/empty.
+	 *
+	 * @param string $name
+	 *
+	 * @return string
+	 * @throws \InvalidArgumentException if the option is missing/empty
+	 */
+	protected function requireOption( string $name ): string {
+		$value = trim( (string)$this->getOption( $name ) );
+		if ( $value === '' ) {
+			throw new \InvalidArgumentException( sprintf( 'Missing required --%s option', $name ) );
+		}
+		return $value;
+	}
+
+	/**
+	 * Coerce a CLI option or config value to a boolean, accepting the usual
+	 * truthy strings ('1', 'true', 'yes', 'y', 'on') case-insensitively.
+	 *
+	 * @param mixed $value
+	 *
+	 * @return bool
+	 */
+	protected function asBool( mixed $value ): bool {
+		if ( is_bool( $value ) ) {
+			return $value;
+		}
+		if ( $value === null ) {
+			return false;
+		}
+		return in_array( strtolower( trim( (string)$value ) ), [ '1', 'true', 'yes', 'y', 'on' ], true );
+	}
+
+	/**
 	 * Adds a numbered argument that can be parsed out of the command line string.
 	 *
 	 * @param string $arg Name of the argument, like 'start'
