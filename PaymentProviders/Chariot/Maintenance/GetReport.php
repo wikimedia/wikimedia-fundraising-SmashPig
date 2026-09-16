@@ -2,10 +2,8 @@
 
 namespace SmashPig\PaymentProviders\Chariot\Maintenance;
 
-use SmashPig\Core\Context;
 use SmashPig\Core\Helpers\CurrencyRoundingHelper;
 use SmashPig\Core\Logging\Logger;
-use SmashPig\Core\ProviderConfiguration;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Chariot\Api;
 use SmashPig\PaymentProviders\Chariot\ChariotObjectMetadata;
@@ -95,7 +93,6 @@ class GetReport extends MaintenanceBase {
 		'check_number',
 	];
 
-	private ProviderConfiguration $config;
 	private PendingDepositTracker $pendingDepositTracker;
 	private Api $api;
 
@@ -115,13 +112,13 @@ class GetReport extends MaintenanceBase {
 		$this->addOption( 'end-date', 'Filter deposits by settled_at.before; accepts any strtotime()-parseable date/time', '' );
 		$this->addOption( 'limit', 'Optional maximum results per deposits/donations list call', '', 'l' );
 		$this->addOption( 'max-pages', 'Optional maximum pages to fetch for list calls', '', 'm' );
+		$this->addOption( 'path', 'Optional output directory; overrides reports_incoming_path config' );
 		$this->addFlag( 'stdout', 'Print summary JSON payload to stdout for list mode', 's' );
 		$this->addFlag( 'include-json', 'Always write per-deposit JSON payloads even when there are no unknowns', '' );
 		$this->desiredOptions['config-node']['default'] = 'chariot';
 	}
 
 	public function execute(): void {
-		$this->config = Context::get()->getProviderConfiguration();
 		$path = $this->getIncomingPath();
 		if ( !is_dir( $path ) ) {
 			throw new \RuntimeException( 'Output directory does not exist: ' . $path );
@@ -908,15 +905,6 @@ class GetReport extends MaintenanceBase {
 				$depositObject->getDeposit()
 			);
 		}
-	}
-
-	/**
-	 * @return array|mixed
-	 * @throws \Psr\Container\ContainerExceptionInterface
-	 * @throws \Psr\Container\NotFoundExceptionInterface
-	 */
-	private function getIncomingPath(): mixed {
-		return $this->config->get( 'reports_incoming_path' );
 	}
 
 	private function auditFileExists( Deposit $depositObject ): bool {
