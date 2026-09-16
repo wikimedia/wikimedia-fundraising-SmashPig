@@ -432,6 +432,47 @@ class AuditTest extends BaseSmashPigUnitTestCase {
 		], $output[1], 'Correction does not match' );
 	}
 
+	/**
+	 * ManualCorrected rows represent Adyen manually correcting a deposit (e.g. reversing
+	 * an erroneous bank-side refund) and are always paired with an offsetting MerchantPayout.
+	 * They must be booked as an adjustment (T438105) rather than ignored, or the batch total
+	 * will not reconcile against the payout.
+	 */
+	public function testProcessSettlementDetailManualCorrected(): void {
+		$processor = new AdyenSettlementDetailReport();
+		$output = $processor->parseFile( __DIR__ . '/../Data/settlement_detail_report_manual_corrected.csv' );
+		$this->assertCount( 2, $output, 'Should have found one adjustment and one payout row' );
+		$this->assertEquals( [
+			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
+			'gateway_account' => 'WikimediaDonations',
+			'date' => 1789475269,
+			'invoice_id' => '',
+			'gateway_txn_id' => 'adjustment-1285-/MERGED/2TRF/REF--5201AQS20400701BENE-D-REFUND-X1007-MAY+JUN-2026-OUR-CASE-BML260720-000007-BANK-OF-AMERICA-N.A.-SYDNEY-210.00',
+			'settlement_batch_reference' => '1285',
+			'settled_date' => 1789475269,
+			'settled_currency' => 'AUD',
+			'settled_fee_amount' => '210.00',
+			'settled_net_amount' => '210.00',
+			'settled_total_amount' => 0,
+			'type' => 'adjustment',
+		], $output[0], 'ManualCorrected row should be booked as an adjustment' );
+
+		$this->assertEquals( [
+			'settled_date' => 1789510558,
+			'date' => 1789510558,
+			'gateway' => 'adyen',
+			'audit_file_gateway' => 'adyen',
+			'type' => 'payout',
+			'gateway_txn_id' => 'TX61333044700XT batch 1285, WikimediaDonations',
+			'gateway_account' => 'WikimediaDonations',
+			'invoice_id' => '',
+			'settlement_batch_reference' => '1285',
+			'settled_total_amount' => '210.00',
+			'settled_currency' => 'AUD',
+		], $output[1], 'MerchantPayout row should still be booked as a payout' );
+	}
+
 	public function testProcessPaymentsAccountingNyce() {
 		$processor = new AdyenPaymentsAccountingReport();
 		$output = $processor->parseFile( __DIR__ . '/../Data/payments_accounting_report_nyce.csv' );
