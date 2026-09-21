@@ -925,20 +925,6 @@ class SFTPDownload extends MaintenanceBase {
 	}
 
 	/**
-	 * Convert CLI option values to boolean.
-	 */
-	private function asBool( string|bool|null|int $val ): bool {
-		if ( is_bool( $val ) ) {
-			return $val;
-		}
-		if ( $val === null ) {
-			return false;
-		}
-		$stringValue = strtolower( trim( (string)$val ) );
-		return in_array( $stringValue, [ '1', 'true', 'yes', 'y', 'on' ], true );
-	}
-
-	/**
 	 * Normalize repeatable extra-path option values to a list of paths.
 	 *
 	 * @param mixed $extraPaths

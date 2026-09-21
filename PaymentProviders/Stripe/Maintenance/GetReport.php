@@ -2,7 +2,6 @@
 
 namespace SmashPig\PaymentProviders\Stripe\Maintenance;
 
-use SmashPig\Core\Context;
 use SmashPig\Core\Logging\Logger;
 use SmashPig\Maintenance\MaintenanceBase;
 use SmashPig\PaymentProviders\Stripe\Api;
@@ -166,8 +165,6 @@ class GetReport extends MaintenanceBase {
 
 	private array $sourceCache = [];
 
-	private \SmashPig\Core\ProviderConfiguration $config;
-
 	public function __construct() {
 		parent::__construct();
 		$this->addOption( 'payout-id', 'Stripe payout id for a single settlement file', '', 'p' );
@@ -189,7 +186,6 @@ class GetReport extends MaintenanceBase {
 	}
 
 	public function execute(): void {
-		$this->config = Context::get()->getProviderConfiguration();
 		$path = rtrim( $this->getOutputPath(), '/' );
 		if ( !is_dir( $path ) ) {
 			throw new \RuntimeException( 'Output directory does not exist: ' . $path );
@@ -260,7 +256,7 @@ class GetReport extends MaintenanceBase {
 	}
 
 	private function getRequestedReportTypes(): array {
-		$value = trim( (string)$this->chooseOptionOrConfig( 'report-type', [ 'default_report_type' ], self::TYPE_SETTLEMENT_REPORT ) );
+		$value = trim( (string)$this->chooseOptionOrConfig( 'report-type', 'default_report_type', self::TYPE_SETTLEMENT_REPORT ) );
 		$requested = array_values( array_filter( array_map( 'trim', explode( ',', $value ) ) ) );
 		if ( !$requested ) {
 			return [ self::TYPE_SETTLEMENT_REPORT ];
@@ -416,7 +412,7 @@ class GetReport extends MaintenanceBase {
 	}
 
 	private function shouldIncludeCustomerData(): bool {
-		return $this->asBool( $this->chooseOptionOrConfig( 'include-customer-data', [ 'include_customer_data' ], false ) );
+		return $this->asBool( $this->chooseOptionOrConfig( 'include-customer-data', 'include_customer_data', false ) );
 	}
 
 	private function downloadIntervalReport(
@@ -589,7 +585,7 @@ class GetReport extends MaintenanceBase {
 	}
 
 	private function getGatewayAccount(): string {
-		$gatewayAccount = trim( (string)$this->chooseOptionOrConfig( 'gateway-account', [ 'gateway_account' ], '' ) );
+		$gatewayAccount = trim( (string)$this->chooseOptionOrConfig( 'gateway-account', 'gateway_account', '' ) );
 		if ( $gatewayAccount === '' ) {
 			throw new \InvalidArgumentException( '--gateway-account is required.' );
 		}
@@ -597,7 +593,7 @@ class GetReport extends MaintenanceBase {
 	}
 
 	private function shouldWriteEmptyFiles(): bool {
-		return $this->asBool( $this->chooseOptionOrConfig( 'write-empty-files', [ 'write_empty_files' ], false ) );
+		return $this->asBool( $this->chooseOptionOrConfig( 'write-empty-files', 'write_empty_files', false ) );
 	}
 
 	private function hasDataRows( array $rows ): bool {
@@ -629,7 +625,7 @@ class GetReport extends MaintenanceBase {
 	}
 
 	private function shouldAddPayoutRow(): bool {
-		$value = (string)$this->chooseOptionOrConfig( 'add-payout-row', [ 'add_payout_row' ], true );
+		$value = (string)$this->chooseOptionOrConfig( 'add-payout-row', 'add_payout_row', true );
 		return !in_array( strtolower( $value ), [ '0', 'false', 'no', 'off' ], true );
 	}
 
@@ -773,7 +769,7 @@ class GetReport extends MaintenanceBase {
 	}
 
 	private function getOutputPath(): string {
-		$path = $this->chooseOptionOrConfig( 'path', [ 'reports_incoming_path' ], '' );
+		$path = $this->chooseOptionOrConfig( 'path', 'reports_incoming_path', '' );
 		if ( !is_string( $path ) || trim( $path ) === '' ) {
 			throw new \InvalidArgumentException( 'path is required (or set reports_incoming_path in config).' );
 		}
@@ -781,17 +777,17 @@ class GetReport extends MaintenanceBase {
 	}
 
 	private function getEffectiveStartDate(): string {
-		$startDate = trim( (string)$this->chooseOptionOrConfig( 'start-date', [ 'default_report_start_date' ], '' ) );
+		$startDate = trim( (string)$this->chooseOptionOrConfig( 'start-date', 'default_report_start_date', '' ) );
 		return $startDate !== '' ? $startDate : gmdate( 'Y-m-d', strtotime( 'yesterday UTC' ) );
 	}
 
 	private function getEffectiveEndDate(): string {
-		$endDate = trim( (string)$this->chooseOptionOrConfig( 'end-date', [ 'default_report_end_date' ], '' ) );
+		$endDate = trim( (string)$this->chooseOptionOrConfig( 'end-date', 'default_report_end_date', '' ) );
 		return $endDate !== '' ? $endDate : $this->getEffectiveStartDate();
 	}
 
 	private function getEffectiveTimezone(): string {
-		$timezone = trim( (string)$this->chooseOptionOrConfig( 'timezone', [ 'timezone' ], 'UTC' ) );
+		$timezone = trim( (string)$this->chooseOptionOrConfig( 'timezone', 'timezone', 'UTC' ) );
 		return $timezone !== '' ? $timezone : 'UTC';
 	}
 
@@ -806,41 +802,6 @@ class GetReport extends MaintenanceBase {
 			return false;
 		}
 		return $this->asBool( $this->getOption( 'list-payouts', true ) );
-	}
-
-	private function getFromConfig( string $path, mixed $default = null ): mixed {
-		if ( !$this->config->has( $path ) ) {
-			// Configuration::get()/val() throws rather than returning null for a
-			// key that isn't declared at all - not every config key we might look
-			// up here (e.g. include-customer-data) is expected to exist in every
-			// deployment's config file.
-			return $default;
-		}
-		return $this->config->get( $path ) ?: $default;
-	}
-
-	private function chooseOptionOrConfig( string $optName, array $configPaths, mixed $default = null ): mixed {
-		$opt = $this->getOption( $optName );
-		if ( $opt !== null && $opt !== '' && $opt !== false ) {
-			return $opt;
-		}
-		foreach ( $configPaths as $path ) {
-			$value = $this->getFromConfig( $path, null );
-			if ( $value !== null && $value !== '' ) {
-				return $value;
-			}
-		}
-		return $default;
-	}
-
-	private function asBool( mixed $value ): bool {
-		if ( is_bool( $value ) ) {
-			return $value;
-		}
-		if ( $value === null ) {
-			return false;
-		}
-		return in_array( strtolower( trim( (string)$value ) ), [ '1', 'true', 'yes', 'y', 'on' ], true );
 	}
 
 	private function formatAmount( int $amount, string $currency ): string {
@@ -859,8 +820,8 @@ class GetReport extends MaintenanceBase {
 
 	private function waitForCompletion( Api $api, string $reportRunId ): array {
 		Logger::info( 'Waiting for completion of ' . $reportRunId );
-		$pollInterval = max( 1, (int)$this->chooseOptionOrConfig( 'poll-interval', [ 'poll_interval' ], 5 ) );
-		$timeout = max( $pollInterval, (int)$this->chooseOptionOrConfig( 'poll-timeout', [ 'poll_timeout' ], 300 ) );
+		$pollInterval = max( 1, (int)$this->chooseOptionOrConfig( 'poll-interval', 'poll_interval', 5 ) );
+		$timeout = max( $pollInterval, (int)$this->chooseOptionOrConfig( 'poll-timeout', 'poll_timeout', 300 ) );
 		$deadline = time() + $timeout;
 		do {
 			$reportRun = $api->getReportRun( $reportRunId );
