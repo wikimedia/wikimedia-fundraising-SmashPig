@@ -62,6 +62,59 @@ class ResponseMapperTest extends BaseGravyTestCase {
 		$this->assertSame( [], $result['moto_metadata'] );
 	}
 
+	public function testMapPaymentResponseSetsBackendProcessorContactIdWhenAdditionalIdentifiersPresent() {
+		$rawResponse = $this->buildPaypalPaymentResponse();
+		$rawResponse['additional_identifiers'] = [ 'payer_id' => 'PAYER123' ];
+		$mapper = new ResponseMapper();
+		$result = $mapper->mapFromPaymentResponse( $rawResponse );
+
+		$this->assertSame( 'PAYER123', $result['donor_details']['backend_processor_contact_id'] );
+	}
+
+	public function testMapPaymentResponseDoesNotSetBackendProcessorContactIdWhenAdditionalIdentifiersMissing() {
+		$rawResponse = $this->buildPaypalPaymentResponse();
+		unset( $rawResponse['additional_identifiers'] );
+		$mapper = new ResponseMapper();
+		$result = $mapper->mapFromPaymentResponse( $rawResponse );
+
+		$this->assertArrayNotHasKey( 'backend_processor_contact_id', $result['donor_details'] );
+	}
+
+	public function testMapPaymentResponseDoesNotSetBackendProcessorContactIdWhenAdditionalIdentifiersEmpty() {
+		$rawResponse = $this->buildPaypalPaymentResponse();
+		$rawResponse['additional_identifiers'] = [];
+		$mapper = new ResponseMapper();
+		$result = $mapper->mapFromPaymentResponse( $rawResponse );
+
+		$this->assertArrayNotHasKey( 'backend_processor_contact_id', $result['donor_details'] );
+	}
+
+	/**
+	 * Builds a minimal successful paypal payment response, since paypal is
+	 * the only method in ResponseMapper::METHODS_WITH_PAYERID.
+	 */
+	private function buildPaypalPaymentResponse(): array {
+		return [
+			'id' => 'test-transaction-id',
+			'status' => 'succeeded',
+			'amount' => 1000,
+			'currency' => 'USD',
+			'external_identifier' => '12345.1',
+			'payment_method' => [
+				'method' => 'paypal',
+			],
+			'buyer' => [
+				'id' => 'buyer-id',
+				'billing_details' => [
+					'first_name' => 'Testy',
+					'last_name' => 'McTest',
+					'email_address' => 'test@example.com',
+					'phone_number' => '555-1212',
+				],
+			],
+		];
+	}
+
 	/**
 	 * Helper method to load JSON test data
 	 */

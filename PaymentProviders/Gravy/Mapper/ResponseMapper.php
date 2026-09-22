@@ -200,7 +200,7 @@ class ResponseMapper {
 			if ( in_array( $gravyPaymentMethod, self::METHODS_WITH_USERNAME ) ) {
 				$result['donor_details']['username'] = $response['payment_method']['label'];
 			}
-			if ( in_array( $gravyPaymentMethod, self::METHODS_WITH_PAYERID ) ) {
+			if ( !empty( $response['additional_identifiers'] ) && in_array( $gravyPaymentMethod, self::METHODS_WITH_PAYERID ) ) {
 				$result['donor_details']['backend_processor_contact_id'] = $response['additional_identifiers']['payer_id'];
 			}
 			if ( !empty( $donorDetails['address'] ) ) {
