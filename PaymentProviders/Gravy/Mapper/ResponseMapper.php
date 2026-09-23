@@ -222,7 +222,7 @@ class ResponseMapper {
 	}
 
 	/**
-	 * Maps from gravy payment response payment service details
+	 * Maps from gravy payment response payment service details to set various transaction identifiers
 	 * @param array &$result
 	 * @param array $response
 	 * @return void
@@ -236,6 +236,8 @@ class ResponseMapper {
 		if ( isset( $response['additional_identifiers']['payment_service_capture_id'] ) ) {
 			$result['backend_processor_capture_id'] = $response['additional_identifiers']['payment_service_capture_id'];
 		}
+		$result['payment_orchestrator_reconciliation_id'] = $reconciliationID = $response['reconciliation_id'] ?? null;
+
 		$processorsUsingAuthID = [ 'paypal', 'adyen' ];
 		if (
 			in_array( $result['backend_processor'], $processorsUsingAuthID ) &&
@@ -243,9 +245,13 @@ class ResponseMapper {
 		) {
 			$result['backend_processor_transaction_id'] = $response['additional_identifiers']['payment_service_authorization_id'];
 		} else {
-			$result['backend_processor_transaction_id'] = $response['payment_service_transaction_id'] ?? null;
+			$supposedBackendProcessorTransactionID = $response['payment_service_transaction_id'] ?? null;
+			// Sometimes they stuff their own reconciliation ID in the payment_service_transaction_id.
+			// That's worse than useless to us. Discard it.
+			if ( $supposedBackendProcessorTransactionID !== $reconciliationID ) {
+				$result['backend_processor_transaction_id'] = $supposedBackendProcessorTransactionID;
+			}
 		}
-		$result['payment_orchestrator_reconciliation_id'] = $response['reconciliation_id'] ?? null;
 	}
 
 	/**
