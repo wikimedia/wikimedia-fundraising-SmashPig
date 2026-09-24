@@ -520,19 +520,120 @@ class ErrorTrackerTest extends BaseGravyTestCase {
 	}
 
 	/**
+	 * Test that error codes in the recurring ignore list are not tracked on recurring charges
+	 */
+	public function testRecurringIgnoredErrorCodesAreNotTrackedOnRecurringCharges(): void {
+		$errorTracker = $this->getTestableErrorTracker( [
+			'recurring_ignore_list' => [ 'invalid_payment_method' ]
+		] );
+		$errorTracker->setMockClient( $this->mockRedisClient );
+
+		$response = $this->getTestErrorResponse();
+		$response['error_code'] = 'invalid_payment_method';
+		$response['merchant_initiated'] = true;
+		$response['is_subsequent_payment'] = true;
+		$error = ErrorHelper::buildTrackableError( 'invalid_payment_method', 'code', $response );
+
+		// Expect no Redis calls when error code is ignored for recurring charges
+		$this->mockRedisClient->expects( $this->never() )
+			->method( '__call' );
+
+		$result = $errorTracker->trackErrorAndCheckThreshold( $error );
+		$this->assertFalse( $result, "Should return false and skip tracking for recurring ignored error codes" );
+	}
+
+	/**
+	 * Test that error codes not in the recurring ignore list are still tracked on recurring charges
+	 */
+	public function testErrorsNotInRecurringIgnoreListAreStillTrackedOnRecurringCharges(): void {
+		$errorTracker = $this->getTestableErrorTracker( [
+			'recurring_ignore_list' => [ 'invalid_payment_method' ]
+		] );
+		$errorTracker->setMockClient( $this->mockRedisClient );
+
+		$response = $this->getTestErrorResponse();
+		$response['error_code'] = 'issuer_decline';
+		$response['merchant_initiated'] = true;
+		$response['is_subsequent_payment'] = true;
+		$error = ErrorHelper::buildTrackableError( 'issuer_decline', 'code', $response );
+
+		// The Redis client uses magic method __call to dynamically handle Redis commands.
+		// We mock __call instead of individual methods because the Redis client doesn't
+		// actually have concrete methods for commands like 'hset', 'hlen', etc.
+		// These commands are intercepted by __call and forwarded to Redis.
+		// Calls: hget (returns null), hset (returns 1, new item), hlen (returns 1, first occurrence), expire (set redis key TTL)
+		$this->mockRedisClient->expects( $this->exactly( 4 ) )
+			->method( '__call' )
+			->willReturnCallback( static function ( $method, $args ) {
+				if ( $method === 'hset' ) {
+					return 1;
+				}
+				if ( $method === 'hlen' ) {
+					return 1;
+				}
+				if ( $method === 'expire' ) {
+					return true;
+				}
+				return null;
+			} );
+
+		$result = $errorTracker->trackErrorAndCheckThreshold( $error );
+		$this->assertTrue( $result, "Should return true and track error codes not in the recurring ignore list" );
+	}
+
+	/**
+	 * Test that error codes in the recurring ignore list are still tracked on non-recurring charges
+	 */
+	public function testRecurringIgnoredErrorCodesAreStillTrackedOnNonRecurringCharges(): void {
+		$errorTracker = $this->getTestableErrorTracker( [
+			'recurring_ignore_list' => [ 'invalid_payment_method' ]
+		] );
+		$errorTracker->setMockClient( $this->mockRedisClient );
+
+		$response = $this->getTestErrorResponse();
+		$response['error_code'] = 'invalid_payment_method';
+		$response['merchant_initiated'] = false;
+		$response['is_subsequent_payment'] = false;
+		$error = ErrorHelper::buildTrackableError( 'invalid_payment_method', 'code', $response );
+
+		// The Redis client uses magic method __call to dynamically handle Redis commands.
+		// We mock __call instead of individual methods because the Redis client doesn't
+		// actually have concrete methods for commands like 'hset', 'hlen', etc.
+		// These commands are intercepted by __call and forwarded to Redis.
+		// Calls: hget (returns null), hset (returns 1, new item), hlen (returns 1, first occurrence), expire (set redis key TTL)
+		$this->mockRedisClient->expects( $this->exactly( 4 ) )
+			->method( '__call' )
+			->willReturnCallback( static function ( $method, $args ) {
+				if ( $method === 'hset' ) {
+					return 1;
+				}
+				if ( $method === 'hlen' ) {
+					return 1;
+				}
+				if ( $method === 'expire' ) {
+					return true;
+				}
+				return null;
+			} );
+
+		$result = $errorTracker->trackErrorAndCheckThreshold( $error );
+		$this->assertTrue( $result, "Should return true and track recurring ignored error codes on non-recurring charges" );
+	}
+
+	/**
 	 * Get an 'Extract and override' testable Error Tracker
 	 *
 	 * @return ErrorTracker
 	 */
-	protected function getTestableErrorTracker(): ErrorTracker {
-		return new class( [
+	protected function getTestableErrorTracker( array $options = [] ): ErrorTracker {
+		return new class( array_merge( [
 			'enabled' => true,
 			'threshold' => 20,
 			'time_window' => 1800,
 			'key_prefix' => 'gravy_error_threshold_',
 			'key_expiry_period' => 2400,
 			'alert_suppression_period' => 120
-		] ) extends ErrorTracker {
+		], $options ) ) extends ErrorTracker {
 			private Client $mockClient;
 
 			public function setMockClient( $client ): void {
