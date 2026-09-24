@@ -99,7 +99,6 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 			'gateway' => 'adyen',
 			'type' => in_array( $type, [ 'depositcorrection', 'manualcorrected' ], true ) ? 'adjustment' : 'fee',
 			'gateway_txn_id' => $prefix . $reference,
-			'gateway_account' => $row['Merchant Account'],
 			'invoice_id' => $row['Merchant Reference'],
 			'settlement_batch_reference' => $row['Batch Number'] ?? null,
 			// In this context the total amount is what is paid by the donor - ie nothing.
@@ -120,7 +119,6 @@ class AdyenSettlementDetailReport extends AdyenAudit {
 			'audit_file_gateway' => 'adyen',
 			'type' => 'payout',
 			'gateway_txn_id' => $row['Modification Reference'],
-			'gateway_account' => $row['Merchant Account'],
 			'invoice_id' => $row['Merchant Reference'],
 			'settlement_batch_reference' => $row['Batch Number'] ?? null,
 			'settled_total_amount' => $row['Net Debit (NC)'],
