@@ -75,7 +75,7 @@ class ErrorTracker {
 			return false;
 		}
 		// Skip tracking if error code is in the ignore list
-		if ( in_array( strtolower( $error['error_code'] ), array_map( 'strtolower', $this->ignoreList ), true ) ) {
+		if ( $this->isInIgnoreList( $error['error_code'] ) ) {
 			Logger::info( 'Skipping error tracking - error code is in ignore list', [
 				'error_code' => $error['error_code']
 			] );
@@ -280,5 +280,13 @@ class ErrorTracker {
 	 */
 	protected function isFraudAlert( string $error_code ): bool {
 		return $error_code === self::SUSPECTED_FRAUD_ERROR_CODE;
+	}
+
+	/**
+	 * @param string $error_code
+	 * @return bool
+	 */
+	protected function isInIgnoreList( string $error_code ): bool {
+		return in_array( strtolower( $error_code ), array_map( 'strtolower', $this->ignoreList ), true );
 	}
 }
