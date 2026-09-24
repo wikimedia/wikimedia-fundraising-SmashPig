@@ -251,7 +251,6 @@ abstract class AdyenAudit implements AuditParser {
 		$msg = [
 			'gateway' => $this->isOrchestratorMerchantReference( $row ) ? 'gravy' : 'adyen',
 			'audit_file_gateway' => 'adyen',
-			'gateway_account' => $row['Merchant Account'],
 			'invoice_id' => $this->getInvoiceId( $row ),
 			'gateway_txn_id' => $this->getGatewayTransactionId( $row ),
 			'settlement_batch_reference' => $row['Batch Number'] ?? $row['Payable Batch'] ?? null,
