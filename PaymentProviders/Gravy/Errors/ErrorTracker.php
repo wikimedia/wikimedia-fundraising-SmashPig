@@ -80,7 +80,10 @@ class ErrorTracker {
 		// Skip tracking if error code is in the ignore list
 		if ( $this->isInIgnoreList( $error['error_code'] ) ) {
 			Logger::info( 'Skipping error tracking - error code is in ignore list', [
-				'error_code' => $error['error_code']
+				'error_code' => $error['error_code'],
+				'transaction_id' => $error['sample_transaction_id'] ?? null,
+				'raw_response_code' => $error['raw_response_code'] ?? null,
+				'raw_response_description' => $error['raw_response_description'] ?? null,
 			] );
 			return false;
 		}

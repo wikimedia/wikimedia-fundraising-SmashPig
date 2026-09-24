@@ -404,15 +404,9 @@ class ErrorTrackerTest extends BaseGravyTestCase {
 		] );
 		$errorTrackerWithIgnoreList->setMockClient( $this->mockRedisClient );
 
-		$ignoredError = [
-			'error_code' => 'incomplete_buyer_approval',
-			'error_type' => 'code',
-			'gateway_txn_id' => 'txn_123',
-			'external_identifier' => 'donation_456',
-			'amount' => 1000,
-			'currency' => 'USD',
-			'payment_method' => 'card'
-		];
+		$response = $this->getTestErrorResponse();
+		$response['error_code'] = 'incomplete_buyer_approval';
+		$ignoredError = ErrorHelper::buildTrackableError( 'incomplete_buyer_approval', 'code', $response );
 
 		// Expect no Redis calls when error code is ignored
 		$this->mockRedisClient->expects( $this->never() )
