@@ -155,6 +155,51 @@ class ResponseMapper {
 	}
 
 	/**
+	 * Maps from gravy payment options
+	 * @param array $response
+	 * @param array $additional_values extra config not returned by Gravy, e.g. google_merchant_id
+	 * @return array
+	 */
+	public function mapFromPaymentMethodResponse( array $response, array $additional_values ): array {
+		$errorResponse = $this->handleResponseErrorsIfPresent( $response );
+		if ( $errorResponse ) {
+			return $errorResponse;
+		}
+		$payment_methods = [];
+
+		foreach ( $response['items'] ?? [] as $item ) {
+			$config = [
+				'brands' => $item['context']['supported_schemes'] ?? [],
+				'configuration' => [
+					'merchantName' => $item['context']['merchant_name'] ?? ''
+				],
+				'name' => $item['label'] ?? '',
+				'type' => $item['method'] ?? ''
+			];
+
+			if ( $config['type'] === 'googlepay' ) {
+				$config['type'] = "paywithgoogle";
+				$config['configuration'] = [
+					'merchantId' => $additional_values['google_merchant_id'] ?? '',
+					'gatewayMerchantId' => $item['context']['gateway_merchant_id'] ?? ''
+				];
+			}
+
+			$payment_methods[] = $config;
+		}
+
+		$result = [
+			'is_successful' => true,
+			'raw_response' => $response,
+			'payment_methods' => $payment_methods,
+			'status' => $this->normalizeStatus( 'succeeded' ),
+			'raw_status' => 'succeeded'
+		];
+
+		return $result;
+	}
+
+	/**
 	 * Maps from gravy payment response payment method details
 	 * @param array &$result
 	 * @param array $response
@@ -282,6 +327,7 @@ class ResponseMapper {
 
 		$this->mapPaymentResponsePaymentService( $result, $response );
 
+		// FIXME: put this in a MotoResponseMapper subclass
 		if ( ( $response['payment_source'] ?? null ) === 'moto' ) {
 			$this->mapPaymentResponseMotoDetails( $result, $response );
 		}
@@ -377,6 +423,8 @@ class ResponseMapper {
 
 		$errorResponse = [
 			'is_successful' => false,
+			'gateway_txn_id' => $error['id'] ?? null,
+			'order_id' => $error['external_identifier'] ?? null,
 			'status' => $errorCode == ErrorCode::CANCELLED_BY_DONOR ? FinalStatus::CANCELLED : FinalStatus::FAILED,
 			'code' => $errorCode,
 			'message' => $errorParameters['message'],
@@ -385,6 +433,18 @@ class ResponseMapper {
 			'is_suspected_fraud' => ErrorMapper::isSuspectedFraud( $errorParameters['code'] ),
 			'payment_service_refund_id' => $error['payment_service_refund_id'] ?? '',
 		];
+
+		if ( !empty( $error['amount'] ) && !empty( $error['currency'] ) ) {
+			$errorResponse['currency'] = $error['currency'];
+			$errorResponse['amount'] = CurrencyRoundingHelper::getAmountInMajorUnits(
+				$error['amount'], $error['currency']
+			);
+		}
+
+		$this->mapPaymentResponsePaymentMethodDetails( $errorResponse, $error );
+		$this->mapPaymentResponseDonorDetails( $errorResponse, $error );
+		$this->mapPaymentResponsePaymentService( $errorResponse, $error );
+
 		if ( !isset( $errorParameters['normalized_response'] ) ) {
 			return $errorResponse;
 		}
