@@ -13,8 +13,14 @@ class CurlWrapper {
 	 */
 	protected $providerConfiguration;
 
+	/**
+	 * @var array Fields to omit from log-outbound
+	 */
+	protected array $redactFields;
+
 	public function __construct() {
 		$this->providerConfiguration = Context::get()->getProviderConfiguration();
+		$this->redactFields = $this->providerConfiguration->get( 'curl/redact-fields' );
 	}
 
 	/**
@@ -31,6 +37,16 @@ class CurlWrapper {
 	public function execute(
 		string $url, string $method, array $responseHeaders, $data, $certPath = null, $certPassword = null
 	) {
+		if ( $this->providerConfiguration->val( 'curl/log-outbound' ) ) {
+			if ( is_array( $data ) ) {
+				$sanitized = $this->sanitizeOutboundData( $data );
+			} else {
+				// TODO: can we sanitize anything here?
+				$sanitized = $data;
+			}
+			Logger::debug( "Outbound data: '$sanitized'" );
+		}
+
 		if ( is_array( $data ) ) {
 			$data = http_build_query( $data );
 		}
@@ -38,9 +54,6 @@ class CurlWrapper {
 		Logger::info( "Initiating cURL" );
 		$ch = curl_init();
 
-		if ( $this->providerConfiguration->val( 'curl/log-outbound' ) ) {
-			Logger::debug( "Outbound data: '$data'" );
-		}
 		// Always capture the cURL output
 		$curlDebugLog = fopen( 'php://temp', 'r+' );
 
@@ -188,5 +201,16 @@ class CurlWrapper {
 			'headers' => $responseHeaders,
 			'status' => (int)$curlInfo['http_code']
 		];
+	}
+
+	protected function sanitizeOutboundData( array $data ): array {
+		foreach ( $data as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$data[$key] = $this->sanitizeOutboundData( $value );
+			} elseif ( array_search( $key, $this->redactFields ) !== false ) {
+				$data[$key] = '*' * count( $value );
+			}
+		}
+		return $data;
 	}
 }
