@@ -225,3 +225,9 @@ fraud-filters:
 curl:
   validator:
     class: SmashPig\PaymentProviders\Adyen\RestResponseValidator
+  redact-fields:
+    - 'sepa.ibanNumber'
+    - 'encryptedCardNumber'
+    - 'encryptedExpiryMonth'
+    - 'encryptedExpiryYear'
+    - 'encryptedSecurityCode'
