@@ -228,3 +228,5 @@ curl:
     - 'encryptedExpiryMonth'
     - 'encryptedExpiryYear'
     - 'encryptedSecurityCode'
+    - 'bankAccountNumber'
+    - 'bankLocationId'

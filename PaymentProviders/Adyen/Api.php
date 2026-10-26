@@ -367,10 +367,11 @@ class Api {
 				'merchantAccount' => $this->account,
 				'paymentMethod' => [
 					'type' => 'ach',
-					'encryptedBankAccountNumber' => $params['encrypted_bank_account_number'], // encrypted account number
+					'bankAccountNumber' => $params['bank_account_number'], // account number
 					'bankAccountType' => $params['bank_account_type'], // checking or savings
-					'encryptedBankLocationId' => $params['encrypted_bank_location_id'], // encrypted ACH routing number of the account
-					'ownerName' => $params['full_name'] // the name on the bank account
+					'bankLocationId' => $params['bank_location_id'], // ACH routing number of the account
+					'ownerName' => $params['full_name'], // the name on the bank account
+					'accountHolderType' => $params['account_holder_type'] ?? 'personal' // The type of account holder (personal or business)
 				]
 			];
 			$isRecurring = $params['recurring'] ?? '';
