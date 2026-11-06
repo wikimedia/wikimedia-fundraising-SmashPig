@@ -51,7 +51,10 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 		'buyer_complaint.json' => 'refund',
 		'refund_other.json' => 'refund',
 		'refund_unauthorized_spoof.json' => 'refund',
+		'refund_unauthorized_claim.json' => 'refund',
 		'refund_admin_fraud_reversal.json' => 'refund',
+		'refund_chargeback.json' => 'refund',
+		'refund_admin_reversal.json' => 'refund',
 		'recurring_payment_suspended_due_to_max_failed_payment.json' => 'recurring',
 		'chargeback_reversed.json' => 'refund',
 	];
