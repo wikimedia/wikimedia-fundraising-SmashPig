@@ -73,6 +73,8 @@ class STLAuditTest extends AuditTestBase {
 			'backend_processor_reversal_id' => '6899',
 			'gross_currency' => 'GBP',
 			'gateway_parent_id' => '99900',
+			'backend_processor' => 'paypal',
+			'backend_processor_parent_id' => '99900',
 		], $output[3] );
 
 		$this->assertEquals( [
@@ -197,6 +199,8 @@ class STLAuditTest extends AuditTestBase {
 			'gateway_refund_id' => '451689',
 			'gross_currency' => 'BRL',
 			'gateway_parent_id' => '3K905',
+			'backend_processor' => 'paypal',
+			'backend_processor_parent_id' => '3K905',
 
 		], $output[0] );
 	}
@@ -257,6 +261,8 @@ class STLAuditTest extends AuditTestBase {
 			'gateway_refund_id' => '5K823',
 			'gross_currency' => 'USD',
 			'gateway_parent_id' => '59M83',
+			'backend_processor' => 'paypal',
+			'backend_processor_parent_id' => '59M83',
 		], $output[0] );
 	}
 
@@ -333,5 +339,35 @@ class STLAuditTest extends AuditTestBase {
 
 		$this->assertSame( 'payout', $output[1]['type'] );
 		$this->assertSame( '10.09', $output[1]['settled_total_amount'] );
+	}
+
+	/**
+	 * A Braintree PayPal (T0003) donation carries the PayPal auth as its
+	 * reference, while the refund references the capture. The refund should
+	 * expose that capture as the paypal backend processor parent.
+	 *
+	 * @see https://phabricator.wikimedia.org/T444253
+	 */
+	public function testProcessBraintreePaypalRefund(): void {
+		$output = $this->processFile( 'stl_braintree_paypal_refund.csv' );
+		$this->assertCount( 2, $output );
+
+		$donation = $output[0];
+		$this->assertSame( 'donation', $donation['type'] );
+		$this->assertSame( '2PP23694K2023181B', $donation['gateway_txn_id'] );
+		$this->assertSame( 'paypal', $donation['backend_processor'] );
+		$this->assertSame( '89C82974XN013664S', $donation['backend_processor_txn_id'] );
+		$this->assertSame( '89C82974XN013664S', $donation['auth_id'] );
+		$this->assertSame( '2PP23694K2023181B', $donation['capture_id'] );
+		$this->assertArrayNotHasKey( 'backend_processor_parent_id', $donation );
+
+		$refund = $output[1];
+		$this->assertSame( 'refund', $refund['type'] );
+		$this->assertSame( '7UE0604858585801J', $refund['gateway_txn_id'] );
+		$this->assertSame( '7UE0604858585801J', $refund['backend_processor_reversal_id'] );
+		$this->assertSame( '2PP23694K2023181B', $refund['gateway_parent_id'] );
+		$this->assertSame( 'paypal', $refund['backend_processor'] );
+		$this->assertSame( '2PP23694K2023181B', $refund['backend_processor_parent_id'] );
+		$this->assertArrayNotHasKey( 'backend_processor_txn_id', $refund );
 	}
 }
