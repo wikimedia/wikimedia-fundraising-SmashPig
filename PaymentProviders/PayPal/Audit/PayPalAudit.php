@@ -37,6 +37,7 @@ class PayPalAudit implements AuditParser {
 	private array $payouts = [];
 	private array $feeRows = [];
 	private array $footerRows = [];
+	private array $matchedFeeRowKeys = [];
 
 	public function parseFile( string $path ): array {
 		$file = fopen( $path, 'r' );
@@ -180,6 +181,19 @@ class PayPalAudit implements AuditParser {
 				Logger::error( $ex->getMessage() );
 			}
 		}
+
+		if ( in_array( 'RF', $this->lineTypesToParse, true ) ) {
+			foreach ( $this->feeRows as $key => $feeRow ) {
+				if ( isset( $this->matchedFeeRowKeys[(string)$key] ) ) {
+					continue;
+				}
+				$parser = $this->getParser( $feeRow );
+				if ( $parser instanceof STLFileParser ) {
+					$this->fileData[] = $parser->getUnmatchedFeeMessage();
+				}
+			}
+		}
+
 		fclose( $file );
 		return $this->fileData;
 	}
@@ -188,7 +202,12 @@ class PayPalAudit implements AuditParser {
 	 */
 	protected function parseLine( $row ): void {
 		try {
-			$this->fileData[] = $this->getParser( $row )->getMessage();
+			$parser = $this->getParser( $row );
+			$this->fileData[] = $parser->getMessage();
+			$matchedKey = $parser->getMatchedFeeRowKey();
+			if ( $matchedKey !== null ) {
+				$this->matchedFeeRowKeys[$matchedKey] = true;
+			}
 		} catch ( IgnoredException $e ) {
 			return;
 		} catch ( UnhandledException $e ) {

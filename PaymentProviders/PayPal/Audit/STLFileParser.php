@@ -135,4 +135,30 @@ class STLFileParser extends BaseParser {
 		return str_replace( '/', '', $this->getBatchSettledDate() );
 	}
 
+	/**
+	 * A chargeback fee / fee reversal row that no transaction in this file merged.
+	 * PayPal includes it in the RF footer totals, so it must be booked, or the batch won't reconcile.
+	 */
+	public function getUnmatchedFeeMessage(): array {
+		$fee = (float)$this->row['Gross Transaction Amount'] / 100;
+		if ( $this->row['Transaction Debit or Credit'] === 'DR' ) {
+			$fee = -$fee;
+		}
+		$fee = CurrencyRoundingHelper::round( $fee, $this->getSettledCurrency() );
+		return [
+			'gateway' => 'paypal',
+			'audit_file_gateway' => 'paypal',
+			'type' => 'fee',
+			'gateway_txn_id' => 'fee-' . $this->row['Transaction ID'],
+			'invoice_id' => $this->row['Invoice ID'],
+			'date' => strtotime( $this->row['Transaction Initiation Date'] ),
+			'settled_date' => strtotime( $this->row['Transaction Completion Date'] ),
+			'settlement_batch_reference' => $this->getSettlementBatchReference(),
+			'settled_currency' => $this->getSettledCurrency(),
+			'settled_total_amount' => 0,
+			'settled_fee_amount' => $fee,
+			'settled_net_amount' => $fee,
+		];
+	}
+
 }

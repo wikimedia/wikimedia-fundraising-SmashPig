@@ -30,6 +30,22 @@ class BaseParser {
 	}
 
 	/**
+	 * Key of the stored fee row (chargeback fee / fee reversal) this row merges in, if any.
+	 */
+	public function getMatchedFeeRowKey(): ?string {
+		if ( !empty( $this->row['Fee Amount'] ) ) {
+			return null;
+		}
+		foreach ( [ 'Transaction ID', 'Invoice ID' ] as $field ) {
+			$key = $this->row[$field] ?? null;
+			if ( $key !== null && isset( $this->feeRows[$key] ) ) {
+				return (string)$key;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * @see https://developer.paypal.com/docs/reports/reference/tcodes
 	 * @return string[]
 	 */
@@ -197,16 +213,11 @@ class BaseParser {
 
 	protected function getFeeAmount(): float {
 		$fee = $this->row['Fee Amount'] ?? 0;
-		if ( !$fee && isset( $this->feeRows[$this->row['Transaction ID']] ) ) {
-			$fee = $this->feeRows[$this->row['Transaction ID']]['Gross Transaction Amount'];
+		$key = $this->getMatchedFeeRowKey();
+		if ( !$fee && $key !== null ) {
+			$fee = $this->feeRows[$key]['Gross Transaction Amount'];
 		}
-		if ( !$fee && isset( $this->feeRows[$this->row['Invoice ID']] ) ) {
-			$fee = $this->feeRows[$this->row['Invoice ID']]['Gross Transaction Amount'];
-		}
-		if ( $fee ) {
-			return $fee / 100;
-		}
-		return 0.0;
+		return $fee ? $fee / 100 : 0.0;
 	}
 
 	protected function getOriginalFeeAmount(): float {

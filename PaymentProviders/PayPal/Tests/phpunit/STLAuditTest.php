@@ -268,7 +268,7 @@ class STLAuditTest extends AuditTestBase {
 
 	public function testProcessChargebackReversal(): void {
 		$output = $this->processFile( 'stl_chargeback_reversal.csv' );
-		$this->assertCount( 1, $output, 'Should have found one row' );
+		$this->assertCount( 2, $output, 'Should have found the chargeback reversal and one unmatched fee reversal' );
 		$this->assertEquals( [
 			'payment_method' => 'paypal',
 			'currency' => 'USD',
@@ -295,6 +295,21 @@ class STLAuditTest extends AuditTestBase {
 			'gross' => 26.0,
 			'fee' => 20.0,
 		], $output[0] );
+		// Unmatched fee
+		$this->assertEquals( [
+			'gateway' => 'paypal',
+			'audit_file_gateway' => 'paypal',
+			'type' => 'fee',
+			'gateway_txn_id' => 'fee-7A955',
+			'invoice_id' => '67890.1',
+			'date' => strtotime( '2026/01/14 12:38:07 -0800' ),
+			'settled_date' => strtotime( '2026/01/14 12:38:07 -0800' ),
+			'settlement_batch_reference' => '20260106',
+			'settled_currency' => 'USD',
+			'settled_total_amount' => 0,
+			'settled_fee_amount' => '16.59',
+			'settled_net_amount' => '16.59',
+		], $output[1], 'Unmatched T1108 should be booked as a fee' );
 	}
 
 	/**
