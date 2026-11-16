@@ -31,6 +31,9 @@ class STLFileParser extends BaseParser {
 		if ( ( $this->row[0] ?? null ) === 'RF' ) {
 			return $this->getAggregateRow();
 		}
+		if ( in_array( $this->getTransactionType(), [ 'chargeback_fee', 'fee_reversal' ], true ) ) {
+			return $this->getFeeMessage();
+		}
 		$isGravy = $this->isGravy();
 		$msg = [
 			'gateway_txn_id' => $isGravy ? Base62Helper::toUuid( $this->row['Custom Field'] ) : $this->row['Transaction ID'],
@@ -136,10 +139,9 @@ class STLFileParser extends BaseParser {
 	}
 
 	/**
-	 * A chargeback fee / fee reversal row that no transaction in this file merged.
-	 * PayPal includes it in the RF footer totals, so it must be booked, or the batch won't reconcile.
+	 * Chargeback fee / fee reversal row with no transaction in this file to merge into.
 	 */
-	public function getUnmatchedFeeMessage(): array {
+	private function getFeeMessage(): array {
 		$fee = (float)$this->row['Gross Transaction Amount'] / 100;
 		if ( $this->row['Transaction Debit or Credit'] === 'DR' ) {
 			$fee = -$fee;

@@ -37,7 +37,6 @@ class PayPalAudit implements AuditParser {
 	private array $payouts = [];
 	private array $feeRows = [];
 	private array $footerRows = [];
-	private array $matchedFeeRowKeys = [];
 
 	public function parseFile( string $path ): array {
 		$file = fopen( $path, 'r' );
@@ -147,11 +146,20 @@ class PayPalAudit implements AuditParser {
 					break;
 
 				case 'chargeback_fee':
-					$this->feeRows[$row['PayPal Reference ID']] = $row;
-					break;
-
 				case 'fee_reversal':
-					$this->feeRows[$row['Invoice ID']] = $row;
+					$key = $row[$transactionType === 'chargeback_fee' ? 'PayPal Reference ID' : 'Invoice ID'];
+					$this->feeRows[$key] = $row;
+					if ( in_array( 'RF', $this->lineTypesToParse, true ) ) {
+						// Also book it as a standalone fee (PayPal counts it in the footer totals),
+						// unless a transaction merges it in - one read later unsets this in the default case.
+						$this->rows['fee-' . $key] = $row;
+						foreach ( $this->rows as $index => $transaction ) {
+							if ( is_int( $index ) && empty( $transaction['Fee Amount'] ) && in_array( $key, [ $transaction['Transaction ID'] ?? null, $transaction['Invoice ID'] ?? null ], true ) ) {
+								unset( $this->rows['fee-' . $key] );
+								break;
+							}
+						}
+					}
 					break;
 
 				case 'other':
@@ -160,6 +168,10 @@ class PayPalAudit implements AuditParser {
 
 				default:
 					$this->rows[] = $row;
+					if ( isset( $row['Transaction ID'] ) && empty( $row['Fee Amount'] ) ) {
+						// This transaction merges in any fee row held for it.
+						unset( $this->rows['fee-' . $row['Transaction ID']], $this->rows['fee-' . $row['Invoice ID']] );
+					}
 					break;
 			}
 
@@ -181,19 +193,6 @@ class PayPalAudit implements AuditParser {
 				Logger::error( $ex->getMessage() );
 			}
 		}
-
-		if ( in_array( 'RF', $this->lineTypesToParse, true ) ) {
-			foreach ( $this->feeRows as $key => $feeRow ) {
-				if ( isset( $this->matchedFeeRowKeys[(string)$key] ) ) {
-					continue;
-				}
-				$parser = $this->getParser( $feeRow );
-				if ( $parser instanceof STLFileParser ) {
-					$this->fileData[] = $parser->getUnmatchedFeeMessage();
-				}
-			}
-		}
-
 		fclose( $file );
 		return $this->fileData;
 	}
@@ -202,12 +201,7 @@ class PayPalAudit implements AuditParser {
 	 */
 	protected function parseLine( $row ): void {
 		try {
-			$parser = $this->getParser( $row );
-			$this->fileData[] = $parser->getMessage();
-			$matchedKey = $parser->getMatchedFeeRowKey();
-			if ( $matchedKey !== null ) {
-				$this->matchedFeeRowKeys[$matchedKey] = true;
-			}
+			$this->fileData[] = $this->getParser( $row )->getMessage();
 		} catch ( IgnoredException $e ) {
 			return;
 		} catch ( UnhandledException $e ) {
