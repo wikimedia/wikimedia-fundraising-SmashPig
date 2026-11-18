@@ -313,6 +313,19 @@ class STLAuditTest extends AuditTestBase {
 	}
 
 	/**
+	 * T1108 rows with a blank Invoice ID must not overwrite each other.
+	 *
+	 * Previously both were keyed on '' so only the last survived, leaving the
+	 * CAD batch short by the lost fee (STL-20261113.01.009 was out by 0.69).
+	 */
+	public function testFeeReversalsWithBlankInvoiceId(): void {
+		$output = $this->processFile( 'stl_fee_reversal_blank_invoice.csv' );
+		$this->assertCount( 2, $output );
+		$this->assertEquals( [ 'fee-2HT19', 'CAD', 0.69 ], [ $output[0]['gateway_txn_id'], $output[0]['settled_currency'], $output[0]['settled_net_amount'] ] );
+		$this->assertEquals( [ 'fee-5N372', 'EUR', 0.45 ], [ $output[1]['gateway_txn_id'], $output[1]['settled_currency'], $output[1]['settled_net_amount'] ] );
+	}
+
+	/**
 	 * This test covers a sample of the debits that are ignored.
 	 *
 	 * The example found has a code of T0000 and represents

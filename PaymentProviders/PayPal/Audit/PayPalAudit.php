@@ -147,7 +147,8 @@ class PayPalAudit implements AuditParser {
 
 				case 'chargeback_fee':
 				case 'fee_reversal':
-					$key = $row[$transactionType === 'chargeback_fee' ? 'PayPal Reference ID' : 'Invoice ID'];
+					// Invoice ID can be blank - fall back so blank-keyed rows don't overwrite each other.
+					$key = ( $transactionType === 'fee_reversal' ? $row['Invoice ID'] : '' ) ?: ( $row['PayPal Reference ID'] ?: $row['Transaction ID'] );
 					$this->feeRows[$key] = $row;
 					if ( in_array( 'RF', $this->lineTypesToParse, true ) ) {
 						// Also book it as a standalone fee (PayPal counts it in the footer totals),
