@@ -22,6 +22,21 @@ class ChariotObjectMetadata {
 		'updated_at' => [ 'status' => self::STATUS_USED ],
 		'status' => [],
 		'payment_source_id' => [ 'status' => self::STATUS_USED ],
+		'source_id' => [
+			'sample' => 'source_6zfh19f2hp89btemqjtjckyesz',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Possibly replacing payment_source_id - check with Chariot',
+		],
+		'donation_count' => [
+			'sample' => '1',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Could sanity check against donations fetched',
+		],
+		'deposit_address_id' => [
+			'sample' => 'deposit_address_684q3k8pre9358m107n1234zsd',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Chariot receiving address/account reference',
+		],
 		'settled_at' => [ 'status' => self::STATUS_USED ],
 		'returned_at' => [],
 		'properties.CRM status' => [],
@@ -42,6 +57,11 @@ class ChariotObjectMetadata {
 		'transfer.currency' => [ 'status' => self::STATUS_USED ],
 		'transfer.financial_account_id' => [],
 		'transfer.description' => [],
+		'transfer.bank_created_at' => [
+			'sample' => '2026-11-18T23:05:51Z',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Transfer-level copy of bank_created_at',
+		],
 		'transfer.inbound_account_transfer.created_at' => [],
 		'transfer.inbound_ach_transfer' => [ 'status' => self::STATUS_USED ],
 		'transfer.inbound_ach_transfer.standard_entry_class_code' => [],
@@ -53,6 +73,12 @@ class ChariotObjectMetadata {
 		'transfer.inbound_ach_transfer.effective_date' => [],
 		'transfer.inbound_ach_transfer.status' => [],
 		'transfer.inbound_ach_transfer.receiver_id' => [],
+		'transfer.inbound_ach_transfer.payment_related_info' => [
+			'sample' => 'TRN*1*9700696628*147258405',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'ACH addenda, format varies by sender. YourCause: TRN*1*<Payment ID>*<n>.'
+				. ' Benevity: REF*TN*<disbursement id>*Donation from ...benevity.org',
+		],
 		'transfer.check_deposit.auxiliary_on_us' => [
 			'status' => self::STATUS_USED,
 			'note' => 'Donor check number.',
@@ -202,6 +228,31 @@ class ChariotObjectMetadata {
 			'sample' => 'Individual Payroll',
 			'status' => self::STATUS_IGNORED,
 			'note' => 'From YourCause platform',
+		],
+		'platform.metadata.Segment Name' => [
+			'sample' => 'Domestic Employees',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Probably YourCause - employer donor segment (also seen: US & Canada)',
+		],
+		'platform.metadata.Disbursement Date' => [
+			'sample' => '2026-11-11T00:00:00Z',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Benevity - we use the deposit settled date',
+		],
+		'platform.metadata.Donation Type' => [
+			'sample' => 'Match',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Benevity - may be relevant to matching gift handling',
+		],
+		'platform.metadata.Project ID' => [
+			'sample' => '9LUVPLM2K0',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Benevity project reference',
+		],
+		'platform.metadata.Project Name' => [
+			'sample' => 'Wikimedia Foundation',
+			'status' => self::STATUS_IGNORED,
+			'note' => 'Benevity - our project name',
 		],
 		'platform.metadata.Project External ID' => [
 			'note' => 'Benevity - unknown reference',
