@@ -31,12 +31,49 @@ class Job implements Runnable {
 		return false;
 	}
 
+	/**
+	 * True if the IPN names a receiver and none of its receiver fields is in receiver-allowlist.
+	 */
+	protected function isForeignReceiver(): bool {
+		$receivers = array_filter( [
+			$this->payload['receiver_id'] ?? null,
+			$this->payload['receiver_email'] ?? null,
+			$this->payload['business'] ?? null,
+		] );
+		if ( !$receivers ) {
+			return false;
+		}
+		$allowed = array_map( 'strtolower', (array)$this->providerConfiguration->val( 'receiver-allowlist' ) );
+		foreach ( $receivers as $receiver ) {
+			if ( in_array( strtolower( $receiver ), $allowed, true ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public function execute() {
 		$this->providerConfiguration = Context::get()->getProviderConfiguration();
 
 		if ( $this->is_reject() ) {
 			// Returning false would cause it to go to the damaged queue, we
 			// just want to forget about these.
+			return true;
+		}
+
+		if ( $this->isForeignReceiver() ) {
+			if ( !$this->providerConfiguration->val( 'receiver-allowlist' ) ) {
+				// Keep the IPN in the damaged queue until receiver-allowlist is set.
+				Logger::error( 'PayPal receiver-allowlist is empty, cannot check the IPN receiver' );
+				return false;
+			}
+			// PayPal verifies IPNs for every merchant, so a VERIFIED IPN can be for another account.
+			Logger::warning( 'Dropping PayPal IPN for a receiver not in receiver-allowlist: ' . json_encode( [
+				'txn_id' => $this->payload['txn_id'] ?? null,
+				'receiver_id' => $this->payload['receiver_id'] ?? null,
+				'receiver_email' => $this->payload['receiver_email'] ?? null,
+				'business' => $this->payload['business'] ?? null,
+			] ) );
 			return true;
 		}
 
