@@ -17,11 +17,16 @@ class Job implements Runnable {
 	protected $providerConfiguration;
 
 	public function is_reject() {
-		if ( $this->is_gravy() || $this->isBraintree() ) {
+		if ( $this->is_gravy() ) {
+			return true;
+		}
+		if ( $this->isBraintree() ) {
+			$this->logReject( 'Dropping Braintree PayPal IPN' );
 			return true;
 		}
 		// Braintree payments send us a pending auth IPN as well as a completed one
 		if ( ( $this->payload['payment_status'] ?? '' ) === 'Pending' ) {
+			$this->logReject( 'Dropping Pending PayPal IPN' );
 			return true;
 		}
 		foreach ( $this->providerConfiguration->val( 'rejects' ) as $key => $val ) {
@@ -143,6 +148,15 @@ class Job implements Runnable {
 		// TODO It would be nice if push() returned something useful so we
 		// could return something here too
 		return true;
+	}
+
+	protected function logReject( string $reason ): void {
+		Logger::info( $reason . ': ' . json_encode( [
+			'txn_id' => $this->payload['txn_id'] ?? null,
+			'txn_type' => $this->payload['txn_type'] ?? null,
+			'payment_status' => $this->payload['payment_status'] ?? null,
+			'custom' => $this->payload['custom'] ?? null,
+		] ) );
 	}
 
 	/**

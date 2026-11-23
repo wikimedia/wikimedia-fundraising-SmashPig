@@ -7,6 +7,9 @@ use SmashPig\Core\DataStores\PendingDatabase;
 use SmashPig\Core\GlobalConfiguration;
 use SmashPig\Core\Http\EnumValidator;
 use SmashPig\Core\Http\Request;
+use SmashPig\Core\Logging\LogEvent;
+use SmashPig\Core\Logging\LogStreams\ILogStream;
+use SmashPig\Core\Logging\LogStreams\NullLogStream;
 use SmashPig\Core\ProviderConfiguration;
 use SmashPig\CrmLink\Messages\SourceFields;
 use SmashPig\PaymentProviders\PayPal\Job;
@@ -326,6 +329,47 @@ class CaptureIncomingMessageTest extends BaseSmashPigUnitTestCase {
 			'receiver_email' => 'shop@example.com',
 			'receiver_id' => 'OTHERMERCHANT1',
 		] ) );
+	}
+
+	/**
+	 * Collect the messages of all info-and-above log events logged after this call
+	 * @return \ArrayObject
+	 */
+	private function captureLogMessages(): \ArrayObject {
+		$messages = new \ArrayObject();
+		$stream = $this->createMock( ILogStream::class );
+		$stream->method( 'processEvent' )->willReturnCallback(
+			static function ( LogEvent $event ) use ( $messages ) {
+				$messages[] = $event->message;
+			}
+		);
+		$this->providerConfig->override( [ 'logging' => [
+			'log-level' => LOG_INFO,
+			'enabled-log-streams' => [ 'capture' ],
+			'log-streams' => [ 'capture' => [ 'class' => NullLogStream::class ] ],
+		] ] );
+		$this->providerConfig->overrideObjectInstance( 'logging/log-streams/capture', $stream );
+		// Re-initialise the Logger so it picks up the capture stream
+		Context::get()->setProviderConfiguration( $this->providerConfig );
+		return $messages;
+	}
+
+	public function testDropAndLogBraintreeIpn() {
+		$messages = $this->captureLogMessages();
+		$this->assertNull( $this->runExpressCheckoutIpn( [ 'custom' => 'B-123456.1' ] ) );
+		$logged = implode( "\n", $messages->getArrayCopy() );
+		$this->assertStringContainsString( 'Dropping Braintree PayPal IPN', $logged );
+		$this->assertStringContainsString( '3N2616476S0123456', $logged );
+		$this->assertStringContainsString( 'B-123456.1', $logged );
+	}
+
+	public function testDropAndLogPendingIpn() {
+		$messages = $this->captureLogMessages();
+		$this->assertNull( $this->runExpressCheckoutIpn( [ 'payment_status' => 'Pending' ] ) );
+		$logged = implode( "\n", $messages->getArrayCopy() );
+		$this->assertStringContainsString( 'Dropping Pending PayPal IPN', $logged );
+		$this->assertStringNotContainsString( 'Dropping Braintree PayPal IPN', $logged );
+		$this->assertStringContainsString( '3N2616476S0123456', $logged );
 	}
 
 	public function testEmptyReceiverAllowlistKeepsIpn() {
