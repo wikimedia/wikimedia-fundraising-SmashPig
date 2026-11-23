@@ -17,7 +17,11 @@ class Job implements Runnable {
 	protected $providerConfiguration;
 
 	public function is_reject() {
-		if ( $this->is_gravy() ) {
+		if ( $this->is_gravy() || $this->isBraintree() ) {
+			return true;
+		}
+		// Braintree payments send us a pending auth IPN as well as a completed one
+		if ( ( $this->payload['payment_status'] ?? '' ) === 'Pending' ) {
 			return true;
 		}
 		foreach ( $this->providerConfiguration->val( 'rejects' ) as $key => $val ) {
@@ -139,6 +143,16 @@ class Job implements Runnable {
 		// TODO It would be nice if push() returned something useful so we
 		// could return something here too
 		return true;
+	}
+
+	/**
+	 * Detect Braintree-originated messages by the B- prefix of their 'custom' field
+	 * @return bool
+	 */
+	protected function isBraintree() {
+		return isset( $this->payload['custom'] ) &&
+			!is_numeric( $this->payload['custom'] ) &&
+			str_starts_with( $this->payload['custom'], 'B-' );
 	}
 
 	/**
