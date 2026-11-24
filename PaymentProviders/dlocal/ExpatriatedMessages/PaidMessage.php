@@ -37,9 +37,11 @@ class PaidMessage extends DlocalMessage {
 			'payment_submethod' => $submethod
 		];
 
-		// If there is a recurring token, add it
+		// If there is a recurring token, add it (wallet for India UPI, enrollment for PIX)
 		if ( isset( $this->wallet['token'] ) ) {
 			$queueMsg['recurring_payment_token'] = $this->wallet['token'];
+		} elseif ( isset( $this->enrollment['id'] ) ) {
+			$queueMsg['recurring_payment_token'] = $this->enrollment['id'];
 		}
 
 		// Send PAID messages to the jobs queue to get info from the pending table

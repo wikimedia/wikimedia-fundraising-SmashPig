@@ -19,6 +19,7 @@ abstract class DlocalMessage extends ListenerMessage {
 		'description',
 		'document',
 		'email',
+		'enrollment',
 		'event_info',
 		'id',
 		'notification_url',
@@ -162,6 +163,11 @@ abstract class DlocalMessage extends ListenerMessage {
 	 * @var mixed
 	 */
 	protected $user_reference = '';
+
+	/**
+	 * @var array
+	 */
+	protected $enrollment = [];
 
 	/**
 	 * @var array
