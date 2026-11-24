@@ -270,10 +270,19 @@ class BaseParser {
 		if ( !$this->isPaymentishPrefix() ) {
 			return [];
 		}
+		// The reference id is only the authorization for a TXN reference - other
+		// types (eg. RP subscription, PAP preapproved payment, ODR order) can be
+		// shared by many payments, so the transaction id serves as both auth & capture.
+		// An empty reference stays empty - see PaypalAuditProcessor::isUnrebuildableDonation().
+		// @see https://developer.paypal.com/reports/settlement.md
+		$referenceType = $this->row['PayPal Reference ID Type'] ?? '';
+		$authID = in_array( $referenceType, [ '', 'TXN' ], true )
+			? $this->row['PayPal Reference ID']
+			: $this->row['Transaction ID'];
 		return [
-			'auth_id' => $this->row['PayPal Reference ID'],
+			'auth_id' => $authID,
 			'capture_id' => $this->row['Transaction ID'],
-			'backend_processor_txn_id' => $this->row['PayPal Reference ID'],
+			'backend_processor_txn_id' => $authID,
 			'backend_processor' => $this->getGateway(),
 			'type' => 'donation',
 		];

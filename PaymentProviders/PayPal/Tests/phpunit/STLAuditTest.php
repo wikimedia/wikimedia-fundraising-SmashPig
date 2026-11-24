@@ -398,4 +398,25 @@ class STLAuditTest extends AuditTestBase {
 		$this->assertSame( '2PP23694K2023181B', $refund['backend_processor_parent_id'] );
 		$this->assertArrayNotHasKey( 'backend_processor_txn_id', $refund );
 	}
+
+	/**
+	 * A recurring instalment (T0002) references the subscription id, which is
+	 * shared by every instalment - so it must not be used as the auth or
+	 * backend processor txn id.
+	 *
+	 * @see https://phabricator.wikimedia.org/T442644
+	 */
+	public function testProcessRecurringPayment(): void {
+		$output = $this->processFile( 'stl_recurring_payment.csv' );
+
+		$donation = $output[0];
+		$this->assertSame( 'donation', $donation['type'] );
+		$this->assertSame( 'subscr_payment', $donation['txn_type'] );
+		$this->assertSame( 'I-TESTRECUR0001', $donation['subscr_id'] );
+		$this->assertSame( '3RE10123A45678901', $donation['gateway_txn_id'] );
+		$this->assertSame( 'paypal_ec', $donation['backend_processor'] );
+		$this->assertSame( '3RE10123A45678901', $donation['backend_processor_txn_id'] );
+		$this->assertSame( '3RE10123A45678901', $donation['auth_id'] );
+		$this->assertSame( '3RE10123A45678901', $donation['capture_id'] );
+	}
 }

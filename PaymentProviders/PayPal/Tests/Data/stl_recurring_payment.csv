@@ -1,0 +1,4 @@
+"SH","2026/11/03 00:00:00 -0800","2026/11/03 23:59:59 -0800","EZ782AXEUJUW8"
+"CH","Transaction ID","Invoice ID","PayPal Reference ID","PayPal Reference ID Type","Transaction Event Code","Transaction Initiation Date","Transaction Completion Date",Transaction Debit or Credit,"Gross Transaction Amount","Gross Transaction Currency","Fee Debit or Credit","Fee Amount","Fee Currency","Custom Field","Consumer ID","Payment Tracking ID",Store ID,"Bank Reference ID","Credit Transactional Fee","Credit Promotional Fee","Credit Term"
+"SB","3RE10123A45678901","","I-TESTRECUR0001","RP","T0002",2026/11/03 02:23:57 -0800,2026/11/03 02:23:57 -0800,"CR",500,"USD","DR",34,"USD","","TESTPAYERID01","","","",,,
+"RF","USD",500,0,0,34,"CR",466,"CR",466,"CR",466,"CR",0,"CR",0,1
